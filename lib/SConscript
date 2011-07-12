@@ -1,0 +1,37 @@
+#
+#  Copyright 2011 Rackspace
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+
+
+Import('venv')
+
+from os.path import dirname
+
+sources = Split("""
+virgo_error.c
+virgo_init.c
+""")
+
+libvirgo = None
+
+lenv = venv.Clone()
+lenv.AppendUnique(CPPPATH=['#/include/private'])
+
+if lenv['VIRGO_LIB_TYPE'] == "STATIC":
+  libvirgo = lenv.StaticLibrary('libvirgo', sources)
+elif venv['VIRGO_LIB_TYPE'] == "SHARED":
+  libvirgo = lenv.SharedLibrary('libvirgo', sources)
+
+Return('libvirgo')
