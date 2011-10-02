@@ -25,6 +25,7 @@ if env["PLATFORM"] != "win32":
   lenv.Append(CFLAGS=['-DLUA_USE_POPEN'])
 
 targets['static'] = lenv.StaticLibrary('libluastatic', source = luasrc)
+targets['libs'] = ['m']
 targets['cpppaths'] = ['#deps/lua/src']
 
 lenv = env.Clone()
