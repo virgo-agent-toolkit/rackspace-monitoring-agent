@@ -5,11 +5,12 @@ targets = {}
 
 from os.path import join as pjoin
 
-luasrc = Split("""lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o
-                  lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o
-                  lundump.o lvm.o lzio.o
-                  lauxlib.o lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o
-                  lstrlib.o loadlib.o linit.o print.o""")
+luasrc = Split("""  lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o lmem.o
+                    lobject.o lopcodes.o lparser.o lstate.o lstring.o ltable.o ltm.o
+                    lundump.o lvm.o lzio.o
+
+                    lauxlib.o lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o
+                    lstrlib.o loadlib.o linit.o""")
 
 def transform_lua(e):
   e = e.replace(".o", ".c")
