@@ -16,14 +16,15 @@
  */
 
 #include "virgo.h"
+#include "lua.h"
 
 #ifndef _virgo__types_h_
 #define _virgo__types_h_
 
 struct virgo_t {
-  int dummy;
+  lua_State* L;
 };
 
 
 
-#endif /* _virgo_h_ */
+#endif /* _virgo__types_h_ */

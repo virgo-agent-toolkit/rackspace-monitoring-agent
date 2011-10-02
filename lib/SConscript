@@ -24,12 +24,14 @@ targets = {}
 sources = Split("""
 virgo_error.c
 virgo_init.c
+virgo_lua.c
 """)
 
 libvirgo = None
 
 lenv = env.Clone()
 lenv.AppendUnique(CPPPATH=['#/include/private'])
+lenv.AppendUnique(CPPFLAGS=['-Werror'])
 
 targets['static'] = lenv.StaticLibrary('libvirgo', sources)
 
