@@ -100,7 +100,7 @@ if not conf.CheckCC():
   print 'Unable to find a functioning compiler, tried %s' % (conf.env.get('CC'))
   Exit(-1)
 
-# TODO: consider '-fmudflap', '-fstack-check'
+
 for flag in ['-pedantic', '-std=gnu89', '-Wno-variadic-macros']:
   conf.env.AppendUnique(CCFLAGS=flag)
   if not conf.CheckCC():
@@ -120,6 +120,7 @@ options = {
     },
     'LINUX': {
       'CPPDEFINES': ['LINUX', '_XOPEN_SOURCE', '_BSD_SOURCE', '_REENTRANT'],
+      '_LIBFLAGS': '-Wl,--start-group ' + env['_LIBFLAGS'] + ' -Wl,--end-group',
     },
     'FREEBSD': {
       'CPPDEFINES': ['FREEBSD', '_REENTRANT'],
@@ -137,7 +138,7 @@ options = {
       'LIBS': 'gcov'
     },
     'RELEASE': {
-      'CCFLAGS': ['-Wall', '-O2'],
+      'CCFLAGS': ['-Wall', '-Os'],
       'CPPDEFINES': ['NODEBUG'],
     },
   },
@@ -154,7 +155,7 @@ for platform in [env['VIRGO_PLATFORM']]:
       variants.append({'PLATFORM': platform.upper(), 'PROFILE': profile.upper(), 'BUILD': build.upper()})
 
 append_types = ['CCFLAGS', 'CFLAGS', 'CPPDEFINES', 'LIBS']
-replace_types = ['CC']
+replace_types = ['CC', '_LIBFLAGS']
 cov_targets = []
 
 all_targets = {}
