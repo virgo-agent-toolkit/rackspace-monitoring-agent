@@ -187,6 +187,7 @@ for vari in variants:
 
   depsdir = pjoin(vdir, 'deps')
   depsheaders = []
+  depheaderpath = pjoin(vdir, 'deps-headers')
   depsproj = [('lua', 'liblua'),
               ('sigar', 'libsigar'),
               ('http-parser', 'libhttpparser')]
@@ -197,6 +198,7 @@ for vari in variants:
       depsheaders.extend(lib.get('headers', []))
 
   lenv = venv.Clone()
+  lenv.PrependUnique(CPPPATH=[depheaderpath])
   libvirgo = lenv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0)
   venv['libvirgo'] = libvirgo['static']
 
