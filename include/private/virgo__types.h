@@ -16,29 +16,14 @@
  */
 
 #include "virgo.h"
-#include "virgo__types.h"
-#include <stdlib.h>
 
-virgo_error_t*
-virgo_create(virgo_t **p_v)
-{
-  virgo_t *v = NULL;
+#ifndef _virgo__types_h_
+#define _virgo__types_h_
 
-  v = calloc(1, sizeof(virgo_t));
-  *p_v = v;
+struct virgo_t {
+  int dummy;
+};
 
-  return VIRGO_SUCCESS;
-}
 
-virgo_error_t*
-virgo_run(virgo_t *v)
-{
 
-  return VIRGO_SUCCESS;
-}
-
-void
-virgo_destroy(virgo_t *v)
-{
-  free((void*)v);
-}
+#endif /* _virgo_h_ */
