@@ -185,13 +185,16 @@ for vari in variants:
 
   venv.Export({'env': venv})
 
-  lua = venv.SConscript("deps/SConscript-lua.py", variant_dir=pjoin(vdir, 'deps', 'lua'), duplicate=0)
-  sigar = venv.SConscript("deps/SConscript-sigar.py", variant_dir=pjoin(vdir, 'deps', 'sigar'), duplicate=0)
-  httpp = venv.SConscript("deps/SConscript-http-parser.py", variant_dir=pjoin(vdir, 'deps', 'http_parser'), duplicate=0)
+  depsdir = pjoin(vdir, 'deps')
+  depsheaders = []
+  depsproj = [('lua', 'liblua'),
+              ('sigar', 'libsigar'),
+              ('http-parser', 'libhttpparser')]
 
-  venv['liblua'] = lua['static']
-  venv['libsigar'] = sigar['static']
-  venv['libhttpparser'] = httpp['static']
+  for x in depsproj:
+      lib = venv.SConscript("deps/SConscript-%s.py" % (x[0]), variant_dir=depsdir, duplicate=0)
+      venv[x[1]] = lib['static']
+      depsheaders.extend(lib.get('headers', []))
 
   lenv = venv.Clone()
   libvirgo = lenv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0)
