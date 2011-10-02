@@ -47,7 +47,7 @@ for cond in uvtarget['conditions']:
     elif (len(cond) >= 3):
         add_vars(lenv, cond[2])
 
-targets['static'] = lenv.StaticLibrary('libuvstatic', source = src)
+targets['static'] = lenv.StaticLibrary('libuvstatic', source = [x for x in src if not str(x).endswith('.h')])
 targets['libs'] = extralibs
 targets['cpppaths'] = ['#deps/uv/include']
 
