@@ -188,10 +188,10 @@ for vari in variants:
   lua = venv.SConscript("deps/SConscript-lua.py", variant_dir=pjoin(vdir, 'deps', 'lua'), duplicate=0)
   sigar = venv.SConscript("deps/SConscript-sigar.py", variant_dir=pjoin(vdir, 'deps', 'sigar'), duplicate=0)
 
-  venv['liblua'] = lua['lualib']
+  venv['liblua'] = lua['static']
   targets.append(venv['liblua'])
 
-  venv['libsigar'] = sigar['sigarlib']
+  venv['libsigar'] = sigar['static']
   targets.append(venv['libsigar'])
 
   lenv = venv.Clone()

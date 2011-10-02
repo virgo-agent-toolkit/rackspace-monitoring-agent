@@ -18,15 +18,13 @@ def transform_lua(e):
 luasrc = map(transform_lua, luasrc)
 
 lenv = env.Clone()
-if env["PLATFORM"] != "win32" and env["PLATFORM"] != "freebsd":
-  lenv.Append(CFLAGS=['-DLUA_USE_POPEN'], LIBS=['dl', 'pthread'])
-elif env["PLATFORM"] == "freebsd":
+if env["PLATFORM"] != "win32":
   lenv.Append(CFLAGS=['-DLUA_USE_POPEN'])
 
-targets['lualib'] = lenv.StaticLibrary('libvirgolua', source = luasrc)
+targets['static'] = lenv.StaticLibrary('libluastatic', source = luasrc)
 
 lenv = env.Clone()
-lenv.PrependUnique(LIBS=[targets['lualib']])
+lenv.PrependUnique(LIBS=[targets['static']])
 if env["PLATFORM"] != "win32" and env["PLATFORM"] != "freebsd":
   lenv.Append(LIBS=['dl', 'pthread'])
 targets['luac'] = lenv.Program('luac', source = ['lua/src/luac.c'])[0]
