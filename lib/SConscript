@@ -15,9 +15,11 @@
 #
 
 
-Import('venv')
+Import('env')
 
 from os.path import dirname
+
+targets = {}
 
 sources = Split("""
 virgo_error.c
@@ -26,12 +28,9 @@ virgo_init.c
 
 libvirgo = None
 
-lenv = venv.Clone()
+lenv = env.Clone()
 lenv.AppendUnique(CPPPATH=['#/include/private'])
 
-if lenv['VIRGO_LIB_TYPE'] == "STATIC":
-  libvirgo = lenv.StaticLibrary('libvirgo', sources)
-elif venv['VIRGO_LIB_TYPE'] == "SHARED":
-  libvirgo = lenv.SharedLibrary('libvirgo', sources)
+targets['static'] = lenv.StaticLibrary('libvirgo', sources)
 
-Return('libvirgo')
+Return('targets')

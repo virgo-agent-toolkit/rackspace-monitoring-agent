@@ -187,17 +187,16 @@ for vari in variants:
 
   lua = venv.SConscript("deps/SConscript-lua.py", variant_dir=pjoin(vdir, 'deps', 'lua'), duplicate=0)
   sigar = venv.SConscript("deps/SConscript-sigar.py", variant_dir=pjoin(vdir, 'deps', 'sigar'), duplicate=0)
+  httpp = venv.SConscript("deps/SConscript-http-parser.py", variant_dir=pjoin(vdir, 'deps', 'http_parser'), duplicate=0)
 
   venv['liblua'] = lua['static']
-  targets.append(venv['liblua'])
-
   venv['libsigar'] = sigar['static']
-  targets.append(venv['libsigar'])
+  venv['libhttpparser'] = httpp['static']
 
   lenv = venv.Clone()
-  lib = lenv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0, exports='venv')
-  targets.append(lib)
-  venv['libvirgo'] = lib[0]
+  libvirgo = lenv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0)
+  venv['libvirgo'] = libvirgo['static']
+
   if 0:
     tests = venv.SConscript('tests/SConscript', variant_dir=pjoin(vdir, 'tests'), duplicate=0, exports='venv')
     for t in tests[0]:
@@ -221,6 +220,11 @@ for vari in variants:
                'cat $VDIR/coverage.txt'])
     venv.AlwaysBuild(cov)
     cov_targets.append(cov)
+
+  venv['AGENT_LIBS'] =  [venv['libsigar'], venv['liblua'], venv['libvirgo'], venv['libhttpparser']]
+
+  targets.append(venv['AGENT_LIBS'])
+
   if 0:
     tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
     targets.append(tools)
