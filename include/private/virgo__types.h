@@ -18,6 +18,7 @@
 #include "virgo.h"
 #include "lua.h"
 
+
 #ifndef _virgo__types_h_
 #define _virgo__types_h_
 
