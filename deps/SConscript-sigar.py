@@ -60,5 +60,5 @@ subst = {'@SCM_REVISION@': 'c439f0e2b3edeb1bcad0802027ff17b1ce61230b',
 sigarver = env.SubstFile('sigar/src/sigar_version_autoconf.c.in', SUBST_DICT = subst)
 sigarsrc.append(sigarver)
 targets['static'] = lenv.StaticLibrary('sigarstatic', source=sigarsrc)
-
+targets['cpppaths'] = ['#deps/sigar/include']
 Return("targets")
