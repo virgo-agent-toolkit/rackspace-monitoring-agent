@@ -23,6 +23,15 @@ import os, sys, fnmatch
 from site_scons import ac
 from os.path import join as pjoin
 
+
+p = os.path.join(Dir('#').get_path(), 'site_scons')
+if p not in sys.path:
+  sys.path.insert(0, p)
+
+p = Dir('#').get_path()
+if p not in sys.path:
+  sys.path.insert(0, p)
+
 opts = Variables('build.py')
 
 opts.Add(PathVariable('with_openssl',
@@ -36,7 +45,7 @@ opts.Add(EnumVariable('build_type', 'build profile', 'static', available_build_t
 
 env = Environment(options=opts,
                   ENV = os.environ.copy(),
-                  tools=['default'])
+                  tools=['default', 'subst'])
 
 if 'coverage' in COMMAND_LINE_TARGETS:
   env['profile'] = 'gcov'
@@ -172,10 +181,23 @@ for vari in variants:
           print('Fix the SConsscript, its missing support for %s' % (key))
           Exit(1)
 
-  lib = venv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0, exports='venv')
+  venv['VDIR'] = vdir
+
+  venv.Export({'env': venv})
+
+  lua = venv.SConscript("deps/SConscript-lua", variant_dir=pjoin(vdir, 'deps', 'lua'), duplicate=0)
+  sigar = venv.SConscript("deps/SConscript-sigar", variant_dir=pjoin(vdir, 'deps', 'sigar'), duplicate=0)
+
+  venv['liblua'] = lua['lualib']
+  targets.append(venv['liblua'])
+
+  venv['libsigar'] = sigar['sigarlib']
+  targets.append(venv['libsigar'])
+
+  lenv = venv.Clone()
+  lib = lenv.SConscript('lib/SConscript', variant_dir=pjoin(vdir, 'lib'), duplicate=0, exports='venv')
   targets.append(lib)
   venv['libvirgo'] = lib[0]
-  venv['VDIR'] = vdir
   if 0:
     tests = venv.SConscript('tests/SConscript', variant_dir=pjoin(vdir, 'tests'), duplicate=0, exports='venv')
     for t in tests[0]:
