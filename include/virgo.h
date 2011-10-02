@@ -39,6 +39,30 @@ VIRGO_API(virgo_error_t*) virgo_create(virgo_t **ctxt);
  */
 VIRGO_API(void) virgo_destroy(virgo_t *ctxt);
 
+/**
+ * Runs the configured Virgo Context.  Only returns on fatal error, or
+ * when tricked into exiting for purposes of a test case.
+ */
+VIRGO_API(virgo_error_t*) virgo_run(virgo_t *v);
+
+/**
+ * Set a trusted CA certificate for Network operations
+ */
+VIRGO_API(virgo_error_t*) virgo_conf_trust_network_ca(virgo_t *v, const char *ca_cert);
+
+/**
+ * Set a trusted CA certificate for Code Valiation.  This should
+ * be different than the CA used for Network operations.
+ */
+VIRGO_API(virgo_error_t*) virgo_conf_trust_code_ca(virgo_t *v, const char *ca_cert);
+
+/**
+ * Add a server to the list of initial endpoints.  Virgo will use this 
+ * as its initial list, but will contact all added hostnames looking
+ * for endpoints in each region.
+ */
+VIRGO_API(virgo_error_t*) virgo_conf_add_endpoint(virgo_t *v, const char *endpoint_hostname, int port);
+
 
 #ifdef __cplusplus
 }
