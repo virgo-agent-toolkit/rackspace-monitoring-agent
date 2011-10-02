@@ -239,6 +239,7 @@ for vari in variants:
 
   lenv = venv.Clone()
   lenv.AppendUnique(LIBS=depslibs)
+  lenv.Export({'env': lenv})
   monitoring = lenv.SConscript("agents/SConscript-monitoring.py",
                                variant_dir=pjoin(vdir, 'agents', 'monitoring'),
                                duplicate=0)
