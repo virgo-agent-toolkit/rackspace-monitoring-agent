@@ -72,10 +72,14 @@ if os.environ.has_key('CC'):
 if os.environ.has_key('CXX'):
   conf.env['CXX'] = os.environ['CXX']
 
-(st, platform) = conf.CheckUname("-sm")
+if conf.env['PLATFORM'] == "win32":
+    conf.env['VIRGO_PLATFORM'] = "WINDOWS"
+    conf.env['VIRGO_ARCH'] = 'x86'
+else:
+    (st, platform) = conf.CheckUname("-sm")
 
-conf.env['VIRGO_PLATFORM'] = platform[:platform.find(' ')].upper()
-conf.env['VIRGO_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
+    conf.env['VIRGO_PLATFORM'] = platform[:platform.find(' ')].upper()
+    conf.env['VIRGO_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
 
 conf.env['WANT_OPENSSL'] = True
 
@@ -187,14 +191,17 @@ for vari in variants:
 
   depsdir = pjoin(vdir, 'deps')
   depscpppaths = []
+  depslibs = []
   depsproj = [('lua', 'liblua'),
               ('sigar', 'libsigar'),
-              ('http-parser', 'libhttpparser')]
+              ('http-parser', 'libhttpparser'),
+              ('uv', 'libuv')]
 
   for x in depsproj:
       lib = venv.SConscript("deps/SConscript-%s.py" % (x[0]), variant_dir=depsdir, duplicate=0)
       venv[x[1]] = lib['static']
       depscpppaths.extend(lib.get('cpppaths', []))
+      depslibs.extend(lib.get('libs', []))
 
   lenv = venv.Clone()
   lenv.PrependUnique(CPPPATH=depscpppaths)
@@ -227,9 +234,11 @@ for vari in variants:
     venv.AlwaysBuild(cov)
     cov_targets.append(cov)
 
-  venv['AGENT_LIBS'] =  [venv['libsigar'], venv['liblua'], venv['libvirgo'], venv['libhttpparser']]
+  venv['AGENT_LIBS'] =  [venv['libsigar'], venv['liblua'], venv['libvirgo'], venv['libhttpparser'], venv['libuv']]
 
-  monitoring = venv.SConscript("agents/SConscript-monitoring.py",
+  lenv = venv.Clone()
+  lenv.AppendUnique(LIBS=depslibs)
+  monitoring = lenv.SConscript("agents/SConscript-monitoring.py",
                                variant_dir=pjoin(vdir, 'agents', 'monitoring'),
                                duplicate=0)
 
