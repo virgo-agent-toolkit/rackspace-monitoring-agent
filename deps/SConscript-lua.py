@@ -24,6 +24,18 @@ if env["PLATFORM"] != "win32":
 
 targets['static'] = lenv.StaticLibrary('libluastatic', source = luasrc)
 
+headers = Split("""
+lua/src/lapi.h		lua/src/ldo.h		lua/src/lmem.h		lua/src/lstring.h	lua/src/lualib.h
+lua/src/lauxlib.h	lua/src/lfunc.h		lua/src/lobject.h	lua/src/ltable.h	lua/src/lundump.h
+lua/src/lcode.h		lua/src/lgc.h		lua/src/lopcodes.h	lua/src/ltm.h		lua/src/lvm.h
+lua/src/lctype.h	lua/src/llex.h		lua/src/lparser.h	lua/src/lua.h		lua/src/lzio.h
+lua/src/ldebug.h	lua/src/llimits.h	lua/src/lstate.h	lua/src/luaconf.h
+""")
+
+headers = [lenv.File(x) for x in headers]
+
+targets['headers'] = headers
+
 lenv = env.Clone()
 lenv.PrependUnique(LIBS=[targets['static']])
 if env["PLATFORM"] != "win32" and env["PLATFORM"] != "freebsd":
