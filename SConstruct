@@ -185,8 +185,8 @@ for vari in variants:
 
   venv.Export({'env': venv})
 
-  lua = venv.SConscript("deps/SConscript-lua", variant_dir=pjoin(vdir, 'deps', 'lua'), duplicate=0)
-  sigar = venv.SConscript("deps/SConscript-sigar", variant_dir=pjoin(vdir, 'deps', 'sigar'), duplicate=0)
+  lua = venv.SConscript("deps/SConscript-lua.py", variant_dir=pjoin(vdir, 'deps', 'lua'), duplicate=0)
+  sigar = venv.SConscript("deps/SConscript-sigar.py", variant_dir=pjoin(vdir, 'deps', 'sigar'), duplicate=0)
 
   venv['liblua'] = lua['lualib']
   targets.append(venv['liblua'])
