@@ -16,34 +16,11 @@
  */
 
 #include "virgo.h"
-#include "virgo__types.h"
-#include "virgo__lua.h"
-#include <stdlib.h>
 
-virgo_error_t*
-virgo_create(virgo_t **p_v)
-{
-  virgo_t *v = NULL;
+#ifndef _virgo__lua_h_
+#define _virgo__lua_h_
 
-  v = calloc(1, sizeof(virgo_t));
-  *p_v = v;
+virgo_error_t* virgo__lua_init(virgo_t *v);
+void virgo__lua_destroy(virgo_t *v);
 
-  return VIRGO_SUCCESS;
-}
-
-virgo_error_t*
-virgo_run(virgo_t *v)
-{
-  virgo_error_t* err;
-
-  err = virgo__lua_init(v);
-
-  return VIRGO_SUCCESS;
-}
-
-void
-virgo_destroy(virgo_t *v)
-{
-  virgo__lua_destroy(v);
-  free((void*)v);
-}
+#endif /* _virgo__lua_h_ */
