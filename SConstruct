@@ -112,13 +112,13 @@ env.AppendUnique(CPPPATH=['#/include'])
 options = {
   'PLATFORM': {
     'DARWIN': {
-      'CPPDEFINES': ['DARWIN'],
+      'CPPDEFINES': ['DARWIN', '_REENTRANT'],
     },
     'LINUX': {
-      'CPPDEFINES': ['LINUX', '_XOPEN_SOURCE', '_BSD_SOURCE'],
+      'CPPDEFINES': ['LINUX', '_XOPEN_SOURCE', '_BSD_SOURCE', '_REENTRANT'],
     },
     'FREEBSD': {
-      'CPPDEFINES': ['FREEBSD'],
+      'CPPDEFINES': ['FREEBSD', '_REENTRANT'],
     },
   },
   'PROFILE': {
@@ -223,11 +223,16 @@ for vari in variants:
 
   venv['AGENT_LIBS'] =  [venv['libsigar'], venv['liblua'], venv['libvirgo'], venv['libhttpparser']]
 
-  targets.append(venv['AGENT_LIBS'])
+  monitoring = venv.SConscript("agents/SConscript-monitoring.py",
+                               variant_dir=pjoin(vdir, 'agents', 'monitoring'),
+                               duplicate=0)
+
+  targets.append(monitoring['agent'])
 
   if 0:
     tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
     targets.append(tools)
+
 
   all_targets[variant] = targets
   all_test_targets[variant] = test_targets

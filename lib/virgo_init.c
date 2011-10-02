@@ -35,7 +35,7 @@ virgo_create(virgo_t **p_v)
 }
 
 
-void 
+void
 virgo_destroy(virgo_t *v)
 {
   free((void*)v);
