@@ -25,6 +25,7 @@ sources = Split("""
 virgo_error.c
 virgo_init.c
 virgo_lua.c
+virgo_lua_debugger.c
 """)
 
 libvirgo = None
