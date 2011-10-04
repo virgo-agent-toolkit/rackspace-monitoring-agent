@@ -10,7 +10,7 @@ luasrc = Split("""  lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o lgc.o llex.o l
                     lundump.o lvm.o lzio.o
 
                     lauxlib.o lbaselib.o ldblib.o liolib.o lmathlib.o loslib.o ltablib.o
-                    lstrlib.o loadlib.o linit.o
+                    lstrlib.o loadlib.o linit.o lcorolib.o lbitlib.o
 
                     lctype.o""")
 
