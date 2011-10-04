@@ -17,12 +17,22 @@
 
 #include "virgo.h"
 #include "virgo__types.h"
+#include "virgo__lua.h"
+
 #include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+
 
 virgo_error_t*
 virgo__lua_init(virgo_t *v)
 {
-  lua_State* L = NULL;
+  lua_State *L = luaL_newstate();
+
+  lua_pushlightuserdata(L, v);
+  lua_setfield(L, LUA_REGISTRYINDEX, "virgo.context");
+
+  luaL_openlibs(L);
 
   v->L = L;
 
@@ -36,4 +46,16 @@ virgo__lua_destroy(virgo_t *v)
     lua_close(v->L);
     v->L = NULL;
   }
+}
+
+virgo_t*
+virgo__lua_context(lua_State *L)
+{
+  virgo_t* v;
+
+  lua_getfield(L, LUA_REGISTRYINDEX, "virgo.context");
+  v = lua_touserdata(L, -1);
+  lua_pop(L, 1);
+
+  return v;
 }
