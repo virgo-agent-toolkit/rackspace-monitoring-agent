@@ -33,10 +33,10 @@ int uv_tcp_init(uv_loop_t* loop, uv_tcp_t* tcp) {
 }
 
 
-static int uv__tcp_bind(uv_tcp_t* tcp,
-                        int domain,
-                        struct sockaddr* addr,
-                        int addrsize) {
+static int uv__bind(uv_tcp_t* tcp,
+                    int domain,
+                    struct sockaddr* addr,
+                    int addrsize) {
   int saved_errno;
   int status;
 
@@ -76,29 +76,19 @@ out:
 }
 
 
-int uv_tcp_bind(uv_tcp_t* handle, struct sockaddr_in addr) {
-  if (handle->type != UV_TCP || addr.sin_family != AF_INET) {
-    uv__set_sys_error(handle->loop, EFAULT);
-    return -1;
-  }
-
-  return uv__tcp_bind(handle,
-                      AF_INET,
-                      (struct sockaddr*)&addr,
-                      sizeof(struct sockaddr_in));
+int uv__tcp_bind(uv_tcp_t* handle, struct sockaddr_in addr) {
+  return uv__bind(handle,
+                  AF_INET,
+                  (struct sockaddr*)&addr,
+                  sizeof(struct sockaddr_in));
 }
 
 
-int uv_tcp_bind6(uv_tcp_t* handle, struct sockaddr_in6 addr) {
-  if (handle->type != UV_TCP || addr.sin6_family != AF_INET6) {
-    uv__set_sys_error(handle->loop, EFAULT);
-    return -1;
-  }
-
-  return uv__tcp_bind(handle,
-                      AF_INET6,
-                      (struct sockaddr*)&addr,
-                      sizeof(struct sockaddr_in6));
+int uv__tcp_bind6(uv_tcp_t* handle, struct sockaddr_in6 addr) {
+  return uv__bind(handle,
+                  AF_INET6,
+                  (struct sockaddr*)&addr,
+                  sizeof(struct sockaddr_in6));
 }
 
 
@@ -216,20 +206,12 @@ int uv_tcp_listen(uv_tcp_t* tcp, int backlog, uv_connection_cb cb) {
 }
 
 
-int uv_tcp_connect(uv_connect_t* req,
+int uv__tcp_connect(uv_connect_t* req,
                    uv_tcp_t* handle,
                    struct sockaddr_in address,
                    uv_connect_cb cb) {
-  int saved_errno;
+  int saved_errno = errno;
   int status;
-
-  saved_errno = errno;
-  status = -1;
-
-  if (handle->type != UV_TCP || address.sin_family != AF_INET) {
-    uv__set_sys_error(handle->loop, EINVAL);
-    goto out;
-  }
 
   status = uv__connect(req,
                        (uv_stream_t*)handle,
@@ -237,26 +219,17 @@ int uv_tcp_connect(uv_connect_t* req,
                        sizeof address,
                        cb);
 
-out:
   errno = saved_errno;
   return status;
 }
 
 
-int uv_tcp_connect6(uv_connect_t* req,
+int uv__tcp_connect6(uv_connect_t* req,
                     uv_tcp_t* handle,
                     struct sockaddr_in6 address,
                     uv_connect_cb cb) {
-  int saved_errno;
+  int saved_errno = errno;
   int status;
-
-  saved_errno = errno;
-  status = -1;
-
-  if (handle->type != UV_TCP || address.sin6_family != AF_INET6) {
-    uv__set_sys_error(handle->loop, EINVAL);
-    goto out;
-  }
 
   status = uv__connect(req,
                        (uv_stream_t*)handle,
@@ -264,7 +237,85 @@ int uv_tcp_connect6(uv_connect_t* req,
                        sizeof address,
                        cb);
 
-out:
   errno = saved_errno;
   return status;
+}
+
+
+int uv__tcp_nodelay(uv_tcp_t* handle, int enable) {
+  if (setsockopt(handle->fd,
+                 IPPROTO_TCP,
+                 TCP_NODELAY,
+                 &enable,
+                 sizeof enable) == -1) {
+    uv__set_sys_error(handle->loop, errno);
+    return -1;
+  }
+  return 0;
+}
+
+
+int uv__tcp_keepalive(uv_tcp_t* handle, int enable, unsigned int delay) {
+  if (setsockopt(handle->fd,
+                 SOL_SOCKET,
+                 SO_KEEPALIVE,
+                 &enable,
+                 sizeof enable) == -1) {
+    uv__set_sys_error(handle->loop, errno);
+    return -1;
+  }
+
+#ifdef TCP_KEEPIDLE
+  if (enable && setsockopt(handle->fd,
+                           IPPROTO_TCP,
+                           TCP_KEEPIDLE,
+                           &delay,
+                           sizeof delay) == -1) {
+    uv__set_sys_error(handle->loop, errno);
+    return -1;
+  }
+#endif
+
+#ifdef TCP_KEEPALIVE
+  if (enable && setsockopt(handle->fd,
+                           IPPROTO_TCP,
+                           TCP_KEEPALIVE,
+                           &delay,
+                           sizeof delay) == -1) {
+    uv__set_sys_error(handle->loop, errno);
+    return -1;
+  }
+#endif
+
+  return 0;
+}
+
+
+int uv_tcp_nodelay(uv_tcp_t* handle, int enable) {
+  if (handle->fd != -1 && uv__tcp_nodelay(handle, enable))
+    return -1;
+
+  if (enable)
+    handle->flags |= UV_TCP_NODELAY;
+  else
+    handle->flags &= ~UV_TCP_NODELAY;
+
+  return 0;
+}
+
+
+int uv_tcp_keepalive(uv_tcp_t* handle, int enable, unsigned int delay) {
+  if (handle->fd != -1 && uv__tcp_keepalive(handle, enable, delay))
+    return -1;
+
+  if (enable)
+    handle->flags |= UV_TCP_KEEPALIVE;
+  else
+    handle->flags &= ~UV_TCP_KEEPALIVE;
+
+  /* TODO Store delay if handle->fd == -1 but don't want to enlarge
+   *       uv_tcp_t with an int that's almost never used...
+   */
+
+  return 0;
 }

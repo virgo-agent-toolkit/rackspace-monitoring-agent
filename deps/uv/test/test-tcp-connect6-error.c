@@ -19,57 +19,50 @@
  * IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <string.h>
-
 #include "uv.h"
-#include "../uv-common.h"
-#include "internal.h"
+#include "task.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 
-static uv_pipe_t* uv_make_pipe_for_std_handle(uv_loop_t* loop, HANDLE handle) {
-  uv_pipe_t* pipe = NULL;
+static int connect_cb_called = 0;
+static int close_cb_called = 0;
 
-  pipe = (uv_pipe_t*)malloc(sizeof(uv_pipe_t));
-  if (!pipe) {
-    uv_fatal_error(ERROR_OUTOFMEMORY, "malloc");
-  }
 
-  if (uv_pipe_init_with_handle(loop, pipe, handle)) {
-    free(pipe);
-    return NULL;
-  }
-
-  pipe->flags |= UV_HANDLE_UV_ALLOCED;
-  return pipe;
+static void connect_cb(uv_connect_t* handle, int status) {
+  ASSERT(handle != NULL);
+  connect_cb_called++;
 }
 
 
-uv_stream_t* uv_std_handle(uv_loop_t* loop, uv_std_type type) {
-  HANDLE handle;
+static void close_cb(uv_handle_t* handle) {
+  ASSERT(handle != NULL);
+  close_cb_called++;
+}
 
-  switch (type) {
-    case UV_STDIN:
-      handle = GetStdHandle(STD_INPUT_HANDLE);
-      if (handle == INVALID_HANDLE_VALUE) {
-        return NULL;
-      }
 
-      /* Assume only named pipes for now. */
-      return (uv_stream_t*)uv_make_pipe_for_std_handle(loop, handle);
-      break;
+TEST_IMPL(tcp_connect6_error_fault) {
+  char garbage[] = "blah blah blah blah blah blah blah blah blah blah blah blah";
+  struct sockaddr_in6* garbage_addr;
+  uv_tcp_t server;
+  int r;
+  uv_connect_t req;
 
-    case UV_STDOUT:
-      return NULL;
-      break;
+  garbage_addr = (struct sockaddr_in6*) &garbage;
 
-    case UV_STDERR:
-      return NULL;
-      break;
+  r = uv_tcp_init(uv_default_loop(), &server);
+  ASSERT(r == 0);
+  r = uv_tcp_connect6(&req, &server, *garbage_addr, connect_cb);
+  ASSERT(r == -1);
 
-    default:
-      assert(0);
-      uv__set_artificial_error(loop, UV_EINVAL);
-      return NULL;
-  }
+  ASSERT(uv_last_error(uv_default_loop()).code == UV_EINVAL);
+
+  uv_close((uv_handle_t*)&server, close_cb);
+
+  uv_run(uv_default_loop());
+
+  ASSERT(connect_cb_called == 0);
+  ASSERT(close_cb_called == 1);
+
+  return 0;
 }

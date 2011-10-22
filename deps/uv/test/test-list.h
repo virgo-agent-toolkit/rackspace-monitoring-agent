@@ -20,6 +20,8 @@
  */
 
 TEST_DECLARE   (tty)
+TEST_DECLARE   (stdio_over_pipes)
+TEST_DECLARE   (ipc)
 TEST_DECLARE   (tcp_ping_pong)
 TEST_DECLARE   (tcp_ping_pong_v6)
 TEST_DECLARE   (tcp_ref)
@@ -35,6 +37,7 @@ TEST_DECLARE   (tcp_bind_error_inval)
 TEST_DECLARE   (tcp_bind_localhost_ok)
 TEST_DECLARE   (tcp_listen_without_bind)
 TEST_DECLARE   (tcp_close)
+TEST_DECLARE   (tcp_flags)
 TEST_DECLARE   (tcp_write_error)
 TEST_DECLARE   (tcp_bind6_error_addrinuse)
 TEST_DECLARE   (tcp_bind6_error_addrnotavail)
@@ -42,6 +45,7 @@ TEST_DECLARE   (tcp_bind6_error_fault)
 TEST_DECLARE   (tcp_bind6_error_inval)
 TEST_DECLARE   (tcp_bind6_localhost_ok)
 TEST_DECLARE   (udp_send_and_recv)
+TEST_DECLARE   (udp_multicast_join)
 TEST_DECLARE   (udp_dgram_too_big)
 TEST_DECLARE   (udp_dual_stack)
 TEST_DECLARE   (udp_ipv6_only)
@@ -53,6 +57,7 @@ TEST_DECLARE   (connection_fail)
 TEST_DECLARE   (connection_fail_doesnt_auto_close)
 TEST_DECLARE   (shutdown_eof)
 TEST_DECLARE   (callback_stack)
+TEST_DECLARE   (error_message)
 TEST_DECLARE   (timer)
 TEST_DECLARE   (timer_ref)
 TEST_DECLARE   (timer_ref2)
@@ -61,12 +66,14 @@ TEST_DECLARE   (idle_starvation)
 TEST_DECLARE   (loop_handles)
 TEST_DECLARE   (ref)
 TEST_DECLARE   (idle_ref)
+TEST_DECLARE   (get_loadavg)
 TEST_DECLARE   (async_ref)
 TEST_DECLARE   (prepare_ref)
 TEST_DECLARE   (check_ref)
 TEST_DECLARE   (unref_in_prepare_cb)
 TEST_DECLARE   (async)
 TEST_DECLARE   (get_currentexe)
+TEST_DECLARE   (get_memory)
 TEST_DECLARE   (hrtime)
 TEST_DECLARE   (getaddrinfo_basic)
 TEST_DECLARE   (getaddrinfo_concurrent)
@@ -79,6 +86,7 @@ TEST_DECLARE   (spawn_exit_code)
 TEST_DECLARE   (spawn_stdout)
 TEST_DECLARE   (spawn_stdin)
 TEST_DECLARE   (spawn_and_kill)
+TEST_DECLARE   (spawn_and_ping)
 TEST_DECLARE   (fs_file_noent)
 TEST_DECLARE   (fs_file_async)
 TEST_DECLARE   (fs_file_sync)
@@ -95,6 +103,9 @@ TEST_DECLARE   (fs_stat_missing_path)
 TEST_DECLARE   (fs_event_watch_dir)
 TEST_DECLARE   (fs_event_watch_file)
 TEST_DECLARE   (fs_event_watch_file_current_dir)
+TEST_DECLARE   (fs_readdir_empty_dir)
+TEST_DECLARE   (fs_readdir_file)
+TEST_DECLARE   (fs_open_dir)
 TEST_DECLARE   (threadpool_queue_work_simple)
 #ifdef _WIN32
 TEST_DECLARE   (spawn_detect_pipe_name_collisions_on_windows)
@@ -108,6 +119,8 @@ HELPER_DECLARE (pipe_echo_server)
 
 TASK_LIST_START
   TEST_ENTRY  (tty)
+  TEST_ENTRY  (stdio_over_pipes)
+  TEST_ENTRY  (ipc)
 
 
   TEST_ENTRY  (tcp_ref)
@@ -137,6 +150,7 @@ TASK_LIST_START
   TEST_ENTRY  (tcp_bind_localhost_ok)
   TEST_ENTRY  (tcp_listen_without_bind)
   TEST_ENTRY  (tcp_close)
+  TEST_ENTRY  (tcp_flags)
   TEST_ENTRY  (tcp_write_error)
 
   TEST_ENTRY  (tcp_bind6_error_addrinuse)
@@ -149,6 +163,7 @@ TASK_LIST_START
   TEST_ENTRY  (udp_dgram_too_big)
   TEST_ENTRY  (udp_dual_stack)
   TEST_ENTRY  (udp_ipv6_only)
+  TEST_ENTRY  (udp_multicast_join)
 
   TEST_ENTRY  (pipe_bind_error_addrinuse)
   TEST_ENTRY  (pipe_bind_error_addrnotavail)
@@ -163,6 +178,8 @@ TASK_LIST_START
 
   TEST_ENTRY  (callback_stack)
   TEST_HELPER (callback_stack, tcp4_echo_server)
+
+  TEST_ENTRY  (error_message)
 
   TEST_ENTRY  (timer)
   TEST_ENTRY  (timer_ref)
@@ -185,6 +202,10 @@ TASK_LIST_START
 
   TEST_ENTRY  (get_currentexe)
 
+  TEST_ENTRY  (get_memory)
+
+  TEST_ENTRY  (get_loadavg)
+
   TEST_ENTRY  (hrtime)
 
   TEST_ENTRY  (getaddrinfo_basic)
@@ -200,6 +221,7 @@ TASK_LIST_START
   TEST_ENTRY  (spawn_stdout)
   TEST_ENTRY  (spawn_stdin)
   TEST_ENTRY  (spawn_and_kill)
+  TEST_ENTRY  (spawn_and_ping)
 #ifdef _WIN32
   TEST_ENTRY  (spawn_detect_pipe_name_collisions_on_windows)
   TEST_ENTRY  (argument_escaping)
@@ -221,7 +243,9 @@ TASK_LIST_START
   TEST_ENTRY  (fs_event_watch_dir)
   TEST_ENTRY  (fs_event_watch_file)
   TEST_ENTRY  (fs_event_watch_file_current_dir)
-
+  TEST_ENTRY  (fs_readdir_empty_dir)
+  TEST_ENTRY  (fs_readdir_file)
+  TEST_ENTRY  (fs_open_dir)
   TEST_ENTRY  (threadpool_queue_work_simple)
 
 #if 0

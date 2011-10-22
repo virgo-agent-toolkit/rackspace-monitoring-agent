@@ -1,4 +1,5 @@
 /* Copyright Joyent, Inc. and other Node contributors. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -19,62 +20,40 @@
  */
 
 #include "uv.h"
+#include "task.h"
 
-#include <assert.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <errno.h>
-#include <time.h>
-
-#undef NANOSEC
-#define NANOSEC 1000000000
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
-uint64_t uv_hrtime() {
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (ts.tv_sec * NANOSEC + ts.tv_nsec);
-}
+/*
+ * Synthetic errors (errors that originate from within libuv, not the system)
+ * should produce sensible error messages when run through uv_strerror().
+ *
+ * See https://github.com/joyent/libuv/issues/210
+ */
+TEST_IMPL(error_message) {
+  uv_err_t e;
 
-void uv_loadavg(double avg[3]) {
-  /* Unsupported as of cygwin 1.7.7 */
-  avg[0] = avg[1] = avg[2] = 0;
-}
+  /* Cop out. Can't do proper checks on systems with
+   * i18n-ized error messages...
+   */
+  e.code = 0, e.sys_errno_ = 0;
 
-
-int uv_exepath(char* buffer, size_t* size) {
-  uint32_t usize;
-  int result;
-  char* path;
-  char* fullpath;
-
-  if (!buffer || !size) {
-    return -1;
+  if (strcmp(uv_strerror(e), "Success") != 0) {
+    printf("i18n error messages detected, skipping test.\n");
+    return 0;
   }
 
-  *size = readlink("/proc/self/exe", buffer, *size - 1);
-  if (*size <= 0) return -1;
-  buffer[*size] = '\0';
+  e.code = UV_EINVAL, e.sys_errno_ = 0;
+  ASSERT(strstr(uv_strerror(e), "Success") == NULL);
+
+  e.code = UV_UNKNOWN, e.sys_errno_ = 0;
+  ASSERT(strcmp(uv_strerror(e), "Unknown error") == 0);
+
+  e.code = 1337, e.sys_errno_ = 0;
+  ASSERT(strcmp(uv_strerror(e), "Unknown error") == 0);
+
   return 0;
-}
-
-uint64_t uv_get_free_memory(void) {
-  return (uint64_t) sysconf(_SC_PAGESIZE) * sysconf(_SC_AVPHYS_PAGES);
-}
-
-uint64_t uv_get_total_memory(void) {
-  return (uint64_t) sysconf(_SC_PAGESIZE) * sysconf(_SC_PHYS_PAGES);
-}
-
-int uv_fs_event_init(uv_loop_t* loop,
-                     uv_fs_event_t* handle,
-                     const char* filename,
-                     uv_fs_event_cb cb) {
-  uv__set_sys_error(loop, ENOSYS);
-  return -1;
-}
-
-
-void uv__fs_event_destroy(uv_fs_event_t* handle) {
-  assert(0 && "implement me");
 }

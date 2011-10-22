@@ -19,11 +19,18 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef UV_LINUX_H
-#define UV_LINUX_H
+#include "uv.h"
+#include "task.h"
 
-#define UV_FS_EVENT_PRIVATE_FIELDS \
-  ev_io read_watcher; \
-  uv_fs_event_cb cb; \
+TEST_IMPL(get_memory) {
+  uint64_t free_mem = uv_get_free_memory();
+  uint64_t total_mem = uv_get_total_memory();
 
-#endif /* UV_LINUX_H */
+  printf("free_mem=%llu, total_mem=%llu\n", free_mem, total_mem);
+
+  ASSERT(free_mem > 0);
+  ASSERT(total_mem > 0);
+  ASSERT(total_mem > free_mem);
+
+  return 0;
+}

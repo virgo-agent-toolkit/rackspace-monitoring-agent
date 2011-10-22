@@ -1,4 +1,5 @@
 /* Copyright Joyent, Inc. and other Node contributors. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -19,62 +20,32 @@
  */
 
 #include "uv.h"
+#include "task.h"
 
-#include <assert.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <errno.h>
-#include <time.h>
-
-#undef NANOSEC
-#define NANOSEC 1000000000
+#include <stdio.h>
+#include <stdlib.h>
 
 
-uint64_t uv_hrtime() {
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (ts.tv_sec * NANOSEC + ts.tv_nsec);
-}
+TEST_IMPL(tcp_flags) {
+  uv_loop_t* loop;
+  uv_tcp_t handle;
+  int r;
 
-void uv_loadavg(double avg[3]) {
-  /* Unsupported as of cygwin 1.7.7 */
-  avg[0] = avg[1] = avg[2] = 0;
-}
+  loop = uv_default_loop();
 
+  r = uv_tcp_init(loop, &handle);
+  ASSERT(r == 0);
 
-int uv_exepath(char* buffer, size_t* size) {
-  uint32_t usize;
-  int result;
-  char* path;
-  char* fullpath;
+  r = uv_tcp_nodelay(&handle, 1);
+  ASSERT(r == 0);
 
-  if (!buffer || !size) {
-    return -1;
-  }
+  r = uv_tcp_keepalive(&handle, 1, 60);
+  ASSERT(r == 0);
 
-  *size = readlink("/proc/self/exe", buffer, *size - 1);
-  if (*size <= 0) return -1;
-  buffer[*size] = '\0';
+  uv_close((uv_handle_t*)&handle, NULL);
+
+  r = uv_run(loop);
+  ASSERT(r == 0);
+
   return 0;
-}
-
-uint64_t uv_get_free_memory(void) {
-  return (uint64_t) sysconf(_SC_PAGESIZE) * sysconf(_SC_AVPHYS_PAGES);
-}
-
-uint64_t uv_get_total_memory(void) {
-  return (uint64_t) sysconf(_SC_PAGESIZE) * sysconf(_SC_PHYS_PAGES);
-}
-
-int uv_fs_event_init(uv_loop_t* loop,
-                     uv_fs_event_t* handle,
-                     const char* filename,
-                     uv_fs_event_cb cb) {
-  uv__set_sys_error(loop, ENOSYS);
-  return -1;
-}
-
-
-void uv__fs_event_destroy(uv_fs_event_t* handle) {
-  assert(0 && "implement me");
 }
