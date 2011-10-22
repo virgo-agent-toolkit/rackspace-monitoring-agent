@@ -1,4 +1,17 @@
 {
+  'target_defaults': {
+    'conditions': [
+      ['OS != "win"', {
+        'defines': [
+          '_LARGEFILE_SOURCE',
+          '_FILE_OFFSET_BITS=64',
+          '_GNU_SOURCE',
+          'EIO_STACKSIZE=262144'
+        ],
+      }],
+    ],
+  },
+
   'targets': [
     {
       'target_name': 'uv',
@@ -117,7 +130,6 @@
             'src/win/pipe.c',
             'src/win/process.c',
             'src/win/req.c',
-            'src/win/stdio.c',
             'src/win/stream.c',
             'src/win/tcp.c',
             'src/win/tty.c',
@@ -172,12 +184,6 @@
             'src/unix/ev/event.h',
           ],
           'include_dirs': [ 'src/unix/ev', ],
-          'defines': [
-            '_LARGEFILE_SOURCE',
-            '_FILE_OFFSET_BITS=64',
-            '_GNU_SOURCE',
-            'EIO_STACKSIZE=262144'
-          ],
           'libraries': [ '-lm' ]
         }],
         [ 'OS=="mac"', {
@@ -216,6 +222,7 @@
           ],
           'direct_dependent_settings': {
             'libraries': [
+              '-lkstat',
               '-lsocket',
               '-lnsl',
             ],
@@ -229,6 +236,17 @@
             'EIO_CONFIG_H="config_freebsd.h"',
           ],
         }],
+        [ 'OS=="openbsd"', {
+          'include_dirs': [ 'src/ares/config_openbsd' ],
+          'sources': [ 'src/unix/openbsd.c' ],
+          'defines': [
+            'EV_CONFIG_H="config_openbsd.h"',
+            'EIO_CONFIG_H="config_openbsd.h"',
+          ],
+        }],
+        [ 'OS=="mac" or OS=="freebsd" or OS=="openbsd" or OS=="netbsd"', {
+          'sources': [ 'src/unix/kqueue.c' ],
+        }],
       ]
     },
 
@@ -237,12 +255,15 @@
       'type': 'executable',
       'dependencies': [ 'uv' ],
       'sources': [
+        'test/blackhole-server.c',
         'test/echo-server.c',
         'test/run-tests.c',
         'test/runner.c',
         'test/runner.h',
+        'test/test-get-loadavg.c',
         'test/task.h',
         'test/test-async.c',
+        'test/test-error.c',
         'test/test-callback-stack.c',
         'test/test-connection-fail.c',
         'test/test-delayed-accept.c',
@@ -250,11 +271,13 @@
         'test/test-fs.c',
         'test/test-fs-event.c',
         'test/test-get-currentexe.c',
+        'test/test-get-memory.c',
         'test/test-getaddrinfo.c',
         'test/test-gethostbyname.c',
         'test/test-getsockname.c',
         'test/test-hrtime.c',
         'test/test-idle.c',
+        'test/test-ipc.c',
         'test/test-list.h',
         'test/test-loop-handles.c',
         'test/test-pass-always.c',
@@ -263,9 +286,13 @@
         'test/test-ref.c',
         'test/test-shutdown-eof.c',
         'test/test-spawn.c',
+        'test/test-stdio-over-pipes.c',
         'test/test-tcp-bind-error.c',
         'test/test-tcp-bind6-error.c',
         'test/test-tcp-close.c',
+        'test/test-tcp-flags.c',
+        'test/test-tcp-connect-error.c',
+        'test/test-tcp-connect6-error.c',
         'test/test-tcp-write-error.c',
         'test/test-tcp-writealot.c',
         'test/test-threadpool.c',
@@ -275,6 +302,7 @@
         'test/test-udp-dgram-too-big.c',
         'test/test-udp-ipv6.c',
         'test/test-udp-send-and-recv.c',
+        'test/test-udp-multicast-join.c',
       ],
       'conditions': [
         [ 'OS=="win"', {
@@ -318,9 +346,11 @@
         'test/benchmark-pump.c',
         'test/benchmark-sizes.c',
         'test/benchmark-spawn.c',
+        'test/benchmark-tcp-write-batch.c',
         'test/benchmark-udp-packet-storm.c',
         'test/dns-server.c',
         'test/echo-server.c',
+        'test/blackhole-server.c',
         'test/run-benchmarks.c',
         'test/runner.c',
         'test/runner.h',

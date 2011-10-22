@@ -18,18 +18,16 @@
  * IN THE SOFTWARE.
  */
 
-#include "uv.h"
-
-#include <assert.h>
-#include <string.h>
-#include <errno.h>
-
-#include <sys/resource.h>
 #include <sys/types.h>
+#include <sys/param.h>
+#include <sys/resource.h>
+#include <sys/time.h>
 #include <sys/sysctl.h>
 
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
-#include <time.h>
 
 #undef NANOSEC
 #define NANOSEC 1000000000
@@ -54,32 +52,50 @@ void uv_loadavg(double avg[3]) {
 }
 
 int uv_exepath(char* buffer, size_t* size) {
-  uint32_t usize;
-  int result;
-  char* path;
-  char* fullpath;
   int mib[4];
-  size_t cb;
+  char **argsbuf = NULL;
+  char **argsbuf_tmp;
+  size_t argsbuf_size = 100U;
+  size_t exepath_size;
   pid_t mypid;
+  int status = -1;
 
   if (!buffer || !size) {
-    return -1;
+    goto out;
   }
-
   mypid = getpid();
-  mib[0] = CTL_KERN;
-  mib[1] = KERN_PROC_ARGS;
-  mib[2] = mypid;
-  mib[3] = KERN_PROC_ARGV;
-
-  cb = *size;
-  if (sysctl(mib, 4, buffer, &cb, NULL, 0) < 0) {
-    *size = 0;
-    return -1;
+  for (;;) {
+    if ((argsbuf_tmp = realloc(argsbuf, argsbuf_size)) == NULL) {
+      goto out;
+    }
+    argsbuf = argsbuf_tmp;
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROC_ARGS;
+    mib[2] = mypid;
+    mib[3] = KERN_PROC_ARGV;
+    if (sysctl(mib, 4, argsbuf, &argsbuf_size, NULL, 0) == 0) {
+      break;
+    }
+    if (errno != ENOMEM) {
+      goto out;
+    }
+    argsbuf_size *= 2U;
   }
-  *size = strlen(buffer);
+  if (argsbuf[0] == NULL) {
+    goto out;
+  }
+  exepath_size = strlen(argsbuf[0]);
+  if (exepath_size >= *size) {
+    goto out;
+  }
+  memcpy(buffer, argsbuf[0], exepath_size + 1U);
+  *size = exepath_size;
+  status = 0;
 
-  return 0;
+out:
+  free(argsbuf);
+
+  return status;
 }
 
 uint64_t uv_get_free_memory(void) {
@@ -91,17 +107,12 @@ uint64_t uv_get_free_memory(void) {
     return -1;
   }
 
-  return (uint64_t) info.free * psysconf(_SC_PAGESIZE);
+  return (uint64_t) info.free * sysconf(_SC_PAGESIZE);
 }
 
 uint64_t uv_get_total_memory(void) {
-#if defined(HW_PHYSMEM64)
   uint64_t info;
   int which[] = {CTL_HW, HW_PHYSMEM64};
-#else
-  unsigned int info;
-  int which[] = {CTL_HW, HW_PHYSMEM};
-#endif
   size_t size = sizeof(info);
 
   if (sysctl(which, 2, &info, &size, NULL, 0) < 0) {
