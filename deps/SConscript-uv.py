@@ -40,9 +40,17 @@ def add_vars(env, cvars):
     src.extend([pjoin('uv', x) for x in cvars.get('sources', [])])
     extralibs.extend(cvars.get('libraries', []))
 
-for cond in uvtarget['conditions']:
+conds = []
+
+conds.extend(gyp['target_defaults']['conditions'])
+conds.extend(uvtarget['conditions'])
+
+for cond in conds:
     match = cond[0]
     if match == thisos:
+        add_vars(lenv, cond[1])
+    # TODO: not very.. generic.
+    elif match == 'OS != "win"' and lenv['VIRGO_PLATFORM'] != 'WINDOWS':
         add_vars(lenv, cond[1])
     elif (len(cond) >= 3):
         add_vars(lenv, cond[2])
