@@ -244,7 +244,7 @@ for vari in variants:
                                variant_dir=pjoin(vdir, 'agents', 'monitoring'),
                                duplicate=0)
 
-  targets.append(monitoring['agent'])
+  targets.append(monitoring['app'])
 
   if 0:
     tools = venv.SConscript('tools/SConscript', variant_dir=pjoin(vdir, 'tools'), duplicate=0, exports='venv')
