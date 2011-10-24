@@ -58,9 +58,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "virgo_util.h"
-
-char scratchbuf_128k[128 * 1024];
+char scratchbuf[64 * 1024];
 
 static int retvalString(lua_State *L, const char *str)
 {
@@ -101,8 +99,8 @@ static int luahook_stackwalk(lua_State *L)
   // start at 1 to skip this function.
   for (i = 1; lua_getstack(L, i, &ldbg); i++)
   {
-    char *ptr = (char *) scratchbuf_128k;
-    size_t len = sizeof (scratchbuf_128k);
+    char *ptr = (char *) scratchbuf;
+    size_t len = sizeof (scratchbuf);
     int bw = snprintfcat(&ptr, &len, "#%d", i-1);
     const int maxspacing = 4;
     int spacing = maxspacing - bw;
@@ -112,7 +110,7 @@ static int luahook_stackwalk(lua_State *L)
     if (!lua_getinfo(L, "nSl", &ldbg))
     {
       snprintfcat(&ptr, &len, "???\n");
-      logDebug("%s", (const char *) scratchbuf_128k);
+      logDebug("%s", (const char *) scratchbuf);
       continue;
     } // if
     
@@ -131,9 +129,9 @@ static int luahook_stackwalk(lua_State *L)
         snprintfcat(&ptr, &len, "unidentifiable function");
     } // if
     
-    //logDebug("%0", (const char *) scratchbuf_128k);
-    ptr = (char *) scratchbuf_128k;
-    len = sizeof (scratchbuf_128k);
+    //logDebug("%0", (const char *) scratchbuf);
+    ptr = (char *) scratchbuf;
+    len = sizeof (scratchbuf);
     
     for (spacing = 0; spacing < maxspacing; spacing++)
       snprintfcat(&ptr, &len, " ");
@@ -151,7 +149,7 @@ static int luahook_stackwalk(lua_State *L)
         snprintfcat(&ptr, &len, ":%d", ldbg.currentline);
       snprintfcat(&ptr, &len, " %s()", ldbg.name);
     } // else
-    logDebug("%s", (const char *) scratchbuf_128k);
+    logDebug("%s", (const char *) scratchbuf);
   } // for
   
   return retvalString(L, errstr ? errstr : "");
@@ -271,11 +269,11 @@ static int luahook_debugger(lua_State *L)
   
   while (1)
   {
-    char *buf = (char *) scratchbuf_128k;
+    char *buf = (char *) scratchbuf;
     int len = 0;
     printf("> ");
     fflush(stdout);
-    if (fgets(buf, sizeof (scratchbuf_128k), stdin) == NULL)
+    if (fgets(buf, sizeof (scratchbuf), stdin) == NULL)
     {
       printf("\n\n  fgets() on stdin failed: ");
       break;
@@ -370,10 +368,10 @@ static int luahook_debugger(lua_State *L)
 } // luahook_debugger
 
 int
-luaopen_virgo_debugger(lua_State *L) 
+virgo__luaopen_virgo_debugger(lua_State *L)
 {
-  lua_register(L,"virgo_debugger", luahook_debugger);
-  lua_register(L,"virgo_stackwalk", luahook_stackwalk);
+  lua_register(L, "virgo_debugger", luahook_debugger);
+  lua_register(L, "virgo_stackwalk", luahook_stackwalk);
   return 0;
 }
 
