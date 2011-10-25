@@ -74,14 +74,24 @@ if os.environ.has_key('CXX'):
 
 if conf.env['PLATFORM'] == "win32":
     conf.env['VIRGO_PLATFORM'] = "WINDOWS"
+    # TODO: Use CHeckDecl for windows platform
     conf.env['VIRGO_ARCH'] = 'x86'
 else:
     (st, platform) = conf.CheckUname("-sm")
 
     conf.env['VIRGO_PLATFORM'] = platform[:platform.find(' ')].upper()
-    conf.env['VIRGO_ARCH'] = platform[platform.find(' ')+1:].replace(" ", "_")
 
-conf.env['WANT_OPENSSL'] = True
+    if conf.CheckDeclaration("__i386__"):
+        conf.env['VIRGO_ARCH'] = 'i386'
+
+    if conf.CheckDeclaration("__x86_64__"):
+        conf.env['VIRGO_ARCH'] = 'x64_64'
+
+    if not conf.env['VIRGO_ARCH']:
+        print 'Unable to detect virgo architecture!'
+        Exit(-1)
+
+conf.env['WANT_OPENSSL'] = False
 
 if conf.env['WANT_OPENSSL']:
   if conf.env.get('with_openssl'):
@@ -196,7 +206,8 @@ for vari in variants:
   depsproj = [('lua', 'liblua'),
               ('sigar', 'libsigar'),
               ('http-parser', 'libhttpparser'),
-              ('uv', 'libuv')]
+              ('uv', 'libuv'),
+              ('openssl', 'libsslstatic')]
 
   for x in depsproj:
       lib = venv.SConscript("deps/SConscript-%s.py" % (x[0]), variant_dir=depsdir, duplicate=0)
@@ -235,7 +246,7 @@ for vari in variants:
     venv.AlwaysBuild(cov)
     cov_targets.append(cov)
 
-  venv['AGENT_LIBS'] =  [venv['libsigar'], venv['liblua'], venv['libvirgo'], venv['libhttpparser'], venv['libuv']]
+  venv['AGENT_LIBS'] =  [venv['libsigar'], venv['liblua'], venv['libvirgo'], venv['libhttpparser'], venv['libuv'], venv['libsslstatic']]
 
   lenv = venv.Clone()
   lenv.AppendUnique(LIBS=depslibs)

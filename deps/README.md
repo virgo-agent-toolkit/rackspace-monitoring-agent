@@ -11,6 +11,11 @@
  * source: http://www.lua.org/work/
  * license: MIT
 
+## openssl - 1.0.0e
+
+ * source: http://www.openssl.org/
+ * license: messy
+
 ## sigar  - edf041dc7a84ba46a3f5a8b808370a884ee3f52b
 
  * source: https://github.com/hyperic/sigar.git
