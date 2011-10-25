@@ -519,7 +519,6 @@ openssl/crypto/sha/sha_one.c
 openssl/crypto/sparcv9cap.c
 openssl/crypto/stack/stack.c
 
-openssl/crypto/threads/th-lock.c
 openssl/crypto/ts/ts_asn1.c
 openssl/crypto/ts/ts_conf.c
 openssl/crypto/ts/ts_err.c
