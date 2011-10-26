@@ -453,6 +453,7 @@ openssl/crypto/pkcs12/p12_npas.c
 openssl/crypto/pkcs12/p12_p8d.c
 openssl/crypto/pkcs12/p12_p8e.c
 openssl/crypto/pkcs12/p12_utl.c
+openssl/crypto/pkcs12/pk12err.c
 
 openssl/crypto/pkcs7/bio_pk7.c
 openssl/crypto/pkcs7/pk7_asn1.c
@@ -462,6 +463,7 @@ openssl/crypto/pkcs7/pk7_doit.c
 openssl/crypto/pkcs7/pk7_lib.c
 openssl/crypto/pkcs7/pk7_mime.c
 openssl/crypto/pkcs7/pk7_smime.c
+openssl/crypto/pkcs7/pkcs7err.c
 
 openssl/crypto/pqueue/pqueue.c
 openssl/crypto/rand/md_rand.c
@@ -531,6 +533,12 @@ openssl/crypto/ts/ts_rsp_utils.c
 openssl/crypto/ts/ts_rsp_verify.c
 openssl/crypto/ts/ts_verify_ctx.c
 openssl/crypto/txt_db/txt_db.c
+
+openssl/crypto/ui/ui_err.c
+openssl/crypto/ui/ui_lib.c
+openssl/crypto/ui/ui_openssl.c
+openssl/crypto/ui/ui_util.c
+openssl/crypto/ui/ui_compat.c
 
 openssl/crypto/whrlpool/wp_block.c
 openssl/crypto/whrlpool/wp_dgst.c
@@ -664,10 +672,15 @@ include_path = ['openssl',
 flags = ['L_ENDIAN',
          'OPENSSL_THREADS',
          'PURIFY',
-         'TERMIO',
          '_REENTRANT',
          'OPENSSL_NO_ASM',
-         'OPENSSL_NO_INLINE_ASM']
+         'OPENSSL_NO_INLINE_ASM',
+         'OPENSSL_NO_RC2',
+         'OPENSSL_NO_MD4']
+
+if lenv['VIRGO_PLATFORM'] == "DARWIN":
+    # TODO: make more portable
+    flags.append('TERMIOS')
 
 lenv['CCFLAGS'] = [x for x in lenv['CCFLAGS'] if x not in ['-pedantic', '-std=gnu89']]
 
@@ -676,6 +689,6 @@ lenv.Append(CPPPATH=include_path)
 lenv.Append(CPPDEFINES=flags)
 
 targets['static'] = lenv.StaticLibrary('libsslstatic', source = sources)
-# targets['cpppaths'] = ['#deps/lua/src']
+targets['cpppaths'] = ['#deps/openssl/include']
 
 Return("targets")
