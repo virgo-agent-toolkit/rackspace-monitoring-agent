@@ -34,6 +34,9 @@ virgo__lua_init(virgo_t *v)
 
   luaL_openlibs(L);
 
+  virgo__lua_loader_init(L);
+  virgo__lua_debugger_init(L);
+
   v->L = L;
 
   return VIRGO_SUCCESS;
@@ -59,3 +62,4 @@ virgo__lua_context(lua_State *L)
 
   return v;
 }
+
