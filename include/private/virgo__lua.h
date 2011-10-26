@@ -25,6 +25,8 @@ void virgo__lua_destroy(virgo_t *v);
 
 virgo_t* virgo__lua_context(lua_State *L);
 
-int virgo__luaopen_virgo_debugger(lua_State *L);
+void virgo__lua_loader_init(lua_State *L);
+
+int virgo__lua_debugger_init(lua_State *L);
 
 #endif /* _virgo__lua_h_ */
