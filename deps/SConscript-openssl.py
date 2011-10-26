@@ -502,7 +502,6 @@ openssl/crypto/rsa/rsa_saos.c
 openssl/crypto/rsa/rsa_sign.c
 openssl/crypto/rsa/rsa_ssl.c
 openssl/crypto/rsa/rsa_x931.c
-openssl/crypto/s390xcap.c
 openssl/crypto/seed/seed.c
 openssl/crypto/seed/seed_cbc.c
 openssl/crypto/seed/seed_cfb.c
@@ -518,7 +517,6 @@ openssl/crypto/sha/sha512.c
 openssl/crypto/sha/sha512t.c
 openssl/crypto/sha/sha_dgst.c
 openssl/crypto/sha/sha_one.c
-openssl/crypto/sparcv9cap.c
 openssl/crypto/stack/stack.c
 
 openssl/crypto/ts/ts_asn1.c
