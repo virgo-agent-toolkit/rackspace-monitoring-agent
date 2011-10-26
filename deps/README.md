@@ -26,3 +26,8 @@
  * source: https://github.com/joyent/libuv.git
  * license: MIT
 
+## zlib - 1.2.5
+
+ * source: http://zlib.net/
+ * license: zlib license (BSDish)
+
