@@ -207,7 +207,8 @@ for vari in variants:
               ('sigar', 'libsigar'),
               ('http-parser', 'libhttpparser'),
               ('uv', 'libuv'),
-              ('openssl', 'libsslstatic')]
+              ('openssl', 'libsslstatic'),
+              ('zlib', 'libzlib')]
 
   for x in depsproj:
       lib = venv.SConscript("deps/SConscript-%s.py" % (x[0]), variant_dir=depsdir, duplicate=0)
@@ -246,7 +247,13 @@ for vari in variants:
     venv.AlwaysBuild(cov)
     cov_targets.append(cov)
 
-  venv['AGENT_LIBS'] =  [venv['libsigar'], venv['liblua'], venv['libvirgo'], venv['libhttpparser'], venv['libuv'], venv['libsslstatic']]
+  venv['AGENT_LIBS'] =  [venv['libsigar'],
+                         venv['liblua'],
+                         venv['libvirgo'],
+                         venv['libhttpparser'],
+                         venv['libuv'],
+                         venv['libsslstatic'],
+                         venv['libzlib']]
 
   lenv = venv.Clone()
   lenv.AppendUnique(LIBS=depslibs)
