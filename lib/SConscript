@@ -32,7 +32,8 @@ libvirgo = None
 
 lenv = env.Clone()
 lenv.AppendUnique(CPPPATH=['#/include/private'])
-lenv.AppendUnique(CPPFLAGS=['-Werror'])
+# Currently really hard to be pedantic and Werror, due to OpenSSL's use of long long :(
+#lenv.AppendUnique(CPPFLAGS=['-Werror'])
 
 targets['static'] = lenv.StaticLibrary('libvirgo', sources)
 
