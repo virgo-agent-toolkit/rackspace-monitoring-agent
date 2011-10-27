@@ -16,6 +16,11 @@
  * source: http://www.openssl.org/
  * license: messy
 
+## minizip - 1.1
+
+ * source: http://www.winimage.com/zLibDll/minizip.html
+ * license: zlib license (BSDish)
+
 ## sigar  - edf041dc7a84ba46a3f5a8b808370a884ee3f52b
 
  * source: https://github.com/hyperic/sigar.git
