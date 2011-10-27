@@ -24,6 +24,8 @@
 #include "lualib.h"
 #include "luaconf.h"
 
+#include "unzip.h"
+
 #include <stdlib.h>
 
 static int
@@ -41,14 +43,78 @@ virgo__lua_loader_checkload(lua_State *L, int stat, const char *filename) {
 }
 
 static int
+virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_len)
+{
+  struct unz_file_info_s finfo = {0};
+  unzFile zip = NULL;
+  char *buf;
+  size_t len;
+  int rv;
+  int rc = 0;
+  /* TODO: would be nice to have better error handling / messages from this method */
+
+  *p_buf = NULL;
+  *p_len = 0;
+
+  zip = unzOpen("/tmp/t.zip");
+
+  if (zip == NULL) {
+    rc = -1;
+    goto cleanup;
+  }
+
+  /* 1 means case sensitive file comparison */
+  rv = unzLocateFile(zip, name, 1);
+  if (rv != UNZ_OK) {
+    rc = -2;
+    goto cleanup;
+  }
+
+  rv = unzGetCurrentFileInfo(zip,
+                             &finfo,
+                             NULL, 0,
+                             NULL, 0,
+                             NULL, 0);
+  if (rv != UNZ_OK) {
+    rc = -3;
+    goto cleanup;
+  }
+
+  buf = malloc(finfo.uncompressed_size);
+  len = finfo.uncompressed_size;
+
+  rv = unzReadCurrentFile(zip, buf, len);
+  if (rv != len) {
+    free(buf);
+    rc = -4;
+    goto cleanup;
+  }
+
+  *p_buf = buf;
+  *p_len = len;
+
+cleanup:
+  if (zip) {
+    unzCloseCurrentFile(zip);
+    unzClose(zip);
+  }
+
+  return rc;
+}
+
+static int
 virgo__lua_loader_loadit(lua_State *L) {
   int status;
-  char *buf = "";
+  char *buf = NULL;
   size_t len = 0;
+  int rv;
   virgo_t* v = virgo__lua_context(L);
   const char *name = luaL_checkstring(L, 1);
 
-  /* TODO: find in minizip */
+  rv = virgo__lua_loader_zip2buf(v, name, &buf, &len);
+  if (rv != 0) {
+    return luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, name);
+  }
 
   status = luaL_loadbuffer(L, buf, len, name);
 

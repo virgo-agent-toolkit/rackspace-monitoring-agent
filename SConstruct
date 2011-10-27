@@ -208,6 +208,7 @@ for vari in variants:
               ('http-parser', 'libhttpparser'),
               ('uv', 'libuv'),
               ('openssl', 'libsslstatic'),
+              ('minizip', 'libminizip'),
               ('zlib', 'libzlib')]
 
   for x in depsproj:
@@ -253,6 +254,7 @@ for vari in variants:
                          venv['libhttpparser'],
                          venv['libuv'],
                          venv['libsslstatic'],
+                         venv['libminizip'],
                          venv['libzlib']]
 
   lenv = venv.Clone()
