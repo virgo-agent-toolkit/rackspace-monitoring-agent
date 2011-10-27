@@ -93,6 +93,10 @@ virgo_run(virgo_t *v)
 
   err = virgo__lua_init(v);
 
+  if (!err) {
+    err = virgo__lua_run(v);
+  }
+
   return VIRGO_SUCCESS;
 }
 
