@@ -57,11 +57,10 @@ VIRGO_API(virgo_error_t*) virgo_conf_trust_network_ca(virgo_t *v, const char *ca
 VIRGO_API(virgo_error_t*) virgo_conf_trust_code_ca(virgo_t *v, const char *ca_cert);
 
 /**
- * Add a server to the list of initial endpoints.  Virgo will use this 
- * as its initial list, but will contact all added hostnames looking
- * for endpoints in each region.
+ * Set path to a Zip file containing Lua files. init.lua inside the zip file
+ * will be ran first, and other files can be loaded via require.
  */
-VIRGO_API(virgo_error_t*) virgo_conf_add_endpoint(virgo_t *v, const char *endpoint_hostname, int port);
+VIRGO_API(virgo_error_t*) virgo_conf_lua_code(virgo_t *v, const char *path);
 
 
 #ifdef __cplusplus

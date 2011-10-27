@@ -56,7 +56,7 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_
   *p_buf = NULL;
   *p_len = 0;
 
-  zip = unzOpen("/tmp/t.zip");
+  zip = unzOpen(v->lua_load_path);
 
   if (zip == NULL) {
     rc = -1;

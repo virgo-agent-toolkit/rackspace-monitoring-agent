@@ -100,6 +100,10 @@ void
 virgo_destroy(virgo_t *v)
 {
   virgo__lua_destroy(v);
+
+  if (v->lua_load_path) {
+    free((void*)v->lua_load_path);
+  }
   free((void*)v);
 
   virgo__global_terminate();

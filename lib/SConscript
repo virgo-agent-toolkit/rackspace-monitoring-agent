@@ -22,13 +22,13 @@ from os.path import dirname
 targets = {}
 
 sources = Split("""
+virgo_conf.c
 virgo_error.c
 virgo_init.c
 virgo_lua.c
 virgo_lua_loader.c
 virgo_lua_debugger.c
 """)
-# virgo_lua_debugger.c
 
 libvirgo = None
 

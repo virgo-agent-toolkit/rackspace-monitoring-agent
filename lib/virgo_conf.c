@@ -16,17 +16,19 @@
  */
 
 #include "virgo.h"
-#include "lua.h"
+#include "virgo__types.h"
 
+#include <stdlib.h>
+#include <string.h>
 
-#ifndef _virgo__types_h_
-#define _virgo__types_h_
+virgo_error_t*
+virgo_conf_lua_load_path(virgo_t *v, const char *path)
+{
+  if (v->lua_load_path) {
+    free((void*)v->lua_load_path);
+  }
 
-struct virgo_t {
-  lua_State* L;
-  const char *lua_load_path;
-};
+  v->lua_load_path = strdup(path);
 
-
-
-#endif /* _virgo__types_h_ */
+  return VIRGO_SUCCESS;
+}
