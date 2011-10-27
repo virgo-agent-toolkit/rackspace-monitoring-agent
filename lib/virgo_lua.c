@@ -42,6 +42,28 @@ virgo__lua_init(virgo_t *v)
   return VIRGO_SUCCESS;
 }
 
+virgo_error_t*
+virgo__lua_run(virgo_t *v)
+{
+  int rv;
+  const char *lua_err;
+
+  rv = luaL_loadstring(v->L, "require('init'):run()");
+
+  if (rv != 0) {
+    lua_err = lua_tostring(v->L, -1);
+    return virgo_error_createf(VIRGO_EINVAL, "Load Buffer Error: %s", lua_err);
+  }
+
+  rv = lua_pcall(v->L, 0, 0, 0);
+  if (rv != 0) {
+    lua_err = lua_tostring(v->L, -1);
+    return virgo_error_createf(VIRGO_EINVAL, "Runtime error: %s", lua_err);
+  }
+
+  return VIRGO_SUCCESS;
+}
+
 void
 virgo__lua_destroy(virgo_t *v)
 {

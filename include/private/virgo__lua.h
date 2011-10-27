@@ -21,6 +21,7 @@
 #define _virgo__lua_h_
 
 virgo_error_t* virgo__lua_init(virgo_t *v);
+virgo_error_t* virgo__lua_run(virgo_t *v);
 void virgo__lua_destroy(virgo_t *v);
 
 virgo_t* virgo__lua_context(lua_State *L);
