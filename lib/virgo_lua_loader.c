@@ -27,6 +27,7 @@
 #include "unzip.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 static int
 virgo__lua_loader_checkload(lua_State *L, int stat, const char *filename) {
@@ -104,21 +105,28 @@ cleanup:
 
 static int
 virgo__lua_loader_loadit(lua_State *L) {
-  int status;
   char *buf = NULL;
   size_t len = 0;
   int rv;
   virgo_t* v = virgo__lua_context(L);
   const char *name = luaL_checkstring(L, 1);
+  size_t nlen = strlen(name) + strlen(".lua") + 1;
+  char *nstr = malloc(nlen);
+  nstr[0] = '\0';
+  strcat(nstr, name);
+  strcat(nstr, ".lua");
 
-  rv = virgo__lua_loader_zip2buf(v, name, &buf, &len);
+  rv = virgo__lua_loader_zip2buf(v, nstr, &buf, &len);
   if (rv != 0) {
-    return luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, name);
+    free(nstr);
+    return luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, nstr);
   }
 
-  status = luaL_loadbuffer(L, buf, len, name);
+  rv = luaL_loadbuffer(L, buf, len, nstr);
 
-  return virgo__lua_loader_checkload(L, status == LUA_OK, name);
+  free(nstr);
+
+  return virgo__lua_loader_checkload(L, rv == LUA_OK, name);
 }
 
 void
