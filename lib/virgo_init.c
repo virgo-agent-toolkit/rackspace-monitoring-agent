@@ -93,8 +93,15 @@ virgo_run(virgo_t *v)
 
   err = virgo__lua_init(v);
 
-  if (!err) {
-    err = virgo__lua_run(v);
+  if (err) {
+    return err;
+  }
+
+  /* TOOD: restart support */
+  err = virgo__lua_run(v);
+
+  if (err) {
+    return err;
   }
 
   return VIRGO_SUCCESS;
