@@ -112,9 +112,7 @@ virgo__lua_loader_loadit(lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   size_t nlen = strlen(name) + strlen(".lua") + 1;
   char *nstr = malloc(nlen);
-  nstr[0] = '\0';
-  strcat(nstr, name);
-  strcat(nstr, ".lua");
+  snprintf(nstr, nlen, "%s.lua", name);
 
   rv = virgo__lua_loader_zip2buf(v, nstr, &buf, &len);
   if (rv != 0) {
@@ -124,6 +122,7 @@ virgo__lua_loader_loadit(lua_State *L) {
 
   rv = luaL_loadbuffer(L, buf, len, nstr);
 
+  free(buf);
   free(nstr);
 
   return virgo__lua_loader_checkload(L, rv == LUA_OK, name);
