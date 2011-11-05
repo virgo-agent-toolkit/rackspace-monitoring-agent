@@ -7,4 +7,5 @@ out/*
 .sconf_temp
 config.log
 api-docs
+*.xcodeproj
 monitoring-agent
