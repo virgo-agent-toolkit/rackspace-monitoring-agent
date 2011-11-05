@@ -16,7 +16,7 @@ parser = optparse.OptionParser()
 parser.add_option("--debug",
     action="store_true",
     dest="debug",
-    help="Also build debug build")
+    help="Build debug build")
 
 parser.add_option("--prefix",
     action="store",
