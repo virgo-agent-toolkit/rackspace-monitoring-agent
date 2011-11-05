@@ -47,7 +47,8 @@ def transform_sigar(e):
 sigarsrc = map(transform_sigar, sigarsrc)
 sigarsrc.extend(lenv.Glob(pjoin(pjoin("sigar", "src","os", osname)+ "/*.c")))
 sigarsrc.extend(lenv.Glob(pjoin(pjoin("sigar", "src","os", osname)+ "/*.cpp")))
-subst = {'@SCM_REVISION@': 'c439f0e2b3edeb1bcad0802027ff17b1ce61230b',
+
+subst = {'@SCM_REVISION@': 'edf041dc7a84ba46a3f5a8b808370a884ee3f52b',
          '@PACKAGE_STRING@': 'cksigar',
          '@build@': 'release',
          '@build_os@': env['PLATFORM'],
