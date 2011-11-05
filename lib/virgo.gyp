@@ -10,6 +10,7 @@
         '../deps/minizip.gyp:libminizip',
         '../deps/openssl.gyp:openssl',
         '../deps/lua.gyp:lua',
+        '../deps/sigar.gyp:sigar',
       ],
 
       'sources': [
