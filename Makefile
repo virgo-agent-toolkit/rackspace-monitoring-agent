@@ -2,7 +2,7 @@ BUILDTYPE ?= Release
 
 all: out/Makefile
 	tools/gyp_virgo -f make
-	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE)
+	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE)
 	-ln -fs out/Release/monitoring-agent monitoring-agent
 
 out/Release/monitoring-agent: all

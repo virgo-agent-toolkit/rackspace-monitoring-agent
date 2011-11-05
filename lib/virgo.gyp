@@ -3,6 +3,14 @@
     {
       'target_name': 'virgolib',
       'type': 'static_library',
+      'dependencies': [
+        '../deps/http_parser/http_parser.gyp:http_parser',
+        '../deps/uv/uv.gyp:uv',
+        '../deps/zlib.gyp:zlib',
+        '../deps/minizip.gyp:libminizip',
+        '../deps/openssl.gyp:openssl',
+      ],
+
       'sources': [
         'virgo_conf.c',
         'virgo_error.c',
