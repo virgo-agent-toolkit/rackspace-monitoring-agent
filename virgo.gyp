@@ -1,6 +1,10 @@
 {
   'variables': {
     'target_arch': 'ia32',
+    # TODO: handle multiple agents somehow?
+    'library_files': [
+      'agents/monitoring/lua/init.lua',
+    ],
   },
 
   'targets': [
@@ -10,6 +14,7 @@
 
       'dependencies': [
         'lib/virgo.gyp:virgolib',
+        'monitoring.zip#host',
       ],
 
       'include_dirs': [
@@ -18,6 +23,8 @@
 
       'sources': [
         'agents/monitoring/monitoring.c',
+        # lib files to make for an even more pleasant IDE experience
+        '<@(library_files)',
         'common.gypi',
       ],
 
@@ -66,6 +73,30 @@
         },
       },
     },
+    {
+      'target_name': 'monitoring.zip',
+      'type': 'none',
+      'toolsets': ['host'],
+      'variables': {
+      },
+
+      'actions': [
+        {
+          'action_name': 'virgo_luazip',
+
+          'inputs': [
+            '<@(library_files)',
+          ],
+
+          'outputs': [
+            'monitoring.zip',
+          ],
+
+          'action': ['python', 'tools/lua2zip.py', '<@(_outputs)', '<@(_inputs)'],
+        },
+      ],
+    }, # end monitoring.zip
+
   ] # end targets
 }
 
