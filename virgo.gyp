@@ -89,7 +89,7 @@
           ],
 
           'outputs': [
-            'monitoring.zip',
+            '<(PRODUCT_DIR)/monitoring.zip',
           ],
 
           'action': ['python', 'tools/lua2zip.py', '<@(_outputs)', '<@(_inputs)'],
