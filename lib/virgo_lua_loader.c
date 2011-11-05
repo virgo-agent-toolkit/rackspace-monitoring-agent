@@ -46,7 +46,7 @@ virgo__lua_loader_checkload(lua_State *L, int stat, const char *filename) {
 static int
 virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_len)
 {
-  struct unz_file_info_s finfo = {0};
+  struct unz_file_info_s finfo;
   unzFile zip = NULL;
   char *buf;
   size_t len;
@@ -71,6 +71,8 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_
     goto cleanup;
   }
 
+  memset(&finfo, '0', sizeof(finfo));
+
   rv = unzGetCurrentFileInfo(zip,
                              &finfo,
                              NULL, 0,
@@ -85,7 +87,7 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_
   len = finfo.uncompressed_size;
 
   rv = unzReadCurrentFile(zip, buf, len);
-  if (rv != len) {
+  if (rv != (int)len) {
     free(buf);
     rc = -4;
     goto cleanup;
