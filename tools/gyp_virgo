@@ -43,6 +43,10 @@ if __name__ == '__main__':
 
   args.append('--depth=' + src_root)
 
+  if sys.platform == "darwin":
+    args.extend(['-f', 'make'])
+    args.extend(['-f', 'xcode'])
+
   # There's a bug with windows which doesn't allow this feature.
   if sys.platform != 'win32':
 
