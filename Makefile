@@ -1,14 +1,11 @@
 BUILDTYPE ?= Release
 
-all: out/Makefile
+all:
 	tools/gyp_virgo -f make
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE)
 	-ln -fs out/Release/monitoring-agent monitoring-agent
 
 out/Release/monitoring-agent: all
-
-out/Makefile: options.gypi virgo.gyp deps/uv/uv.gyp
-	tools/gyp_virgo -f make
 
 clean:
 	rm -rf out
