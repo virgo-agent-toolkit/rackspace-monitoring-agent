@@ -119,7 +119,8 @@
             'ldflags': [ '-m32' ],
           }],
           [ 'OS=="linux"', {
-            'cflags': [ '-ansi' ],
+            'cflags': [ ],
+            'ldflags': [ '-lm' ],
           }],
           [ 'visibility=="hidden"', {
             'cflags': [ '-fvisibility=hidden' ],
