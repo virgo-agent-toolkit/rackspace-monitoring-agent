@@ -1,4 +1,6 @@
+options.gypi
 build/*
+out/*
 .scons*
 *.o
 *.pyc
