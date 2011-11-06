@@ -11,7 +11,8 @@
         'OPENSSL_NO_ASM',
         'OPENSSL_NO_INLINE_ASM',
         'OPENSSL_NO_RC2',
-        'OPENSSL_NO_MD4'
+        'OPENSSL_NO_MD4',
+        'OPENSSL_NO_HW',
       ],
       'copts': [
         '-w',
