@@ -20,7 +20,7 @@ Building on Windows
 Install the following:
 
 * Windows .NET 4 Framework: http://www.microsoft.com/net/
-* Python 2.7: http://www.python.org/getit/releases/2.7/
+* Python 2.7: http://www.python.org/download/releases/2.7.2/
 * MSYS Git: http://code.google.com/p/msysgit/
 * Windows 7 SDK: https://www.microsoft.com/download/en/details.aspx?id=8279
 * VS 2010 C++ Express: http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
