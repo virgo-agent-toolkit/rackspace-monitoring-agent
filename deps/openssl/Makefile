@@ -12,9 +12,9 @@ SHLIB_VERSION_HISTORY=
 SHLIB_MAJOR=1
 SHLIB_MINOR=0.0
 SHLIB_EXT=
-PLATFORM=dist
-OPTIONS= no-gmp no-jpake no-krb5 no-md2 no-rc5 no-rfc3779 no-shared no-store no-zlib no-zlib-dynamic static-engine
-CONFIGURE_ARGS=dist
+PLATFORM=VC-WIN32
+OPTIONS= no-gmp no-jpake no-krb5 no-md2 no-rc5 no-rfc3779 no-shared no-store no-zlib no-zlib-dynamic
+CONFIGURE_ARGS=VC-WIN32
 SHLIB_TARGET=
 
 # HERE indicates where this Makefile lives.  This can be used to indicate
@@ -59,17 +59,17 @@ OPENSSLDIR=/usr/local/ssl
 # equal 4.
 # PKCS1_CHECK - pkcs1 tests.
 
-CC= cc
-CFLAG= -O
+CC= cl
+CFLAG= -DOPENSSL_THREADS  -DDSO_WIN32 -W3 -WX -Gs0 -GF -Gy -nologo -DOPENSSL_SYSNAME_WIN32 -DWIN32_LEAN_AND_MEAN -DL_ENDIAN -D_CRT_SECURE_NO_DEPRECATE -DOPENSSL_BN_ASM_PART_WORDS -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DMD5_ASM -DRMD160_ASM -DAES_ASM -DWHIRLPOOL_ASM
 DEPFLAG= -DOPENSSL_NO_GMP -DOPENSSL_NO_JPAKE -DOPENSSL_NO_MD2 -DOPENSSL_NO_RC5 -DOPENSSL_NO_RFC3779 -DOPENSSL_NO_STORE
 PEX_LIBS= 
 EX_LIBS= 
 EXE_EXT= 
 ARFLAGS= 
 AR= ar $(ARFLAGS) r
-RANLIB= /usr/bin/ranlib
+RANLIB= true
 NM= nm
-PERL= /usr/bin/perl
+PERL= /bin/perl
 TAR= tar
 TARFLAGS= --no-recursion
 MAKEDEPPROG=makedepend
@@ -88,20 +88,20 @@ ASFLAG=$(CFLAG)
 PROCESSOR= 
 
 # CPUID module collects small commonly used assembler snippets
-CPUID_OBJ= mem_clr.o
-BN_ASM= bn_asm.o
-DES_ENC= des_enc.o fcrypt_b.o
-AES_ENC= aes_core.o aes_cbc.o
-BF_ENC= bf_enc.o
-CAST_ENC= c_enc.o
-RC4_ENC= rc4_enc.o rc4_skey.o
-RC5_ENC= rc5_enc.o
-MD5_ASM_OBJ= 
-SHA1_ASM_OBJ= 
-RMD160_ASM_OBJ= 
-WP_ASM_OBJ= wp_block.o
-CMLL_ENC= camellia.o cmll_misc.o cmll_cbc.o
-PERLASM_SCHEME= 
+CPUID_OBJ= x86cpuid.o
+BN_ASM= bn-586.o co-586.o x86-mont.o
+DES_ENC= des-586.o crypt586.o
+AES_ENC= aes-586.o
+BF_ENC= bf-586.o
+CAST_ENC= cast-586.o
+RC4_ENC= rc4-586.o
+RC5_ENC= rc5-586.o
+MD5_ASM_OBJ= md5-586.o
+SHA1_ASM_OBJ= sha1-586.o sha256-586.o sha512-586.o
+RMD160_ASM_OBJ= rmd-586.o
+WP_ASM_OBJ= wp_block.o wp-mmx.o
+CMLL_ENC= cmll-x86.o
+PERLASM_SCHEME= win32n
 
 # KRB5 stuff
 KRB5_INCLUDES=
