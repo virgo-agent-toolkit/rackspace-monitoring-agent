@@ -1,7 +1,6 @@
 BUILDTYPE ?= Release
 
 all:
-	tools/gyp_virgo -f make
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE)
 	-ln -fs out/Release/monitoring-agent monitoring-agent
 

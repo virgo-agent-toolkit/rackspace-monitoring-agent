@@ -104,6 +104,19 @@ json.dump(output, f, indent=2, skipkeys=True)
 f.write("\n")
 f.close()
 
+print "Generating build system with GYP..."
+
+if sys.platform == "win32":
+    os.system("python tools\gyp_virgo -f msvs -G msvs_version=2010")
+else:
+    os.system("tools/gyp_virgo")
+
 print ""
-print "Now run `make` to build!"
+print "Done!"
 print ""
+if sys.platform == "win32":
+    print "Now run `python build.py` to build!"
+else:
+    print "Now run `make` to build!"
+print ""
+

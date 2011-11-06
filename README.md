@@ -8,8 +8,28 @@ License
 virgo is distributed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 
-Building
+Building on a Unix-like Operating System
 ====================
 
-    $ scons
+    ./configure
+    make
 
+Building on Windows
+====================
+
+Install the following:
+
+* Python 2.7: http://www.python.org/getit/releases/2.7/
+* MSYS Git: http://code.google.com/p/msysgit/
+* VS 2010 C++ Express: http://www.microsoft.com/visualstudio/en-us/products/2010-editions/visual-cpp-express
+* VS 2010 SP1: https://www.microsoft.com/download/en/details.aspx?id=23691
+* Windows 7 SDK: https://www.microsoft.com/download/en/details.aspx?id=8279
+
+Once the dependencies are installed:
+
+    python configure
+    python build.py
+
+Then open `out/monitoring-agent.sln`.
+
+See also: http://www.chromium.org/developers/how-tos/build-instructions-windows
