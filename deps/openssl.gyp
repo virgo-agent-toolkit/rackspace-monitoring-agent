@@ -35,10 +35,13 @@
       ],
       'include_dirs': [
         'openssl',
+        # openssl uses symlinks to generate its include directory,
+        # so in configure we realize it to this path.
+        'openssl-configs/realized',
+        'openssl/include',
         'openssl/crypto',
         'openssl/crypto/asn1',
         'openssl/crypto/evp',
-        'openssl/include',
         'openssl-configs',
         'openssl-configs/<(OS)-<(target_arch)',
         'openssl-configs/<(OS)',
@@ -46,9 +49,8 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
+          'openssl-configs/realized',
           'openssl/include',
-          'openssl-configs',
-          'openssl-configs/<(target_arch)',
         ],
       },
       'sources': [
