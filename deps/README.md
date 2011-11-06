@@ -6,7 +6,7 @@
  * source: https://github.com/joyent/http-parser.git
  * license: MIT
 
-## lua - 5.2.0-beta
+## lua - 5.1.4-4
 
  * source: http://www.lua.org/work/
  * license: MIT
