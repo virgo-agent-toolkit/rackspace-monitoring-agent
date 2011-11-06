@@ -29,8 +29,11 @@ Install the following:
 Once the dependencies are installed:
 
     python configure
-    python build.py
 
-Then open `out/monitoring-agent.sln`.
+Now you can open `monitoring-agent.sln` from Visual Studio.
+
+If you wish to compile from the command line, run:
+
+    python tools/win_build.py
 
 See also: http://www.chromium.org/developers/how-tos/build-instructions-windows
