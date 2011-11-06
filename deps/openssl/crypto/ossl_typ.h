@@ -98,7 +98,7 @@ typedef int ASN1_NULL;
 typedef struct asn1_pctx_st ASN1_PCTX;
 
 #ifdef OPENSSL_SYS_WIN32
-#include <WinCrypt.h>
+#include <winsock.h>
 #undef X509_NAME
 #undef X509_EXTENSIONS
 #undef X509_CERT_PAIR
