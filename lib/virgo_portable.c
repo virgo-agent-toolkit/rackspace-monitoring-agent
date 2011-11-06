@@ -20,6 +20,9 @@
 
 #ifdef VIRGO_WANT_ASPRINTF
 
+#include <stdio.h>
+#include <stdarg.h>
+
 int virgo_vasprintf(char **outstr, const char *fmt, va_list args)
 {
   size_t sz;
