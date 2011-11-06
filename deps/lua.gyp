@@ -30,6 +30,7 @@
         'lua/src/llex.c',
         'lua/src/lmathlib.c',
         'lua/src/lmem.c',
+        'lua/src/loadlib.c',
         'lua/src/lobject.c',
         'lua/src/lopcodes.c',
         'lua/src/loslib.c',
