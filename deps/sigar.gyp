@@ -40,16 +40,20 @@
           ],
         }],
         ['OS=="mac" or OS=="freebsd"', {
-          'defines': [
-            # TODO: test on freebsd
-            'DARWIN',
-          ],
           'include_dirs': [
             'sigar/src/os/darwin',
-            '/Developer/Headers/FlatCarbon/',
           ],
           'sources': [
             'sigar/src/os/darwin/darwin_sigar.c',
+          ],
+        }],
+        ['OS=="mac", {
+          'include_dirs': [
+            '/Developer/Headers/FlatCarbon/',
+          ],
+          'defines': [
+            # TODO: test on freebsd
+            'DARWIN',
           ],
         }],
         ['OS=="solaris"', {
