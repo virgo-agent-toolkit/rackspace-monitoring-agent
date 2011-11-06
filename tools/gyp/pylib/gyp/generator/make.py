@@ -2702,8 +2702,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
         'extra_commands': SHARED_HEADER_SUN_COMMANDS,
     })
   elif flavor == 'freebsd':
+    flock_command = 'lockf'
     header_params.update({
-        'flock': 'lockf',
+        'flock': flock_command,
     })
   header_params.update(RunSystemTests(flavor))
 
