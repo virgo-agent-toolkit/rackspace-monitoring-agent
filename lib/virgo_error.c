@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "virgo_error.h"
+#include "virgo_portable.h"
 
 virgo_error_t*
 virgo_error_create_impl(virgo_status_t err,
