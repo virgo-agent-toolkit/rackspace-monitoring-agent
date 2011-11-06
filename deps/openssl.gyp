@@ -392,7 +392,6 @@
         'openssl/crypto/krb5/krb5_asn.c',
         'openssl/crypto/lhash/lh_stats.c',
         'openssl/crypto/lhash/lhash.c',
-        'openssl/crypto/md5/md5.c',
         'openssl/crypto/md5/md5_dgst.c',
         'openssl/crypto/md5/md5_one.c',
         'openssl/crypto/mem.c',
