@@ -137,7 +137,9 @@
       }],
       ['OS=="mac"', {
         'defines': [
-          '_POSIX_C_SOURCE',
+          'DARWIN',
+          'DARWIN_10',
+          '_REENTRANT',
         ],
         'xcode_settings': {
           'ALWAYS_SEARCH_USER_PATHS': 'NO',
