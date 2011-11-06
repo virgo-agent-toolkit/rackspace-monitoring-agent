@@ -16,6 +16,7 @@
  */
 
 #include "virgo_visibility.h"
+#include "virgo_portable.h"
 #include "virgo_error.h"
 
 #ifndef _virgo_h_
