@@ -135,6 +135,8 @@ virgo__lua_loader_init(lua_State *L)
 {
   int top;
 
+  /* Lua 5.2 changed package.loaders -> package.searchers */
+#if LUA_VERSION_NUM >= 502
   top = lua_gettop(L);
   lua_getglobal(L, "package");
 
@@ -152,5 +154,25 @@ virgo__lua_loader_init(lua_State *L)
   lua_pushnumber(L, lua_rawlen(L, -1) + 1);
   lua_pushcfunction(L, virgo__lua_loader_loadit);
   lua_settable(L, -3);
+
+#else
+  top = lua_gettop(L);
+  lua_getglobal(L, "package");
+
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    abort();
+  }
+
+  lua_pushliteral(L, "loaders");
+  lua_gettable(L, -2);
+
+  if(lua_type(L, -1) != LUA_TTABLE) {
+    abort();
+  }
+
+  lua_pushnumber(L, lua_objlen(L, -1) + 1);
+  lua_pushcfunction(L, virgo__lua_loader_loadit);
+  lua_settable(L, -3);
+#endif
 }
 
