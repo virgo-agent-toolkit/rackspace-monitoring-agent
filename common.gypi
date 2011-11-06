@@ -136,6 +136,9 @@
         ],
       }],
       ['OS=="mac"', {
+        'defines': [
+          '_POSIX_C_SOURCE',
+        ],
         'xcode_settings': {
           'ALWAYS_SEARCH_USER_PATHS': 'NO',
           'GCC_CW_ASM_SYNTAX': 'NO',                # No -fasm-blocks
