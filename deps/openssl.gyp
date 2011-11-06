@@ -587,7 +587,6 @@
         'openssl/crypto/x509v3/v3_sxnet.c',
         'openssl/crypto/x509v3/v3_utl.c',
         'openssl/crypto/x509v3/v3err.c',
-        'openssl/crypto/x509v3/v3prin.c',
         'openssl/ssl/bio_ssl.c',
         'openssl/ssl/d1_both.c',
         'openssl/ssl/d1_clnt.c',
