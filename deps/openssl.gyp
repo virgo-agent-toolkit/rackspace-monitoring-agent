@@ -13,6 +13,7 @@
         'OPENSSL_NO_RC2',
         'OPENSSL_NO_MD4',
         'OPENSSL_NO_HW',
+        'OPENSSL_NO_GOST',
       ],
       'copts': [
         '-w',
