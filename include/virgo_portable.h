@@ -33,6 +33,12 @@ extern "C" {
 #define asprintf virgo_asprintf
 #endif
 
+
+#ifdef VIRGO_WANT_ASPRINTF
+int virgo_vasprintf(char **outstr, const char *fmt, va_list args);
+int virgo_asprintf(char **outstr, const char *fmt, ...);
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
