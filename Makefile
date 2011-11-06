@@ -1,10 +1,13 @@
 BUILDTYPE ?= Release
 
-all:
+all: out/Makefile
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE)
 	-ln -fs out/Release/monitoring-agent monitoring-agent
 
 out/Release/monitoring-agent: all
+
+out/Makefile:
+	./configure
 
 clean:
 	rm -rf out
