@@ -8,8 +8,14 @@
 
 ## lua - 5.1.4-4
 
- * source: http://www.lua.org/work/
+ * source: http://www.lua.org/
  * license: MIT
+
+## luvit - (racker fork)
+
+  * source: https://github.com/creationix/luvit/
+  * source: https://github.com/racker/luvit/tree/updates-for-libuv
+  * license: MIT
 
 ## openssl - 1.0.0e
 
