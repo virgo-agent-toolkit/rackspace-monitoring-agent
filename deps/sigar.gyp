@@ -47,7 +47,7 @@
             'sigar/src/os/darwin/darwin_sigar.c',
           ],
         }],
-        ['OS=="mac", {
+        ['OS=="mac"', {
           'include_dirs': [
             '/Developer/Headers/FlatCarbon/',
           ],
