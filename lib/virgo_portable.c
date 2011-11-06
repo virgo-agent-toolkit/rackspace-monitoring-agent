@@ -15,26 +15,38 @@
  *
  */
 
-/**
- * @file virgo_portable.h
- */
+#include "virgo.h"
+#include "virgo_portable.h"
 
-#ifndef _virgo_portable_h_
-#define _virgo_portable_h_
+#ifdef VIRGO_WANT_ASPRINTF
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+int virgo_vasprintf(char **outstr, const char *fmt, va_list args)
+{
+  size_t sz;
+  sz = vsnprintf(NULL, 0, fmt, args);
 
-#if _MSC_VER
-#define snprintf _snprintf
-#define VIRGO_WANT_ASPRINTF
-#define vasprintf virgo_vasprintf
-#define asprintf virgo_asprintf
-#endif
+  if (sz < 0) {
+    return sz;
+  }
 
-#ifdef __cplusplus
+  *outstr = malloc(sz + 1);
+  if (*outstr == NULL) {
+    return -1;
+  }
+
+  return vsnprintf(*outstr, sz + 1, fmt, args);
 }
-#endif /* __cplusplus */
+
+int virgo_asprintf(char **outstr, const char *fmt, ...)
+{
+  int rv;
+  va_list args;
+
+  va_start(args, fmt);
+  rv = virgo_vasprintf(outstr, fmt, args);
+  va_end(args);
+
+  return rv;
+}
 
 #endif
