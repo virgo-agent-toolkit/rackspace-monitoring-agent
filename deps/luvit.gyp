@@ -37,6 +37,9 @@
 
       'include_dirs': [
           'luvit/src',
+          # uv_inet_ntop is not provided by libuv,
+          # but instead is a macro to a c-ares function
+          'uv/src/ares',
       ],
 
       'direct_dependent_settings': {
