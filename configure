@@ -121,7 +121,8 @@ def render_openssl_symlinks(src, dest):
             d = f.read().strip()
             srcf = os.path.abspath(os.path.join(src, d))
             destf = os.path.join(dest, os.path.basename(srcf))
-            shutil.copy(srcf, destf)
+            # use copy2, so we preserve mtimes, reducing rebuilds
+            shutil.copy2(srcf, destf)
 
 if sys.platform == "win32":
     render_openssl_symlinks('deps/openssl/include/openssl', 'deps/openssl-configs/realized/openssl')
