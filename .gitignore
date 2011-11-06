@@ -10,3 +10,5 @@ api-docs
 *.xcodeproj
 monitoring-agent
 .DS_Store
+*.sln
+*.vcproj*
