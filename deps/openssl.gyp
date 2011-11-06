@@ -5,7 +5,7 @@
       'type': 'static_library',
       'conditions': [
         ['OS=="win"', {
-          'defines': ['OPENSSL_SYS_WIN32', 'OPENSSL_SYSNAME_WIN32'],
+          'defines': ['OPENSSL_SYSNAME_WIN32'],
         }],
       ],
       'defines': [
