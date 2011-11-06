@@ -19,7 +19,7 @@ Building on Windows
 
 Install the following:
 
-* Windows .NET 4 Framework: http://www.microsoft.com/net/
+* Windows .NET 4 Framework (Full Framework, not client): http://www.microsoft.com/download/en/details.aspx?displaylang=en&id=17851
 * Python 2.7: http://www.python.org/download/releases/2.7.2/
 * MSYS Git: http://code.google.com/p/msysgit/
 * Windows 7 SDK: https://www.microsoft.com/download/en/details.aspx?id=8279
