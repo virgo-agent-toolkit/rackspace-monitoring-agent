@@ -125,7 +125,9 @@
             'ldflags': [ '-m32' ],
           }],
           [ 'OS=="linux"', {
-            'cflags': [ ],
+            'ldflags': [ '-lm' ],
+          }],
+          [ 'OS=="freebsd"', {
             'ldflags': [ '-lm' ],
           }],
           [ 'visibility=="hidden"', {
