@@ -27,6 +27,9 @@
         'OPENSSL_NO_IDEA',
         'OPENSSL_NO_MDC2',
         'OPENSSL_NO_MD2',
+        # We use BIOs to wrap our sockets ourselves,
+        # but we never use the native BIO socket code directly.
+        'OPENSSL_NO_SOCK',
       ],
       'copts': [
         '-w',
