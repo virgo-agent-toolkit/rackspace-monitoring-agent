@@ -27,6 +27,8 @@
         'openssl/crypto/evp',
         'openssl/include',
         'openssl-configs',
+        'openssl-configs/<(OS)-<(target_arch)',
+        'openssl-configs/<(OS)',
         'openssl-configs/<(target_arch)',
       ],
       'direct_dependent_settings': {
