@@ -16,9 +16,18 @@
  */
 
 #include "virgo.h"
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+#include "luaconf.h"
 
 #ifndef _virgo__lua_h_
 #define _virgo__lua_h_
+
+#ifndef LUA_OK
+/* Added in Lua 5.2, not in 5.1 */
+#define LUA_OK (0)
+#endif
 
 virgo_error_t* virgo__lua_init(virgo_t *v);
 virgo_error_t* virgo__lua_run(virgo_t *v);
