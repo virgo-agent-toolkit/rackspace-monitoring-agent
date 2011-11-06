@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <malloc.h>
 
 int virgo_vasprintf(char **outstr, const char *fmt, va_list args)
 {
