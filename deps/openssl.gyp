@@ -331,7 +331,6 @@
         'openssl/crypto/evp/e_old.c',
         'openssl/crypto/evp/e_rc2.c',
         'openssl/crypto/evp/e_rc4.c',
-        'openssl/crypto/evp/e_rc5.c',
         'openssl/crypto/evp/e_seed.c',
         'openssl/crypto/evp/e_xcbc_d.c',
         'openssl/crypto/evp/encode.c',
