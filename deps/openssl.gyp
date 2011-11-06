@@ -3,6 +3,11 @@
     {
       'target_name': 'openssl',
       'type': 'static_library',
+      'conditions': [
+        ['OS=="win"', {
+          'defines': ['OPENSSL_SYS_WIN32', 'OPENSSL_SYSNAME_WIN32'],
+        }],
+      ],
       'defines': [
         'L_ENDIAN',
         'OPENSSL_THREADS',
@@ -14,6 +19,13 @@
         'OPENSSL_NO_MD4',
         'OPENSSL_NO_HW',
         'OPENSSL_NO_GOST',
+        'OPENSSL_NO_CAMELLIA',
+        'OPENSSL_NO_CAPIENG',
+        'OPENSSL_NO_CMS',
+        'OPENSSL_NO_FIPS',
+        'OPENSSL_NO_IDEA',
+        'OPENSSL_NO_MDC2',
+        'OPENSSL_NO_MD2',
       ],
       'copts': [
         '-w',
@@ -347,7 +359,6 @@
         'openssl/crypto/evp/m_md2.c',
         'openssl/crypto/evp/m_md4.c',
         'openssl/crypto/evp/m_md5.c',
-        'openssl/crypto/evp/m_mdc2.c',
         'openssl/crypto/evp/m_null.c',
         'openssl/crypto/evp/m_ripemd.c',
         'openssl/crypto/evp/m_sha.c',
@@ -377,8 +388,6 @@
         'openssl/crypto/md5/md5.c',
         'openssl/crypto/md5/md5_dgst.c',
         'openssl/crypto/md5/md5_one.c',
-        'openssl/crypto/mdc2/mdc2_one.c',
-        'openssl/crypto/mdc2/mdc2dgst.c',
         'openssl/crypto/mem.c',
         'openssl/crypto/mem_clr.c',
         'openssl/crypto/mem_dbg.c',
