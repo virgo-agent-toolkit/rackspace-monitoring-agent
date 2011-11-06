@@ -11,4 +11,6 @@ api-docs
 monitoring-agent
 .DS_Store
 *.sln
-*.vcproj*
+*.vcxproj*
+*.sdf
+*.opensdf
