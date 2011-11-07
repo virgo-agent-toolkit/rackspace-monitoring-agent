@@ -64,6 +64,7 @@
 #include <openssl/e_os2.h>
 
 #if defined(OPENSSL_SYS_WINDOWS)
+#include <winsock2.h>
 #include <windows.h>
 #endif
 
