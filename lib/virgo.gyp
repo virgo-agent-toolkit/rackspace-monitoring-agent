@@ -14,6 +14,10 @@
         '../deps/sigar.gyp:sigar',
       ],
 
+      'defines': [
+        'VIRGO_OS=<(OS)',
+      ],
+
       'sources': [
         'virgo_conf.c',
         'virgo_error.c',
