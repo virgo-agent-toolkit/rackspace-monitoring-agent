@@ -374,8 +374,16 @@ luahook_debugger(lua_State *L)
   return 0;
 } // luahook_debugger
 
-static void
-lua_stack_dump(lua_State *L, const char *msg)
+#endif
+
+/* TODO: real logging subsystem */
+#define logErr(format, args...)  do { \
+    fprintf (stderr, format , ## args); \
+    fputs("\n", stderr); \
+  } while(0);
+
+void
+virgo__lua_debug_stackdump(lua_State *L, const char *msg)
 {
   int i;
   int top = lua_gettop(L);
@@ -437,11 +445,9 @@ static int
 luahook_stackdump(lua_State *L)
 {
   const char *name = luaL_checkstring(L, 1);
-  lua_stack_dump(L, name);
+  virgo__lua_debug_stackdump(L, name);
   return 0;
 }
-
-#endif
 
 int
 virgo__lua_debugger_init(lua_State *L)

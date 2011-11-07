@@ -38,5 +38,6 @@ virgo_t* virgo__lua_context(lua_State *L);
 void virgo__lua_loader_init(lua_State *L);
 
 int virgo__lua_debugger_init(lua_State *L);
+void virgo__lua_debug_stackdump(lua_State *L, const char *msg);
 
 #endif /* _virgo__lua_h_ */
