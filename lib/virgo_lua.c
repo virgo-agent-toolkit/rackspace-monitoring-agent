@@ -132,11 +132,6 @@ virgo__lua_luvit_init(virgo_t *v)
 
 }
 
-#ifndef stringify
-#define xstringify(s) stringify(s)
-#define stringify(s) #s
-#endif
-
 virgo_error_t*
 virgo__lua_init(virgo_t *v)
 {
@@ -148,7 +143,7 @@ virgo__lua_init(virgo_t *v)
   lua_setfield(L, LUA_REGISTRYINDEX, "virgo.context");
 
   /* TODO: cleanup/standarize */
-  lua_pushstring(L, stringify(VIRGO_OS));
+  lua_pushstring(L, VIRGO_OS);
   lua_setglobal(L, "virgo_os");
 
   luaL_openlibs(L);
