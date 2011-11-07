@@ -6,6 +6,29 @@
       'agents/monitoring/lua/init.lua',
       'agents/monitoring/lua/test.lua',
     ],
+    'luvit_library_files': [
+      'deps/luvit/lib/emitter.lua',
+      'deps/luvit/lib/fiber.lua',
+      'deps/luvit/lib/fs.lua',
+      'deps/luvit/lib/http.lua',
+      # We override what luvit.lua does in our own init function.
+      # 'deps/luvit/lib/luvit.lua',
+      'deps/luvit/lib/mime.lua',
+      'deps/luvit/lib/path.lua',
+      'deps/luvit/lib/pipe.lua',
+      'deps/luvit/lib/process.lua',
+      'deps/luvit/lib/repl.lua',
+      'deps/luvit/lib/request.lua',
+      'deps/luvit/lib/response.lua',
+      'deps/luvit/lib/stack.lua',
+      'deps/luvit/lib/stream.lua',
+      'deps/luvit/lib/tcp.lua',
+      'deps/luvit/lib/timer.lua',
+      'deps/luvit/lib/tty.lua',
+      'deps/luvit/lib/udp.lua',
+      'deps/luvit/lib/url.lua',
+      'deps/luvit/lib/utils.lua',
+    ],
   },
 
   'targets': [
@@ -26,6 +49,7 @@
         'agents/monitoring/monitoring.c',
         # lib files to make for an even more pleasant IDE experience
         '<@(library_files)',
+        '<@(luvit_library_files)',
         'common.gypi',
       ],
 
@@ -87,13 +111,19 @@
 
           'inputs': [
             '<@(library_files)',
+            '<@(luvit_library_files)',
           ],
 
           'outputs': [
             '<(PRODUCT_DIR)/monitoring.zip',
           ],
 
-          'action': ['python', 'tools/lua2zip.py', '<@(_outputs)', '<@(_inputs)'],
+          'action': [
+            'python',
+            'tools/lua2zip.py',
+            '<@(_outputs)',
+            '<@(_inputs)',
+            ],
         },
       ],
     }, # end monitoring.zip

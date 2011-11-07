@@ -24,11 +24,65 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#include <assert.h>
+
+#include "luvit.h"
+#include "uv.h"
+#include "utils.h"
+#include "luv.h"
+#include "lconstants.h"
+#include "lhttp_parser.h"
+#include "lenv.h"
+
+
+static void
+virgo__lua_luvit_init(virgo_t *v)
+{
+  lua_State *L = v->L;
+
+  /* Pull up the preload table */
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "preload");
+  lua_remove(L, -2);
+
+  /* Register http_parser */
+  lua_pushcfunction(L, luaopen_http_parser);
+  lua_setfield(L, -2, "http_parser");
+  /* Register uv */
+  lua_pushcfunction(L, luaopen_uv);
+  lua_setfield(L, -2, "uv");
+  /* Register env */
+  lua_pushcfunction(L, luaopen_env);
+  lua_setfield(L, -2, "env");
+  /* Register constants */
+  lua_pushcfunction(L, luaopen_constants);
+  lua_setfield(L, -2, "constants");
+
+  /* We're done with preload, put it away */
+  lua_pop(L, 1);
+
+  // Get argv
+#if 0
+  lua_createtable (L, argc, 0);
+  int index;
+  for (index = 0; index < argc; index++) {
+    lua_pushstring (L, argv[index]);
+    lua_rawseti(L, -2, index);
+  }
+  lua_setglobal(L, "argv");
+#endif
+  // Hold a reference to the main thread in the registry
+  assert(lua_pushthread(L) == 1);
+  lua_setfield(L, LUA_REGISTRYINDEX, "main_thread");
+
+}
 
 virgo_error_t*
 virgo__lua_init(virgo_t *v)
 {
   lua_State *L = luaL_newstate();
+
+  v->L = L;
 
   lua_pushlightuserdata(L, v);
   lua_setfield(L, LUA_REGISTRYINDEX, "virgo.context");
@@ -38,7 +92,7 @@ virgo__lua_init(virgo_t *v)
   virgo__lua_loader_init(L);
   virgo__lua_debugger_init(L);
 
-  v->L = L;
+  virgo__lua_luvit_init(v);
 
   return VIRGO_SUCCESS;
 }
