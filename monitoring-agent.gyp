@@ -78,7 +78,7 @@
         [ 'OS=="linux"', {
           'libraries': [
             '-ldl',
-            '-lrf', # needed for clock_gettime
+            '-lrt', # needed for clock_gettime
             '-lutil', # needed for openpty
           ],
         }],
