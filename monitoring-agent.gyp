@@ -3,7 +3,8 @@
     'target_arch': 'ia32',
     # TODO: handle multiple agents somehow?
     'library_files': [
-      'agents/monitoring/lua/init.lua',
+      'lib/lua/virgo_init.lua',
+      'agents/monitoring/lua/monitoring-agent.lua',
       'agents/monitoring/lua/test.lua',
     ],
     'luvit_library_files': [
