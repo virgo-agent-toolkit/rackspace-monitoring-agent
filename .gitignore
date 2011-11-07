@@ -15,3 +15,4 @@ monitoring-agent
 *.sdf
 *.opensdf
 deps/openssl-configs/realized/openssl/*.h
+monitoring.zip
