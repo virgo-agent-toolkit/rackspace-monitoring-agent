@@ -377,8 +377,8 @@ luahook_debugger(lua_State *L)
 #endif
 
 /* TODO: real logging subsystem */
-#define logErr(format, args...)  do { \
-    fprintf (stderr, format , ## args); \
+#define logErr(format, ...)  do { \
+    fprintf (stderr, format , __VA_ARGS__); \
     fputs("\n", stderr); \
   } while(0);
 

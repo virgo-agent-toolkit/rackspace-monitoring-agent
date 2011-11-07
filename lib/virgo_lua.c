@@ -27,6 +27,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef _WIN32
+#include <direct.h>
+#endif
 
 #include "luvit.h"
 #include "uv.h"
@@ -51,8 +54,8 @@ virgo__lua_luvit_getcwd(lua_State* L) {
 
   if (r == NULL) {
 #ifdef _WIN32
-    return luaL_error(L, "luvit_getcwd: %s\n",
-                      strerror_s(getbuf, sizeof(getbuf)), errno);
+    strerror_s(getbuf, sizeof(getbuf), errno);
+    return luaL_error(L, "luvit_getcwd: %s\n", getbuf);
 #else
     return luaL_error(L, "luvit_getcwd: %s\n",
                       strerror_r(errno, getbuf, sizeof(getbuf)));
@@ -67,6 +70,7 @@ virgo__lua_luvit_getcwd(lua_State* L) {
 static void
 virgo__lua_luvit_init(virgo_t *v)
 {
+  int index;
   lua_State *L = v->L;
 
   /* Pull up the preload table */
@@ -92,7 +96,6 @@ virgo__lua_luvit_init(virgo_t *v)
 
   // Get argv
   lua_createtable (L, v->argc, 0);
-  int index;
   for (index = 0; index < v->argc; index++) {
     lua_pushstring (L, v->argv[index]);
     lua_rawseti(L, -2, index);
