@@ -43,11 +43,20 @@
 static int
 virgo__lua_luvit_getcwd(lua_State* L) {
   char getbuf[PATH_MAX + 1];
+#ifdef _WIN32
+  char *r = _getcwd(getbuf, sizeof(getbuf) - 1);
+#else
   char *r = getcwd(getbuf, ARRAY_SIZE(getbuf) - 1);
+#endif
 
   if (r == NULL) {
+#ifdef _WIN32
+    return luaL_error(L, "luvit_getcwd: %s\n",
+                      strerror_s(getbuf, sizeof(getbuf)), errno);
+#else
     return luaL_error(L, "luvit_getcwd: %s\n",
                       strerror_r(errno, getbuf, sizeof(getbuf)));
+#endif
   }
 
   getbuf[ARRAY_SIZE(getbuf) - 1] = '\0';

@@ -34,7 +34,7 @@ virgo_conf_lua_load_path(virgo_t *v, const char *path)
 }
 
 virgo_error_t*
-virgo_conf_args(virgo_t *v, int argc, char* argv[])
+virgo_conf_args(virgo_t *v, int argc, char** argv)
 {
   v->argc = argc;
   v->argv = argv;

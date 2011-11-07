@@ -67,7 +67,7 @@ VIRGO_API(virgo_error_t*) virgo_conf_lua_load_path(virgo_t *v, const char *path)
  * Set path to a Zip file containing Lua files. init.lua inside the zip file
  * will be ran first, and other files can be loaded via require.
  */
-VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char *argv[]);
+VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char **argv);
 
 
 #ifdef __cplusplus
