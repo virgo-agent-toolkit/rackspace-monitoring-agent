@@ -18,6 +18,7 @@
 #include "virgo.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
+#include "virgo_error.h"
 
 #include "lua.h"
 #include "lauxlib.h"
@@ -48,6 +49,35 @@ virgo__lua_run(virgo_t *v)
   int rv;
   const char *lua_err;
 
+#if 1
+  /**
+   * Use this method of invoking the getglobal / getfield for init,
+   * because someday we might want to compile out the Lua parser
+   */
+
+  lua_getglobal(v->L, "require");
+  if (lua_type(v->L, -1) != LUA_TFUNCTION) {
+    return virgo_error_create(VIRGO_EINVAL, "Lua require wasn't a function");
+  }
+
+  lua_pushliteral(v->L, "init");
+
+  rv = lua_pcall(v->L, 1, 1, 0);
+  if (rv != 0) {
+    lua_err = lua_tostring(v->L, -1);
+    return virgo_error_createf(VIRGO_EINVAL, "Failed to load init: %s", lua_err);
+  }
+
+  lua_getfield(v->L, -1, "run");
+ /*  virgo__lua_debug_stackdump(v->L, "example stack dump at run"); */
+
+  rv = lua_pcall(v->L, 0, 1, 0);
+  if (rv != 0) {
+    lua_err = lua_tostring(v->L, -1);
+    return virgo_error_createf(VIRGO_EINVAL, "Runtime error: %s", lua_err);
+  }
+
+#else
   rv = luaL_loadstring(v->L, "require('init'):run()");
 
   if (rv != 0) {
@@ -60,6 +90,7 @@ virgo__lua_run(virgo_t *v)
     lua_err = lua_tostring(v->L, -1);
     return virgo_error_createf(VIRGO_EINVAL, "Runtime error: %s", lua_err);
   }
+#endif
 
   return VIRGO_SUCCESS;
 }
