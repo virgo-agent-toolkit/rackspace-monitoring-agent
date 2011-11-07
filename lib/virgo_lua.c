@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #ifdef _WIN32
 #include <direct.h>
 #endif
@@ -67,6 +68,20 @@ virgo__lua_luvit_getcwd(lua_State* L) {
   return 1;
 }
 
+static int
+virgo__lua_luvit_exit(lua_State* L) {
+  int exit_code = luaL_checkint(L, 1);
+  exit(exit_code);
+  return 0;
+}
+
+static int
+virgo__lua_luvit_print_stderr(lua_State* L) {
+  const char* line = luaL_checkstring(L, 1);
+  fprintf(stderr, "%s", line);
+  return 0;
+}
+
 static void
 virgo__lua_luvit_init(virgo_t *v)
 {
@@ -104,6 +119,12 @@ virgo__lua_luvit_init(virgo_t *v)
 
   lua_pushcfunction(L, virgo__lua_luvit_getcwd);
   lua_setglobal(L, "getcwd");
+
+  lua_pushcfunction(L, virgo__lua_luvit_exit);
+  lua_setglobal(L, "exit_process");
+
+  lua_pushcfunction(L, virgo__lua_luvit_print_stderr);
+  lua_setglobal(L, "print_stderr");
 
   // Hold a reference to the main thread in the registry
   assert(lua_pushthread(L) == 1);
