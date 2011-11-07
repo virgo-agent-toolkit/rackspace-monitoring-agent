@@ -165,6 +165,9 @@ local virgo_init = {}
 
 function virgo_init.run(name)
   local mod = require(name)
+
+  mod.run()
+
   -- Start the event loop
   UV.run()
   -- trigger exit handlers and exit cleanly
