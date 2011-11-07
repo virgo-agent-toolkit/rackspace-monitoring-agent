@@ -4,6 +4,7 @@
     # TODO: handle multiple agents somehow?
     'library_files': [
       'agents/monitoring/lua/init.lua',
+      'agents/monitoring/lua/test.lua',
     ],
   },
 
