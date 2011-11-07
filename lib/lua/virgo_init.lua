@@ -32,7 +32,7 @@ process = Emitter.new()
 
 function process.exit(exit_code, clean)
   process:emit('exit', exit_code)
-  if clean ~= nil then
+  if (clean ~= 1) then
     exit_process(exit_code or 0)
   end
 end
