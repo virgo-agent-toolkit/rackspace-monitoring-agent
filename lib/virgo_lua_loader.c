@@ -86,7 +86,6 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_
   rv = unzOpenCurrentFile(zip);
   if (rv != UNZ_OK) {
     rc = -4;
-    free(buf);
     goto cleanup;
   }
 
