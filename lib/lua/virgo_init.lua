@@ -30,9 +30,11 @@ local Path = require('path')
 
 process = Emitter.new()
 
-function process.exit(exit_code)
+function process.exit(exit_code, clean)
   process:emit('exit', exit_code)
-  exit_process(exit_code or 0)
+  if clean ~= nil then
+    exit_process(exit_code or 0)
+  end
 end
 
 function process:add_handler_type(name)
@@ -173,7 +175,7 @@ function virgo_init.run(name)
   -- Start the event loop
   UV.run()
   -- trigger exit handlers and exit cleanly
-  process.exit(0)
+  process.exit(0, 1)
 end
 
 return virgo_init
