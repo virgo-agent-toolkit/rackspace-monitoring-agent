@@ -159,6 +159,7 @@ virgo__lua_debug_stackwalk(lua_State *L)
   return 0;
 } // luahook_stackwalk
 
+#if DEBUGGER_FIXED_FOR_VIRGO
 /* Start new lua debugger hackers by pquerna */
 
 typedef struct breakpoint_t breakpoint_t;
@@ -253,7 +254,6 @@ debugger_trace (lua_State *L, lua_Debug *ar)
   return;
 }
 
-#if DEBUGGER_FIXED_FOR_VIRGO
 /* end new debugger */
 // This just lets you punch in one-liners and Lua will run them as individual
 //  chunks, but you can completely access all Lua state, including calling C
@@ -454,10 +454,9 @@ int
 virgo__lua_debugger_init(lua_State *L)
 {
   lua_register(L, "virgo_stackdump", luahook_stackdump);
-#ifdef DEBUGGER_FIXED_FOR_VIRGO
+#if DEBUGGER_FIXED_FOR_VIRGO
   lua_register(L, "virgo_debugger", luahook_debugger);
 #endif
   lua_register(L, "virgo_stackwalk", luahook_stackwalk);
   return 0;
 }
-
