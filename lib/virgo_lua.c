@@ -25,6 +25,8 @@
 #include "lualib.h"
 
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "luvit.h"
 #include "uv.h"
@@ -34,6 +36,24 @@
 #include "lhttp_parser.h"
 #include "lenv.h"
 
+#ifndef PATH_MAX
+#define PATH_MAX (8096)
+#endif
+
+static int
+virgo__lua_luvit_getcwd(lua_State* L) {
+  char getbuf[PATH_MAX + 1];
+  char *r = getcwd(getbuf, ARRAY_SIZE(getbuf) - 1);
+
+  if (r == NULL) {
+    return luaL_error(L, "luvit_getcwd: %s\n",
+                      strerror_r(errno, getbuf, sizeof(getbuf)));
+  }
+
+  getbuf[ARRAY_SIZE(getbuf) - 1] = '\0';
+  lua_pushstring(L, r);
+  return 1;
+}
 
 static void
 virgo__lua_luvit_init(virgo_t *v)
@@ -62,15 +82,17 @@ virgo__lua_luvit_init(virgo_t *v)
   lua_pop(L, 1);
 
   // Get argv
-#if 0
-  lua_createtable (L, argc, 0);
+  lua_createtable (L, v->argc, 0);
   int index;
-  for (index = 0; index < argc; index++) {
-    lua_pushstring (L, argv[index]);
+  for (index = 0; index < v->argc; index++) {
+    lua_pushstring (L, v->argv[index]);
     lua_rawseti(L, -2, index);
   }
   lua_setglobal(L, "argv");
-#endif
+
+  lua_pushcfunction(L, virgo__lua_luvit_getcwd);
+  lua_setglobal(L, "getcwd");
+
   // Hold a reference to the main thread in the registry
   assert(lua_pushthread(L) == 1);
   lua_setfield(L, LUA_REGISTRYINDEX, "main_thread");
@@ -114,7 +136,7 @@ virgo__lua_run(virgo_t *v)
     return virgo_error_create(VIRGO_EINVAL, "Lua require wasn't a function");
   }
 
-  lua_pushliteral(v->L, "init");
+  lua_pushliteral(v->L, "virgo_init");
 
   rv = lua_pcall(v->L, 1, 1, 0);
   if (rv != 0) {
@@ -123,9 +145,10 @@ virgo__lua_run(virgo_t *v)
   }
 
   lua_getfield(v->L, -1, "run");
- /*  virgo__lua_debug_stackdump(v->L, "example stack dump at run"); */
+  lua_pushliteral(v->L, "monitoring-agent");
+  /* virgo__lua_debug_stackdump(v->L, "example stack dump at run"); */
 
-  rv = lua_pcall(v->L, 0, 1, 0);
+  rv = lua_pcall(v->L, 1, 1, 0);
   if (rv != 0) {
     lua_err = lua_tostring(v->L, -1);
     return virgo_error_createf(VIRGO_EINVAL, "Runtime error: %s", lua_err);

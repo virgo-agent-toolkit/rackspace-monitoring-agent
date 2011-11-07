@@ -25,6 +25,8 @@
 struct virgo_t {
   lua_State* L;
   const char *lua_load_path;
+  int argc;
+  char **argv;
 };
 
 
