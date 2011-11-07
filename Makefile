@@ -1,9 +1,9 @@
-BUILDTYPE ?= Release
+BUILDTYPE ?= Debug
 
 all: out/Makefile
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE)
-	-ln -fs out/Release/monitoring-agent monitoring-agent
-	-ln -fs out/Release/monitoring.zip monitoring.zip
+	-ln -fs out/Debug/monitoring-agent monitoring-agent
+	-ln -fs out/Debug/monitoring.zip monitoring.zip
 
 out/Release/monitoring-agent: all
 
