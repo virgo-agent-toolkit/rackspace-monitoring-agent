@@ -15,7 +15,7 @@
       ],
 
       'defines': [
-        'VIRGO_OS=<(OS)',
+        'VIRGO_OS="<(OS)"',
       ],
 
       'sources': [

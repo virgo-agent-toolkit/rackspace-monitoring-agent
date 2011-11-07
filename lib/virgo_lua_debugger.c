@@ -58,7 +58,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if DEBUGGER_FIXED_FOR_VIRGO
+/* TODO: real logging subsystem */
+#define logErr(format, ...)  do { \
+    fprintf (stderr, format , __VA_ARGS__); \
+    fputs("\n", stderr); \
+  } while(0);
 
 char scratchbuf[64 * 1024];
 
@@ -84,21 +88,18 @@ static int snprintfcat(char **ptr, size_t *len, const char *fmt, ...)
 } // snprintfcat
 
 #ifndef logDebug
-#define logDebug logDbg
+#define logDebug logErr
 #endif
 
-static int
-luahook_stackwalk(lua_State *L)
+int
+virgo__lua_debug_stackwalk(lua_State *L)
 {
   const char *errstr = lua_tostring(L, 1);
   lua_Debug ldbg;
   int i = 0;
   
-  if (errstr != NULL) {
-    logDebug("%s", errstr);
-  }
-  logDebug("Lua stack backtrace:");
-  
+  logDebug("Lua stack backtrace: %s", errstr);
+
   // start at 1 to skip this function.
   for (i = 1; lua_getstack(L, i, &ldbg); i++)
   {
@@ -155,7 +156,7 @@ luahook_stackwalk(lua_State *L)
     logDebug("%s", (const char *) scratchbuf);
   } // for
   
-  return retvalString(L, errstr ? errstr : "");
+  return 0;
 } // luahook_stackwalk
 
 /* Start new lua debugger hackers by pquerna */
@@ -252,7 +253,7 @@ debugger_trace (lua_State *L, lua_Debug *ar)
   return;
 }
 
-
+#if DEBUGGER_FIXED_FOR_VIRGO
 /* end new debugger */
 // This just lets you punch in one-liners and Lua will run them as individual
 //  chunks, but you can completely access all Lua state, including calling C
@@ -376,12 +377,6 @@ luahook_debugger(lua_State *L)
 
 #endif
 
-/* TODO: real logging subsystem */
-#define logErr(format, ...)  do { \
-    fprintf (stderr, format , __VA_ARGS__); \
-    fputs("\n", stderr); \
-  } while(0);
-
 void
 virgo__lua_debug_stackdump(lua_State *L, const char *msg)
 {
@@ -449,14 +444,20 @@ luahook_stackdump(lua_State *L)
   return 0;
 }
 
+static int
+luahook_stackwalk(lua_State *L)
+{
+  return virgo__lua_debug_stackwalk(L);
+}
+
 int
 virgo__lua_debugger_init(lua_State *L)
 {
-#if DEBUGGER_FIXED_FOR_VIRGO
   lua_register(L, "virgo_stackdump", luahook_stackdump);
+#ifdef DEBUGGER_FIXED_FOR_VIRGO
   lua_register(L, "virgo_debugger", luahook_debugger);
-  lua_register(L, "virgo_stackwalk", luahook_stackwalk);
 #endif
+  lua_register(L, "virgo_stackwalk", luahook_stackwalk);
   return 0;
 }
 
