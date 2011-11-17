@@ -11,10 +11,10 @@
  * source: http://www.lua.org/
  * license: MIT
 
-## luvit - (racker fork)
+## luvit - 97702fe188a4cdaf9720ffbf72308f82286d4a7f
 
-  * source: https://github.com/creationix/luvit/
-  * source: https://github.com/racker/luvit/tree/updates-for-libuv
+  * source: https://github.com/luvit/luvit/
+  * patches as neeeded: https://github.com/racker/luvit/
   * license: MIT
 
 ## openssl - 1.0.0e
