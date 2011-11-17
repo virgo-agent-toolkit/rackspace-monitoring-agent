@@ -125,7 +125,7 @@
             'ldflags': [ '-m32' ],
           }],
           [ 'OS=="linux"', {
-            'ldflags': [ '-lm' ],
+            'libraries': [ '-lm' ],
           }],
           [ 'OS=="freebsd"', {
             'ldflags': [ '-lm' ],
