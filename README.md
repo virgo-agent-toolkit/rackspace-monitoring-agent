@@ -34,6 +34,6 @@ Now you can open `monitoring-agent.sln` from Visual Studio.
 
 If you wish to compile from the command line, run:
 
-    python tools/win_build.py
+    python tools/build.py
 
 See also: http://www.chromium.org/developers/how-tos/build-instructions-windows
