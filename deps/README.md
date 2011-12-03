@@ -11,7 +11,7 @@
  * source: http://www.lua.org/
  * license: MIT
 
-## luvit - 97702fe188a4cdaf9720ffbf72308f82286d4a7f
+## luvit - 7ad9d9d49fce6eec496e0b6d8fd95f14bc87c04c
 
   * source: https://github.com/luvit/luvit/
   * patches as neeeded: https://github.com/racker/luvit/
