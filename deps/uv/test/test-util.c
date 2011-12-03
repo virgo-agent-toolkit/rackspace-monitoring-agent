@@ -22,45 +22,76 @@
 #include "uv.h"
 #include "task.h"
 
-TEST_IMPL(tty) {
-  int r, width, height;
-  uv_tty_t tty;
-  uv_loop_t* loop = uv_default_loop();
+#include <string.h>
 
-  /*
-   * Not necessarily a problem if this assert goes off. E.G you are piping
-   * this test to a file. 0 == stdin.
-   */
-  ASSERT(UV_TTY == uv_guess_handle(0));
+#define memeq(a, b, c) (memcmp((a), (b), (c)) == 0)
 
-  r = uv_tty_init(uv_default_loop(), &tty, 0, 1);
-  ASSERT(r == 0);
 
-  r = uv_tty_get_winsize(&tty, &width, &height);
-  ASSERT(r == 0);
+TEST_IMPL(strlcpy) {
+  size_t r;
 
-  printf("width=%d height=%d\n", width, height);
+  {
+    char dst[2] = "A";
+    r = uv_strlcpy(dst, "", 0);
+    ASSERT(r == 0);
+    ASSERT(memeq(dst, "A", 1));
+  }
 
-  /*
-   * Is it a safe assumption that most people have terminals larger than
-   * 10x10?
-   */
-  ASSERT(width > 10);
-  ASSERT(height > 10);
+  {
+    char dst[2] = "A";
+    r = uv_strlcpy(dst, "B", 1);
+    ASSERT(r == 0);
+    ASSERT(memeq(dst, "", 1));
+  }
 
-  /* Turn on raw mode. */
-  r = uv_tty_set_mode(&tty, 1);
-  ASSERT(r == 0);
+  {
+    char dst[2] = "A";
+    r = uv_strlcpy(dst, "B", 2);
+    ASSERT(r == 1);
+    ASSERT(memeq(dst, "B", 2));
+  }
 
-  /* Turn off raw mode. */
-  r = uv_tty_set_mode(&tty, 0);
-  ASSERT(r == 0);
+  {
+    char dst[3] = "AB";
+    r = uv_strlcpy(dst, "CD", 3);
+    ASSERT(r == 2);
+    ASSERT(memeq(dst, "CD", 3));
+  }
 
-  /* TODO check the actual mode! */
+  return 0;
+}
 
-  uv_close((uv_handle_t*)&tty, NULL);
 
-  uv_run(loop);
+TEST_IMPL(strlcat) {
+  size_t r;
+
+  {
+    char dst[2] = "A";
+    r = uv_strlcat(dst, "B", 1);
+    ASSERT(r == 1);
+    ASSERT(memeq(dst, "A", 2));
+  }
+
+  {
+    char dst[2] = "A";
+    r = uv_strlcat(dst, "B", 2);
+    ASSERT(r == 1);
+    ASSERT(memeq(dst, "A", 2));
+  }
+
+  {
+    char dst[3] = "A";
+    r = uv_strlcat(dst, "B", 3);
+    ASSERT(r == 2);
+    ASSERT(memeq(dst, "AB", 3));
+  }
+
+  {
+    char dst[5] = "AB";
+    r = uv_strlcat(dst, "CD", 5);
+    ASSERT(r == 4);
+    ASSERT(memeq(dst, "ABCD", 5));
+  }
 
   return 0;
 }

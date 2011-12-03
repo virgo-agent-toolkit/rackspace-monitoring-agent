@@ -22,45 +22,30 @@
 #include "uv.h"
 #include "task.h"
 
-TEST_IMPL(tty) {
-  int r, width, height;
-  uv_tty_t tty;
-  uv_loop_t* loop = uv_default_loop();
+#include <stdio.h>
+#include <stdlib.h>
 
-  /*
-   * Not necessarily a problem if this assert goes off. E.G you are piping
-   * this test to a file. 0 == stdin.
-   */
-  ASSERT(UV_TTY == uv_guess_handle(0));
 
-  r = uv_tty_init(uv_default_loop(), &tty, 0, 1);
+static volatile int thread_called;
+
+
+static void thread_entry(void* arg) {
+  ASSERT(arg == (void *) 42);
+  thread_called++;
+}
+
+
+TEST_IMPL(thread_create) {
+  uv_thread_t tid;
+  int r;
+
+  r = uv_thread_create(&tid, thread_entry, (void *) 42);
   ASSERT(r == 0);
 
-  r = uv_tty_get_winsize(&tty, &width, &height);
+  r = uv_thread_join(&tid);
   ASSERT(r == 0);
 
-  printf("width=%d height=%d\n", width, height);
-
-  /*
-   * Is it a safe assumption that most people have terminals larger than
-   * 10x10?
-   */
-  ASSERT(width > 10);
-  ASSERT(height > 10);
-
-  /* Turn on raw mode. */
-  r = uv_tty_set_mode(&tty, 1);
-  ASSERT(r == 0);
-
-  /* Turn off raw mode. */
-  r = uv_tty_set_mode(&tty, 0);
-  ASSERT(r == 0);
-
-  /* TODO check the actual mode! */
-
-  uv_close((uv_handle_t*)&tty, NULL);
-
-  uv_run(loop);
+  ASSERT(thread_called == 1);
 
   return 0;
 }
