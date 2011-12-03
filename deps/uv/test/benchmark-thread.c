@@ -22,45 +22,43 @@
 #include "uv.h"
 #include "task.h"
 
-TEST_IMPL(tty) {
-  int r, width, height;
-  uv_tty_t tty;
-  uv_loop_t* loop = uv_default_loop();
+#include <stdio.h>
+#include <stdlib.h>
 
-  /*
-   * Not necessarily a problem if this assert goes off. E.G you are piping
-   * this test to a file. 0 == stdin.
-   */
-  ASSERT(UV_TTY == uv_guess_handle(0));
+#define NUM_THREADS (100 * 1000)
 
-  r = uv_tty_init(uv_default_loop(), &tty, 0, 1);
-  ASSERT(r == 0);
+static volatile int num_threads;
 
-  r = uv_tty_get_winsize(&tty, &width, &height);
-  ASSERT(r == 0);
 
-  printf("width=%d height=%d\n", width, height);
+static void thread_entry(void* arg) {
+  ASSERT(arg == (void *) 42);
+  num_threads++;
+  /* FIXME write barrier? */
+}
 
-  /*
-   * Is it a safe assumption that most people have terminals larger than
-   * 10x10?
-   */
-  ASSERT(width > 10);
-  ASSERT(height > 10);
 
-  /* Turn on raw mode. */
-  r = uv_tty_set_mode(&tty, 1);
-  ASSERT(r == 0);
+BENCHMARK_IMPL(thread_create) {
+  uint64_t start_time;
+  double duration;
+  uv_thread_t tid;
+  int i, r;
 
-  /* Turn off raw mode. */
-  r = uv_tty_set_mode(&tty, 0);
-  ASSERT(r == 0);
+  start_time = uv_hrtime();
 
-  /* TODO check the actual mode! */
+  for (i = 0; i < NUM_THREADS; i++) {
+    r = uv_thread_create(&tid, thread_entry, (void *) 42);
+    ASSERT(r == 0);
 
-  uv_close((uv_handle_t*)&tty, NULL);
+    r = uv_thread_join(&tid);
+    ASSERT(r == 0);
+  }
 
-  uv_run(loop);
+  duration = (uv_hrtime() - start_time) / 1e9;
+
+  ASSERT(num_threads == NUM_THREADS);
+
+  printf("%d threads created in %.2f seconds (%.0f/s)\n",
+      NUM_THREADS, duration, NUM_THREADS / duration);
 
   return 0;
 }

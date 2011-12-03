@@ -22,45 +22,42 @@
 #include "uv.h"
 #include "task.h"
 
-TEST_IMPL(tty) {
-  int r, width, height;
-  uv_tty_t tty;
-  uv_loop_t* loop = uv_default_loop();
+#include <stdio.h>
+#include <stdlib.h>
 
-  /*
-   * Not necessarily a problem if this assert goes off. E.G you are piping
-   * this test to a file. 0 == stdin.
-   */
-  ASSERT(UV_TTY == uv_guess_handle(0));
 
-  r = uv_tty_init(uv_default_loop(), &tty, 0, 1);
+/* The mutex and rwlock tests are really poor.
+ * They're very basic sanity checks and nothing more.
+ * Apologies if that rhymes.
+ */
+
+TEST_IMPL(thread_mutex) {
+  uv_mutex_t mutex;
+  int r;
+
+  r = uv_mutex_init(&mutex);
   ASSERT(r == 0);
 
-  r = uv_tty_get_winsize(&tty, &width, &height);
+  uv_mutex_lock(&mutex);
+  uv_mutex_unlock(&mutex);
+  uv_mutex_destroy(&mutex);
+
+  return 0;
+}
+
+
+TEST_IMPL(thread_rwlock) {
+  uv_rwlock_t rwlock;
+  int r;
+
+  r = uv_rwlock_init(&rwlock);
   ASSERT(r == 0);
 
-  printf("width=%d height=%d\n", width, height);
-
-  /*
-   * Is it a safe assumption that most people have terminals larger than
-   * 10x10?
-   */
-  ASSERT(width > 10);
-  ASSERT(height > 10);
-
-  /* Turn on raw mode. */
-  r = uv_tty_set_mode(&tty, 1);
-  ASSERT(r == 0);
-
-  /* Turn off raw mode. */
-  r = uv_tty_set_mode(&tty, 0);
-  ASSERT(r == 0);
-
-  /* TODO check the actual mode! */
-
-  uv_close((uv_handle_t*)&tty, NULL);
-
-  uv_run(loop);
+  uv_rwlock_rdlock(&rwlock);
+  uv_rwlock_rdunlock(&rwlock);
+  uv_rwlock_wrlock(&rwlock);
+  uv_rwlock_wrunlock(&rwlock);
+  uv_rwlock_destroy(&rwlock);
 
   return 0;
 }

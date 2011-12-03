@@ -27,12 +27,12 @@
  * source: http://www.winimage.com/zLibDll/minizip.html
  * license: zlib license (BSDish)
 
-## sigar  - edf041dc7a84ba46a3f5a8b808370a884ee3f52b
+## sigar - edf041dc7a84ba46a3f5a8b808370a884ee3f52b
 
  * source: https://github.com/hyperic/sigar
  * license: Apache 2.0
 
-## uv - v0.6 branch @ 2007eb813d66497c384172882b95407be97bd539
+## uv - f5c2a4a1ae28ab9136520a1f8f307653ca891dd9
 
  * source: https://github.com/joyent/libuv
  * license: MIT

@@ -99,14 +99,34 @@ static void fs_event_cb_file(uv_fs_event_t* handle, const char* filename,
   uv_close((uv_handle_t*)handle, close_cb);
 }
 
+static void timber_cb_close_handle(uv_timer_t* timer, int status) {
+  uv_handle_t* handle;
+
+  ASSERT(timer != NULL);
+  ASSERT(status == 0);
+  handle = timer->data;
+
+  uv_close((uv_handle_t*)timer, NULL);
+  uv_close((uv_handle_t*)handle, close_cb);
+}
+
 static void fs_event_cb_file_current_dir(uv_fs_event_t* handle,
   const char* filename, int events, int status) {
+  ASSERT(fs_event_cb_called == 0);
   ++fs_event_cb_called;
+
   ASSERT(handle == &fs_event);
   ASSERT(status == 0);
   ASSERT(events == UV_CHANGE);
   ASSERT(filename == NULL || strcmp(filename, "watch_file") == 0);
-  uv_close((uv_handle_t*)handle, close_cb);
+
+  /* Regression test for SunOS: touch should generate just one event. */
+  {
+    static uv_timer_t timer;
+    uv_timer_init(handle->loop, &timer);
+    timer.data = handle;
+    uv_timer_start(&timer, timber_cb_close_handle, 250, 0);
+  }
 }
 
 static void timer_cb_dir(uv_timer_t* handle, int status) {
@@ -265,6 +285,46 @@ TEST_IMPL(fs_event_no_callback_on_close) {
   /* Cleanup */
   r = uv_fs_unlink(loop, &fs_req, "watch_dir/file1", NULL);
   r = uv_fs_rmdir(loop, &fs_req, "watch_dir", NULL);
+
+  return 0;
+}
+
+
+static void fs_event_fail(uv_fs_event_t* handle, const char* filename,
+  int events, int status) {
+  ASSERT(0 && "should never be called");
+}
+
+
+static void timer_cb(uv_timer_t* handle, int status) {
+  int r;
+
+  ASSERT(status == 0);
+
+  r = uv_fs_event_init(handle->loop, &fs_event, ".", fs_event_fail, 0);
+  ASSERT(r != -1);
+
+  uv_close((uv_handle_t*)&fs_event, close_cb);
+  uv_close((uv_handle_t*)handle, close_cb);
+}
+
+
+TEST_IMPL(fs_event_immediate_close) {
+  uv_timer_t timer;
+  uv_loop_t* loop;
+  int r;
+
+  loop = uv_default_loop();
+
+  r = uv_timer_init(loop, &timer);
+  ASSERT(r == 0);
+
+  r = uv_timer_start(&timer, timer_cb, 1, 0);
+  ASSERT(r == 0);
+
+  uv_run(loop);
+
+  ASSERT(close_cb_called == 2);
 
   return 0;
 }
