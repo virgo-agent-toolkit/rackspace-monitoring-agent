@@ -32,7 +32,7 @@
  * source: https://github.com/hyperic/sigar
  * license: Apache 2.0
 
-## uv - f5c2a4a1ae28ab9136520a1f8f307653ca891dd9
+## uv - 0d8cb08f83038638c320803a8e4c51eb0ad93be9
 
  * source: https://github.com/joyent/libuv
  * license: MIT
