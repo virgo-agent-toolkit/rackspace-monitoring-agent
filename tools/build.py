@@ -10,7 +10,7 @@ root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if sys.platform != "win32":
     cmd = ['make', '-C', root]
 else:
-    cmd = ['win_build.bat']
+    cmd = ['tools\win_build.bat']
 
 print ' '.join(cmd)
 subprocess.call(cmd, shell=True)
