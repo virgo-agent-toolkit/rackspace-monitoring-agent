@@ -40,6 +40,8 @@
 #include "lhttp_parser.h"
 #include "lenv.h"
 
+extern int luaopen_sigar (lua_State *L);
+
 #ifndef PATH_MAX
 #define PATH_MAX (8096)
 #endif
@@ -147,6 +149,7 @@ virgo__lua_init(virgo_t *v)
   lua_setglobal(L, "virgo_os");
 
   luaL_openlibs(L);
+  luaopen_sigar(L);
 
   virgo__lua_loader_init(L);
   virgo__lua_debugger_init(L);

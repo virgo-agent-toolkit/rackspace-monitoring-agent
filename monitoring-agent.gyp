@@ -73,7 +73,7 @@
           'defines': [ '__POSIX__' ]
         }],
         [ 'OS=="mac"', {
-          'libraries': [ '-framework Carbon' ]
+          'libraries': [ '-framework Carbon -framework IOKit' ]
         }],
         [ 'OS=="linux"', {
           'libraries': [
