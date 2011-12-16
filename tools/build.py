@@ -13,5 +13,4 @@ else:
     cmd = ['tools\win_build.bat']
 
 print ' '.join(cmd)
-subprocess.call(cmd, shell=True)
-
+sys.exit(subprocess.call(cmd, shell=True))
