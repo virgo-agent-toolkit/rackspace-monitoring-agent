@@ -40,7 +40,7 @@ int luv_spawn(lua_State* L) {
 
   // Parse the args array
   argc = lua_objlen(L, 5) + 1;
-  args = malloc(argc + 1);
+  args = malloc((argc + 1) * sizeof(char*));
   args[0] = (char*)command;
   for (i = 1; i < argc; i++) {
     lua_rawgeti(L, 5, i);
@@ -59,7 +59,7 @@ int luv_spawn(lua_State* L) {
   env = NULL;
   if (lua_type(L, -1) == LUA_TTABLE) {
     argc = lua_objlen(L, -1);
-    env = malloc(argc + 1);
+    env = malloc((argc + 1) * sizeof(char*));
     for (i = 0; i < argc; i++) {
       lua_rawgeti(L, -1, i + 1);
       env[i] = (char*)lua_tostring(L, -1);
@@ -72,7 +72,8 @@ int luv_spawn(lua_State* L) {
   options.exit_cb = luv_process_on_exit;
   options.file = command;
   options.args = args;
-  options.env = env;
+  extern char**environ;
+  options.env = env ? env : environ;
   options.cwd = cwd;
   options.stdin_stream = stdin_stream;
   options.stdout_stream = stdout_stream;

@@ -3,7 +3,6 @@ UVDIR=deps/uv
 HTTPDIR=deps/http-parser
 BUILDDIR=build
 GENDIR=${BUILDDIR}/generated
-DESTDIR?=/
 PREFIX?=/usr/local
 BINDIR?=${PREFIX}/bin
 ifeq ($(shell uname -sm | sed -e s,x86_64,i386,),Darwin i386)
@@ -109,11 +108,12 @@ clean:
 	${MAKE} -C ${LUADIR} clean
 	${MAKE} -C ${HTTPDIR} clean
 	${MAKE} -C ${UVDIR} distclean
+	${MAKE} -C examples/native clean
 	rm -rf build
 
 install: ${BUILDDIR}/luvit
 	mkdir -p ${BINDIR}
-	${INSTALL_PROGRAM} ${BUILDDIR}/luvit ${DESTDIR}/${BINDIR}/luvit
+	${INSTALL_PROGRAM} ${BUILDDIR}/luvit ${DESTDIR}${BINDIR}/luvit
 
 examples/native/vector.luvit: examples/native/vector.c examples/native/vector.h
 	${MAKE} -C examples/native
