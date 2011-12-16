@@ -12,6 +12,7 @@
         '../deps/lua.gyp:lua',
         '../deps/luvit.gyp:luvit',
         '../deps/sigar.gyp:sigar',
+        '../deps/sigar.gyp:lua_sigar',
       ],
 
       'defines': [
