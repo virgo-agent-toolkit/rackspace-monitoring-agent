@@ -76,6 +76,35 @@
           ],
         }],
       ],
+    },
+    {
+      'target_name': 'lua_sigar',
+      'type': 'static_library',
+      'sources': [
+        'sigar/bindings/lua/sigar.c',
+        'sigar/bindings/lua/sigar-cpu.c',
+        'sigar/bindings/lua/sigar-disk.c',
+        'sigar/bindings/lua/sigar-fs.c',
+        'sigar/bindings/lua/sigar-mem.c',
+        'sigar/bindings/lua/sigar-netif.c',
+        'sigar/bindings/lua/sigar-proc.c',
+        'sigar/bindings/lua/sigar-swap.c',
+        'sigar/bindings/lua/sigar-sysinfo.c',
+        'sigar/bindings/lua/sigar-version.c',
+        'sigar/bindings/lua/sigar-who.c',
+      ],
+      'include_dirs': [
+          'sigar/bindings/lua',
+          'lua/src',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'sigar/bindings/lua',
+        ]
+      },
+      'dependencies': [
+        'sigar.gyp:sigar',
+      ],
     }
   ],
 }
