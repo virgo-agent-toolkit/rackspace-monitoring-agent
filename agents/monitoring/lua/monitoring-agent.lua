@@ -1,3 +1,4 @@
+local async = require('async')
 
 local init = {}
 
