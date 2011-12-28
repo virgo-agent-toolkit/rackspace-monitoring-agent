@@ -7,6 +7,7 @@
       'agents/monitoring/lua/monitoring-agent.lua',
       'agents/monitoring/lua/async.lua',
       'agents/monitoring/lua/queue.lua',
+      'agents/monitoring/lua/middleclass.lua',
       'agents/monitoring/lua/test.lua',
     ],
     'luvit_library_files': [

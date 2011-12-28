@@ -1,8 +1,8 @@
-local async = require('async')
+require('middleclass')
 
-local init = {}
+local MonitoringAgent = class('MonitoringAgent')
 
-function init.run()
+function MonitoringAgent:run()
   local HTTP = require("http")
   local Utils = require("utils")
   local s = sigar:new()
@@ -39,5 +39,5 @@ function init.run()
   print("Server listening at http://localhost:8080/")
 end
 
-return init
+return MonitoringAgent
 
