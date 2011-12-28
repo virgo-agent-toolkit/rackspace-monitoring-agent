@@ -6,6 +6,7 @@
       'lib/lua/virgo_init.lua',
       'agents/monitoring/lua/monitoring-agent.lua',
       'agents/monitoring/lua/async.lua',
+      'agents/monitoring/lua/error.lua',
       'agents/monitoring/lua/queue.lua',
       'agents/monitoring/lua/test.lua',
     ],
