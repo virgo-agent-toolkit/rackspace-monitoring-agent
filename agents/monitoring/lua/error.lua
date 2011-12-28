@@ -1,17 +1,17 @@
 local Error = {}
 
-local error_prototype = {}
-setmetatable(error_prototype, error_meta)
+local error_prototype = error_meta
 Error.prototype = error_prototype
 
 -- Used by things inherited from Error
 Error.meta = {__index=Error.prototype}
 
-Error.new = function(message)
+function Error.new(message)
   local err = {
-    message = message
+    message = message,
+    prototype = error_prototype
   }
-  setmetatable(err, error_meta)
+  setmetatable(err, error_prototype)
   return err
 end
 
