@@ -4,11 +4,13 @@
     # TODO: handle multiple agents somehow?
     'library_files': [
       'lib/lua/virgo_init.lua',
+      'agents/monitoring/lua/entry.lua',
       'agents/monitoring/lua/monitoring-agent.lua',
+      'agents/monitoring/lua/test.lua',
       'agents/monitoring/lua/lib/async.lua',
       'agents/monitoring/lua/lib/error.lua',
       'agents/monitoring/lua/lib/queue.lua',
-      'agents/monitoring/lua/test.lua',
+      'agents/monitoring/lua/lib/virgo-utils.lua',
     ],
     'luvit_library_files': [
       'deps/luvit/lib/emitter.lua',
