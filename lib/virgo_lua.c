@@ -176,7 +176,7 @@ virgo__lua_run(virgo_t *v)
     return virgo_error_create(VIRGO_EINVAL, "Lua require wasn't a function");
   }
 
-  lua_pushliteral(v->L, "virgo_init");
+  lua_pushliteral(v->L, "virgo-init");
 
   rv = lua_pcall(v->L, 1, 1, 0);
   if (rv != 0) {
@@ -185,7 +185,7 @@ virgo__lua_run(virgo_t *v)
   }
 
   lua_getfield(v->L, -1, "run");
-  lua_pushliteral(v->L, "monitoring-agent");
+  lua_pushliteral(v->L, "entry");
   /* virgo__lua_debug_stackdump(v->L, "example stack dump at run"); */
 
   rv = lua_pcall(v->L, 1, 1, 0);

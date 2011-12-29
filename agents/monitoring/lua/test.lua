@@ -1,3 +1,7 @@
+local Test = {}
 
+function Test.run()
+  print ("test entry point")
+end
 
-print ("test entry point")
+return Test

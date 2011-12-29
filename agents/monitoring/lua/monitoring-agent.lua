@@ -1,8 +1,6 @@
-local Error = require('error')
-
 local MonitoringAgent = {}
 
-function MonitoringAgent.run()
+function MonitoringAgent.sample()
   local HTTP = require("http")
   local Utils = require("utils")
   local s = sigar:new()
@@ -37,6 +35,10 @@ function MonitoringAgent.run()
   end
 
   print("Server listening at http://localhost:8080/")
+end
+
+function MonitoringAgent.run()
+  MonitoringAgent.sample()
 end
 
 return MonitoringAgent
