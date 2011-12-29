@@ -44,11 +44,13 @@ virgo__lua_loader_checkload(lua_State *L, int stat, const char *filename) {
 }
 
 static int
-virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_len)
+virgo__lua_loader_zip2buf(virgo_t* v, const char *raw_name, const char *name, char **p_buf, size_t *p_len)
 {
+  char *modules_name;
+  char *filename;
   struct unz_file_info_s finfo;
   unzFile zip = NULL;
-  char *buf;
+  char *buf, *ptr;
   size_t len;
   int rv;
   int rc = 0;
@@ -66,10 +68,42 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_
 
   /* 1 means case sensitive file comparison */
   rv = unzLocateFile(zip, name, 1);
+  if (rv == UNZ_OK) {
+    goto found;
+  }
+
+  /* Check for module/{name}/init.lua */
+  len = strlen(raw_name) + strlen("modules//init.lua") + 1;
+  modules_name = malloc(len);
+  snprintf(modules_name, len, "modules/%s/init.lua", raw_name);
+  rv = unzLocateFile(zip, modules_name, 1);
+  free(modules_name);
+  if (rv == UNZ_OK) {
+    goto found;
+  }
+
+  /* Search the zip file for the include */
+  rv = unzGoToFirstFile(zip);
+  while (rv == UNZ_OK) {
+    rv = unzGetCurrentFileInfo(zip, &finfo, NULL, 0, NULL, 0, NULL, 0);
+    if (rv == UNZ_OK) {
+      filename = malloc(finfo.size_filename + 1);
+      unzGetCurrentFileInfo(zip, &finfo, filename, finfo.size_filename + 1, NULL, 0, NULL, 0);
+      if (strstr(filename, virgo_basename(name))) {
+        free(filename);
+        break;
+      }
+      free(filename);
+    }
+    rv = unzGoToNextFile(zip);
+  }
+
   if (rv != UNZ_OK) {
     rc = -2;
     goto cleanup;
   }
+
+found:
 
   memset(&finfo, '0', sizeof(finfo));
 
@@ -120,12 +154,19 @@ virgo__lua_loader_loadit(lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   size_t nlen = strlen(name) + strlen(".lua") + 1;
   char *nstr = malloc(nlen);
-  snprintf(nstr, nlen, "%s.lua", name);
 
-  rv = virgo__lua_loader_zip2buf(v, nstr, &buf, &len);
+  if (strstr(name, ".lua")) {
+    snprintf(nstr, nlen, "%s", name);
+  }
+  else {
+    snprintf(nstr, nlen, "%s.lua", name);
+  }
+
+  rv = virgo__lua_loader_zip2buf(v, name, nstr, &buf, &len);
   if (rv != 0) {
+    rv = luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, nstr);
     free(nstr);
-    return luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, nstr);
+    return rv;
   }
 
   rv = luaL_loadbuffer(L, buf, len, nstr);

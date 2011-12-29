@@ -74,13 +74,14 @@ virgo__global_terminate(void)
 }
 
 virgo_error_t*
-virgo_create(virgo_t **p_v)
+virgo_create(virgo_t **p_v, const char *default_module)
 {
   virgo_t *v = NULL;
 
   virgo__global_init();
 
   v = calloc(1, sizeof(virgo_t));
+  v->lua_default_module = strdup(default_module);
   *p_v = v;
 
   return VIRGO_SUCCESS;
@@ -114,6 +115,9 @@ virgo_destroy(virgo_t *v)
 
   if (v->lua_load_path) {
     free((void*)v->lua_load_path);
+  }
+  if (v->lua_default_module) {
+    free((void*)v->lua_default_module);
   }
   free((void*)v);
 
