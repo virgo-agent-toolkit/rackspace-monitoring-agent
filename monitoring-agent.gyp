@@ -7,6 +7,9 @@
       'lua_modules/lua-async',
       'lib/lua',
     ],
+    'lua_modules_sources': [
+      '<!@(tools/bundle.py -l "<@(lua_modules)" )',
+    ],
   },
 
   'targets': [
@@ -26,7 +29,7 @@
       'sources': [
         'agents/monitoring/monitoring.c',
         # lib files to make for an even more pleasant IDE experience
-        '<@!(tools/bundle.py -l <@(lua_modules))',
+        '<@(lua_modules_sources)',
         'common.gypi',
       ],
 
@@ -89,6 +92,7 @@
 
           'inputs': [
             '<@(lua_modules)',
+            '<@(lua_modules_sources)',
           ],
 
           'outputs': [
