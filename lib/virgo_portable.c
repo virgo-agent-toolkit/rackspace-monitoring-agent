@@ -54,3 +54,17 @@ int virgo_asprintf(char **outstr, const char *fmt, ...)
 }
 
 #endif
+
+char* virgo_basename(char *name)
+{
+  const char *base;
+
+  for(base = name; *name; name++) {
+    if (*name == '\\' || *name == '/') {
+      base = name + 1;
+    }
+  }
+
+  return (char*) base;
+}
+
