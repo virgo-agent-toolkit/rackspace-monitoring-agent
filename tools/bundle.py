@@ -5,8 +5,6 @@ import sys
 import glob
 import getopt
 
-BASEDIR_NAME = 'modules'
-
 def output_file_list(module_name, path):
   for f in os.listdir(path):
     if f.endswith('.lua'):
@@ -16,10 +14,9 @@ def generate_bundle_map(module_name, path, is_base=False):
   t = []
   for os_filename in glob.glob(os.path.join(path, '*.lua')):
     if is_base:
-      bundle_filename = os.path.basename(os_filename)
+      bundle_filename = 'modules/' + os.path.basename(os_filename)
     else:
-      bundle_filename = BASEDIR_NAME + '/' + module_name + '/' + os.path.basename(os_filename)
-
+      bundle_filename = module_name + '/' + os.path.basename(os_filename)
     t.append({
       'os_filename': os_filename,
       'bundle_filename': bundle_filename
