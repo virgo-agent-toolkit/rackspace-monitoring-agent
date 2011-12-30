@@ -165,6 +165,7 @@ process.env = setmetatable({}, {
   end
 })
 
+_G.VFS = nil -- done with VFS module
 local global_meta = {__index=_G}
 
 -- This is called by all the event sources from C
