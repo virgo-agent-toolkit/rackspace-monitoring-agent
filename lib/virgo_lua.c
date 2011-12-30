@@ -151,6 +151,7 @@ virgo__lua_init(virgo_t *v)
   luaL_openlibs(L);
   luaopen_sigar(L);
 
+  virgo__lua_vfs_init(L);
   virgo__lua_loader_init(L);
   virgo__lua_debugger_init(L);
 
@@ -185,9 +186,7 @@ virgo__lua_run(virgo_t *v)
   }
 
   lua_getfield(v->L, -1, "run");
-  lua_pushliteral(v->L, "entry");
-  /* virgo__lua_debug_stackdump(v->L, "example stack dump at run"); */
-
+  lua_pushstring(v->L, v->lua_default_module);
   rv = lua_pcall(v->L, 1, 1, 0);
   if (rv != 0) {
     lua_err = lua_tostring(v->L, -1);

@@ -17,6 +17,7 @@
 
 #include "virgo.h"
 #include "virgo_portable.h"
+#include <string.h>
 
 #ifdef VIRGO_WANT_ASPRINTF
 
@@ -54,3 +55,10 @@ int virgo_asprintf(char **outstr, const char *fmt, ...)
 }
 
 #endif
+
+char* virgo_basename(char *name)
+{
+  char* s = strrchr(name, '/');
+  return s ? (s + 1) : (char*)name;
+}
+

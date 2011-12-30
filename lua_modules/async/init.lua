@@ -2,7 +2,7 @@ local async = {}
 
 local Timer = require 'timer'
 local table = require 'table'
-local Queue = require 'queue'
+local Queue = require './queue.lua'
 local math = require 'math'
 
 --[[
@@ -79,7 +79,9 @@ async.forEachLimit = function(arr, limit, iterator, callback)
       return callback()
     end
     while running < limit and started < #arr do
-      iterator(arr[started + 1], function(err)
+      started = started + 1
+      running = running + 1
+      iterator(arr[started], function(err)
         if err then
           callback(err)
           callback = function() end
@@ -93,8 +95,6 @@ async.forEachLimit = function(arr, limit, iterator, callback)
           end
         end
       end)
-      started = started + 1
-      running = running + 1
     end
   end
   replenish()

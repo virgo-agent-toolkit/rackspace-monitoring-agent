@@ -1,7 +1,7 @@
 BUILDTYPE ?= Debug
 
 all: out/Makefile
-	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE)
+	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/Debug/monitoring-agent monitoring-agent
 	-ln -fs out/Debug/monitoring.zip monitoring.zip
 

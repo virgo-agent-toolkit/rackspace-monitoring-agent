@@ -32,7 +32,7 @@ typedef struct virgo_t virgo_t;
 /**
  * Creates a Virgo context.
  */
-VIRGO_API(virgo_error_t*) virgo_create(virgo_t **ctxt);
+VIRGO_API(virgo_error_t*) virgo_create(virgo_t **ctxt, const char *default_module);
 
 /**
  * Destroys a Virsgo context. After this call, ctxt points to invalid memory

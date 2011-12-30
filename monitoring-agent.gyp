@@ -1,39 +1,15 @@
 {
   'variables': {
     'target_arch': 'ia32',
-    # TODO: handle multiple agents somehow?
-    'library_files': [
-      'lib/lua/virgo-init.lua',
-      'lib/lua/virgo-utils.lua',
-      'agents/monitoring/lua/entry.lua',
-      'agents/monitoring/lua/monitoring-agent.lua',
-      'agents/monitoring/lua/test.lua',
-      'agents/monitoring/lua/lib/async.lua',
-      'agents/monitoring/lua/lib/error.lua',
-      'agents/monitoring/lua/lib/queue.lua',
+    'lua_modules': [
+      'lib/lua',
+      'deps/luvit/lib',
+      'lua_modules/async',
+      'lua_modules/bourbon',
+      'agents/monitoring/lua',
     ],
-    'luvit_library_files': [
-      'deps/luvit/lib/emitter.lua',
-      'deps/luvit/lib/fiber.lua',
-      'deps/luvit/lib/fs.lua',
-      'deps/luvit/lib/http.lua',
-      # We override what luvit.lua does in our own init function.
-      # 'deps/luvit/lib/luvit.lua',
-      'deps/luvit/lib/mime.lua',
-      'deps/luvit/lib/path.lua',
-      'deps/luvit/lib/pipe.lua',
-      'deps/luvit/lib/process.lua',
-      'deps/luvit/lib/repl.lua',
-      'deps/luvit/lib/request.lua',
-      'deps/luvit/lib/response.lua',
-      'deps/luvit/lib/stack.lua',
-      'deps/luvit/lib/stream.lua',
-      'deps/luvit/lib/tcp.lua',
-      'deps/luvit/lib/timer.lua',
-      'deps/luvit/lib/tty.lua',
-      'deps/luvit/lib/udp.lua',
-      'deps/luvit/lib/url.lua',
-      'deps/luvit/lib/utils.lua',
+    'lua_modules_sources': [
+      '<!@(python tools/bundle.py -l <(lua_modules))',
     ],
   },
 
@@ -54,8 +30,7 @@
       'sources': [
         'agents/monitoring/monitoring.c',
         # lib files to make for an even more pleasant IDE experience
-        '<@(library_files)',
-        '<@(luvit_library_files)',
+        '<@(lua_modules_sources)',
         'common.gypi',
       ],
 
@@ -116,9 +91,9 @@
         {
           'action_name': 'virgo_luazip',
 
-          'inputs': [
-            '<@(library_files)',
-            '<@(luvit_library_files)',
+          'inputs': [       
+            '<@(lua_modules_sources)',
+            'tools/lua2zip.py',
           ],
 
           'outputs': [
@@ -129,7 +104,7 @@
             'python',
             'tools/lua2zip.py',
             '<@(_outputs)',
-            '<@(_inputs)',
+            '<@(lua_modules)',
             ],
         },
       ],
