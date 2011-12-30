@@ -45,7 +45,8 @@ if __name__ == '__main__':
 
   if sys.platform == "darwin":
     args.extend(['-f', 'make'])
-    args.extend(['-f', 'xcode'])
+    # gyp has a bug w/ xcode generate with the generated list of lua files
+    #args.extend(['-f', 'xcode'])
 
   # There's a bug with windows which doesn't allow this feature.
   if sys.platform != 'win32':
