@@ -41,6 +41,8 @@ int virgo_vasprintf(char **outstr, const char *fmt, va_list args);
 int virgo_asprintf(char **outstr, const char *fmt, ...);
 #endif
 
+char* virgo_basename(char *name);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

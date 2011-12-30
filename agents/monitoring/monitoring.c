@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
   virgo_t *v;
   virgo_error_t *err;
 
-  err = virgo_create(&v);
+  err = virgo_create(&v, "monitoring");
 
   if (err) {
     handle_error("Error in startup", err);

@@ -28,6 +28,11 @@ local Emitter = require('emitter')
 local Constants = require('constants')
 local Path = require('path')
 
+local LVFS = VFS
+_G.VFS = nil
+
+local vfs = LVFS.open()
+
 process = Emitter.new()
 
 function process.exit(exit_code, clean)
@@ -69,6 +74,17 @@ local function hide(name)
 end
 hide("_G")
 hide("exit_process")
+
+-- Remove the cwd based loaders, we don't want them
+local builtin_loader = package.loaders[1]
+package.loaders = nil
+package.path = nil
+package.cpath = nil
+package.searchpath = nil
+package.seeall = nil
+package.config = nil
+_G.module = nil
+
 
 -- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
 -- These shouldn't hold open the event loop
@@ -152,6 +168,8 @@ process.env = setmetatable({}, {
   end
 })
 
+local global_meta = {__index=_G}
+
 -- This is called by all the event sources from C
 -- The user can override it to hook into event sources
 function event_source(name, fn, ...)
@@ -161,9 +179,110 @@ function event_source(name, fn, ...)
   end, Debug.traceback))
 end
 
+local function myloadfile(path)
+  if not vfs:exists(path) then return end
+
+  if package.loaded[path] then
+    return function ()
+      return package.loaded[path]
+    end
+  end
+
+  local code = vfs:read(path)
+
+  local fn = assert(loadstring(code, '@' .. path))
+  local dirname = Path.dirname(path)
+  setfenv(fn, setmetatable({
+    __filename = path,
+    __dirname = dirname,
+    require = function (path)
+      return virgo_require(path, dirname)
+    end,
+  }, global_meta))
+  local module = fn()
+  package.loaded[path] = module
+  return function() return module end
+end
+
+-- tries to load a module at a specified absolute path
+local function load_module(path, verbose)
+
+  -- First, look for exact file match if the extension is given
+  local extension = Path.extname(path)
+  if extension == ".lua" then
+    return myloadfile(path)
+  end
+
+  -- Then, look for module/package.lua config file
+  if vfs:exists(path .. "/package.lua") then
+    local metadata = load_module(path .. "/package.lua")()
+    if metadata.main then
+      return load_module(Path.join(path, metadata.main))
+    end
+  end
+
+  -- Try to load as either lua script or binary extension
+  local fn = myloadfile(path .. ".lua") or myloadfile(path .. "/init.lua")
+  if fn then return fn end
+
+  return "\n\tCannot find module " .. path
+end
+
+
+function virgo_require(path, dirname)
+  if not dirname then dirname = '' end
+
+  -- Absolute and relative required modules
+  local first = path:sub(1, 1)
+  local absolute_path
+  if first == "/" then
+    absolute_path = Path.normalize(path)
+  elseif first == "." then
+    absolute_path = Path.join(dirname, path)
+  end
+  if absolute_path then
+    local loader = load_module(absolute_path)
+    if type(loader) == "function" then
+      return loader()
+    else
+      error("Failed to find module '" .. path .."'")
+    end
+  end
+
+  local errors = {}
+
+  -- Builtin modules
+  local module = package.loaded[path]
+  if module then return module end
+  if path:find("^[a-z_]+$") then
+    local loader = builtin_loader(path)
+    if type(loader) == "function" then
+      module = loader()
+      package.loaded[path] = module
+      return module
+    end
+  end
+
+  -- Bundled path modules
+  local dir = dirname .. "/"
+  repeat
+    dir = dir:sub(1, dir:find("/[^/]*$") - 1)
+    local full_path = dir .. "/modules/" .. path
+    local loader = load_module(full_path)
+    if type(loader) == "function" then
+      return loader()
+    else
+      errors[#errors + 1] = loader
+    end
+  until #dir == 0
+
+  error("Failed to find module '" .. path .."'" .. Table.concat(errors, ""))
+
+end
+
 error_meta = {__tostring=function(table) return table.message end}
 
-local global_meta = {__index=_G}
+require = virgo_require
 
 local virgo_init = {}
 

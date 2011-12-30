@@ -1,7 +1,14 @@
+local async = require('async')
+
 local Test = {}
 
 function Test.run()
-  print ("test entry point")
+  async.forEach({1,2,3}, function(k, callback)
+    print(k)
+    callback()
+  end, function()
+    print('Done')
+  end)
 end
 
 return Test
