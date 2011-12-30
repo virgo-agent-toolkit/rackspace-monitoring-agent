@@ -50,7 +50,7 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *raw_name, const char *name, ch
   char *filename;
   struct unz_file_info_s finfo;
   unzFile zip = NULL;
-  char *buf, *ptr;
+  char *buf;
   size_t len;
   int rv;
   int rc = 0;
@@ -89,7 +89,7 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *raw_name, const char *name, ch
     if (rv == UNZ_OK) {
       filename = malloc(finfo.size_filename + 1);
       unzGetCurrentFileInfo(zip, &finfo, filename, finfo.size_filename + 1, NULL, 0, NULL, 0);
-      if (strstr(filename, virgo_basename(name))) {
+      if (strstr(filename, virgo_basename((char*)name))) {
         free(filename);
         break;
       }
