@@ -1,4 +1,4 @@
-VERSION = "0.1.2"
+VERSION = "0.1.4"
 -- clear some globals
 -- This will break lua code written for other lua runtimes
 _G.io = nil
@@ -29,6 +29,11 @@ local Constants = require('constants')
 local Path = require('path')
 
 process = Emitter.new()
+process.version = VERSION
+process.versions = {
+  luvit = VERSION,
+  uv = UV.VERSION_MAJOR .. "." .. UV.VERSION_MINOR,
+}
 
 function process.exit(exit_code)
   process:emit('exit', exit_code)
@@ -70,20 +75,25 @@ hide("exit_process")
 
 -- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
 -- These shouldn't hold open the event loop
-UV.activate_signal_handler(Constants.SIGPIPE)
-UV.unref()
-UV.activate_signal_handler(Constants.SIGINT)
-UV.unref()
-UV.activate_signal_handler(Constants.SIGTERM)
-UV.unref()
+if luvit_os ~= "win" then
+  UV.activate_signal_handler(Constants.SIGPIPE)
+  UV.unref()
+  UV.activate_signal_handler(Constants.SIGINT)
+  UV.unref()
+  UV.activate_signal_handler(Constants.SIGTERM)
+  UV.unref()
+end
 
 -- Load the tty as a pair of pipes
 -- But don't hold the event loop open for them
 process.stdin = TTY.new(0)
-UV.unref()
 process.stdout = TTY.new(1)
-UV.unref()
 local stdout = process.stdout
+if luvit_os ~= "win" then
+  UV.unref()
+  UV.unref()
+end
+
 
 -- Replace print
 function print(...)

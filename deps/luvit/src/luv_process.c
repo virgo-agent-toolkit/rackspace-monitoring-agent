@@ -3,9 +3,7 @@
 
 #include "luv_process.h"
 
-#ifndef _WIN32
 extern char **environ;
-#endif
 
 void luv_process_on_exit(uv_process_t* handle, int exit_status, int term_signal) {
   // load the lua state and the userdata
@@ -76,6 +74,7 @@ int luv_spawn(lua_State* L) {
   options.exit_cb = luv_process_on_exit;
   options.file = command;
   options.args = args;
+  
   options.env = env ? env : environ;
   options.cwd = cwd;
   options.stdin_stream = stdin_stream;
