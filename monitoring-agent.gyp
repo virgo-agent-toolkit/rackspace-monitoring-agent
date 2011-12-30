@@ -5,6 +5,7 @@
       'lib/lua',
       'deps/luvit/lib',
       'lua_modules/async',
+      'lua_modules/bourbon',
       'agents/monitoring/lua',
     ],
     'lua_modules_sources': [

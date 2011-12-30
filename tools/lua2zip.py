@@ -9,12 +9,15 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 lib_lua = os.path.join('lib', 'lua')
 async_lua = os.path.join('lua_modules', 'async')
+bourbon_lua = os.path.join('lua_modules', 'bourbon')
 luvit_lua = os.path.join('deps', 'luvit', 'lib')
 monitoring_lua = os.path.join('agents', 'monitoring', 'lua')
 
 modules = {
   async_lua:
     generate_bundle_map('modules/async', 'lua_modules/async'),
+  bourbon_lua:
+    generate_bundle_map('modules/bourbon', 'lua_modules/bourbon'),
   lib_lua:
     generate_bundle_map('', 'lib/lua', True),
   luvit_lua:
