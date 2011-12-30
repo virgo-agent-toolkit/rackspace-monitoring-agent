@@ -2,10 +2,10 @@
   'variables': {
     'target_arch': 'ia32',
     'lua_modules': [
-      'agents/monitoring/lua',
-      'deps/luvit/lib',
-      'lua_modules/lua-async',
       'lib/lua',
+      'deps/luvit/lib',
+      'lua_modules/async',
+      'agents/monitoring/lua',
     ],
     'lua_modules_sources': [
       '<!@("tools/bundle.py" -l <(lua_modules))',
@@ -91,8 +91,8 @@
           'action_name': 'virgo_luazip',
 
           'inputs': [
-            '<@(lua_modules)',
             '<@(lua_modules_sources)',
+            'tools/lua2zip.py',
           ],
 
           'outputs': [
@@ -103,7 +103,7 @@
             'python',
             'tools/lua2zip.py',
             '<@(_outputs)',
-            '<@(_inputs)',
+            '<@(lua_modules)',
             ],
         },
       ],

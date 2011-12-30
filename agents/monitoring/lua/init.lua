@@ -5,11 +5,11 @@ function Entry.run()
   local opts = VUtils.getopt(process.argv, '')
 
   if opts.t then
-    require('test').run()
+    require('./test').run()
     return
   end
 
-  require('monitoring-agent').run()
+  require('./monitoring-agent').run()
 end
 
 return Entry

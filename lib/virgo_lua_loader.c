@@ -46,8 +46,6 @@ virgo__lua_loader_checkload(lua_State *L, int stat, const char *filename) {
 static int
 virgo__lua_loader_zip2buf(virgo_t* v, const char *raw_name, const char *name, char **p_buf, size_t *p_len)
 {
-  char *modules_name;
-  char *filename;
   struct unz_file_info_s finfo;
   unzFile zip = NULL;
   char *buf;
@@ -70,37 +68,6 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *raw_name, const char *name, ch
   rv = unzLocateFile(zip, name, 1);
   if (rv == UNZ_OK) {
     goto found;
-  }
-
-  /* Check for module/{name}/init.lua */
-  len = strlen(raw_name) + strlen("modules//init.lua") + 1;
-  modules_name = malloc(len);
-  snprintf(modules_name, len, "modules/%s/init.lua", raw_name);
-  rv = unzLocateFile(zip, modules_name, 1);
-  free(modules_name);
-  if (rv == UNZ_OK) {
-    goto found;
-  }
-
-  /* Search the zip file for the include */
-  rv = unzGoToFirstFile(zip);
-  while (rv == UNZ_OK) {
-    rv = unzGetCurrentFileInfo(zip, &finfo, NULL, 0, NULL, 0, NULL, 0);
-    if (rv == UNZ_OK) {
-      filename = malloc(finfo.size_filename + 1);
-      unzGetCurrentFileInfo(zip, &finfo, filename, finfo.size_filename + 1, NULL, 0, NULL, 0);
-      if (strstr(filename, virgo_basename((char*)name))) {
-        free(filename);
-        break;
-      }
-      free(filename);
-    }
-    rv = unzGoToNextFile(zip);
-  }
-
-  if (rv != UNZ_OK) {
-    rc = -2;
-    goto cleanup;
   }
 
 found:
@@ -152,14 +119,14 @@ virgo__lua_loader_loadit(lua_State *L) {
   int rv;
   virgo_t* v = virgo__lua_context(L);
   const char *name = luaL_checkstring(L, 1);
-  size_t nlen = strlen(name) + strlen(".lua") + 1;
+  size_t nlen = strlen("modules/") + strlen(name) + strlen(".lua") + 1;
   char *nstr = malloc(nlen);
 
   if (strstr(name, ".lua")) {
-    snprintf(nstr, nlen, "%s", name);
+    snprintf(nstr, nlen, "modules/%s", name);
   }
   else {
-    snprintf(nstr, nlen, "%s.lua", name);
+    snprintf(nstr, nlen, "modules/%s.lua", name);
   }
 
   rv = virgo__lua_loader_zip2buf(v, name, nstr, &buf, &len);
