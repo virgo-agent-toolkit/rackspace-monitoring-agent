@@ -28,7 +28,10 @@ local Emitter = require('emitter')
 local Constants = require('constants')
 local Path = require('path')
 
-local vfs = VFS.open()
+local LVFS = VFS
+_G.VFS = nil
+
+local vfs = LVFS.open()
 
 process = Emitter.new()
 
