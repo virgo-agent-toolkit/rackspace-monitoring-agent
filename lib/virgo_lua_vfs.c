@@ -44,7 +44,9 @@ newunzFile(lua_State *L)
 static unzFile*
 zip_context(lua_State *L, int findex) {
   unzFile* f = (unzFile*)luaL_checkudata(L, findex, ZIPFILEHANDLE);
-  if (f == NULL) luaL_argerror(L, findex, "bad vfs context");
+  if (f == NULL) {
+    luaL_argerror(L, findex, "bad vfs context");
+  }
   return f;
 }
 
@@ -83,8 +85,9 @@ vfs_read(lua_State *L) {
   zip = luaL_checkudata(L, 1, ZIPFILEHANDLE);
   name = luaL_checkstring(L, 2);
 
-  if (name[0] == '/')
+  if (name[0] == '/') {
     name++;
+  }
 
   rv = unzLocateFile(*zip, name, 1);
   if (rv != UNZ_OK) {
