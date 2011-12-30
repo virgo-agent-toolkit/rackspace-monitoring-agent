@@ -8,7 +8,7 @@
       'lib/lua',
     ],
     'lua_modules_sources': [
-      '<!@(tools/bundle.py -l "<@(lua_modules)" )',
+      '<!@("tools/bundle.py" -l <(lua_modules))',
     ],
   },
 

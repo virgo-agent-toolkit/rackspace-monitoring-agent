@@ -8,8 +8,9 @@ import getopt
 BASEDIR_NAME = 'modules'
 
 def output_file_list(module_name, path):
-  for f in glob.glob(os.path.join(path, '*.lua')):
-    print(f)
+  for f in os.listdir(path):
+    if f.endswith('.lua'):
+      print(path + '/' + f)
 
 def generate_bundle_map(module_name, path, is_base=False):
   t = []
