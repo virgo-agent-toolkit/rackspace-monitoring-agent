@@ -8,7 +8,7 @@
       'agents/monitoring/lua',
     ],
     'lua_modules_sources': [
-      '<!@("tools/bundle.py" -l <(lua_modules))',
+      '<!@(python tools/bundle.py -l <(lua_modules))',
     ],
   },
 
@@ -90,7 +90,7 @@
         {
           'action_name': 'virgo_luazip',
 
-          'inputs': [
+          'inputs': [       
             '<@(lua_modules_sources)',
             'tools/lua2zip.py',
           ],

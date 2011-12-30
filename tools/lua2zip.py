@@ -7,14 +7,19 @@ import os
 from bundle import generate_bundle_map
 from zipfile import ZipFile, ZIP_DEFLATED
 
+lib_lua = os.path.join('lib', 'lua')
+async_lua = os.path.join('lua_modules', 'async')
+luvit_lua = os.path.join('deps', 'luvit', 'lib')
+monitoring_lua = os.path.join('agents', 'monitoring', 'lua')
+
 modules = {
-  'lua_modules/async':
+  async_lua:
     generate_bundle_map('modules/async', 'lua_modules/async'),
-  'lib/lua':
+  lib_lua:
     generate_bundle_map('', 'lib/lua', True),
-  'deps/luvit/lib':
+  luvit_lua:
     generate_bundle_map('', 'deps/luvit/lib', True),
-  'agents/monitoring/lua':
+  monitoring_lua:
     generate_bundle_map('modules/monitoring', 'agents/monitoring/lua'),
 }
 
@@ -22,7 +27,7 @@ target = sys.argv[1]
 sources = sys.argv[2:]
 
 z = ZipFile(target, 'w', ZIP_DEFLATED)
-for source in sources:
+for source in sources:  
   if os.path.isdir(source):
     if modules.has_key(source):
       for mod_file in modules[source]:
