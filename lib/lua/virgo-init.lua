@@ -239,7 +239,6 @@ function virgo_require(path, dirname)
     absolute_path = Path.join(dirname, path)
   end
   if absolute_path then
-    p(absolute_path)
     local loader = load_module(absolute_path)
     if type(loader) == "function" then
       return loader()

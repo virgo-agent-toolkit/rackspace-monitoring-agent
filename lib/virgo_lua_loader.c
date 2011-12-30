@@ -44,7 +44,7 @@ virgo__lua_loader_checkload(lua_State *L, int stat, const char *filename) {
 }
 
 static int
-virgo__lua_loader_zip2buf(virgo_t* v, const char *raw_name, const char *name, char **p_buf, size_t *p_len)
+virgo__lua_loader_zip2buf(virgo_t* v, const char *name, char **p_buf, size_t *p_len)
 {
   struct unz_file_info_s finfo;
   unzFile zip = NULL;
@@ -66,11 +66,10 @@ virgo__lua_loader_zip2buf(virgo_t* v, const char *raw_name, const char *name, ch
 
   /* 1 means case sensitive file comparison */
   rv = unzLocateFile(zip, name, 1);
-  if (rv == UNZ_OK) {
-    goto found;
+  if (rv != UNZ_OK) {
+    rc = -2;
+    goto cleanup;
   }
-
-found:
 
   memset(&finfo, '0', sizeof(finfo));
 
@@ -129,7 +128,7 @@ virgo__lua_loader_loadit(lua_State *L) {
     snprintf(nstr, nlen, "modules/%s.lua", name);
   }
 
-  rv = virgo__lua_loader_zip2buf(v, name, nstr, &buf, &len);
+  rv = virgo__lua_loader_zip2buf(v, nstr, &buf, &len);
   if (rv != 0) {
     rv = luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, nstr);
     free(nstr);
