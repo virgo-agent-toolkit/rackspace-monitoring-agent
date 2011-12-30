@@ -125,11 +125,15 @@ vfs_read(lua_State *L) {
 
 static int
 vfs_exists(lua_State *L) {
-  unzFile *zip = luaL_checkudata(L, 1, ZIPFILEHANDLE);
-  const char *name = luaL_checkstring(L, 2);
+  int rv;
+  unzFile *zip;
+  const char *name;
+
+  zip = luaL_checkudata(L, 1, ZIPFILEHANDLE);
+  name = luaL_checkstring(L, 2);
   if (name[0] == '/')
     name++;
-  int rv = unzLocateFile(*zip, name, 1);
+  rv = unzLocateFile(*zip, name, 1);
   if (rv == UNZ_OK) {
     lua_pushboolean(L, 1);
   } else {
