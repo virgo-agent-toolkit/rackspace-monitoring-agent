@@ -118,14 +118,21 @@ virgo__lua_loader_loadit(lua_State *L) {
   int rv;
   virgo_t* v = virgo__lua_context(L);
   const char *name = luaL_checkstring(L, 1);
-  size_t nlen = strlen(name) + strlen(".lua") + 1;
+  size_t nlen = strlen("modules/") + strlen(name) + strlen(".lua") + 1;
   char *nstr = malloc(nlen);
-  snprintf(nstr, nlen, "%s.lua", name);
+
+  if (strstr(name, ".lua")) {
+    snprintf(nstr, nlen, "modules/%s", name);
+  }
+  else {
+    snprintf(nstr, nlen, "modules/%s.lua", name);
+  }
 
   rv = virgo__lua_loader_zip2buf(v, nstr, &buf, &len);
   if (rv != 0) {
+    rv = luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, nstr);
     free(nstr);
-    return luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, nstr);
+    return rv;
   }
 
   rv = luaL_loadbuffer(L, buf, len, nstr);
