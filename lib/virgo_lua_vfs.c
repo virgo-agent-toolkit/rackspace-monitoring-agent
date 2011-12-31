@@ -134,8 +134,10 @@ vfs_exists(lua_State *L) {
 
   zip = zip_context(L, 1);
   name = luaL_checkstring(L, 2);
-  if (name[0] == '/')
+  if (name[0] == '/') {
     name++;
+  }
+
   rv = unzLocateFile(*zip, name, 1);
   if (rv == UNZ_OK) {
     lua_pushboolean(L, 1);
