@@ -82,7 +82,7 @@ vfs_read(lua_State *L) {
   char *buf;
   size_t len;
 
-  zip = luaL_checkudata(L, 1, ZIPFILEHANDLE);
+  zip = zip_context(L, 1);
   name = luaL_checkstring(L, 2);
 
   if (name[0] == '/') {
@@ -132,7 +132,7 @@ vfs_exists(lua_State *L) {
   unzFile *zip;
   const char *name;
 
-  zip = luaL_checkudata(L, 1, ZIPFILEHANDLE);
+  zip = zip_context(L, 1);
   name = luaL_checkstring(L, 2);
   if (name[0] == '/')
     name++;
