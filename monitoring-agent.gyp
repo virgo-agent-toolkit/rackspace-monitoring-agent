@@ -6,6 +6,7 @@
       'deps/luvit/lib',
       'lua_modules/async',
       'lua_modules/bourbon',
+      'lua_modules/options',
       'agents/monitoring/lua',
     ],
     'lua_modules_sources': [
@@ -91,7 +92,7 @@
         {
           'action_name': 'virgo_luazip',
 
-          'inputs': [       
+          'inputs': [
             '<@(lua_modules_sources)',
             'tools/lua2zip.py',
           ],

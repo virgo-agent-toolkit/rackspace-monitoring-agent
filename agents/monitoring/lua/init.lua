@@ -1,15 +1,14 @@
-local VUtils = require('virgo-utils')
 local Entry = {}
 
+local argv = require("options")
+  :usage("Usage: ")
+  :describe("e", "entry module")
+  :argv("he:")
+
 function Entry.run()
-  local opts = VUtils.getopt(process.argv, '')
-
-  if opts.t then
-    require('./test').run()
-    return
-  end
-
-  require('./monitoring-agent').run()
+  local mod = argv.args.e or 'monitoring-agent'
+  mod = './' .. mod
+  require(mod).run()
 end
 
 return Entry
