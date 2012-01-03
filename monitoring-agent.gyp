@@ -7,6 +7,7 @@
       'lua_modules/async',
       'lua_modules/bourbon',
       'lua_modules/options',
+      'lua_modules/options/modules',
       'agents/monitoring/lua',
     ],
     'lua_modules_sources': [
