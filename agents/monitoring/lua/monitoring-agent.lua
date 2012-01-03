@@ -1,3 +1,6 @@
+local TCP = require 'tcp'
+local MonitoringSocket = require('./monitoring-socket')
+
 local MonitoringAgent = {}
 
 function MonitoringAgent.sample()
@@ -38,7 +41,13 @@ function MonitoringAgent.sample()
 end
 
 function MonitoringAgent.run()
-  MonitoringAgent.sample()
+  -- MonitoringAgent.sample()
+  local sock = MonitoringSocket.new()
+  sock:connect('google.com', 80)
+  sock:on('complete', function()
+    p('CONNECTED')
+    sock:close()
+  end)
 end
 
 return MonitoringAgent
