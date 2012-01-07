@@ -143,49 +143,55 @@ virgo__lua_loader_loadit(lua_State *L) {
   return virgo__lua_loader_checkload(L, rv == LUA_OK, name);
 }
 
+/* copied mostly from loadlib.c */
+static int
+loader_preload (lua_State *L) {
+  const char *name = luaL_checkstring(L, 1);
+
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "preload");
+  lua_remove(L, -2);
+
+  if (!lua_istable(L, -1))
+    luaL_error(L, LUA_QL("package.preload") " must be a table");
+  lua_getfield(L, -1, name);
+  if (lua_isnil(L, -1))  /* not found? */
+    lua_pushfstring(L, "\n\tno field package.preload['%s']", name);
+  return 1;
+}
+
+static const lua_CFunction loaders[] =
+  {loader_preload, virgo__lua_loader_loadit, NULL};
+
+static void
+replace_loaders(lua_State *L, const char *loaders_name) {
+  size_t i;
+  int top;
+
+  top = lua_gettop(L);
+  lua_getglobal(L, "package");
+
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    abort();
+  }
+
+  /* create `loaders' table */
+  lua_createtable(L, sizeof(loaders)/sizeof(loaders[0]) - 1, 0);
+  /* fill it with pre-defined loaders */
+  for (i=0; loaders[i] != NULL; i++) {
+    lua_pushcfunction(L, loaders[i]);
+    lua_rawseti(L, -2, i+1);
+  }
+  lua_setfield(L, -2, "loaders");
+}
+
 void
 virgo__lua_loader_init(lua_State *L)
 {
-  int top;
-
   /* Lua 5.2 changed package.loaders -> package.searchers */
 #if LUA_VERSION_NUM >= 502
-  top = lua_gettop(L);
-  lua_getglobal(L, "package");
-
-  if (lua_type(L, -1) != LUA_TTABLE) {
-    abort();
-  }
-
-  lua_pushliteral(L, "searchers");
-  lua_gettable(L, -2);
-
-  if(lua_type(L, -1) != LUA_TTABLE) {
-    abort();
-  }
-
-  lua_pushnumber(L, lua_rawlen(L, -1) + 1);
-  lua_pushcfunction(L, virgo__lua_loader_loadit);
-  lua_settable(L, -3);
-
+  replace_loaders(L, "searchers");
 #else
-  top = lua_gettop(L);
-  lua_getglobal(L, "package");
-
-  if (lua_type(L, -1) != LUA_TTABLE) {
-    abort();
-  }
-
-  lua_pushliteral(L, "loaders");
-  lua_gettable(L, -2);
-
-  if(lua_type(L, -1) != LUA_TTABLE) {
-    abort();
-  }
-
-  lua_pushnumber(L, lua_objlen(L, -1) + 1);
-  lua_pushcfunction(L, virgo__lua_loader_loadit);
-  lua_settable(L, -3);
+  replace_loaders(L, "loaders");
 #endif
 }
-
