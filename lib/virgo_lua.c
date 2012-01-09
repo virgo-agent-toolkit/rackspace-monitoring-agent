@@ -87,8 +87,13 @@ virgo__lua_luvit_print_stderr(lua_State* L) {
 static void
 virgo__lua_luvit_init(virgo_t *v)
 {
+  uv_loop_t *loop;
+  ares_channel channel;
+  struct ares_options options;
   int index;
   lua_State *L = v->L;
+
+  memset(&channel, 0, sizeof(channel));
 
   /* Pull up the preload table */
   lua_getglobal(L, "package");
@@ -132,6 +137,13 @@ virgo__lua_luvit_init(virgo_t *v)
   assert(lua_pushthread(L) == 1);
   lua_setfield(L, LUA_REGISTRYINDEX, "main_thread");
 
+  // Store the loop within the registry
+  loop = uv_default_loop();
+  luv_set_loop(L, loop);
+
+  // Store the ARES Channel
+  uv_ares_init_options(luv_get_loop(L), &channel, &options, 0);
+  luv_set_ares_channel(L, &channel);
 }
 
 virgo_error_t*
