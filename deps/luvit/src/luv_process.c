@@ -1,7 +1,25 @@
+/*
+ *  Copyright 2012 The Luvit Authors. All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
 #include <stdlib.h>
 #include <assert.h>
 
 #include "luv_process.h"
+#include "utils.h"
 
 extern char **environ;
 
@@ -83,11 +101,11 @@ int luv_spawn(lua_State* L) {
 
   // Create the userdata
   handle = (uv_process_t*)lua_newuserdata(L, sizeof(uv_process_t));
-  r = uv_spawn(uv_default_loop(), handle, options);
+  r = uv_spawn(luv_get_loop(L), handle, options);
   free(args);
   if (env) free(env);
   if (r) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "spawn: %s", uv_strerror(err));
   }
 
@@ -118,7 +136,7 @@ int luv_process_kill(lua_State* L) {
   int signum = luaL_checkint(L, 2);
 
   if (uv_process_kill(handle, signum)) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "process_kill: %s", uv_strerror(err));
   }
 

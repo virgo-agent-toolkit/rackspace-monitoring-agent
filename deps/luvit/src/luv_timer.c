@@ -1,13 +1,31 @@
+/*
+ *  Copyright 2012 The Luvit Authors. All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
 #include <stdlib.h>
 #include <assert.h>
 
 #include "luv_tcp.h"
+#include "utils.h"
 
 int luv_new_timer (lua_State* L) {
   int before = lua_gettop(L);
   luv_ref_t* ref;
   uv_timer_t* handle = (uv_timer_t*)lua_newuserdata(L, sizeof(uv_timer_t));
-  uv_timer_init(uv_default_loop(), handle);
+  uv_timer_init(luv_get_loop(L), handle);
 
   // Set metatable for type
   luaL_getmetatable(L, "luv_timer");
@@ -37,7 +55,7 @@ void luv_on_timer(uv_timer_t* handle, int status) {
   lua_rawgeti(L, LUA_REGISTRYINDEX, ref->r);
 
   if (status == -1) {
-    luv_push_async_error(L, uv_last_error(uv_default_loop()), "on_timer", NULL);
+    luv_push_async_error(L, uv_last_error(luv_get_loop(L)), "on_timer", NULL);
     luv_emit_event(L, "error", 1);
   } else {
     luv_emit_event(L, "timeout", 0);
@@ -55,7 +73,7 @@ int luv_timer_start(lua_State* L) {
   luv_register_event(L, 1, "timeout", 4);
 
   if (uv_timer_start(handle, luv_on_timer, timeout, repeat)) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "timer_start: %s", uv_strerror(err));
   }
 
@@ -69,7 +87,7 @@ int luv_timer_stop(lua_State* L) {
   uv_timer_t* handle = (uv_timer_t*)luv_checkudata(L, 1, "timer");
 
   if (uv_timer_stop(handle)) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "timer_stop: %s", uv_strerror(err));
   }
 
@@ -82,7 +100,7 @@ int luv_timer_again(lua_State* L) {
   uv_timer_t* handle = (uv_timer_t*)luv_checkudata(L, 1, "timer");
 
   if (uv_timer_again(handle)) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "timer_again: %s", uv_strerror(err));
   }
 
