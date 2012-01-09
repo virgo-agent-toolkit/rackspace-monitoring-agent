@@ -39,6 +39,7 @@
 #include "lconstants.h"
 #include "lhttp_parser.h"
 #include "lenv.h"
+#include "lyajl.h"
 
 extern int luaopen_sigar (lua_State *L);
 
@@ -99,6 +100,10 @@ virgo__lua_luvit_init(virgo_t *v)
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
   lua_remove(L, -2);
+
+  // Register yajl
+  lua_pushcfunction(L, luaopen_yajl);
+  lua_setfield(L, -2, "yajl");
 
   /* Register http_parser */
   lua_pushcfunction(L, luaopen_http_parser);
