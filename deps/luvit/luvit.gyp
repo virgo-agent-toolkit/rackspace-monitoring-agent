@@ -6,15 +6,18 @@
       'dependencies': [
         'deps/http-parser/http_parser.gyp:http_parser',
         'deps/luajit.gyp:*',
+        'deps/yajl.gyp:yajl',
         'deps/uv/uv.gyp:uv',
       ],
       'sources': [
         'src/lconstants.c',
         'src/lenv.c',
         'src/lhttp_parser.c',
+        'src/lyajl.c',
         'src/luv.c',
         'src/luv_fs.c',
         'src/luv_fs_watcher.c',
+        'src/luv_dns.c',
         'src/luv_handle.c',
         'src/luv_misc.c',
         'src/luv_pipe.c',
@@ -25,14 +28,17 @@
         'src/luv_tty.c',
         'src/luv_udp.c',
         'src/luvit.c',
+        'src/lyajl.c',
         'src/utils.c',
+        'lib/dns.lua',
         'lib/emitter.lua',
+        'lib/error.lua',
         'lib/fiber.lua',
         'lib/fs.lua',
         'lib/http.lua',
-        'lib/error.lua',
         'lib/luvit.lua',
         'lib/mime.lua',
+        'lib/net.lua',
         'lib/path.lua',
         'lib/pipe.lua',
         'lib/process.lua',
@@ -49,27 +55,21 @@
         'lib/utils.lua',
       ],
 
-	  'msvs-settings': {
+    'msvs-settings': {
         'VCLinkerTool': {
           'SubSystem': 1, # /subsystem:console
         },
       },
-
       'conditions': [
-        ['OS == "linux"',
-          { 'libraries': ['-ldl'] },
-	],
+        ['OS == "linux"', { 'libraries': ['-ldl'] } ],
       ],
-	  
-	  'defines': [
-		'LUVIT_OS="<(OS)"',
-	  ],
-	  
+      'defines': [
+        'LUVIT_OS="<(OS)"',
+      ],
       'include_dirs': [
         'src',
         'deps/uv/src/ares'
       ],
-
       'rules': [
         {
           'rule_name': 'jit_lua',

@@ -1,7 +1,26 @@
+/*
+ *  Copyright 2012 The Luvit Authors. All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
 #include <stdlib.h>
 #include <assert.h>
 
+#include "luv_portability.h"
 #include "luv_udp.h"
+#include "utils.h"
 
 void luv_on_udp_recv(uv_udp_t* handle, ssize_t nread, uv_buf_t buf, struct sockaddr* addr, unsigned flags) {
   printf("TODO: implement luv_on_udp_recv\n");
@@ -11,7 +30,7 @@ int luv_new_udp (lua_State* L) {
   int before = lua_gettop(L);
   luv_ref_t* ref;
 uv_udp_t* handle = (uv_udp_t*)lua_newuserdata(L, sizeof(uv_udp_t));
-  uv_udp_init(uv_default_loop(), handle);
+  uv_udp_init(luv_get_loop(L), handle);
 
   // Set metatable for type
   luaL_getmetatable(L, "luv_udp");
@@ -43,7 +62,7 @@ int luv_udp_bind(lua_State* L) {
   struct sockaddr_in address = uv_ip4_addr(host, port);
 
   if (uv_udp_bind(handle, address, flags)) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "udp_bind: %s", uv_strerror(err));
   }
 
@@ -61,7 +80,7 @@ int luv_udp_bind6(lua_State* L) {
   struct sockaddr_in6 address = uv_ip6_addr(host, port);
 
   if (uv_udp_bind6(handle, address, flags)) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "udp_bind: %s", uv_strerror(err));
   }
 
@@ -83,7 +102,7 @@ int luv_udp_set_membership(lua_State* L) {
 
   // TODO: don't use null, let user pass in
   if (uv_udp_set_membership(handle, NULL, interface_addr, membership)) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "udp_set_membership: %s", uv_strerror(err));
   }
 
@@ -102,7 +121,7 @@ int luv_udp_getsockname(lua_State* L) {
   int addrlen = sizeof(address);
 
   if (uv_udp_getsockname(handle, (struct sockaddr*)(&address), &addrlen)) {
-    uv_err_t err = uv_last_error(uv_default_loop());
+    uv_err_t err = uv_last_error(luv_get_loop(L));
     return luaL_error(L, "udp_getsockname: %s", uv_strerror(err));
   }
 

@@ -1,6 +1,7 @@
 LUADIR=deps/luajit
 UVDIR=deps/uv
 HTTPDIR=deps/http-parser
+YAJLDIR=deps/yajl
 BUILDDIR=build
 GENDIR=${BUILDDIR}/generated
 PREFIX?=/usr/local
@@ -31,9 +32,12 @@ MAKEFLAGS+=-e
 LUALIBS=${GENDIR}/luvit.o    \
         ${GENDIR}/http.o     \
         ${GENDIR}/url.o      \
+        ${GENDIR}/querystring.o \
         ${GENDIR}/request.o  \
         ${GENDIR}/response.o \
         ${GENDIR}/fs.o       \
+        ${GENDIR}/dns.o      \
+        ${GENDIR}/net.o      \
         ${GENDIR}/process.o  \
         ${GENDIR}/error.o    \
         ${GENDIR}/emitter.o  \
@@ -48,10 +52,12 @@ LUALIBS=${GENDIR}/luvit.o    \
         ${GENDIR}/mime.o     \
         ${GENDIR}/path.o     \
         ${GENDIR}/stack.o    \
+        ${GENDIR}/json.o     \
         ${GENDIR}/utils.o
 
 LUVLIBS=${BUILDDIR}/utils.o          \
         ${BUILDDIR}/luv_fs.o         \
+        ${BUILDDIR}/luv_dns.o        \
         ${BUILDDIR}/luv_handle.o     \
         ${BUILDDIR}/luv_udp.o        \
         ${BUILDDIR}/luv_fs_watcher.o \
@@ -64,6 +70,7 @@ LUVLIBS=${BUILDDIR}/utils.o          \
         ${BUILDDIR}/luv_misc.o       \
         ${BUILDDIR}/lconstants.o     \
         ${BUILDDIR}/lenv.o           \
+        ${BUILDDIR}/lyajl.o          \
         ${BUILDDIR}/lhttp_parser.o
 
 ALLLIBS=${BUILDDIR}/luvit.o       \
@@ -71,12 +78,13 @@ ALLLIBS=${BUILDDIR}/luvit.o       \
         ${BUILDDIR}/luv.o         \
         ${LUADIR}/src/libluajit.a \
         ${UVDIR}/uv.a             \
+        ${YAJLDIR}/yajl.a         \
         ${HTTPDIR}/http_parser.o  \
         ${LUALIBS}
 
 all: ${BUILDDIR}/luvit
 
-deps: ${LUADIR}/src/libluajit.a ${UVDIR}/uv.a ${HTTPDIR}/http_parser.o
+deps: ${LUADIR}/src/libluajit.a ${UVDIR}/uv.a ${HTTPDIR}/http_parser.o ${YAJLDIR}/yajl.a
 
 ${GENDIR}:
 	mkdir -p ${GENDIR}
@@ -87,6 +95,15 @@ ${LUADIR}/Makefile:
 ${LUADIR}/src/libluajit.a: ${LUADIR}/Makefile
 	touch -c ${LUADIR}/src/*.h
 	$(MAKE) -C ${LUADIR}
+
+${YAJLDIR}/CMakeLists.txt: 
+	git submodule update --init ${YAJLDIR}
+
+${YAJLDIR}/Makefile: deps/Makefile.yajl ${YAJLDIR}/CMakeLists.txt
+	ln -s ../Makefile.yajl ${YAJLDIR}/Makefile
+
+${YAJLDIR}/yajl.a: ${YAJLDIR}/Makefile
+	$(MAKE) -C ${YAJLDIR}
 
 ${UVDIR}/Makefile:
 	git submodule update --init ${UVDIR}
@@ -108,7 +125,7 @@ ${GENDIR}/%.o: ${GENDIR}/%.c
 
 ${BUILDDIR}/%.o: src/%.c src/%.h deps
 	mkdir -p ${BUILDDIR}
-	$(CC) -g -Wall -Werror -c $< -o $@ -I${HTTPDIR} -I${UVDIR}/include -I${LUADIR}/src -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DLUVIT_OS=\"unix\"
+	$(CC) -g -Wall -Werror -c $< -o $@ -I${HTTPDIR} -I${UVDIR}/include -I${LUADIR}/src -I${YAJLDIR}/src/api -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DLUVIT_OS=\"unix\"
 
 ${BUILDDIR}/luvit: ${GENDIR} ${ALLLIBS}
 	$(CC) -g -o ${BUILDDIR}/luvit ${ALLLIBS} -Wall -lm -ldl -lpthread ${LDFLAGS}
@@ -116,6 +133,7 @@ ${BUILDDIR}/luvit: ${GENDIR} ${ALLLIBS}
 clean:
 	${MAKE} -C ${LUADIR} clean
 	${MAKE} -C ${HTTPDIR} clean
+	${MAKE} -C ${YAJLDIR} clean
 	${MAKE} -C ${UVDIR} distclean
 	${MAKE} -C examples/native clean
 	rm -rf build
@@ -144,7 +162,7 @@ uninstall deinstall:
 examples/native/vector.luvit: examples/native/vector.c examples/native/vector.h
 	${MAKE} -C examples/native
 
-test: ${BUILDDIR}/luvit examples/native/vector.luvit
+test: examples/native/vector.luvit
 	find tests -name "test-*.lua" | while read LINE; do \
 		${BUILDDIR}/luvit $$LINE > tests/failed_test.log && \
 		rm tests/failed_test.log || cat tests/failed_test.log; \
