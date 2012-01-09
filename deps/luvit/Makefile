@@ -100,7 +100,7 @@ ${YAJLDIR}/CMakeLists.txt:
 	git submodule update --init ${YAJLDIR}
 
 ${YAJLDIR}/Makefile: deps/Makefile.yajl ${YAJLDIR}/CMakeLists.txt
-	ln -s ../Makefile.yajl ${YAJLDIR}/Makefile
+	cp deps/Makefile.yajl ${YAJLDIR}/Makefile
 
 ${YAJLDIR}/yajl.a: ${YAJLDIR}/Makefile
 	$(MAKE) -C ${YAJLDIR}
@@ -163,9 +163,6 @@ examples/native/vector.luvit: examples/native/vector.c examples/native/vector.h
 	${MAKE} -C examples/native
 
 test: examples/native/vector.luvit
-	find tests -name "test-*.lua" | while read LINE; do \
-		${BUILDDIR}/luvit $$LINE > tests/failed_test.log && \
-		rm tests/failed_test.log || cat tests/failed_test.log; \
-	done
+	cd tests && ../${BUILDDIR}/luvit runner.lua
 
 .PHONY: test install all
