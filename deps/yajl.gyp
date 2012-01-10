@@ -8,6 +8,7 @@
     {
       'target_name': 'yajl',
       'type': '<(library)',
+      'dependencies': [ 'headers' ],
       'sources': [
         'yajl/src/yajl.c',
         'yajl/src/yajl_alloc.c',
@@ -28,14 +29,18 @@
         'yajl/src',
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
+    },
+    {
+      'target_name': 'headers',
+      'type': 'none',
       'copies': [
         {
           'destination': '<(SHARED_INTERMEDIATE_DIR)/yajl',
           'files': [
             'yajl/src/api/yajl_common.h',
-            'yajl/src/api/yajl_gen.h',
-            'yajl/src/api/yajl_parse.h',
-            'yajl/src/api/yajl_tree.h',
+          'yajl/src/api/yajl_gen.h',
+          'yajl/src/api/yajl_parse.h',
+          'yajl/src/api/yajl_tree.h',
           ]
         }
       ],
@@ -63,6 +68,6 @@
           ],
         }
       ]
-    }, # end libyajl
+  },
   ] # end targets
 }
