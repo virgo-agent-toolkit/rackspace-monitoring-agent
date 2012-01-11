@@ -37,3 +37,15 @@ If you wish to compile from the command line, run:
     python tools/build.py
 
 See also: http://www.chromium.org/developers/how-tos/build-instructions-windows
+
+
+Hacking
+=======
+### Change agent entry point
+
+The entry point to the agent defaults to
+`modules/monitoring/monitoring-agent.lua`. To change this entry use the flag -e:
+
+    ./monitoring-agent -e test
+
+This example would run `agents/monitoring/lua/test.lua`.
