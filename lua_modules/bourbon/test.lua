@@ -1,3 +1,5 @@
 #!/usr/bin/env luvit
 
-local bourbon = require ('./')
+local bourbon = require('./')
+
+bourbon.run(require('./tests/asserts'))
