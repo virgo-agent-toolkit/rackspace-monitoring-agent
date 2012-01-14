@@ -4,6 +4,6 @@ return {
   description = "test library",
   author = "Ryan Phillips <ryan.phillips@rackspace.com>",
   dependencies = {
-    ["async"] = "https://github.com/racker/lua-sync/zipball/master",
+    ["async"] = "https://github.com/racker/lua-async/zipball/master",
   },
 }
