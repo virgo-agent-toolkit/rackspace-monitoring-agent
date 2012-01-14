@@ -70,6 +70,68 @@ VIRGO_API(virgo_error_t*) virgo_conf_lua_load_path(virgo_t *v, const char *path)
 VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char **argv);
 
 
+/**
+ * Log levels.
+ */
+typedef enum
+{
+  VIRGO_LOG_NOTHING,
+  VIRGO_LOG_CRITICAL,
+  VIRGO_LOG_ERRORS,
+  VIRGO_LOG_WARNINGS,
+  VIRGO_LOG_INFO,
+  VIRGO_LOG_DEBUG,
+  VIRGO_LOG_EVERYTHING
+} virgo_log_level_e;
+
+/* Get and set the log level on a context */
+VIRGO_API(void) virgo_log_level_set(virgo_t *v, virgo_log_level_e level);
+VIRGO_API(virgo_log_level_e) virgo_log_level_get(virgo_t *v);
+
+/* Log a simple string, at the specified log level. */
+VIRGO_API(void) virgo_log(virgo_t *v, virgo_log_level_e level, const char *str);
+
+/* Simple variants:
+ *    - Prepends Timestamp, log level.
+ *    - Appends a newline
+ */
+VIRGO_API(void) virgo_log_critical(virgo_t *v, const char *str);
+VIRGO_API(void) virgo_log_error(virgo_t *v, const char *str);
+VIRGO_API(void) virgo_log_warning(virgo_t *v, const char *str);
+VIRGO_API(void) virgo_log_info(virgo_t *v, const char *str);
+VIRGO_API(void) virgo_log_debug(virgo_t *v, const char *str);
+
+/* Format string variants of the log operations */
+VIRGO_API(void)  virgo_log_fmtv(virgo_t *v, virgo_log_level_e level, const char* fmt, va_list ap);
+VIRGO_API(void)  virgo_log_fmt(virgo_t *v, virgo_log_level_e level, const char* fmt, ...) VIRGO_ATTR_FMT_FUNC(3,4);
+VIRGO_API(void)  virgo_log_criticalf(virgo_t *v, const char *fmt, ...) VIRGO_ATTR_FMT_FUNC(2,3);
+VIRGO_API(void)  virgo_log_errorf(virgo_t *v, const char *fmt, ...) VIRGO_ATTR_FMT_FUNC(2,3);
+VIRGO_API(void)  virgo_log_warningf(virgo_t *v, const char *fmt, ...) VIRGO_ATTR_FMT_FUNC(2,3);
+VIRGO_API(void)  virgo_log_infof(virgo_t *v, const char *fmt, ...) VIRGO_ATTR_FMT_FUNC(2,3);
+VIRGO_API(void)  virgo_log_debugf(virgo_t *v, const char *fmt, ...) VIRGO_ATTR_FMT_FUNC(2,3);
+
+
+#ifndef logCrit
+#define logCrit virgo_log_criticalf
+#endif
+
+#ifndef logErr
+#define logErr virgo_log_errorf
+#endif
+
+#ifndef logWarn
+#define logWarn virgo_log_warningf
+#endif
+
+#ifndef logInfo
+#define logInfo virgo_log_infof
+#endif
+
+#ifndef logDbg
+#define logDbg virgo_log_debugf
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
