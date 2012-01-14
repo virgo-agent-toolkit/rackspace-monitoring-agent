@@ -27,7 +27,6 @@ local TTY = require('tty')
 local Emitter = require('emitter')
 local Constants = require('constants')
 local Path = require('path')
-
 local LVFS = VFS
 _G.VFS = nil
 
