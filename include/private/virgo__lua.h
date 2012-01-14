@@ -40,7 +40,17 @@ void virgo__lua_loader_init(lua_State *L);
 int virgo__lua_debugger_init(lua_State *L);
 void virgo__lua_debug_stackdump(lua_State *L, const char *msg);
 int virgo__lua_debug_stackwalk(lua_State *l);
-
 int virgo__lua_vfs_init(lua_State *L);
+
+int virgo__lua_logging_open(lua_State *L);
+
+#define VIRGO_DEFINE_CONSTANT_ALIAS(L, constant, alias) \
+  lua_pushinteger(L, constant);            \
+  lua_setfield(L, -2, alias)
+
+#define VIRGO_DEFINE_CONSTANT(L, constant) \
+  lua_pushinteger(L, constant);            \
+  lua_setfield(L, -2, #constant)
+
 
 #endif /* _virgo__lua_h_ */

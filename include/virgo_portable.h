@@ -19,6 +19,8 @@
  * @file virgo_portable.h
  */
 
+#include <stdarg.h>
+
 #ifndef _virgo_portable_h_
 #define _virgo_portable_h_
 
@@ -36,12 +38,21 @@ extern "C" {
 
 #ifdef VIRGO_WANT_ASPRINTF
 #include <stdio.h>
-#include <stdarg.h>
 int virgo_vasprintf(char **outstr, const char *fmt, va_list args);
 int virgo_asprintf(char **outstr, const char *fmt, ...);
 #endif
 
 char* virgo_basename(char *name);
+
+/* Function annotation attribute to declare a function takes a format string, 
+ * and to check it for valid args.
+ */
+#if !defined(SWIG) && !defined(_MSC_VER)
+#define VIRGO_ATTR_FMT_FUNC(x,y) __attribute__((format(printf,x,y)));
+#else
+#define VIRGO_ATTR_FMT_FUNC(x,y)
+#endif
+
 
 #ifdef __cplusplus
 }

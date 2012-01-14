@@ -3,6 +3,7 @@ local MonitoringAgent = {}
 function MonitoringAgent.sample()
   local HTTP = require("http")
   local Utils = require("utils")
+  local logging = require('logging')
   local s = sigar:new()
   local sysinfo = s:sysinfo()
   local cpus = s:cpus()
@@ -34,7 +35,8 @@ function MonitoringAgent.sample()
     i = i + 1
   end
 
-  print("Server listening at http://localhost:8080/")
+  logging.log(logging.CRIT, "Server listening at http://localhost:8080/")
+
 end
 
 function MonitoringAgent.run()
