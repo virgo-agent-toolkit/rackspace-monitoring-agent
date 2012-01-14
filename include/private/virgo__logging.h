@@ -16,24 +16,10 @@
  */
 
 #include "virgo.h"
-#include "lua.h"
 
-#include "stdio.h"
+#ifndef _virgo__logging_h_
+#define _virgo__logging_h_
 
-#ifndef _virgo__types_h_
-#define _virgo__types_h_
+virgo_error_t* virgo__log_rotate(virgo_t *v);
 
-struct virgo_t {
-  lua_State* L;
-  const char *lua_load_path;
-  char *lua_default_module;
-  int argc;
-  char **argv;
-  virgo_log_level_e log_level;
-  FILE *log_fp;
-  const char *log_path;
-};
-
-
-
-#endif /* _virgo__types_h_ */
+#endif
