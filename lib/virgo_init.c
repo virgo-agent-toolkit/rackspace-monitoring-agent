@@ -18,6 +18,7 @@
 #include "virgo.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
+#include "virgo__logging.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -82,6 +83,7 @@ virgo_create(virgo_t **p_v, const char *default_module)
 
   v = calloc(1, sizeof(virgo_t));
   v->lua_default_module = strdup(default_module);
+  v->log_level = VIRGO_LOG_EVERYTHING;
   *p_v = v;
 
   return VIRGO_SUCCESS;
@@ -91,6 +93,12 @@ virgo_error_t*
 virgo_run(virgo_t *v)
 {
   virgo_error_t* err;
+
+  err = virgo__log_rotate(v);
+
+  if (err) {
+    return err;
+  }
 
   err = virgo__lua_init(v);
 
@@ -119,6 +127,14 @@ virgo_destroy(virgo_t *v)
   if (v->lua_default_module) {
     free((void*)v->lua_default_module);
   }
+
+  if (v->log_path) {
+    free((void*)v->log_path);
+  }
+  if (v->log_fp && v->log_fp != stderr) {
+    fclose(v->log_fp);
+  }
+
   free((void*)v);
 
   virgo__global_terminate();

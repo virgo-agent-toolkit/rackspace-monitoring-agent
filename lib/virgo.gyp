@@ -28,6 +28,7 @@
         'virgo_lua_loader.c',
         'virgo_lua_debugger.c',
         'virgo_lua_vfs.c',
+        'virgo_logging.c',
         'virgo_portable.c'
         ],
       'include_dirs': [
