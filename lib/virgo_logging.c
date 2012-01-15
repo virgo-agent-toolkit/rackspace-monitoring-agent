@@ -49,7 +49,7 @@ virgo__log_rotate(virgo_t *v)
     }
   }
 
- v->log_fp = nxt;
+  v->log_fp = nxt;
 
   if (old != NULL && old != stderr) {
     fclose(old);
