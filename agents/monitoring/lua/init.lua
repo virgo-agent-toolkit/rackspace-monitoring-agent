@@ -1,3 +1,5 @@
+local logging = require('logging')
+
 local Entry = {}
 
 local argv = require("options")
@@ -8,7 +10,16 @@ local argv = require("options")
 function Entry.run()
   local mod = argv.args.e or 'monitoring-agent'
   mod = './' .. mod
-  require(mod).run()
+
+  logging.log(logging.INFO, 'Running Module ' .. mod)
+
+  local err, msg = pcall(function()
+    require(mod).run()
+  end)
+
+  if err == false then
+    logging.log(logging.ERR, msg)
+  end
 end
 
 return Entry
