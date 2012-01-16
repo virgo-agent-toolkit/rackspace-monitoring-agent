@@ -53,9 +53,6 @@ function AgentClient.connect(source, host, port, callback)
     callback(nil, ap)
   end)
   ap._conn:on('data', utils.bind(ap, AgentClient.prototype.on_data))
-
-  ap._methods = {}
-  ap._methods["handshake.hello"] = utils.bind(ap, AgentClient.prototype.handshake_hello)
   return ap
 end
 
