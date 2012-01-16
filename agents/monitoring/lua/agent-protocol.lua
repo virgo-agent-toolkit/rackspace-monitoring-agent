@@ -4,10 +4,10 @@ local utils = require('utils')
 local AgentProtocol = {}
 AgentProtocol.prototype = {}
 
-function AgentProtocol.prototype:new_response()
+function AgentProtocol.prototype:new_response(request)
   local response = {}
   response.v = 1
-  response.id = 1
+  response.id = request.id
   response.source = self._id
   response.target = self._target
   response.result = nil
@@ -15,8 +15,8 @@ function AgentProtocol.prototype:new_response()
 end
 
 function AgentProtocol.prototype:handshake_hello(request)
-  local response = self:new_response()
-  self._conn:write(JSON.stringify(response))
+  local response = self:new_response(request)
+  self._conn:write(JSON.stringify(response) .. '\n')
 end
 
 function AgentProtocol.prototype:request(request)
