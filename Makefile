@@ -4,6 +4,7 @@ all: out/Makefile
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/Debug/monitoring-agent monitoring-agent
 	-ln -fs out/Debug/monitoring.zip monitoring.zip
+	-ln -fs out/Debug/monitoring-test.zip monitoring-test.zip
 
 out/Release/monitoring-agent: all
 
@@ -19,10 +20,14 @@ distclean:
 VERSION=$(shell git describe)
 TARNAME=virgo-$(VERSION)
 
+test: tests
+tests: all
+	./monitoring-agent --zip monitoring-test.zip -e tests
+
 dist:
 	git archive --format=tar --prefix=$(TARNAME)/ HEAD | tar xf -
 	tar -cf $(TARNAME).tar $(TARNAME)
 	rm -rf $(TARNAME)
 	gzip -f -9 $(TARNAME).tar
 
-.PHONY: clean dist distclean all
+.PHONY: clean dist distclean all test tests
