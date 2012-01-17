@@ -130,6 +130,7 @@ virgo_destroy(virgo_t *v)
 
   if (v->config) {
     virgo__conf_destroy(v->config);
+    v->config = NULL;
   }
   if (v->lua_load_path) {
     free((void*)v->lua_load_path);
