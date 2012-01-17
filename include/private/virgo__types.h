@@ -23,8 +23,13 @@
 #ifndef _virgo__types_h_
 #define _virgo__types_h_
 
+struct virgo_conf_t {
+  lua_State *L;
+};
+
 struct virgo_t {
   lua_State* L;
+  virgo_conf_t *config;
   const char *lua_load_path;
   char *lua_default_module;
   int argc;

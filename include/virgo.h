@@ -29,6 +29,9 @@ extern "C" {
 /** Opaque context of a Virgo Instance. */
 typedef struct virgo_t virgo_t;
 
+/** Opaque context of a Virgo Config Instance. */
+typedef struct virgo_conf_t virgo_conf_t;
+
 /**
  * Creates a Virgo context.
  */
