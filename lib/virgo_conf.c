@@ -110,29 +110,6 @@ conf_parse(lua_State *L, FILE *fp)
   }
 }
 
-static const char*
-get_config_path(virgo_t *v)
-{
-  int i = 0;
-  int argc = v->argc;
-  char **argv = v->argv;
-  const char *arg;
-
-  while (i < argc) {
-    arg = argv[i];
-
-    if (strcmp(arg, "-c") == 0 || strcmp(arg, "--config") == 0) {
-      const char *p = argv[i+1];
-      if (p) {
-        return p;
-      }
-    }
-    i++;
-  }
-
-  return VIRGO_DEFAULT_CONFIG_UNIX_FILENAME;
-}
-
 const char*
 virgo__conf_get(virgo_t *v, const char *key)
 {
@@ -158,32 +135,60 @@ virgo__conf_destroy(virgo_t *v)
   v->config = NULL;
 }
 
-virgo_error_t*
-virgo__conf_init(virgo_t *v)
-{
-  FILE *fp;
-  lua_State *L;
-  /* TODO: respect prefix */
 #ifdef _WIN32
+static const char *
+virgo__conf_get_path(virgo_t *v)
+{
   char *programfiles;
   char path[512];
-#else
-  const char *path;
-#endif
 
-#ifdef _WIN32
   programfiles = getenv("ProgramFiles");
   if (programfiles == NULL) {
     return virgo_error_create(VIRGO_EINVAL, "Unable to get environment variable: \"ProgramFiles\"\n");
   }
   sprintf(path, "%s\\Rackspace Agent\\etc\\rackspace.cfg", programfiles);
-  fp = fopen(path, "r");
+
+  return strdup(path);
+}
 #else
-  path = get_config_path(v);
-  fp = fopen(path, "r");
+static const char *
+virgo__conf_get_path(virgo_t *v)
+{
+  int i = 0;
+  int argc = v->argc;
+  char **argv = v->argv;
+  const char *arg;
+
+  while (i < argc) {
+    arg = argv[i];
+
+    if (strcmp(arg, "-c") == 0 || strcmp(arg, "--config") == 0) {
+      const char *p = argv[i+1];
+      if (p) {
+        return strdup(p);
+      }
+    }
+    i++;
+  }
+  return strdup(VIRGO_DEFAULT_CONFIG_UNIX_FILENAME);
+}
 #endif
+
+virgo_error_t*
+virgo__conf_init(virgo_t *v)
+{
+  FILE *fp;
+  lua_State *L;
+  const char *path;
+
+  path = virgo__conf_get_path(v);
+
+  fp = fopen(path, "r");
   if (fp == NULL) {
-    return virgo_error_createf(VIRGO_EINVAL, "Unable to read configuration file: %s\n", path);
+    virgo_error_t *err;
+    err = virgo_error_createf(VIRGO_EINVAL, "Unable to read configuration file: %s\n", path);
+    free((void*)path);
+    return err;
   }
 
   /* destroy config if already read */
@@ -200,6 +205,7 @@ virgo__conf_init(virgo_t *v)
   v->config->L = L;
 
   fclose(fp);
+  free((void*)path);
 
   return VIRGO_SUCCESS;
 }
