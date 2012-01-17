@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define VIRGO_DEFAULT_CONFIG_UNIX_FILENAME "/etc/rackspace.conf"
+
 virgo_error_t*
 virgo_conf_lua_load_path(virgo_t *v, const char *path)
 {
@@ -128,7 +130,7 @@ get_config_path(virgo_t *v)
     i++;
   }
 
-  return "/etc/rackspace.conf";
+  return VIRGO_DEFAULT_CONFIG_UNIX_FILENAME;
 }
 
 const char*
@@ -149,10 +151,11 @@ virgo__conf_get(virgo_t *v, const char *key)
 }
 
 void
-virgo__conf_destroy(virgo_conf_t *conf)
+virgo__conf_destroy(virgo_t *v)
 {
-  lua_close(conf->L);
-  free(conf);
+  lua_close(v->config->L);
+  free(v->config);
+  v->config = NULL;
 }
 
 virgo_error_t*
@@ -185,7 +188,7 @@ virgo__conf_init(virgo_t *v)
 
   /* destroy config if already read */
   if (v->config) {
-    virgo__conf_destroy(v->config);
+    virgo__conf_destroy(v);
   }
 
   L = luaL_newstate();
