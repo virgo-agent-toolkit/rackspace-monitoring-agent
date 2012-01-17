@@ -17,6 +17,7 @@
 
 #include "virgo.h"
 #include "virgo__types.h"
+#include "virgo__util.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -36,8 +37,18 @@ virgo_conf_lua_load_path(virgo_t *v, const char *path)
 virgo_error_t*
 virgo_conf_args(virgo_t *v, int argc, char** argv)
 {
+  int err;
+  const char *arg;
   v->argc = argc;
   v->argv = argv;
+
+  if ((arg = virgo__get_string_arg(v, "-z", "--zip")) != NULL) {
+    err = virgo_conf_lua_load_path(v, arg);
+    if (err) {
+      handle_error("Error in setting lua load path", err);
+      return EXIT_FAILURE;
+    }
+  }
 
   return VIRGO_SUCCESS;
 }
