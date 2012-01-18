@@ -20,10 +20,6 @@
 #include "virgo__types.h"
 #include "virgo__conf.h"
 
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-
 #include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
