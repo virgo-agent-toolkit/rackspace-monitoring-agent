@@ -43,17 +43,17 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  /* TODO: read path from config file */
-  err = virgo_conf_args(v, argc, argv);
+  /* default filename */
+  err = virgo_conf_lua_load_path(v, "monitoring.zip");
   if (err) {
-    handle_error("Error in settings args", err);
+    handle_error("Error in setting lua load path", err);
     return EXIT_FAILURE;
   }
 
   /* TODO: read path from config file */
-  err = virgo_conf_lua_load_path(v, "./monitoring.zip");
+  err = virgo_conf_args(v, argc, argv);
   if (err) {
-    handle_error("Error in setting lua laod path", err);
+    handle_error("Error in settings args", err);
     return EXIT_FAILURE;
   }
 
