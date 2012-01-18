@@ -41,16 +41,16 @@ virgo_conf_lua_load_path(virgo_t *v, const char *path)
 virgo_error_t*
 virgo_conf_args(virgo_t *v, int argc, char** argv)
 {
-  int err;
+  virgo_error_t *err;
   const char *arg;
+
   v->argc = argc;
   v->argv = argv;
 
   if ((arg = virgo__get_string_arg(v, "-z", "--zip")) != NULL) {
     err = virgo_conf_lua_load_path(v, arg);
     if (err) {
-      handle_error("Error in setting lua load path", err);
-      return EXIT_FAILURE;
+      return err;
     }
   }
 
@@ -162,16 +162,21 @@ static const char *
 virgo__conf_get_path(virgo_t *v)
 {
   char *programfiles;
-  char path[512];
+  char *path;
 
-  programfiles = getenv("ProgramFiles");
-  if (programfiles == NULL) {
-    return virgo_error_create(VIRGO_EINVAL, "Unable to get environment variable: \"ProgramFiles\"\n");
+  if ((path = virgo__get_string_arg(v, "-c", "--config")) == NULL) {
+    char gen_path[512];
+    programfiles = getenv("ProgramFiles");
+    if (programfiles == NULL) {
+      return virgo_error_create(VIRGO_EINVAL, "Unable to get environment variable: \"ProgramFiles\"\n");
+    }
+    sprintf(gen_path, "%s\\%s\\etc\\",
+            programfiles,
+            VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY,
+            VIRGO_DEFAULT_CONFIG_FILENAME);
+
+    return strdup(gen_path);
   }
-  sprintf(path, "%s\\%s\\etc\\",
-          programfiles,
-          VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY,
-          VIRGO_DEFAULT_CONFIG_FILENAME);
 
   return strdup(path);
 }
@@ -179,23 +184,11 @@ virgo__conf_get_path(virgo_t *v)
 static const char *
 virgo__conf_get_path(virgo_t *v)
 {
-  int i = 0;
-  int argc = v->argc;
-  char **argv = v->argv;
-  const char *arg;
-
-  while (i < argc) {
-    arg = argv[i];
-
-    if (strcmp(arg, "-c") == 0 || strcmp(arg, "--config") == 0) {
-      const char *p = argv[i+1];
-      if (p) {
-        return strdup(p);
-      }
-    }
-    i++;
+  const char *path;
+  if ((path = virgo__get_string_arg(v, "-c", "--config")) == NULL) {
+    return strdup(VIRGO_DEFAULT_CONFIG_UNIX_PATH);
   }
-  return strdup(VIRGO_DEFAULT_CONFIG_UNIX_PATH);
+  return strdup(path);
 }
 #endif
 
