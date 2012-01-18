@@ -52,6 +52,12 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
   return VIRGO_SUCCESS;
 }
 
+const char*
+virgo_conf_get(virgo_t *v, const char *key)
+{
+  return virgo__conf_get(v, key);
+}
+
 static void
 nuke_newlines(char *p)
 {
@@ -81,12 +87,13 @@ next_chunk(char **x_p)
 }
 
 static void
-conf_parse(lua_State *L, FILE *fp)
+conf_parse(virgo_t *v, FILE *fp)
 {
+  virgo_conf_t *node;
   char buf[8096];
   char *p = NULL;
   while ((p = fgets(buf, sizeof(buf), fp)) != NULL) {
-    char *value, *key;
+    char *key;
 
     /* comment lines */
     if (p[0] == '#') {
@@ -95,17 +102,26 @@ conf_parse(lua_State *L, FILE *fp)
 
     while (isspace(p[0])) { p++;};
 
+    /* Insert into list */
+    if (v->config == NULL) {
+      v->config = calloc(1, sizeof(virgo_conf_t*));
+      node = v->config;
+    } else {
+      node = calloc(1, sizeof(virgo_conf_t*));
+    }
+    node->next = v->config;
+    v->config = node;
+
     /* calculate key/value pairs */
     key = next_chunk(&p);
     p = key;
     while(!isspace(p[0])) { p++;};
     *p = '\0'; /* null terminate key */
+    node->key = strdup(key);
     p++;
     while(isspace(p[0])) { p++;};
-    value = p;
+    node->value = strdup(p);
 
-    lua_pushstring(L, value);
-    lua_setfield(L, -2, key);
     free(key);
   }
 }
@@ -113,25 +129,27 @@ conf_parse(lua_State *L, FILE *fp)
 const char*
 virgo__conf_get(virgo_t *v, const char *key)
 {
-  const char *value = NULL;
-  lua_State *L = v->config->L;
-  int before = lua_gettop(L);
-
-  lua_getglobal(L, "config");
-  lua_pushstring(L, key);
-  lua_gettable(L, -2);
-  value = lua_tostring(L, -1);
-  lua_pop(L, 2);
-  assert(lua_gettop(L) == before);
-
-  return value;
+  virgo_conf_t *p = v->config;
+  while (p) {
+    if (strcmp(p->key, key) == 0) {
+      return p->value;
+    }
+    p = p->next;
+  }
+  return NULL;
 }
 
 void
 virgo__conf_destroy(virgo_t *v)
 {
-  lua_close(v->config->L);
-  free(v->config);
+  virgo_conf_t *p = v->config, *t;
+  while (p) {
+    t = p->next;
+    free((void*)p->key);
+    free((void*)p->value);
+    free(p);
+    p = t;
+  }
   v->config = NULL;
 }
 
@@ -178,7 +196,6 @@ virgo_error_t*
 virgo__conf_init(virgo_t *v)
 {
   FILE *fp;
-  lua_State *L;
   const char *path;
 
   path = virgo__conf_get_path(v);
@@ -196,13 +213,7 @@ virgo__conf_init(virgo_t *v)
     virgo__conf_destroy(v);
   }
 
-  L = luaL_newstate();
-  lua_newtable(L);
-  conf_parse(L, fp);
-  lua_setglobal(L, "config");
-
-  v->config = calloc(1, sizeof(virgo_conf_t*));
-  v->config->L = L;
+  conf_parse(v, fp);
 
   fclose(fp);
   free((void*)path);

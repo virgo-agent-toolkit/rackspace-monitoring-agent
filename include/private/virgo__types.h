@@ -24,12 +24,14 @@
 #define _virgo__types_h_
 
 struct virgo_conf_t {
-  lua_State *L;
+  const char *key;
+  const char *value;
+  struct virgo_conf_t *next;
 };
 
 struct virgo_t {
   lua_State* L;
-  virgo_conf_t *config;
+  struct virgo_conf_t *config;
   const char *lua_load_path;
   char *lua_default_module;
   int argc;
