@@ -72,6 +72,12 @@ VIRGO_API(virgo_error_t*) virgo_conf_lua_load_path(virgo_t *v, const char *path)
  */
 VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char **argv);
 
+/**
+ * Get variable from config.
+ * @return NULL when key is not found.
+ */
+VIRGO_API(const char*) virgo_conf_get(virgo_t *v, const char *key);
+
 
 /**
  * Log levels.
