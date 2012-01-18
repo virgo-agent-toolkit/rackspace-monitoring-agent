@@ -98,8 +98,7 @@ conf_parse(virgo_t *v, FILE *fp)
 
     /* Insert into list */
     if (v->config == NULL) {
-      v->config = calloc(1, sizeof(virgo_conf_t*));
-      node = v->config;
+      node = calloc(1, sizeof(virgo_conf_t*));
     } else {
       node = calloc(1, sizeof(virgo_conf_t*));
     }
