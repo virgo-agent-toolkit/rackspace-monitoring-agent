@@ -83,11 +83,11 @@ next_chunk(char **x_p)
 static void
 conf_parse(virgo_t *v, FILE *fp)
 {
-  virgo_conf_t *node;
   char buf[8096];
   char *p = NULL;
   while ((p = fgets(buf, sizeof(buf), fp)) != NULL) {
     char *key;
+    virgo_conf_t *node;
 
     /* comment lines */
     if (p[0] == '#') {
@@ -98,9 +98,9 @@ conf_parse(virgo_t *v, FILE *fp)
 
     /* Insert into list */
     if (v->config == NULL) {
-      node = calloc(1, sizeof(virgo_conf_t*));
+      node = calloc(1, sizeof(*node));
     } else {
-      node = calloc(1, sizeof(virgo_conf_t*));
+      node = calloc(1, sizeof(*node));
     }
     node->next = v->config;
     v->config = node;
