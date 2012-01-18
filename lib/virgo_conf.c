@@ -29,8 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define VIRGO_DEFAULT_CONFIG_UNIX_FILENAME "/etc/rackspace.conf"
-
 virgo_error_t*
 virgo_conf_lua_load_path(virgo_t *v, const char *path)
 {
@@ -164,7 +162,10 @@ virgo__conf_get_path(virgo_t *v)
   if (programfiles == NULL) {
     return virgo_error_create(VIRGO_EINVAL, "Unable to get environment variable: \"ProgramFiles\"\n");
   }
-  sprintf(path, "%s\\Rackspace Agent\\etc\\rackspace.cfg", programfiles);
+  sprintf(path, "%s\\%s\\etc\\",
+          programfiles,
+          VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY,
+          VIRGO_DEFAULT_CONFIG_FILENAME);
 
   return strdup(path);
 }
@@ -188,7 +189,7 @@ virgo__conf_get_path(virgo_t *v)
     }
     i++;
   }
-  return strdup(VIRGO_DEFAULT_CONFIG_UNIX_FILENAME);
+  return strdup(VIRGO_DEFAULT_CONFIG_UNIX_PATH);
 }
 #endif
 

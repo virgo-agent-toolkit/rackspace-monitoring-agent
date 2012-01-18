@@ -15,6 +15,7 @@
  *
  */
 
+#include "virgo_brand.h"
 #include "virgo_visibility.h"
 #include "virgo_portable.h"
 #include "virgo_error.h"
