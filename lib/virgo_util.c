@@ -26,7 +26,8 @@ virgo__get_string_arg(virgo_t *v, const char *short_opt, const char *long_opt)
   char **argv = v->argv;
   const char *arg;
 
-  while (i < argc) {
+  /* 'argc - 1' to guard against a flag and no string */
+  while (i < argc - 1) {
     arg = argv[i];
 
     if (strcmp(arg, short_opt) == 0 || strcmp(arg, long_opt) == 0) {
