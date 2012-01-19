@@ -16,31 +16,12 @@
  */
 
 #include "virgo.h"
-#include "lua.h"
 
-#include "stdio.h"
+#ifndef _virgo__conf_h_
+#define _virgo__conf_h_
 
-#ifndef _virgo__types_h_
-#define _virgo__types_h_
+virgo_error_t* virgo__conf_init(virgo_t *v);
+const char* virgo__conf_get(virgo_t *v, const char *key);
+void virgo__conf_destroy(virgo_t *v);
 
-struct virgo_conf_t {
-  const char *key;
-  const char *value;
-  struct virgo_conf_t *next;
-};
-
-struct virgo_t {
-  lua_State* L;
-  struct virgo_conf_t *config;
-  const char *lua_load_path;
-  char *lua_default_module;
-  int argc;
-  char **argv;
-  virgo_log_level_e log_level;
-  FILE *log_fp;
-  const char *log_path;
-};
-
-
-
-#endif /* _virgo__types_h_ */
+#endif

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2011 Rackspace
+ *  Copyright 2012 Rackspace
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  *
  */
 
+#include "virgo_brand.h"
 #include "virgo_visibility.h"
 #include "virgo_portable.h"
 #include "virgo_error.h"
@@ -28,6 +29,9 @@ extern "C" {
 
 /** Opaque context of a Virgo Instance. */
 typedef struct virgo_t virgo_t;
+
+/** Opaque context of a Virgo Config Instance. */
+typedef struct virgo_conf_t virgo_conf_t;
 
 /**
  * Creates a Virgo context.
@@ -68,6 +72,12 @@ VIRGO_API(virgo_error_t*) virgo_conf_lua_load_path(virgo_t *v, const char *path)
  * will be ran first, and other files can be loaded via require.
  */
 VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char **argv);
+
+/**
+ * Get variable from config.
+ * @return NULL when key is not found.
+ */
+VIRGO_API(const char*) virgo_conf_get(virgo_t *v, const char *key);
 
 
 /**
