@@ -1,4 +1,9 @@
+local async = require('async')
+local States = require('./states')
+local utils = require('utils')
+
 local MonitoringAgent = {}
+utils.inherits(MonitoringAgent, {})
 
 function MonitoringAgent.sample()
   local HTTP = require("http")
@@ -39,8 +44,28 @@ function MonitoringAgent.sample()
 
 end
 
+function MonitoringAgent.prototype:_init(callback)
+  async.waterfall({
+    -- Load States
+    function(callback)
+      self._states:load(callback)
+    end
+  }, callback)
+end
+
+function MonitoringAgent.new()
+  local obj = MonitoringAgent.new_obj()
+  obj._states = States.new('/var/run/agent/states')
+  return obj
+end
+
 function MonitoringAgent.run()
-  MonitoringAgent.sample()
+  local agent = MonitoringAgent.new()
+  agent:_init(function(err)
+    if err then
+      return err
+    end
+  end)
 end
 
 return MonitoringAgent
