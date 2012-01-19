@@ -20,6 +20,8 @@
 #ifndef _virgo__util_h_
 #define _virgo__util_h_
 
-const char* virgo__get_string_arg(virgo_t *, const char *, const char *);
+const char* virgo__get_string_arg(virgo_t *v,
+                                  const char *short_opt,
+                                  const char *long_opt);
 
 #endif

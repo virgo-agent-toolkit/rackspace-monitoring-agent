@@ -15,6 +15,8 @@
  *
  */
 
+#include <string.h>
+
 #include "virgo.h"
 #include "virgo__types.h"
 

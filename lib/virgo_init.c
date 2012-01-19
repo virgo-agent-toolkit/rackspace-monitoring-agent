@@ -16,6 +16,7 @@
  */
 
 #include "virgo.h"
+#include "virgo__conf.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
 #include "virgo__logging.h"
@@ -94,6 +95,12 @@ virgo_run(virgo_t *v)
 {
   virgo_error_t* err;
 
+  err = virgo__conf_init(v);
+
+  if (err) {
+    return err;
+  }
+
   err = virgo__log_rotate(v);
 
   if (err) {
@@ -121,6 +128,9 @@ virgo_destroy(virgo_t *v)
 {
   virgo__lua_destroy(v);
 
+  if (v->config) {
+    virgo__conf_destroy(v);
+  }
   if (v->lua_load_path) {
     free((void*)v->lua_load_path);
   }

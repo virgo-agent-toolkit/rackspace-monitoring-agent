@@ -15,32 +15,21 @@
  *
  */
 
-#include "virgo.h"
-#include "lua.h"
+/**
+ * @file virgo_brand.h
+ */
 
-#include "stdio.h"
+#ifndef _virgo_brand_h_
+#define _vrigo_brand_h_
 
-#ifndef _virgo__types_h_
-#define _virgo__types_h_
+#define VIRGO_DEFAULT_NAME "rackspace"
+#define VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY \
+  "Rackspace Agent"
+#define VIRGO_DEFAULT_CONFIG_FILENAME \
+  VIRGO_DEFAULT_NAME \
+  ".cfg"
+#define VIRGO_DEFAULT_CONFIG_UNIX_PATH \
+  "/etc/" \
+  VIRGO_DEFAULT_CONFIG_FILENAME
 
-struct virgo_conf_t {
-  const char *key;
-  const char *value;
-  struct virgo_conf_t *next;
-};
-
-struct virgo_t {
-  lua_State* L;
-  struct virgo_conf_t *config;
-  const char *lua_load_path;
-  char *lua_default_module;
-  int argc;
-  char **argv;
-  virgo_log_level_e log_level;
-  FILE *log_fp;
-  const char *log_path;
-};
-
-
-
-#endif /* _virgo__types_h_ */
+#endif
