@@ -20,7 +20,9 @@ def build():
 
 def test():
   agent = os.path.join(root, 'out', 'Debug', 'monitoring-agent')
-  cmd = '%s --zip out/Debug/monitoring-test.zip -e tests -c docs/sample.state' % agent
+  agent_tests = os.path.join(root, 'out', 'Debug', 'monitoring-test.zip')
+  agent_config = os.path.join(root, 'docs', 'sample.state')
+  cmd = '%s --zip %s -e tests -c %s' % (agent, agent_tests, agent_config)
   print cmd
   rc = subprocess.call(cmd, shell=True)
   sys.exit(rc)
