@@ -47,7 +47,8 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
   v->argc = argc;
   v->argv = argv;
 
-  if ((arg = virgo__get_string_arg(v, "-z", "--zip")) != NULL) {
+  arg = virgo__get_string_arg(v, "-z", "--zip");
+  if (arg != NULL) {
     err = virgo_conf_lua_load_path(v, arg);
     if (err) {
       return err;
