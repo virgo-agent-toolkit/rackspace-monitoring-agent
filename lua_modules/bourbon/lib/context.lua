@@ -1,3 +1,19 @@
+--[[
+Copyright 2012 Rackspace
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS-IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+--]]
+
 local utils = require('utils')
 local debug = require('debug')
 local table = require('table')
@@ -11,7 +27,7 @@ function Context.prototype:run(func, test)
 
     if ok then
       self.passed = self.passed + 1
-      return ok
+      return ok, ret_or_err
     else
       self.failed = self.failed + 1
 
@@ -20,8 +36,8 @@ function Context.prototype:run(func, test)
       -- TODO: strip traceback level
       info.traceback = debug.traceback()
       table.insert(self.errors, info)
-
-      return ok
+      test.done()
+      error(ret_or_err)
     end
   end
 
@@ -32,11 +48,7 @@ function Context.prototype:run(func, test)
 
   setfenv(func, newgt)
   ok, ret_or_err = pcall(func, test, asserts)
-  if ok then
-    return ret_or_err
-  else
-    error(ret_or_err)
-  end
+  return ret_or_err
 end
 
 function Context.prototype:add_stats(c)
@@ -48,10 +60,18 @@ end
 
 function Context.prototype:print_summary()
   print("checked: " .. self.checked .. " failed: " .. self.failed .. " passed: " .. self.passed)
+  self:print_errors()
+end
+
+function Context.prototype:print_errors()
+  self:dump_errors(print)
+end
+
+function Context.prototype:dump_errors(func)
   for i, v in ipairs(self.errors) do
-    print("Error #" .. i)
-    print("\t" .. v.ret)
-    print("\t" .. v.traceback)
+    func("Error #" .. i)
+    func("\t" .. v.ret)
+    func("\t" .. v.traceback)
   end
 end
 
