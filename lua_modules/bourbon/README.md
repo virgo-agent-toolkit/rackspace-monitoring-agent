@@ -10,7 +10,7 @@ This is a test runner for luvit inspired by whiskey. A basic testing file looks 
       test.done()
     end
 
-    exports['test_asserts_equal'] = function(test)
+    exports['test_asserts_equals'] = function(test)
       asserts.equals(1, 1)
       test.done()
     end
@@ -27,6 +27,7 @@ Hacking
 
  * Check the test context for leaking global variables
  * Better reporting, just follow Whiskey I would say
+ * Command Line Tool, to use in makefiles
 
 License
 =======
