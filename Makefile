@@ -22,7 +22,7 @@ TARNAME=virgo-$(VERSION)
 
 test: tests
 tests: all
-	./monitoring-agent --zip monitoring-test.zip -e tests
+	./monitoring-agent --zip monitoring-test.zip -e tests -c docs/sample.state
 
 dist:
 	git archive --format=tar --prefix=$(TARNAME)/ HEAD | tar xf -
