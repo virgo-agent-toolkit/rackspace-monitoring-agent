@@ -12,6 +12,13 @@
     'lua_modules_sources': [
       '<!@(python tools/bundle.py -l <(lua_modules))',
     ],
+    'test_modules': [
+      '<@(lua_modules)',
+      'agents/monitoring/tests',
+    ],
+    'test_modules_sources': [
+      '<!@(python tools/bundle.py -l <(test_modules))',
+    ],
   },
 
   'targets': [
@@ -22,6 +29,7 @@
       'dependencies': [
         'lib/virgo.gyp:virgolib',
         'monitoring.zip#host',
+        'monitoring-test.zip#host',
       ],
 
       'include_dirs': [
@@ -110,6 +118,35 @@
         },
       ],
     }, # end monitoring.zip
+    {
+      'target_name': 'monitoring-test.zip',
+      'type': 'none',
+      'toolsets': ['host'],
+      'variables': {
+      },
+
+      'actions': [
+        {
+          'action_name': 'virgo_luazip',
+
+          'inputs': [
+            '<@(test_modules_sources)',
+            'tools/lua2zip.py',
+          ],
+
+          'outputs': [
+            '<(PRODUCT_DIR)/monitoring-test.zip',
+          ],
+
+          'action': [
+            'python',
+            'tools/lua2zip.py',
+            '<@(_outputs)',
+            '<@(test_modules)',
+            ],
+        },
+      ],
+    }, # end monitoring-test.zip
 
   ] # end targets
 }

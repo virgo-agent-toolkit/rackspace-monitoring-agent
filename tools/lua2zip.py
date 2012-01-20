@@ -13,6 +13,7 @@ bourbon_lua = os.path.join('lua_modules', 'bourbon')
 options_lua = os.path.join('lua_modules', 'options')
 luvit_lua = os.path.join('deps', 'luvit', 'lib')
 monitoring_lua = os.path.join('agents', 'monitoring', 'lua')
+monitoring_tests = os.path.join('agents', 'monitoring', 'tests')
 
 modules = {
   async_lua:
@@ -27,6 +28,8 @@ modules = {
     generate_bundle_map('', 'deps/luvit/lib', True),
   monitoring_lua:
     generate_bundle_map('modules/monitoring', 'agents/monitoring/lua'),
+  monitoring_tests:
+    generate_bundle_map('modules/monitoring/tests', 'agents/monitoring/tests'),
 }
 
 target = sys.argv[1]
