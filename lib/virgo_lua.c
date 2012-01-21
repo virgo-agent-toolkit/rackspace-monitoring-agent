@@ -40,6 +40,7 @@
 #include "lhttp_parser.h"
 #include "lenv.h"
 #include "lyajl.h"
+#include "lcrypto.h"
 
 extern int luaopen_sigar (lua_State *L);
 
@@ -104,6 +105,9 @@ virgo__lua_luvit_init(virgo_t *v)
   // Register yajl
   lua_pushcfunction(L, luaopen_yajl);
   lua_setfield(L, -2, "yajl");
+  // Register yajl
+  lua_pushcfunction(L, luaopen_crypto);
+  lua_setfield(L, -2, "crypto");
 
   /* Register http_parser */
   lua_pushcfunction(L, luaopen_http_parser);
