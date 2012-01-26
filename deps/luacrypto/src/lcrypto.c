@@ -11,6 +11,7 @@
 #include <openssl/rsa.h>
 #include <openssl/dsa.h>
 #include <openssl/pem.h>
+#include <openssl/bio.h>
 #include <stddef.h>
 
 
@@ -992,6 +993,28 @@ static int pkey_generate(lua_State *L)
   }
 }
 
+static int pkey_to_pem(lua_State *L)
+{
+  EVP_PKEY **pkey = (EVP_PKEY **)luaL_checkudata(L, 1, LUACRYPTO_PKEYNAME);
+  int private = lua_isboolean(L, 2) && lua_toboolean(L, 2);
+
+  long len;
+  BUF_MEM *buf;
+  BIO *mem = BIO_new(BIO_s_mem());
+
+  if(private)
+    PEM_write_bio_PrivateKey(mem, *pkey, NULL, NULL, 0, NULL, NULL);
+  else
+    PEM_write_bio_PUBKEY(mem, *pkey);
+
+  len = BIO_get_mem_ptr(mem, &buf);
+
+  lua_pushlstring(L, buf->data, buf->length);
+  BIO_free(mem);
+
+  return 1;
+}
+
 static int pkey_read(lua_State *L)
 {
   const char *filename = luaL_checkstring(L, 1);
@@ -1002,15 +1025,36 @@ static int pkey_read(lua_State *L)
   if (!fp)
     luaL_error(L, "File not found: %s", filename);
 
-  if (readPrivate) {
+  if (readPrivate)
     *pkey = PEM_read_PrivateKey(fp, NULL, NULL, NULL);
-  } else {
+  else
     *pkey = PEM_read_PUBKEY(fp, NULL, NULL, NULL);
-  }
 
   fclose(fp);
 
   if (! *pkey)
+    return crypto_error(L);
+
+  return 1;
+}
+
+static int pkey_from_pem(lua_State *L)
+{
+  const char *key = luaL_checkstring(L, 1);
+  int private = lua_isboolean(L, 2) && lua_toboolean(L, 2);
+  EVP_PKEY **pkey = pkey_new(L);
+  BIO *mem = BIO_new(BIO_s_mem());
+
+  BIO_puts(mem, key);
+
+  if(private)
+    PEM_read_bio_PrivateKey(mem, pkey, NULL, NULL);
+  else
+    PEM_read_bio_PUBKEY(mem, pkey, NULL, NULL);
+
+  BIO_free(mem);
+
+  if (!*pkey)
     return crypto_error(L);
 
   return 1;
@@ -1546,12 +1590,14 @@ static void create_metatables (lua_State *L)
   struct luaL_reg pkey_functions[] = {
     { "generate", pkey_generate },
     { "read", pkey_read },
+    { "from_pem", pkey_from_pem },
     { NULL, NULL }
   };
   struct luaL_reg pkey_methods[] = {
     { "__tostring", pkey_tostring },
     { "__gc", pkey_gc },
     { "write", pkey_write },
+    { "to_pem", pkey_to_pem},
     { NULL, NULL }
   };
 
