@@ -1,17 +1,9 @@
 {
-  'variables': {
-    'visibility%': 'hidden',         # V8's visibility setting
-    'target_arch%': 'ia32',          # set v8's target architecture
-    'host_arch%': 'ia32',            # set v8's host architecture
-    'library%': 'static_library',    # allow override to 'shared_library' for DLL/.so builds
-    'component%': 'static_library',  # NB. these names match with what V8 expects
-    'msvs_multi_core_compile': '0',  # we do enable multicore compiles, but not using the V8 way
-  },
-
   'make_global_settings': [
     # chrome normally links using the C++ compiler, but all of our code
     # is pure C, and we don't want to link in libstdc++.
     ['LINK', '$(CC)'],
+    ['LINK.host', '$(CC)'],
   ],
 
   'target_defaults': {
@@ -33,6 +25,7 @@
             'MinimalRebuild': 'true',
             'OmitFramePointers': 'false',
             'BasicRuntimeChecks': 3, # /RTC1
+            'MultiProcessorCompilation': 'false',
           },
           'VCLinkerTool': {
             'LinkIncremental': 2, # enable incremental linking
@@ -58,9 +51,7 @@
             'OmitFramePointers': 'true',
             'EnableFunctionLevelLinking': 'true',
             'EnableIntrinsicFunctions': 'true',
-            'AdditionalOptions': [
-              '/MP', # compile across multiple CPUs
-            ],
+            'TargetMachine': 'x86',
           },
           'VCLibrarianTool': {
             'AdditionalOptions': [
@@ -116,10 +107,14 @@
         ],
       }],
       [ 'OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-        'cflags': [ '-Wall', '-pthread', ],
+        'cflags': [ '-Wall', '-pthread'],
         'cflags_cc': [ '-fno-rtti', '-fno-exceptions' ],
-        'ldflags': [ '-pthread', ],
+        'ldflags': [ '-pthread', '-Wl,-E', ],
         'conditions': [
+          [ 'target_arch=="x64"', {
+            'cflags': [ '-fPIC' ],
+            'ldflags': [ '-fPIC' ],
+          }],
           [ 'target_arch=="ia32"', {
             'cflags': [ '-m32' ],
             'ldflags': [ '-m32' ],
@@ -130,12 +125,10 @@
           [ 'OS=="freebsd"', {
             'ldflags': [ '-lm' ],
           }],
-          [ 'visibility=="hidden"', {
-            'cflags': [ '-fvisibility=hidden' ],
-          }],
         ],
       }],
       ['OS=="mac"', {
+        'ldflags': [ '-pthread', '-Wl,-E' ],
         'defines': [
           'DARWIN',
           'DARWIN_10',
@@ -151,7 +144,7 @@
           'GCC_ENABLE_PASCAL_STRINGS': 'NO',        # No -mpascal-strings
           # GCC_INLINES_ARE_PRIVATE_EXTERN maps to -fvisibility-inlines-hidden
           'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES',
-          'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
+          'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
           'GCC_VERSION': '4.2',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof

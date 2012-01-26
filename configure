@@ -55,6 +55,9 @@ def host_arch():
   if sys.platform == "win32":
       return 'x64'
 
+  if sys.platform == "darwin":
+      return 'mac'
+
   arch = uname('-p')
 
   if arch == 'unknown':
