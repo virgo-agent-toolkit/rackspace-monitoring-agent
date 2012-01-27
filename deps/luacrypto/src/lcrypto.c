@@ -797,15 +797,21 @@ static int verify_fnew(lua_State *L)
 {
   const char *s = luaL_checkstring(L, 1);
   const EVP_MD *md = EVP_get_digestbyname(s);
-  if (md == NULL) {
-    luaL_argerror(L, 1, "invalid digest type");
-    return 0;
-  } else {
-    EVP_MD_CTX *c = verify_pnew(L);
-    EVP_MD_CTX_init(c);
-    EVP_VerifyInit_ex(c, md, NULL);
-    return 1;
-  }
+  int ret;
+  if (md == NULL)
+    goto error;
+
+  EVP_MD_CTX *c = verify_pnew(L);
+  EVP_MD_CTX_init(c);
+  ret = EVP_VerifyInit_ex(c, md, NULL);
+  if (ret != 1)
+    goto error;
+
+  return 1;
+
+error:
+  luaL_argerror(L, 1, "invalid digest type");
+  return 0;
 }
 
 static int verify_update(lua_State *L)
@@ -1044,20 +1050,25 @@ static int pkey_from_pem(lua_State *L)
   int private = lua_isboolean(L, 2) && lua_toboolean(L, 2);
   EVP_PKEY **pkey = pkey_new(L);
   BIO *mem = BIO_new(BIO_s_mem());
+  int ret;
 
-  BIO_puts(mem, key);
+  ret = BIO_puts(mem, key);
+  if (ret != strlen(key))
+    goto error;
 
   if(private)
-    PEM_read_bio_PrivateKey(mem, pkey, NULL, NULL);
+    *pkey = PEM_read_bio_PrivateKey(mem, NULL, NULL, NULL);
   else
-    PEM_read_bio_PUBKEY(mem, pkey, NULL, NULL);
+    *pkey = PEM_read_bio_PUBKEY(mem, NULL, NULL, NULL);
 
-  BIO_free(mem);
-
-  if (!*pkey)
-    return crypto_error(L);
+  if (! *pkey)
+    goto error;
 
   return 1;
+
+error:
+  BIO_free(mem);
+  return crypto_error(L);
 }
 
 static int pkey_write(lua_State *L)
