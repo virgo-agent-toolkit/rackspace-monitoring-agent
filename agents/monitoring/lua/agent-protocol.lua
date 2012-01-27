@@ -6,8 +6,8 @@ local Response = Object:extend()
 function Response.prototype:initialize()
   self.v = 1
   self.id = 1
-  self.source = self._id
-  self.target = self._target
+  self.source = 'endpoint'
+  self.target = 'X'
   self.result = nil
 end
 

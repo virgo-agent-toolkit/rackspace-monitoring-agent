@@ -40,7 +40,7 @@ function AgentProtocolConnection:initialize(myid, conn)
   assert(myid ~= nil)
   self._myid = myid
   self._conn = conn
-  self._conn:on('data', utils.bind(s, AgentProtocolConnection.prototype._onData))
+  self._conn:on('data', utils.bind(AgentProtocolConnection.prototype._onData, self))
   self._buf = ""
   self._endpoints = { }
 end
