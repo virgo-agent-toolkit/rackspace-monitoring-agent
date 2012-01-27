@@ -84,7 +84,7 @@ local run = function(options, mods, callback)
   if not mods then return end
   local runners = {}
   local ops = {}
-  local stats = context.new()
+  local stats = context:new()
 
   options = options or {
     print_summary = true,
@@ -93,17 +93,17 @@ local run = function(options, mods, callback)
 
   for k, v in pairs(get_tests(mods)) do
     if not is_control_function(k) then
-      table.insert(runners, 1, { name = k, func = v, context = context.new() })
+      table.insert(runners, 1, { name = k, func = v, context = context:new() })
     end
   end
 
   local function setup(callback)
-    local test_baton = TestBaton.new({context = context.new()}, stats, callback)
+    local test_baton = TestBaton.new({context = context:new()}, stats, callback)
     mods.setup(test_baton)
   end
 
   local function teardown(callback)
-    local test_baton = TestBaton.new({context = context.new()}, stats, callback)
+    local test_baton = TestBaton.new({context = context:new()}, stats, callback)
     mods.teardown(test_baton)
   end
 

@@ -1,6 +1,6 @@
 return {
   name = "bourbon",
-  version = "0.0.1",
+  version = "0.0.2",
   description = "test library",
   author = "Ryan Phillips <ryan.phillips@rackspace.com>",
   contributors = {
