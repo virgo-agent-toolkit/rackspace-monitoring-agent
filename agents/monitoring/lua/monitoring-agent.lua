@@ -5,7 +5,7 @@ local utils = require('utils')
 
 local MonitoringAgent = Object:extend()
 
-function MonitoringAgent.sample()
+function MonitoringAgent.prototype:sample()
   local HTTP = require("http")
   local Utils = require("utils")
   local logging = require('logging')
@@ -41,7 +41,6 @@ function MonitoringAgent.sample()
   end
 
   logging.log(logging.CRIT, "Server listening at http://localhost:8080/")
-
 end
 
 function MonitoringAgent.prototype:initialize(callback)
@@ -55,8 +54,8 @@ function MonitoringAgent.prototype:initialize(callback)
 end
 
 function MonitoringAgent.run()
-  p('1')
-  MonitoringAgent:new()
+  local agent = MonitoringAgent:new()
+  agent:sample()
 end
 
 return MonitoringAgent
