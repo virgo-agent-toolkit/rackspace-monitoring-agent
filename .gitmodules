@@ -1,0 +1,3 @@
+[submodule "deps/luvit"]
+	path = deps/luvit
+	url = https://github.com/luvit/luvit.git
