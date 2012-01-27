@@ -1,6 +1,7 @@
 local crypto = require('crypto')
 
 exports = {}
+no = {}
 
 local message = 'This message will be signed'
 local message1 = 'This message '
@@ -52,6 +53,24 @@ exports['test_sha256_hash'] = function(test, asserts)
 end
 
 exports['test_rsa_verify'] = function(test, asserts)
+  local kpriv = crypto.pkey.from_pem(RSA_PRIV_KEY, true)
+  local kpub = crypto.pkey.from_pem(RSA_PUBLIC_KEY)
+
+  asserts.equals(kpriv:to_pem(true), RSA_PRIV_KEY)
+  asserts.equals(kpub:to_pem(), RSA_PUBLIC_KEY)
+
+  sig = crypto.sign('sha256', message, kpriv)
+
+  v = crypto.verify.new('sha256')
+--  v:update(message1)
+--  v:update(message2)
+--  verified = v:final(sig, kpub)
+--  asserts.ok(verified)
+
+  test.done()
+end
+
+no['test_rsa_verify'] = function(test, asserts)
   local kpriv = crypto.pkey.from_pem(RSA_PRIV_KEY, true)
   local kpub = crypto.pkey.from_pem(RSA_PUBLIC_KEY)
 
