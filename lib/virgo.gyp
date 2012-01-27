@@ -8,6 +8,7 @@
         '../deps/minizip.gyp:libminizip',
         '../deps/openssl.gyp:openssl',
         '../deps/luvit/luvit.gyp:libluvit',
+        '../deps/luacrypto.gyp:luacrypto',
         '../deps/sigar.gyp:sigar',
         '../deps/sigar.gyp:lua_sigar',
       ],

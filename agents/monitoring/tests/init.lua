@@ -13,7 +13,7 @@ local function runit(modname, callback)
 end
 
 exports.run = function()
-  async.forEachSeries({"./agent-protocol"}, runit, function(err) end)
+  async.forEachSeries({"./agent-protocol", "./crypto"}, runit, function(err) end)
 end
 
 return exports
