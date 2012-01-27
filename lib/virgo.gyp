@@ -12,6 +12,7 @@
         '../deps/lua.gyp:lua',
         '../deps/yajl.gyp:yajl',
         '../deps/luvit.gyp:luvit',
+        '../deps/luacrypto.gyp:luacrypto',
         '../deps/sigar.gyp:sigar',
         '../deps/sigar.gyp:lua_sigar',
       ],
