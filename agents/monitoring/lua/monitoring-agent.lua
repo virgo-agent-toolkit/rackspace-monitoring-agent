@@ -45,7 +45,7 @@ function MonitoringAgent.sample()
 end
 
 function MonitoringAgent.prototype:initialize(callback)
-  self._states = States.new('/var/run/agent/states')
+  self._states = States:new('/var/run/agent/states')
   async.waterfall({
     -- Load States
     function(callback)
