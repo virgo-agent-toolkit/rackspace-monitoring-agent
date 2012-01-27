@@ -103,6 +103,7 @@
         ]
       },
       'dependencies': [
+        'luvit/deps/luajit.gyp:libluajit',
         'sigar.gyp:sigar',
       ],
     }
