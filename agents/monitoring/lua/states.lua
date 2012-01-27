@@ -4,6 +4,7 @@ local path = require('path')
 local string = require('string')
 local table = require('table')
 local utils = require('utils')
+local Object = require('object')
 
 local fmt = string.format
 
@@ -11,10 +12,9 @@ function endswith(s, send)
   return #s >= #send and s:find(send, #s-#send+1, true) and true or false
 end
 
-local States = {}
-utils.inherits(States, {})
+local States = Object:extend()
 
-function States.prototype:_init(parent_dir)
+function States.prototype:initialize(parent_dir)
   self._parent_dir = parent_dir
   self._states = {}
 end
@@ -68,12 +68,6 @@ function States.prototype:dump(callback)
     end
   end
   callback()
-end
-
-function States.new(parent_dir)
-  local obj = States.new_obj()
-  obj:_init(parent_dir)
-  return obj
 end
 
 return States

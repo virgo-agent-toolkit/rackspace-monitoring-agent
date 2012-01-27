@@ -4,8 +4,7 @@ local utils = require('utils')
 
 local AgentProtocol = require('./agent-protocol')
 
-local AgentProtocolConnection = {}
-utils.inherits(AgentProtocolConnection, Emitter)
+local AgentProtocolConnection = Emitter:extend()
 
 function AgentProtocolConnection.prototype:request(incoming)
   local request = JSON.parse(incoming)
@@ -36,17 +35,14 @@ function AgentProtocolConnection.prototype:_onData(data)
   end
 end
 
-function AgentProtocolConnection.new(myid, conn)
+function AgentProtocolConnection:initialize(myid, conn)
   assert(conn ~= nil)
   assert(myid ~= nil)
-
-  local s = AgentProtocolConnection.new_obj()
-  s._myid = myid
-  s._conn = conn
-  s._conn:on('data', utils.bind(s, AgentProtocolConnection.prototype._onData))
-  s._buf = ""
-  s._endpoints = { }
-  return s
+  self._myid = myid
+  self._conn = conn
+  self._conn:on('data', utils.bind(s, AgentProtocolConnection.prototype._onData))
+  self._buf = ""
+  self._endpoints = { }
 end
 
 return AgentProtocolConnection
