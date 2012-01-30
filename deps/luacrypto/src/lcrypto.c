@@ -761,23 +761,23 @@ static int sign_fsign(lua_State *L)
     luaL_argerror(L, 2, "invalid digest type");
     return 0;
   } else {
-    EVP_MD_CTX c;
+    EVP_MD_CTX *c;
     size_t input_len = 0;
     const unsigned char *input = (unsigned char *) luaL_checklstring(L, 3, &input_len);
     unsigned int output_len = 0;
     unsigned char *buffer = NULL;
     EVP_PKEY **pkey = (EVP_PKEY **)luaL_checkudata(L, 4, LUACRYPTO_PKEYNAME);
 
-    EVP_MD_CTX_init(&c);
-    EVP_SignInit_ex(&c, type, NULL);
+    c = EVP_MD_CTX_create();
+    EVP_SignInit_ex(c, type, NULL);
     buffer = (unsigned char*)malloc((size_t)EVP_PKEY_size(*pkey));
-    EVP_SignUpdate(&c, input, input_len);
-    if (!EVP_SignFinal(&c, buffer, &output_len, *pkey)) {
-      EVP_MD_CTX_cleanup(&c);
+    EVP_SignUpdate(c, input, input_len);
+    if (!EVP_SignFinal(c, buffer, &output_len, *pkey)) {
+      EVP_MD_CTX_cleanup(c);
       free(buffer);
       return crypto_error(L);
     }
-    EVP_MD_CTX_cleanup(&c);
+    EVP_MD_CTX_destroy(c);
 
     lua_pushlstring(L, (char*) buffer, output_len);
     free(buffer);
@@ -870,7 +870,7 @@ static int verify_fverify(lua_State *L)
     luaL_argerror(L, 1, "invalid digest type");
     return 0;
   } else {
-    EVP_MD_CTX c;
+    EVP_MD_CTX *c;
     size_t input_len = 0;
     const unsigned char *input = (unsigned char *) luaL_checklstring(L, 3, &input_len);
     size_t sig_len = 0;
@@ -878,11 +878,11 @@ static int verify_fverify(lua_State *L)
     EVP_PKEY **pkey = (EVP_PKEY **)luaL_checkudata(L, 5, LUACRYPTO_PKEYNAME);
     int ret;
 
-    EVP_MD_CTX_init(&c);
-    EVP_VerifyInit_ex(&c, type, NULL);
-    EVP_VerifyUpdate(&c, input, input_len);
-    ret = EVP_VerifyFinal(&c, sig, sig_len, *pkey);
-    EVP_MD_CTX_cleanup(&c);
+    c = EVP_MD_CTX_create();
+    EVP_VerifyInit_ex(c, type, NULL);
+    EVP_VerifyUpdate(c, input, input_len);
+    ret = EVP_VerifyFinal(c, sig, sig_len, *pkey);
+    EVP_MD_CTX_destroy(c);
     if (ret == -1)
       return crypto_error(L);
 
