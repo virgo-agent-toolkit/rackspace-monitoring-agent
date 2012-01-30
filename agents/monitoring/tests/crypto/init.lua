@@ -61,16 +61,16 @@ exports['test_rsa_verify'] = function(test, asserts)
 
   sig = crypto.sign('sha256', message, kpriv)
 
-  v = crypto.verify.new('sha256')
---  v:update(message1)
---  v:update(message2)
---  verified = v:final(sig, kpub)
---  asserts.ok(verified)
+  local v = crypto.verify.new('sha256')
+  v:update(message1)
+  v:update(message2)
+  local verified = v:final(sig, kpub)
+  asserts.ok(verified)
 
   test.done()
 end
 
-no['test_rsa_verify'] = function(test, asserts)
+exports['test_rsa_verify'] = function(test, asserts)
   local kpriv = crypto.pkey.from_pem(RSA_PRIV_KEY, true)
   local kpub = crypto.pkey.from_pem(RSA_PUBLIC_KEY)
 
