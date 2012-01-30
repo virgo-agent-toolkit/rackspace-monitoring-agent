@@ -25,7 +25,7 @@
             'MinimalRebuild': 'true',
             'OmitFramePointers': 'false',
             'BasicRuntimeChecks': 3, # /RTC1
-            'MultiProcessorCompilation': 'false',
+            'MultiProcessorCompilation': 'true'
           },
           'VCLinkerTool': {
             'LinkIncremental': 2, # enable incremental linking
@@ -50,8 +50,7 @@
             'WholeProgramOptimization': 'true', # /GL, whole program optimization, needed for LTCG
             'OmitFramePointers': 'true',
             'EnableFunctionLevelLinking': 'true',
-            'EnableIntrinsicFunctions': 'true',
-            'TargetMachine': 'x86',
+            'EnableIntrinsicFunctions': 'true', 
           },
           'VCLibrarianTool': {
             'AdditionalOptions': [

@@ -12,6 +12,17 @@
 #include <openssl/dsa.h>
 #include <openssl/pem.h>
 #include <openssl/bio.h>
+
+/** 
+ * We hard code a check here for the version of OpenSSL we bundle
+ * inside deps, because its too easily to accidently pull in an older
+ * version of OpenSSL on random platforms with weird include paths.
+ */
+
+#if OPENSSL_VERSION_NUMBER != 0x1000005fL
+#error Invalid OpenSSL version number. Busted Include Paths?
+#endif
+
 #include <stddef.h>
 
 
@@ -54,9 +65,9 @@ static int crypto_error(lua_State *L)
 
 /*************** DIGEST API ***************/
 
-static EVP_MD_CTX *digest_pnew(lua_State *L)
+static EVP_MD_CTX **digest_pnew(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)lua_newuserdata(L, sizeof(EVP_MD_CTX));
+  EVP_MD_CTX **c = lua_newuserdata(L, sizeof(EVP_MD_CTX**));
   luaL_getmetatable(L, LUACRYPTO_DIGESTNAME);
   lua_setmetatable(L, -2);
   return c;
@@ -71,9 +82,10 @@ static int digest_fnew(lua_State *L)
     luaL_argerror(L, 1, "invalid digest/cipher type");
     return 0;
   } else {
-    EVP_MD_CTX *c = digest_pnew(L);
-    EVP_MD_CTX_init(c);
-    if (!EVP_DigestInit_ex(c, digest, NULL)) {
+    EVP_MD_CTX **c = digest_pnew(L);
+    *c = EVP_MD_CTX_create();
+    EVP_MD_CTX_init(*c);
+    if (!EVP_DigestInit_ex(*c, digest, NULL)) {
       return crypto_error(L);
     }
     return 1;
@@ -82,10 +94,11 @@ static int digest_fnew(lua_State *L)
 
 static int digest_clone(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
-  EVP_MD_CTX *d = digest_pnew(L);
-  EVP_MD_CTX_init(d);
-  if (!EVP_MD_CTX_copy_ex(d, c)) {
+  EVP_MD_CTX **c = luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
+  EVP_MD_CTX **d = digest_pnew(L);
+  *d = EVP_MD_CTX_create();
+  EVP_MD_CTX_init(*d);
+  if (!EVP_MD_CTX_copy_ex(*d, *c)) {
     return crypto_error(L);
   }
   return 1;
@@ -93,13 +106,13 @@ static int digest_clone(lua_State *L)
 
 static int digest_reset(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
-  const EVP_MD *t = EVP_MD_CTX_md(c);
-  if (!EVP_MD_CTX_cleanup(c)) {
+  EVP_MD_CTX **c = luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
+  const EVP_MD *t = EVP_MD_CTX_md(*c);
+  if (!EVP_MD_CTX_cleanup(*c)) {
     return crypto_error(L);
   }
-  EVP_MD_CTX_init(c);
-  if (!EVP_DigestInit_ex(c, t, NULL)) {
+  EVP_MD_CTX_init(*c);
+  if (!EVP_DigestInit_ex(*c, t, NULL)) {
     return crypto_error(L);
   }
   return 0;
@@ -107,20 +120,19 @@ static int digest_reset(lua_State *L)
 
 static int digest_update(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
+  EVP_MD_CTX **c = luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
   const char *s = luaL_checkstring(L, 2);
 
-  if (!EVP_DigestUpdate(c, s, lua_strlen(L, 2))) {
+  if (!EVP_DigestUpdate(*c, s, lua_strlen(L, 2))) {
     return crypto_error(L);
   }
 
-  lua_settop(L, 1);
-  return 1;
+  return 0;
 }
 
 static int digest_final(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
+  EVP_MD_CTX **c = luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
   EVP_MD_CTX *d = NULL;
   unsigned char digest[EVP_MAX_MD_SIZE];
   unsigned int written = 0;
@@ -129,13 +141,13 @@ static int digest_final(lua_State *L)
 
   if (lua_isstring(L, 2)) {
     const char *s = luaL_checkstring(L, 2);
-    if(!EVP_DigestUpdate(c, s, lua_strlen(L, 2))) {
+    if(!EVP_DigestUpdate(*c, s, lua_strlen(L, 2))) {
       return crypto_error(L);
     }
   }
 
   d = EVP_MD_CTX_create();
-  if (!EVP_MD_CTX_copy_ex(d, c)) {
+  if (!EVP_MD_CTX_copy_ex(d, *c)) {
     return crypto_error(L);
   }
   if (!EVP_DigestFinal_ex(d, digest, &written)) {
@@ -167,11 +179,12 @@ static int digest_tostring(lua_State *L)
 
 static int digest_gc(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
-  if (!EVP_MD_CTX_cleanup(c)) {
+  EVP_MD_CTX **c = luaL_checkudata(L, 1, LUACRYPTO_DIGESTNAME);
+  if (!EVP_MD_CTX_cleanup(*c)) {
     return crypto_error(L);
   }
-  return 1;
+  EVP_MD_CTX_destroy(*c);
+  return 0;
 }
 
 static int digest_fdigest(lua_State *L)
@@ -380,7 +393,7 @@ static int encrypt_gc(lua_State *L)
   if (!EVP_CIPHER_CTX_cleanup(c)) {
     return crypto_error(L);
   }
-  return 1;
+  return 0;
 }
 
 static int encrypt_fencrypt(lua_State *L)
@@ -502,7 +515,7 @@ static int decrypt_gc(lua_State *L)
   if (!EVP_CIPHER_CTX_cleanup(c)) {
     return crypto_error(L);
   }
-  return 1;
+  return 0;
 }
 
 static int decrypt_fdecrypt(lua_State *L)
@@ -641,7 +654,7 @@ static int hmac_gc(lua_State *L)
 {
   HMAC_CTX *c = (HMAC_CTX*)luaL_checkudata(L, 1, LUACRYPTO_HMACNAME);
   HMAC_CTX_cleanup(c);
-  return 1;
+  return 0;
 }
 
 static int hmac_fdigest(lua_State *L)
@@ -746,7 +759,7 @@ static int sign_gc(lua_State *L)
 {
   EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_SIGNNAME);
   EVP_MD_CTX_cleanup(c);
-  return 1;
+  return 0;
 }
 
 static int sign_fsign(lua_State *L)
@@ -759,23 +772,23 @@ static int sign_fsign(lua_State *L)
     luaL_argerror(L, 2, "invalid digest type");
     return 0;
   } else {
-    EVP_MD_CTX c;
+    EVP_MD_CTX *c;
     size_t input_len = 0;
     const unsigned char *input = (unsigned char *) luaL_checklstring(L, 3, &input_len);
     unsigned int output_len = 0;
     unsigned char *buffer = NULL;
     EVP_PKEY **pkey = (EVP_PKEY **)luaL_checkudata(L, 4, LUACRYPTO_PKEYNAME);
 
-    EVP_MD_CTX_init(&c);
-    EVP_SignInit_ex(&c, type, NULL);
+    c = EVP_MD_CTX_create();
+    EVP_SignInit_ex(c, type, NULL);
     buffer = (unsigned char*)malloc((size_t)EVP_PKEY_size(*pkey));
-    EVP_SignUpdate(&c, input, input_len);
-    if (!EVP_SignFinal(&c, buffer, &output_len, *pkey)) {
-      EVP_MD_CTX_cleanup(&c);
+    EVP_SignUpdate(c, input, input_len);
+    if (!EVP_SignFinal(c, buffer, &output_len, *pkey)) {
+      EVP_MD_CTX_cleanup(c);
       free(buffer);
       return crypto_error(L);
     }
-    EVP_MD_CTX_cleanup(&c);
+    EVP_MD_CTX_destroy(c);
 
     lua_pushlstring(L, (char*) buffer, output_len);
     free(buffer);
@@ -787,46 +800,53 @@ static int sign_fsign(lua_State *L)
 
 static EVP_MD_CTX *verify_pnew(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)lua_newuserdata(L, sizeof(EVP_MD_CTX));
+  EVP_MD_CTX **c = lua_newuserdata(L, sizeof(EVP_MD_CTX**));
+  *c = EVP_MD_CTX_create();
   luaL_getmetatable(L, LUACRYPTO_VERIFYNAME);
   lua_setmetatable(L, -2);
-  return c;
+  return *c;
 }
 
 static int verify_fnew(lua_State *L)
 {
   const char *s = luaL_checkstring(L, 1);
   const EVP_MD *md = EVP_get_digestbyname(s);
-  if (md == NULL) {
-    luaL_argerror(L, 1, "invalid digest type");
-    return 0;
-  } else {
-    EVP_MD_CTX *c = verify_pnew(L);
-    EVP_MD_CTX_init(c);
-    EVP_VerifyInit_ex(c, md, NULL);
-    return 1;
-  }
+  int ret;
+  if (md == NULL)
+    goto error;
+
+  EVP_MD_CTX *c = verify_pnew(L);
+  EVP_MD_CTX_init(c);
+  ret = EVP_VerifyInit_ex(c, md, NULL);
+  if (ret != 1)
+    goto error;
+
+  return 1;
+
+error:
+  luaL_argerror(L, 1, "invalid digest type");
+  return 0;
 }
 
 static int verify_update(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_VERIFYNAME);
   size_t input_len = 0;
+  EVP_MD_CTX **c = luaL_checkudata(L, 1, LUACRYPTO_VERIFYNAME);
   const unsigned char *input = (unsigned char *) luaL_checklstring(L, 2, &input_len);
 
-  EVP_VerifyUpdate(c, input, input_len);
+  EVP_VerifyUpdate(*c, input, input_len);
   return 0;
 }
 
 static int verify_final(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_VERIFYNAME);
   size_t sig_len = 0;
+  EVP_MD_CTX **c = luaL_checkudata(L, 1, LUACRYPTO_VERIFYNAME);
   const unsigned char *sig = (unsigned char *) luaL_checklstring(L, 2, &sig_len);
-  EVP_PKEY **pkey = (EVP_PKEY **)luaL_checkudata(L, 3, LUACRYPTO_PKEYNAME);
+  EVP_PKEY **pkey = luaL_checkudata(L, 3, LUACRYPTO_PKEYNAME);
   int ret;
 
-  ret = EVP_VerifyFinal(c, sig, sig_len, *pkey);
+  ret = EVP_VerifyFinal(*c, sig, sig_len, *pkey);
   if (ret == -1)
     return crypto_error(L);
 
@@ -836,18 +856,19 @@ static int verify_final(lua_State *L)
 
 static int verify_tostring(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_VERIFYNAME);
   char s[64];
-  sprintf(s, "%s %p", LUACRYPTO_VERIFYNAME, (void *)c);
+  EVP_MD_CTX **c = luaL_checkudata(L, 1, LUACRYPTO_VERIFYNAME);
+  snprintf(s, sizeof(s), "%s %p", LUACRYPTO_VERIFYNAME, (void *)c);
   lua_pushstring(L, s);
   return 1;
 }
 
 static int verify_gc(lua_State *L)
 {
-  EVP_MD_CTX *c = (EVP_MD_CTX*)luaL_checkudata(L, 1, LUACRYPTO_VERIFYNAME);
-  EVP_MD_CTX_cleanup(c);
-  return 1;
+  EVP_MD_CTX **c = (EVP_MD_CTX**)luaL_checkudata(L, 1, LUACRYPTO_VERIFYNAME);
+  EVP_MD_CTX_cleanup(*c);
+  EVP_MD_CTX_destroy(*c);
+  return 0;
 }
 
 static int verify_fverify(lua_State *L)
@@ -860,7 +881,7 @@ static int verify_fverify(lua_State *L)
     luaL_argerror(L, 1, "invalid digest type");
     return 0;
   } else {
-    EVP_MD_CTX c;
+    EVP_MD_CTX *c;
     size_t input_len = 0;
     const unsigned char *input = (unsigned char *) luaL_checklstring(L, 3, &input_len);
     size_t sig_len = 0;
@@ -868,11 +889,11 @@ static int verify_fverify(lua_State *L)
     EVP_PKEY **pkey = (EVP_PKEY **)luaL_checkudata(L, 5, LUACRYPTO_PKEYNAME);
     int ret;
 
-    EVP_MD_CTX_init(&c);
-    EVP_VerifyInit_ex(&c, type, NULL);
-    EVP_VerifyUpdate(&c, input, input_len);
-    ret = EVP_VerifyFinal(&c, sig, sig_len, *pkey);
-    EVP_MD_CTX_cleanup(&c);
+    c = EVP_MD_CTX_create();
+    EVP_VerifyInit_ex(c, type, NULL);
+    EVP_VerifyUpdate(c, input, input_len);
+    ret = EVP_VerifyFinal(c, sig, sig_len, *pkey);
+    EVP_MD_CTX_destroy(c);
     if (ret == -1)
       return crypto_error(L);
 
@@ -1044,20 +1065,25 @@ static int pkey_from_pem(lua_State *L)
   int private = lua_isboolean(L, 2) && lua_toboolean(L, 2);
   EVP_PKEY **pkey = pkey_new(L);
   BIO *mem = BIO_new(BIO_s_mem());
+  int ret;
 
-  BIO_puts(mem, key);
+  ret = BIO_puts(mem, key);
+  if (ret != strlen(key))
+    goto error;
 
   if(private)
-    PEM_read_bio_PrivateKey(mem, pkey, NULL, NULL);
+    *pkey = PEM_read_bio_PrivateKey(mem, NULL, NULL, NULL);
   else
-    PEM_read_bio_PUBKEY(mem, pkey, NULL, NULL);
+    *pkey = PEM_read_bio_PUBKEY(mem, NULL, NULL, NULL);
 
-  BIO_free(mem);
-
-  if (!*pkey)
-    return crypto_error(L);
+  if (! *pkey)
+    goto error;
 
   return 1;
+
+error:
+  BIO_free(mem);
+  return crypto_error(L);
 }
 
 static int pkey_write(lua_State *L)
@@ -1095,7 +1121,7 @@ static int pkey_tostring(lua_State *L)
 {
   EVP_PKEY **pkey = (EVP_PKEY **)luaL_checkudata(L, 1, LUACRYPTO_PKEYNAME);
   char buf[60];
-  sprintf(buf, "%s %s %d %p", LUACRYPTO_PKEYNAME, (*pkey)->type == EVP_PKEY_DSA ? "DSA" : "RSA", EVP_PKEY_bits(*pkey), pkey);
+  snprintf(buf, sizeof(buf), "%s %s %d %p", LUACRYPTO_PKEYNAME, (*pkey)->type == EVP_PKEY_DSA ? "DSA" : "RSA", EVP_PKEY_bits(*pkey), pkey);
   lua_pushstring(L, buf);
   return 1;
 }
@@ -1136,7 +1162,7 @@ static int seal_tostring(lua_State* L)
 {
   seal_context *c = (seal_context*)luaL_checkudata(L, 1, LUACRYPTO_SEALNAME);
   char s[64];
-  sprintf(s, "%s %p %s", LUACRYPTO_SEALNAME, (void *)c, EVP_CIPHER_name(c->ctx->cipher));
+  snprintf(s, sizeof(s), "%s %p %s", LUACRYPTO_SEALNAME, (void *)c, EVP_CIPHER_name(c->ctx->cipher));
   lua_pushstring(L, s);
   return 1;
 }
@@ -1311,7 +1337,7 @@ static int open_tostring(lua_State* L)
   EVP_PKEY **pkey = (EVP_PKEY **)luaL_checkudata(L, -1, LUACRYPTO_PKEYNAME);
 
   char s[64];
-  sprintf(s, "%s %p %s %s %d %p", LUACRYPTO_OPENNAME, (void *)c, EVP_CIPHER_name(c->cipher),
+  snprintf(s, sizeof(s), "%s %p %s %s %d %p", LUACRYPTO_OPENNAME, (void *)c, EVP_CIPHER_name(c->cipher),
           (*pkey)->type == EVP_PKEY_DSA ? "DSA" : "RSA", EVP_PKEY_bits(*pkey), pkey);
 
   lua_pop(L, 1);
@@ -1662,12 +1688,13 @@ extern "C"
 #endif
 LUACRYPTO_API int luaopen_crypto(lua_State *L)
 {
-  OpenSSL_add_all_digests();
-  OpenSSL_add_all_ciphers();
-
   struct luaL_reg core[] = {
     {NULL, NULL},
   };
+
+  OpenSSL_add_all_digests();
+  OpenSSL_add_all_ciphers();
+
   create_metatables (L);
   luaL_openlib (L, LUACRYPTO_CORENAME, core, 0);
   luacrypto_set_info (L);

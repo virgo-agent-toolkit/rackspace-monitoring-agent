@@ -18,6 +18,7 @@ local async = require 'async'
 local table = require 'table'
 local string = require 'string'
 local math = require 'math'
+local Object = require 'object'
 
 local fmt = string.format
 
@@ -49,26 +50,21 @@ local function get_tests(mod)
   return ts
 end
 
-local TestBaton = {}
-TestBaton.prototype = {}
+local TestBaton = Object:extend()
 
-function TestBaton.new(runner, stats, callback)
-  local tb = {}
-  tb._callback = callback
-  tb._stats = stats
-  tb._runner = runner
-  tb.done = function()
+function TestBaton.prototype:initialize(runner, stats, callback)
+  self._callback = callback
+  self._stats = stats
+  self._runner = runner
+  self.done = function()
     stats:add_stats(runner.context)
     callback()
   end
-  setmetatable(tb, {__index=TestBaton.prototype})
-  return tb
 end
-
 
 local run_test = function(runner, stats, callback)
   process.stdout:write(fmt("Running %s", runner.name))
-  local test_baton = TestBaton.new(runner, stats, function(err)
+  local test_baton = TestBaton:new(runner, stats, function(err)
     process.stdout:write(" DONE\n")
 
     runner.context:dump_errors(function(line)
@@ -84,7 +80,7 @@ local run = function(options, mods, callback)
   if not mods then return end
   local runners = {}
   local ops = {}
-  local stats = context.new()
+  local stats = context:new()
 
   options = options or {
     print_summary = true,
@@ -93,17 +89,17 @@ local run = function(options, mods, callback)
 
   for k, v in pairs(get_tests(mods)) do
     if not is_control_function(k) then
-      table.insert(runners, 1, { name = k, func = v, context = context.new() })
+      table.insert(runners, 1, { name = k, func = v, context = context:new() })
     end
   end
 
   local function setup(callback)
-    local test_baton = TestBaton.new({context = context.new()}, stats, callback)
+    local test_baton = TestBaton:new({context = context:new()}, stats, callback)
     mods.setup(test_baton)
   end
 
   local function teardown(callback)
-    local test_baton = TestBaton.new({context = context.new()}, stats, callback)
+    local test_baton = TestBaton:new({context = context:new()}, stats, callback)
     mods.teardown(test_baton)
   end
 

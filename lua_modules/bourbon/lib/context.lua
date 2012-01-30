@@ -16,10 +16,10 @@ limitations under the License.
 
 local utils = require('utils')
 local debug = require('debug')
+local Object = require('object')
 local table = require('table')
 
-local Context = {}
-Context.prototype = {}
+local Context = Object:extend()
 
 function Context.prototype:run(func, test)
   local bourbon_assert = function(assertion)
@@ -75,14 +75,11 @@ function Context.prototype:dump_errors(func)
   end
 end
 
-utils.inherits(Context, Context.prototype)
-Context.new = function()
-  local t = Context.new_obj()
-  t.checked = 0
-  t.failed = 0
-  t.passed = 0
-  t.errors = {}
-  return t
+function Context.prototype:initialize()
+  self.checked = 0
+  self.failed = 0
+  self.passed = 0
+  self.errors = {}
 end
 
 return Context

@@ -3,6 +3,10 @@
     {
       'target_name': 'luacrypto',
       'type': '<(library)',
+      'dependencies': [
+		'openssl.gyp:openssl',
+        'luvit/deps/luajit.gyp:*'
+      ],
       'sources': [
         'luacrypto/src/lcrypto.c',
         ],

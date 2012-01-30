@@ -16,7 +16,7 @@
       ],
       'include_dirs': [
           'sigar/include',
-        ],
+      ],
       'direct_dependent_settings': {
         'include_dirs': [
           'sigar/include',
@@ -103,6 +103,7 @@
         ]
       },
       'dependencies': [
+        'luvit/deps/luajit.gyp:libluajit',
         'sigar.gyp:sigar',
       ],
     }

@@ -8,8 +8,9 @@ import getopt
 def file_list(path):
   files = []
   for f in os.listdir(path):
-    if os.path.isdir(os.path.join(path, f)):
-      files.extend(file_list(os.path.join(path, f)))
+    new_dir = os.path.join(path, f)
+    if os.path.isdir(new_dir) and not os.path.islink(new_dir):
+      files.extend(file_list(new_dir))
     else:
       if f.endswith('.lua'):
         files.append(path + '/' + f)

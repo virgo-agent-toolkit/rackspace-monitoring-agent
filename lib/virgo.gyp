@@ -4,14 +4,10 @@
       'target_name': 'virgolib',
       'type': 'static_library',
       'dependencies': [
-        '../deps/http_parser/http_parser.gyp:http_parser',
-        '../deps/uv/uv.gyp:uv',
         '../deps/zlib.gyp:zlib',
         '../deps/minizip.gyp:libminizip',
         '../deps/openssl.gyp:openssl',
-        '../deps/lua.gyp:lua',
-        '../deps/yajl.gyp:yajl',
-        '../deps/luvit.gyp:luvit',
+        '../deps/luvit/luvit.gyp:libluvit',
         '../deps/luacrypto.gyp:luacrypto',
         '../deps/sigar.gyp:sigar',
         '../deps/sigar.gyp:lua_sigar',
@@ -39,11 +35,11 @@
           '../include/private',
           '../include',
         ],
-        'direct_dependent_settings': {
-          'include_dirs': [
-            '../include',
+      'direct_dependent_settings': {
+         'include_dirs': [
+            '../include'
           ],
-        },
+      },
     }
   ],
 }

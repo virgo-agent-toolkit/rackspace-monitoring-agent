@@ -89,74 +89,24 @@ virgo__lua_luvit_print_stderr(lua_State* L) {
 static void
 virgo__lua_luvit_init(virgo_t *v)
 {
-  uv_loop_t *loop;
-  ares_channel channel;
-  struct ares_options options;
-  int index;
   lua_State *L = v->L;
 
-  memset(&channel, 0, sizeof(channel));
+  luvit_init(L, uv_default_loop(), v->argc, v->argv);
 
   /* Pull up the preload table */
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
   lua_remove(L, -2);
 
-  // Register yajl
-  lua_pushcfunction(L, luaopen_yajl);
-  lua_setfield(L, -2, "yajl");
-  // Register yajl
-  lua_pushcfunction(L, luaopen_crypto);
-  lua_setfield(L, -2, "crypto");
-
-  /* Register http_parser */
-  lua_pushcfunction(L, luaopen_http_parser);
-  lua_setfield(L, -2, "http_parser");
-  /* Register uv */
-  lua_pushcfunction(L, luaopen_uv);
-  lua_setfield(L, -2, "uv");
-  /* Register env */
-  lua_pushcfunction(L, luaopen_env);
-  lua_setfield(L, -2, "env");
-  /* Register constants */
-  lua_pushcfunction(L, luaopen_constants);
-  lua_setfield(L, -2, "constants");
-
   // Register constants
   lua_pushcfunction(L, virgo__lua_logging_open);
   lua_setfield(L, -2, "logging");
 
-  /* We're done with preload, put it away */
+  // Register yajl
+  lua_pushcfunction(L, luaopen_crypto);
+  lua_setfield(L, -2, "crypto");
+
   lua_pop(L, 1);
-
-  // Get argv
-  lua_createtable (L, v->argc, 0);
-  for (index = 0; index < v->argc; index++) {
-    lua_pushstring (L, v->argv[index]);
-    lua_rawseti(L, -2, index);
-  }
-  lua_setglobal(L, "argv");
-
-  lua_pushcfunction(L, virgo__lua_luvit_getcwd);
-  lua_setglobal(L, "getcwd");
-
-  lua_pushcfunction(L, virgo__lua_luvit_exit);
-  lua_setglobal(L, "exit_process");
-
-  lua_pushcfunction(L, virgo__lua_luvit_print_stderr);
-  lua_setglobal(L, "print_stderr");
-
-  // Hold a reference to the main thread in the registry
-  assert(lua_pushthread(L) == 1);
-  lua_setfield(L, LUA_REGISTRYINDEX, "main_thread");
-
-  // Store the loop within the registry
-  loop = uv_default_loop();
-  luv_set_loop(L, loop);
-
-  // Store the ARES Channel
-  uv_ares_init_options(luv_get_loop(L), &channel, &options, 0);
-  luv_set_ares_channel(L, &channel);
 }
 
 virgo_error_t*

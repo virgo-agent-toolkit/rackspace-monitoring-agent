@@ -18,7 +18,7 @@ exports['test_handshake_hello'] = function(test, asserts)
     hello.write = function(_, res)
       hello.res = res
     end
-    local agent = AgentProtocol.new(hello.data, hello)
+    local agent = AgentProtocol:new(hello.data, hello)
     agent:request(hello.data)
     response = JSON.parse(hello.res)
 

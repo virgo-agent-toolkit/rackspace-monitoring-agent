@@ -1,41 +1,38 @@
 local JSON = require('json')
+local Object = require('object')
 local utils = require('utils')
 
-local AgentProtocol = {}
-AgentProtocol.prototype = {}
+local Response = Object:extend()
+function Response.prototype:initialize()
+  self.v = 1
+  self.id = 1
+  self.source = 'endpoint'
+  self.target = 'X'
+  self.result = nil
+end
 
-function AgentProtocol.prototype:new_response()
-  local response = {}
-  response.v = 1
-  response.id = 1
-  response.source = self._id
-  response.target = self._target
-  response.result = nil
-  return response
+local AgentProtocol = Object:extend()
+
+function AgentProtocol.prototype:initialize(hello, client)
+  self.v = 1
+  self.id = 1
+  self.source = self._id
+  self.target = self._target
+  self.result = nil
+  self._conn = client
+  self._target = hello.source
+  self._id = hello.target
+  self._methods = {}
+  self._methods["handshake.hello"] = utils.bind(AgentProtocol.prototype.handshake_hello, self)
 end
 
 function AgentProtocol.prototype:handshake_hello(request)
-  local response = self:new_response()
+  local response = Response:new()
   self._conn:write(JSON.stringify(response))
 end
 
 function AgentProtocol.prototype:request(request)
   self._methods[request.method](request)
-end
-
-function AgentProtocol.new(hello, client)
-  assert(hello ~= nil)
-  assert(client ~= nil)
-
-  local ap = {}
-  ap._conn = client
-  ap._target = hello.source
-  ap._id = hello.target
-
-  ap._methods = {}
-  ap._methods["handshake.hello"] = utils.bind(ap, AgentProtocol.prototype.handshake_hello)
-  setmetatable(ap, {__index=AgentProtocol.prototype})
-  return ap
 end
 
 return AgentProtocol
