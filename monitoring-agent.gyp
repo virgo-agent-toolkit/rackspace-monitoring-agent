@@ -53,9 +53,7 @@
       'conditions': [
         [ 'OS=="win"', {
           'defines': [
-            'FD_SETSIZE=1024',
-            # we need to use node's preferred "win32" rather than gyp's preferred "win"
-            'PLATFORM="win32"',
+            'FD_SETSIZE=1024'
           ],
           'libraries': [ '-lpsapi.lib', '-lversion.lib', '-lnetapi32.lib' ]
         },{ # POSIX
