@@ -12,6 +12,17 @@
 #include <openssl/dsa.h>
 #include <openssl/pem.h>
 #include <openssl/bio.h>
+
+/** 
+ * We hard code a check here for the version of OpenSSL we bundle
+ * inside deps, because its too easily to accidently pull in an older
+ * version of OpenSSL on random platforms with weird include paths.
+ */
+
+#if OPENSSL_VERSION_NUMBER != 0x1000005fL
+#error Invalid OpenSSL version number. Busted Include Paths?
+#endif
+
 #include <stddef.h>
 
 
