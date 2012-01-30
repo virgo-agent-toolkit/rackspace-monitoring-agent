@@ -30,4 +30,7 @@ dist:
 	rm -rf $(TARNAME)
 	gzip -f -9 $(TARNAME).tar
 
+update:
+	git submodule update --init --recursive
+
 .PHONY: clean dist distclean all test tests
