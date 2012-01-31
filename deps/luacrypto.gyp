@@ -5,7 +5,8 @@
       'type': '<(library)',
       'dependencies': [
 		'openssl.gyp:openssl',
-        'luvit/deps/luajit.gyp:*'
+        'luvit/deps/luajit.gyp:*',
+		'luvit/luvit.gyp:libluvit',
       ],
       'sources': [
         'luacrypto/src/lcrypto.c',
