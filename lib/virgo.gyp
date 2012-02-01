@@ -32,6 +32,7 @@
         'virgo_lua_logging.c',
         'virgo_lua_debugger.c',
         'virgo_lua_vfs.c',
+        'virgo_lua_tls.c',
         'virgo_logging.c',
         'virgo_portable.c',
         'virgo_util.c',
