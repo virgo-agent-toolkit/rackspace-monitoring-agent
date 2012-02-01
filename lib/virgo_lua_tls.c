@@ -53,6 +53,11 @@ typedef struct tls_conn_t {
 } tls_conn_t;
 
 
+
+/**
+ * TLS Secure Context Methods
+ */
+
 static tls_sc_t*
 newSC(lua_State *L)
 {
@@ -65,6 +70,13 @@ newSC(lua_State *L)
   return ctx;
 }
 
+static tls_sc_t*
+getSC(lua_State *L)
+{
+  tls_sc_t *ctx = luaL_checkudata(L, 1, TLS_SECURE_CONTEXT_HANDLE);
+  return ctx;
+}
+
 static int
 tls_sc_create(lua_State *L) {
   tls_sc_t* ctx = newSC(L);
@@ -73,7 +85,7 @@ tls_sc_create(lua_State *L) {
 
 static int
 tls_sc_close(lua_State *L) {
-  tls_sc_t *ctx = luaL_checkudata(L, 1, TLS_SECURE_CONTEXT_HANDLE);
+  tls_sc_t *ctx = getSC(L);
 
   if (ctx->ctx) {
     SSL_CTX_free(ctx->ctx);
@@ -90,6 +102,9 @@ tls_sc_gc(lua_State *L) {
 }
 
 
+/**
+ * TLS Connection Methods
+ */
 
 static tls_conn_t*
 newCONN(lua_State *L)
@@ -103,6 +118,13 @@ newCONN(lua_State *L)
   return tc;
 }
 
+static tls_conn_t*
+getCONN(lua_State *L)
+{
+  tls_conn_t *tc = luaL_checkudata(L, 1, TLS_CONNECTION_HANDLE);
+  return tc;
+}
+
 static int
 tls_conn_create(lua_State *L) {
   tls_conn_t* tc = newCONN(L);
@@ -112,7 +134,7 @@ tls_conn_create(lua_State *L) {
 
 static int
 tls_conn_close(lua_State *L) {
-  tls_conn_t *tc = luaL_checkudata(L, 1, TLS_CONNECTION_HANDLE);
+  tls_conn_t *tc = getCONN(L);
 
   if (tc->ssl) {
     SSL_free(tc->ssl);
