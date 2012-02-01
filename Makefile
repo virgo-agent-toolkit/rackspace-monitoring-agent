@@ -31,6 +31,6 @@ dist:
 	gzip -f -9 $(TARNAME).tar
 
 update:
-	git submodule update --init --recursive
+	git submodule foreach git fetch && git submodule update --init --recursive
 
 .PHONY: clean dist distclean all test tests
