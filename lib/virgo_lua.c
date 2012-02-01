@@ -87,6 +87,7 @@ virgo__lua_init(virgo_t *v)
   virgo__lua_vfs_init(L);
   virgo__lua_loader_init(L);
   virgo__lua_debugger_init(L);
+  virgo__lua_tls_init(L);
 
   virgo__lua_luvit_init(v);
 
