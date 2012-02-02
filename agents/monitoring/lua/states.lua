@@ -24,7 +24,6 @@ end
 
 function States.prototype:load(callback)
   local ops = {}
-  local lself = self
 
   local function loadIterator(filename, callback)
     local filepath = path.join(self._parent_dir, filename)
