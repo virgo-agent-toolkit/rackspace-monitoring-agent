@@ -16,7 +16,7 @@ COMMENT_RE = re.compile(r'\s*#.*')
 # It takes into account quoted quotes, and makes sure that the quotes match.
 # NOTE: It does not handle quotes that span more than one line, or
 # cases where an escaped quote is preceeded by an escaped backslash.
-quote_re_str = r'(?P<q>[\'"])(.*?)(?<![^\\][\\])(?P=q)'
+QUOTE_RE_STR = r'(?P<q>[\'"])(.*?)(?<![^\\][\\])(?P=q)'
 QUOTE_RE = re.compile(QUOTE_RE_STR)
 
 

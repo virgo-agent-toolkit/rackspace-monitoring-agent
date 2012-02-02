@@ -15,7 +15,7 @@
         'sigar-configs/sigar_version_autoconf_<(OS).c',
       ],
       'include_dirs': [
-          'sigar/include',
+        'sigar/include',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -23,58 +23,68 @@
         ],
       },
       'conditions': [
-        [ 'OS=="win"', {
-          'include_dirs': [
-            'sigar/src/os/win32',
-          ],
-          'defines': [
-            'WIN32_LEAN_AND_MEAN',
-            '_BIND_TO_CURRENT_MFC_VERSION=1',
-            '_BIND_TO_CURRENT_CRT_VERSION=1',
-            '_CRT_SECURE_NO_WARNINGS',
-          ],
-          'sources': [
-            'sigar/src/os/win32/peb.c',
-            'sigar/src/os/win32/win32_sigar.c',
-            'sigar/src/os/win32/wmi.cpp',
-          ],
-        }],
-        ['OS=="mac" or OS=="freebsd"', {
-          'include_dirs': [
-            'sigar/src/os/darwin',
-          ],
-          'sources': [
-            'sigar/src/os/darwin/darwin_sigar.c',
-          ],
-        }],
-        ['OS=="mac"', {
-          'include_dirs': [
-            '/Developer/Headers/FlatCarbon/',
-          ],
-          'defines': [
+        [ 'OS=="win"',
+          {
+            'include_dirs': [
+              'sigar/src/os/win32',
+            ],
+            'defines': [
+              'WIN32_LEAN_AND_MEAN',
+              '_BIND_TO_CURRENT_MFC_VERSION=1',
+              '_BIND_TO_CURRENT_CRT_VERSION=1',
+              '_CRT_SECURE_NO_WARNINGS',
+            ],
+            'sources': [
+              'sigar/src/os/win32/peb.c',
+              'sigar/src/os/win32/win32_sigar.c',
+              'sigar/src/os/win32/wmi.cpp',
+            ],
+          }
+        ],
+        ['OS=="mac" or OS=="freebsd"',
+          {
+            'include_dirs': [
+              'sigar/src/os/darwin',
+            ],
+            'sources': [
+              'sigar/src/os/darwin/darwin_sigar.c',
+            ],
+          }
+        ],
+        ['OS=="mac"',
+          {
+            'include_dirs': [
+              '/Developer/Headers/FlatCarbon/',
+            ],
+            'defines': [
             # TODO: test on freebsd
-            'DARWIN',
-          ],
-        }],
-        ['OS=="solaris"', {
-          'include_dirs': [
-            'sigar/src/os/solaris',
-          ],
-          'sources': [
-            'sigar/src/os/solaris/get_mib2.c',
-            'sigar/src/os/solaris/kstats.c',
-            'sigar/src/os/solaris/procfs.c',
-            'sigar/src/os/solaris/solaris_sigar.c',
-          ],
-        }],
-        ['OS=="linux"', {
-          'include_dirs': [
-            'sigar/src/os/linux',
-          ],
-          'sources': [
-            'sigar/src/os/linux/linux_sigar.c',
-          ],
-        }],
+              'DARWIN',
+            ],
+          }
+        ],
+        ['OS=="solaris"',
+          {
+            'include_dirs': [
+              'sigar/src/os/solaris',
+            ],
+            'sources': [
+              'sigar/src/os/solaris/get_mib2.c',
+              'sigar/src/os/solaris/kstats.c',
+              'sigar/src/os/solaris/procfs.c',
+              'sigar/src/os/solaris/solaris_sigar.c',
+            ],
+          }
+        ],
+        ['OS=="linux"',
+          {
+            'include_dirs': [
+              'sigar/src/os/linux',
+            ],
+            'sources': [
+              'sigar/src/os/linux/linux_sigar.c',
+            ],
+          }
+        ],
       ],
     },
     {
@@ -94,8 +104,8 @@
         'sigar/bindings/lua/sigar-who.c',
       ],
       'include_dirs': [
-          'sigar/bindings/lua',
-          'lua/src',
+        'sigar/bindings/lua',
+        'lua/src',
       ],
       'direct_dependent_settings': {
         'include_dirs': [

@@ -4,9 +4,11 @@
       'target_name': 'openssl',
       'type': 'static_library',
       'conditions': [
-        ['OS=="win"', {
-          'defines': ['OPENSSL_SYSNAME_WIN32'],
-        }],
+        ['OS=="win"',
+          {
+            'defines': ['OPENSSL_SYSNAME_WIN32'],
+          }
+        ],
       ],
       'defines': [
         'L_ENDIAN',
