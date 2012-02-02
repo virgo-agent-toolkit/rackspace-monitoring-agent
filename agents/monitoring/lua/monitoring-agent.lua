@@ -1,4 +1,5 @@
 local async = require('async')
+local logging = require('logging')
 local Object = require('object')
 local States = require('./states')
 local utils = require('utils')
@@ -8,7 +9,6 @@ local MonitoringAgent = Object:extend()
 function MonitoringAgent.prototype:sample()
   local HTTP = require("http")
   local Utils = require("utils")
-  local logging = require('logging')
   local s = sigar:new()
   local sysinfo = s:sysinfo()
   local cpus = s:cpus()
@@ -45,6 +45,9 @@ end
 
 function MonitoringAgent.prototype:initialize(callback)
   self._states = States:new('/var/run/agent/states')
+end
+
+function MonitoringAgent.prototype:load(callback)
   async.waterfall({
     -- Load States
     function(callback)
@@ -55,7 +58,16 @@ end
 
 function MonitoringAgent.run()
   local agent = MonitoringAgent:new()
-  agent:sample()
+  async.series({
+    function(callback)
+      agent:load(callback);
+    end
+  }, function(err)
+    if err then
+      logging.log(logging.CRIT, err.message)
+      return
+    end
+  end)
 end
 
 return MonitoringAgent
