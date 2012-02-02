@@ -29,16 +29,16 @@
         'virgo_logging.c',
         'virgo_portable.c',
         'virgo_util.c',
-        ],
+      ],
       'include_dirs': [
-          '.',
-          '../include/private',
-          '../include',
-        ],
+        '.',
+        '../include/private',
+        '../include',
+      ],
       'direct_dependent_settings': {
-         'include_dirs': [
-            '../include'
-          ],
+        'include_dirs': [
+          '../include'
+        ],
       },
     }
   ],

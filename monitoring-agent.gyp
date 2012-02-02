@@ -51,35 +51,46 @@
       ],
 
       'conditions': [
-        [ 'OS=="win"', {
-          'defines': [
-            'FD_SETSIZE=1024'
-          ],
-          'libraries': [ '-lpsapi.lib', '-lversion.lib', '-lnetapi32.lib' ]
-        },{ # POSIX
-          'defines': [ '__POSIX__' ]
-        }],
-        [ 'OS=="mac"', {
-          'libraries': [ '-framework Carbon -framework IOKit' ]
-        }],
-        [ 'OS=="linux"', {
-          'libraries': [
-            '-ldl',
-            '-lrt', # needed for clock_gettime
-            '-lutil', # needed for openpty
-          ],
-        }],
-        [ 'OS=="freebsd"', {
-          'libraries': [
-            '-lutil',
-            '-lkvm',
-          ],
-        }],
-        [ 'OS=="solaris"', {
-          'libraries': [
-            '-lkstat',
-          ],
-        }],
+        [ 'OS=="win"',
+          {
+            'defines': [
+              'FD_SETSIZE=1024'
+            ],
+            'libraries': [ '-lpsapi.lib', '-lversion.lib', '-lnetapi32.lib' ]
+          },
+          { # POSIX
+            'defines': [ '__POSIX__' ]
+          }
+        ],
+        [ 'OS=="mac"',
+          {
+            'libraries': [ '-framework Carbon -framework IOKit' ]
+          }
+        ],
+        [ 'OS=="linux"',
+          {
+            'libraries': [
+              '-ldl',
+              '-lrt', # needed for clock_gettime
+              '-lutil', # needed for openpty
+            ],
+          }
+        ],
+        [ 'OS=="freebsd"',
+          {
+            'libraries': [
+              '-lutil',
+              '-lkvm',
+            ],
+          }
+        ],
+        [ 'OS=="solaris"',
+          {
+            'libraries': [
+              '-lkstat',
+            ],
+          }
+        ],
       ],
       'msvs-settings': {
         'VCLinkerTool': {
@@ -112,7 +123,7 @@
             'tools/lua2zip.py',
             '<@(_outputs)',
             '<@(lua_modules)',
-            ],
+          ],
         },
       ],
     }, # end monitoring.zip
@@ -141,7 +152,7 @@
             'tools/lua2zip.py',
             '<@(_outputs)',
             '<@(test_modules)',
-            ],
+          ],
         },
       ],
     }, # end monitoring-test.zip
