@@ -1,3 +1,4 @@
-local exports = {}
-exports.test = 1
-return exports
+local Object = require('object')
+
+local Uuid = Object:extend()
+return Uuid
