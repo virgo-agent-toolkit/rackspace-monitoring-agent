@@ -26,7 +26,7 @@ def test():
     agent = os.path.join(root, 'Debug', 'monitoring-agent.exe')
     agent_tests = os.path.join(root, 'Debug', 'monitoring-test.zip')
 
-  agent_config = os.path.join(root, 'docs', 'sample.state')
+  agent_config = os.path.join(root, 'contrib', 'sample.state')
   cmd = '%s --zip %s -e tests -c %s' % (agent, agent_tests, agent_config)
   print cmd
   rc = subprocess.call(cmd, shell=True)
