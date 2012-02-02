@@ -1,7 +1,8 @@
 local async = require('async')
 local Object = require('object')
-local States = require('./states')
 local utils = require('utils')
+
+local States = require('./lib/states')
 
 local MonitoringAgent = Object:extend()
 

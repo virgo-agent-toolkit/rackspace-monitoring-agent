@@ -2,7 +2,7 @@ local JSON = require('json')
 local Emitter = require('emitter')
 local utils = require('utils')
 
-local AgentProtocol = require('./agent-protocol')
+local AgentProtocol = require('./protocol')
 
 local AgentProtocolConnection = Emitter:extend()
 

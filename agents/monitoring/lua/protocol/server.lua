@@ -1,5 +1,5 @@
 local net = require('net')
-local AgentProtocolConnection = require('./agent-protocol-connection')
+local AgentProtocolConnection = require('./connection')
 
 local AgentProtocolServer = {}
 

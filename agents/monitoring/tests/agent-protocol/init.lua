@@ -1,8 +1,8 @@
 local FS = require('fs')
 local JSON = require('json')
 
-local AgentProtocol = require('monitoring/agent-protocol')
-local AgentProtocolConnection = require('monitoring/agent-protocol-connection')
+local AgentProtocol = require('monitoring/protocol/protocol')
+local AgentProtocolConnection = require('monitoring/protocol/connection')
 
 exports = {}
 
