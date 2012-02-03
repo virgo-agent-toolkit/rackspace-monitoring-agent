@@ -3,6 +3,12 @@
     {
       'target_name': 'virgolib',
       'type': 'static_library',
+      'conditions': [
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+          'cflags': [ '--std=c89' ],
+          'defines': [ '_GNU_SOURCE' ]
+        }],
+      ],
       'dependencies': [
         '../deps/zlib.gyp:zlib',
         '../deps/minizip.gyp:libminizip',
