@@ -6,7 +6,7 @@ local table = require('table')
 local utils = require('utils')
 local Object = require('object')
 
-local uuid = require('../util/uuid')
+local uuid = require('./util/uuid')
 
 local fmt = string.format
 
