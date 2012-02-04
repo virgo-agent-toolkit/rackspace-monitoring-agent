@@ -98,11 +98,11 @@ virgo__lua_luvit_init(virgo_t *v)
   lua_getfield(L, -1, "preload");
   lua_remove(L, -2);
 
-  // Register constants
+  /* Register constants */
   lua_pushcfunction(L, virgo__lua_logging_open);
   lua_setfield(L, -2, "logging");
 
-  // Register yajl
+  /* Register yajl */
   lua_pushcfunction(L, luaopen_crypto);
   lua_setfield(L, -2, "crypto");
 

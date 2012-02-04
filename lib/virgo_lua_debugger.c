@@ -73,7 +73,7 @@ static int retvalString(lua_State *L, const char *str)
   else
     lua_pushnil(L);
   return 1;
-} // retvalString
+}
 
 static int snprintfcat(char **ptr, size_t *len, const char *fmt, ...)
 {
@@ -85,7 +85,7 @@ static int snprintfcat(char **ptr, size_t *len, const char *fmt, ...)
   *ptr += bw;
   *len -= bw;
   return bw;
-} // snprintfcat
+}
 
 #ifndef logDebug
 #define logDebug logErr
@@ -100,7 +100,7 @@ virgo__lua_debug_stackwalk(lua_State *L)
   
   logDebug("Lua stack backtrace: %s", errstr);
 
-  // start at 1 to skip this function.
+  /* start at 1 to skip this function. */
   for (i = 1; lua_getstack(L, i, &ldbg); i++)
   {
     char *ptr = (char *) scratchbuf;
@@ -116,7 +116,7 @@ virgo__lua_debug_stackwalk(lua_State *L)
       snprintfcat(&ptr, &len, "???\n");
       logDebug("%s", (const char *) scratchbuf);
       continue;
-    } // if
+    }
     
     if (ldbg.namewhat[0])
       snprintfcat(&ptr, &len, "%s ", ldbg.namewhat);
@@ -131,9 +131,8 @@ virgo__lua_debug_stackwalk(lua_State *L)
         snprintfcat(&ptr, &len, "tail call");
       else
         snprintfcat(&ptr, &len, "unidentifiable function");
-    } // if
+    }
     
-    //logDebug("%0", (const char *) scratchbuf);
     ptr = (char *) scratchbuf;
     len = sizeof (scratchbuf);
     
@@ -152,12 +151,12 @@ virgo__lua_debug_stackwalk(lua_State *L)
       if (ldbg.currentline != -1)
         snprintfcat(&ptr, &len, ":%d", ldbg.currentline);
       snprintfcat(&ptr, &len, " %s()", ldbg.name);
-    } // else
+    }
     logDebug("%s", (const char *) scratchbuf);
-  } // for
+  }
   
   return 0;
-} // luahook_stackwalk
+}
 
 #if DEBUGGER_FIXED_FOR_VIRGO
 /* Start new lua debugger hackers by pquerna */
@@ -255,12 +254,14 @@ debugger_trace (lua_State *L, lua_Debug *ar)
 }
 
 /* end new debugger */
-// This just lets you punch in one-liners and Lua will run them as individual
-//  chunks, but you can completely access all Lua state, including calling C
-//  functions and altering tables. At this time, it's more of a "console"
-//  than a debugger. You can do "p MojoLua_debugger()" from gdb to launch this
-//  from a breakpoint in native code, or call MojoSetup.debugger() to launch
-//  it from Lua code (with stacktrace intact, too: type 'bt' to see it).
+/*
+ * This just lets you punch in one-liners and Lua will run them as individual
+ * chunks, but you can completely access all Lua state, including calling C
+ * functions and altering tables. At this time, it's more of a "console"
+ * than a debugger. You can do "p MojoLua_debugger()" from gdb to launch this
+ * from a breakpoint in native code, or call MojoSetup.debugger() to launch
+ * it from Lua code (with stacktrace intact, too: type 'bt' to see it).
+ */
 static int
 luahook_debugger(lua_State *L)
 {
