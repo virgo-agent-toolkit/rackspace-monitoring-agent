@@ -114,6 +114,9 @@ json.dump(output, f, indent=2, skipkeys=True)
 f.write("\n")
 f.close()
 
+print "Updating git submodules...."
+os.system(' '.join(['git', 'submodule', 'update', '--init', '--recursive']))
+
 print "Generating build system with GYP..."
 
 def render_openssl_symlinks(src, dest):
