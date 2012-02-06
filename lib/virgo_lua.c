@@ -44,48 +44,6 @@
 
 extern int luaopen_sigar (lua_State *L);
 
-#ifndef PATH_MAX
-#define PATH_MAX (8096)
-#endif
-
-static int
-virgo__lua_luvit_getcwd(lua_State* L) {
-  char getbuf[PATH_MAX + 1];
-#ifdef _WIN32
-  char *r = _getcwd(getbuf, sizeof(getbuf) - 1);
-#else
-  char *r = getcwd(getbuf, ARRAY_SIZE(getbuf) - 1);
-#endif
-
-  if (r == NULL) {
-#ifdef _WIN32
-    strerror_s(getbuf, sizeof(getbuf), errno);
-    return luaL_error(L, "luvit_getcwd: %s\n", getbuf);
-#else
-    return luaL_error(L, "luvit_getcwd: %s\n",
-                      strerror_r(errno, getbuf, sizeof(getbuf)));
-#endif
-  }
-
-  getbuf[ARRAY_SIZE(getbuf) - 1] = '\0';
-  lua_pushstring(L, r);
-  return 1;
-}
-
-static int
-virgo__lua_luvit_exit(lua_State* L) {
-  int exit_code = luaL_checkint(L, 1);
-  exit(exit_code);
-  return 0;
-}
-
-static int
-virgo__lua_luvit_print_stderr(lua_State* L) {
-  const char* line = luaL_checkstring(L, 1);
-  fprintf(stderr, "%s", line);
-  return 0;
-}
-
 static void
 virgo__lua_luvit_init(virgo_t *v)
 {
