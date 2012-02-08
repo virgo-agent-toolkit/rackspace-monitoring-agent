@@ -4,7 +4,7 @@ local path = require('path')
 local string = require('string')
 local table = require('table')
 local utils = require('utils')
-local Object = require('object')
+local Object = require('core').Object
 
 local uuid = require('./util/uuid')
 

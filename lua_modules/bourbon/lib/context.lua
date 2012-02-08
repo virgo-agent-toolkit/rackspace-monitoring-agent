@@ -16,12 +16,12 @@ limitations under the License.
 
 local utils = require('utils')
 local debug = require('debug')
-local Object = require('object')
+local Object = require('core').Object
 local table = require('table')
 
 local Context = Object:extend()
 
-function Context.prototype:run(func, test)
+function Context:run(func, test)
   local bourbon_assert = function(assertion)
     local ok, ret_or_err = pcall(assert, assertion)
 
@@ -51,23 +51,23 @@ function Context.prototype:run(func, test)
   return ret_or_err
 end
 
-function Context.prototype:add_stats(c)
+function Context:add_stats(c)
   -- TODO: use forloop
   self.checked = self.checked + c.checked
   self.failed = self.failed + c.failed
   self.passed = self.passed + c.passed
 end
 
-function Context.prototype:print_summary()
+function Context:print_summary()
   print("checked: " .. self.checked .. " failed: " .. self.failed .. " passed: " .. self.passed)
   self:print_errors()
 end
 
-function Context.prototype:print_errors()
+function Context:print_errors()
   self:dump_errors(print)
 end
 
-function Context.prototype:dump_errors(func)
+function Context:dump_errors(func)
   for i, v in ipairs(self.errors) do
     func("Error #" .. i)
     func("\t" .. v.ret)
@@ -75,7 +75,7 @@ function Context.prototype:dump_errors(func)
   end
 end
 
-function Context.prototype:initialize()
+function Context:initialize()
   self.checked = 0
   self.failed = 0
   self.passed = 0
