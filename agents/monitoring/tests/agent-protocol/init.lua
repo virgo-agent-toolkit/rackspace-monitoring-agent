@@ -7,13 +7,12 @@ local AgentProtocolConnection = require('monitoring/lib/protocol/connection')
 local exports = {}
 
 exports['test_handshake_hello'] = function(test, asserts)
-  fs.readFile('./options.gypi', function(err, data)
+  fs.readFile('./agents/monitoring/tests/agent-protocol/handshake.hello.request.json', function(err, data)
     if (err) then
       p(err)
       asserts.is_nil(err)
       return
     end
-    local data = fs.readFileSync("./agents/monitoring/tests/agent-protocol/handshake.hello.request.json")
     local hello = { }
     hello.data = JSON.parse(data)
     hello.write = function(_, res)
