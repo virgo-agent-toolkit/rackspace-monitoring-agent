@@ -1,12 +1,12 @@
 local JSON = require('json')
-local Emitter = require('emitter')
+local Emitter = require('core').Emitter
 local utils = require('utils')
 
 local AgentProtocol = require('./protocol')
 
 local AgentProtocolConnection = Emitter:extend()
 
-function AgentProtocolConnection.prototype:request(incoming)
+function AgentProtocolConnection:request(incoming)
   local request = JSON.parse(incoming)
   local source = request.source
 
@@ -22,7 +22,7 @@ function AgentProtocolConnection.prototype:request(incoming)
   return ep:request(request)
 end
 
-function AgentProtocolConnection.prototype:_onData(data)
+function AgentProtocolConnection:_onData(data)
   local client = self._conn
   newline = data:find("\n")
   if newline then
@@ -40,7 +40,7 @@ function AgentProtocolConnection:initialize(myid, conn)
   assert(myid ~= nil)
   self._myid = myid
   self._conn = conn
-  self._conn:on('data', utils.bind(AgentProtocolConnection.prototype._onData, self))
+  self._conn:on('data', utils.bind(AgentProtocolConnection._onData, self))
   self._buf = ""
   self._endpoints = { }
 end
