@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local async = require 'async'
-local table = require 'table'
-local string = require 'string'
-local math = require 'math'
-local Object = require 'object'
+local async = require('async')
+local table = require('table')
+local string = require('string')
+local math = require('math')
+local Object = require('core').Object
 
 local fmt = string.format
 
-local context = require './context'
+local context = require('./context')
 
 function is_test_key(k)
   return type(k) == "string" and k:match("_*test.*")
@@ -52,7 +52,7 @@ end
 
 local TestBaton = Object:extend()
 
-function TestBaton.prototype:initialize(runner, stats, callback)
+function TestBaton:initialize(runner, stats, callback)
   self._callback = callback
   self._stats = stats
   self._runner = runner
