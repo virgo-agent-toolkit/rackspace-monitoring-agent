@@ -16,14 +16,14 @@ _G.print = nil
 -- Load libraries used in this file
 local Debug = require('debug')
 
-local UV = require('uv')
+local uv = require('uv')
 local Env = require('env')
 
 local Table = require('table')
 local Utils = require('utils')
 local FS = require('fs')
-local Tty = require('tty')
-local Emitter = require('emitter')
+local Tty = require('tty').Tty
+local Emitter = require('core').Emitter
 local Constants = require('constants')
 local Path = require('path')
 local LVFS = VFS
@@ -43,7 +43,7 @@ process = Emitter:new()
 process.version = VERSION
 process.versions = {
   luvit = VERSION,
-  uv = UV.VERSION_MAJOR .. "." .. UV.VERSION_MINOR .. "-" .. UV_VERSION,
+  uv = uv.VERSION_MAJOR .. "." .. uv.VERSION_MINOR .. "-" .. UV_VERSION,
   luajit = LUAJIT_VERSION,
   yajl = YAJL_VERSION,
   http_parser = HTTP_VERSION,
@@ -61,15 +61,15 @@ process = Emitter:new()
 function process.exit(exit_code, clean)
   process:emit('exit', exit_code)
   if (clean ~= 1) then
-    exit_process(exit_code or 0)
+    exitProcess(exit_code or 0)
   end
 end
 
 function process:add_handler_type(name)
   local code = Constants[name]
   if code then
-    UV.activate_signal_handler(code)
-    UV.unref()
+    uv.activateSignalHandler(code)
+    uv.unref()
   end
 end
 
@@ -112,20 +112,20 @@ _G.module = nil
 -- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
 -- These shouldn't hold open the event loop
 if virgo_os ~= "win" then
-  UV.activate_signal_handler(Constants.SIGPIPE)
-  UV.unref()
-  UV.activate_signal_handler(Constants.SIGINT)
-  UV.unref()
-  UV.activate_signal_handler(Constants.SIGTERM)
-  UV.unref()
+  uv.activateSignalHandler(Constants.SIGPIPE)
+  uv.unref()
+  uv.activateSignalHandler(Constants.SIGINT)
+  uv.unref()
+  uv.activateSignalHandler(Constants.SIGTERM)
+  uv.unref()
 end
 
 -- Load the tty as a pair of pipes
 -- But don't hold the event loop open for them
 process.stdin = Tty:new(0)
-UV.unref()
+uv.unref()
 process.stdout = Tty:new(1)
-UV.unref()
+uv.unref()
 local stdout = process.stdout
 
 -- Replace print
@@ -162,7 +162,7 @@ function debug(...)
     arguments[i] = Utils.dump(arguments[i])
   end
 
-  print_stderr(Table.concat(arguments, "\t") .. "\n")
+  printStderr(Table.concat(arguments, "\t") .. "\n")
 end
 
 
@@ -195,7 +195,7 @@ local global_meta = {__index=_G}
 
 -- This is called by all the event sources from C
 -- The user can override it to hook into event sources
-function event_source(name, fn, ...)
+function eventSource(name, fn, ...)
   local args = {...}
   return assert(xpcall(function ()
     return fn(unpack(args))
@@ -315,9 +315,9 @@ function virgo_init.run(name)
   mod.run()
 
   -- Start the event loop
-  UV.run()
+  uv.run()
   -- trigger exit handlers and exit cleanly
-  process.exit(0, 1)
+  process.exit(0)
 end
 
 return virgo_init

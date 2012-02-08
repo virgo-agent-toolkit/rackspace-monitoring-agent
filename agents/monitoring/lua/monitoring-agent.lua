@@ -1,6 +1,6 @@
 local async = require('async')
-local Object = require('object')
 local utils = require('utils')
+local Object = require('core').Object
 
 local States = require('./lib/states')
 
