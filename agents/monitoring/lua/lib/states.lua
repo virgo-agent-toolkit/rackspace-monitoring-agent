@@ -16,12 +16,12 @@ end
 
 local States = Object:extend()
 
-function States.prototype:initialize(parent_dir)
+function States:initialize(parent_dir)
   self._parent_dir = parent_dir
   self._states = {}
 end
 
-function States.prototype:load(callback)
+function States:load(callback)
   local function iter(filename, callback)
     local filepath = path.join(self._parent_dir, filename)
     self._states[filename] = {}
@@ -61,7 +61,7 @@ function States.prototype:load(callback)
   }, callback)
 end
 
-function States.prototype:dump(callback)
+function States:dump(callback)
   callback = callback or function() end
   for filename in pairs(self._states) do
     process.stdout:write(fmt('State: %s\n', filename))

@@ -6,7 +6,7 @@ local States = require('./lib/states')
 
 local MonitoringAgent = Object:extend()
 
-function MonitoringAgent.prototype:sample()
+function MonitoringAgent:sample()
   local HTTP = require("http")
   local Utils = require("utils")
   local logging = require('logging')
@@ -16,7 +16,7 @@ function MonitoringAgent.prototype:sample()
   local netifs = s:netifs()
   local i = 1;
 
-  HTTP.create_server("0.0.0.0", 8080, function (req, res)
+  HTTP.createServer("0.0.0.0", 8080, function (req, res)
     local body = Utils.dump({req=req,headers=req.headers}) .. "\n"
     res:write_head(200, {
       ["Content-Type"] = "text/plain",
@@ -44,7 +44,7 @@ function MonitoringAgent.prototype:sample()
   logging.log(logging.CRIT, "Server listening at http://localhost:8080/")
 end
 
-function MonitoringAgent.prototype:initialize(callback)
+function MonitoringAgent:initialize(callback)
   self._states = States:new('/var/run/agent/states')
   async.waterfall({
     -- Load States
@@ -55,8 +55,10 @@ function MonitoringAgent.prototype:initialize(callback)
 end
 
 function MonitoringAgent.run()
-  local agent = MonitoringAgent:new()
-  agent:sample()
+  local agent
+  agent = MonitoringAgent:new(function(err)
+    agent:sample()
+  end)
 end
 
 return MonitoringAgent
