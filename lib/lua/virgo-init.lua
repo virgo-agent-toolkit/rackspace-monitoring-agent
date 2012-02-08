@@ -65,7 +65,7 @@ function process.exit(exit_code, clean)
   end
 end
 
-function process:add_handler_type(name)
+function process:addHandlerType(name)
   local code = Constants[name]
   if code then
     uv.activateSignalHandler(code)
@@ -73,7 +73,7 @@ function process:add_handler_type(name)
   end
 end
 
-function process:missing_handler_type(name, ...)
+function process:missingHandlerType(name, ...)
   if name == "error" then
     error(...)
   elseif name == "SIGINT" or name == "SIGTERM" then
