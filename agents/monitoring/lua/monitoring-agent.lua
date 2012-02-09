@@ -2,6 +2,7 @@ local async = require('async')
 local utils = require('utils')
 local Object = require('core').Object
 
+local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
 local States = require('./lib/states')
 
 local MonitoringAgent = Object:extend()
@@ -46,10 +47,14 @@ end
 
 function MonitoringAgent:initialize(callback)
   self._states = States:new('/var/run/agent/states')
+  self._streams = ConnectionStream:new('MYID')
   async.waterfall({
     -- Load States
     function(callback)
       self._states:load(callback)
+    end,
+    function(callback)
+      self._streams:createConnection('ord1', 'localhost', 50040, callback)
     end
   }, callback)
 end
@@ -57,7 +62,10 @@ end
 function MonitoringAgent.run()
   local agent
   agent = MonitoringAgent:new(function(err)
-    agent:sample()
+    if err then
+      p(err)
+      return
+    end
   end)
 end
 
