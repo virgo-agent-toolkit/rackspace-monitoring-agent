@@ -10,6 +10,11 @@ local fmt = require('string').format
 
 local AgentProtocolConnection = Emitter:extend()
 
+local STATES = {}
+STATES.INITIAL = 1
+STATES.HANDSHAKE = 2
+STATES.RUNNING = 3
+
 function AgentProtocolConnection:_onData(data)
   local client = self._conn, obj
   newline = data:find("\n")
@@ -53,15 +58,36 @@ function AgentProtocolConnection:_send(msg, timeout, callback)
   self._msgid = self._msgid + 1
 end
 
-function AgentProtocolConnection:sendHandshakeHello(agentId, token, options, callback)
+function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
   local m = msg.HandshakeHello:new(self._myid, agentId)
   self:_send(m:serialize(self._msgid), 30, callback)
 end
 
-function AgentProtocolConnection:initialize(myid, conn)
+function AgentProtocolConnection:setState(state)
+  self._state = state
+end
+
+function AgentProtocolConnection:startHandshake()
+  self.setState(STATES.HANDSHAKE)
+  self.sendHandshakeHello(self._myid, self._token, function(err)
+    if err then
+      logging.log(logging.ERR, fmt("handshake failed (message=%s)", err.message))
+      return
+    end
+    if msg.result.code ~= 200 then
+      logging.log(logging.ERR, fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
+      return
+    end
+    self.setState(STATES.RUNNING)
+    logging.log(logging.INFO, "handshake successful")
+  end)
+end
+
+function AgentProtocolConnection:initialize(myid, token, conn)
   assert(conn ~= nil)
   assert(myid ~= nil)
   self._myid = myid
+  self._token = token
   self._conn = conn
   self._conn:on('data', utils.bind(AgentProtocolConnection._onData, self))
   self._buf = ""
@@ -69,6 +95,7 @@ function AgentProtocolConnection:initialize(myid, conn)
   self._endpoints = { }
   self._target = 'endpoint'
   self._completions = {}
+  self.setState(STATES.INITIAL)
 end
 
 return AgentProtocolConnection

@@ -31,21 +31,11 @@ function AgentClient:connect()
   self._sock = net.createConnection(self._port, self._host, function()
     -- stop the timeout timer since there is a connect
     timer.clearTimer(connectTimeout);
-
     logging.log(logging.INFO, fmt("Connected to %s:%s", self._host, self._port))
 
+    -- setup protocol and begin handshake
     self.protocol = AgentProtocolConnection:new(self._id, self._sock)
-    self.protocol:sendHandshakeHello(self._id, token, {}, function(err, msg)
-      if err then
-        logging.log(logging.ERR, fmt("handshake failed (message=%s)", err.message))
-        return
-      end
-      if msg.result.code ~= 200 then
-        logging.log(logging.ERR, fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
-        return
-      end
-      logging.log(logging.INFO, "handshake successful")
-    end)
+    self.protocol:startHandshake()
   end)
   self._sock:on('error', function(err)
     timer.clearTimer(connectTimeout);
@@ -56,7 +46,6 @@ end
 function AgentClient:close()
   self._sock:close()
 end
-
 
 local exports = {}
 exports.AgentClient = AgentClient
