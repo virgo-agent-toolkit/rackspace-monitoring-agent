@@ -21,7 +21,7 @@ function AgentProtocolConnection:_onData(data)
   if newline then
     -- TODO: use a better buffer
     self._buf = self._buf .. data:sub(1, newline - 1)
-    logging.log(logging.DEBUG, fmt("MSG:%s", self._buf))
+    logging.log(logging.DEBUG, fmt("RECV:%s", self._buf))
     obj = JSON.parse(self._buf)
     self:_processMessage(obj)
     self._buf = data:sub(newline + 1)
@@ -51,6 +51,7 @@ function AgentProtocolConnection:_send(msg, timeout, callback)
   msg.target = 'endpoint'
   msg.source = self._myid
   local data = JSON.stringify(msg) .. '\n'
+  logging.log(logging.DEBUG, fmt("SEND:%s", JSON.stringify(msg)))
   if timeout and callback then
     self._completions[msg.target .. ':' .. msg.id] = callback
   end
@@ -59,7 +60,7 @@ function AgentProtocolConnection:_send(msg, timeout, callback)
 end
 
 function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
-  local m = msg.HandshakeHello:new(self._myid, agentId)
+  local m = msg.HandshakeHello:new(token, agentId)
   self:_send(m:serialize(self._msgid), 30, callback)
 end
 
@@ -68,17 +69,18 @@ function AgentProtocolConnection:setState(state)
 end
 
 function AgentProtocolConnection:startHandshake()
-  self.setState(STATES.HANDSHAKE)
-  self.sendHandshakeHello(self._myid, self._token, function(err)
+  self:setState(STATES.HANDSHAKE)
+  self:sendHandshakeHello(self._myid, self._token, function(err, msg)
     if err then
       logging.log(logging.ERR, fmt("handshake failed (message=%s)", err.message))
       return
     end
+    p(msg)
     if msg.result.code ~= 200 then
       logging.log(logging.ERR, fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
       return
     end
-    self.setState(STATES.RUNNING)
+    self:setState(STATES.RUNNING)
     logging.log(logging.INFO, "handshake successful")
   end)
 end
@@ -95,7 +97,7 @@ function AgentProtocolConnection:initialize(myid, token, conn)
   self._endpoints = { }
   self._target = 'endpoint'
   self._completions = {}
-  self.setState(STATES.INITIAL)
+  self:setState(STATES.INITIAL)
 end
 
 return AgentProtocolConnection

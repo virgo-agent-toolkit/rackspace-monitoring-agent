@@ -34,7 +34,7 @@ function AgentClient:connect()
     logging.log(logging.INFO, fmt("Connected to %s:%s", self._host, self._port))
 
     -- setup protocol and begin handshake
-    self.protocol = AgentProtocolConnection:new(self._id, self._sock)
+    self.protocol = AgentProtocolConnection:new(self._id, self._token, self._sock)
     self.protocol:startHandshake()
   end)
   self._sock:on('error', function(err)
