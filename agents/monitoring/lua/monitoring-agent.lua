@@ -47,7 +47,7 @@ end
 
 function MonitoringAgent:initialize(callback)
   self._states = States:new('/var/run/agent/states')
-  self._streams = ConnectionStream:new('MYID', '0a6f36218f07a3cfc69e822a22b631ebfba5a331706ffecd99b2f3988383e5e2:7777')
+  self._streams = ConnectionStream:new('MYID', '30afccdf8dea3ddb658eb43708721d197e69b507ac40c3bd4120127d4a3af2b3:7777')
   async.waterfall({
     -- Load States
     function(callback)

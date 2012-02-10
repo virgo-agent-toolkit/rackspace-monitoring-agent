@@ -34,7 +34,7 @@ function AgentProtocolConnection:_processMessage(msg)
   -- request
   if msg.method ~= nil then
     self:emit('message', msg)
-  elseif msg.result ~= nil then
+  else
     -- response
     local key = msg.source .. ':' .. msg.id
     local cpl = self._completions[key]
@@ -42,8 +42,6 @@ function AgentProtocolConnection:_processMessage(msg)
       self._completions[key] = nil
       cpl(null, msg)
     end
-  else
-    -- TODO error
   end
 end
 
@@ -75,8 +73,7 @@ function AgentProtocolConnection:startHandshake()
       logging.log(logging.ERR, fmt("handshake failed (message=%s)", err.message))
       return
     end
-    p(msg)
-    if msg.result.code ~= 200 then
+    if msg.result ~= nil and msg.result.code ~= 200 then
       logging.log(logging.ERR, fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
       return
     end
