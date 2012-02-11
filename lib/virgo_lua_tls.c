@@ -1,5 +1,5 @@
 /*
- *  Copyright 2011 Rackspace
+ *  Copyright 2012 Rackspace
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,6 +23,11 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
+
+/**
+ * This module is hevily inspired by Node.js' node_crypto.cc:
+ *   <https://github.com/joyent/node/blob/master/src/node_crypto.cc>
+ */
 
 /**
  * We hard code a check here for the version of OpenSSL we bundle inside deps, because its
@@ -83,6 +88,75 @@ tls_sc_create(lua_State *L) {
   tls_sc_t* ctx;
   ctx = newSC(L);
   return 1;
+}
+
+static BIO*
+str2bio(const char *value, size_t length) {
+  int r;
+  BIO *bio;
+
+  bio = BIO_new(BIO_s_mem());
+
+  r = BIO_write(bio, value, length);
+
+  if (r <= 0) {
+    BIO_free(bio);
+    return NULL;
+  }
+
+  return bio;
+};
+
+static int
+tls_fatal_error_x(lua_State *L, const char *func) {
+  char buf[256];
+  unsigned long err = ERR_get_error();
+
+  ERR_error_string(err, buf);
+
+  ERR_clear_error();
+
+  luaL_error(L, "%s: %s", func, buf);
+
+  return 0;
+}
+
+#define tls_fatal_error(L) tls_fatal_error_x(L, __func__)
+
+static int
+tls_sc_set_key(lua_State *L) {
+  tls_sc_t *ctx;
+  EVP_PKEY* key;
+  BIO *bio;
+  const char *passpharse = NULL;
+  const char *keystr = NULL;
+  size_t klen = 0;
+  size_t plen = 0;
+
+  ctx = getSC(L);
+
+  keystr = luaL_checklstring(L, 2, &klen);
+  passpharse = luaL_optlstring(L, 3, NULL, &plen);
+
+  bio = str2bio(keystr, klen);
+  if (!bio) {
+    return luaL_error(L, "tls_sc_set_key: Failed to convert Key into a BIO");
+  }
+
+  ERR_clear_error();
+
+  /* If the 3rd arg is NULL, the 4th arg is treated as a const char* istead of void* */
+  key = PEM_read_bio_PrivateKey(bio, NULL, NULL, (void*)passpharse);
+
+  if (!key) {
+    return tls_fatal_error(L);
+  }
+
+  SSL_CTX_use_PrivateKey(ctx->ctx, key);
+  EVP_PKEY_free(key);
+  BIO_free(bio);
+
+  return 0;
 }
 
 static int
@@ -153,8 +227,8 @@ tls_conn_gc(lua_State *L) {
 }
 
 static const luaL_reg tls_sc_lib[] = {
-/*
   {"setKey", tls_sc_set_key},
+/*
   {"setCert", tls_sc_set_cert},
   {"addCACert", tls_sc_add_ca_cert},
   {"addRootCerts", tls_sc_add_root_certs},
