@@ -61,7 +61,8 @@ typedef struct tls_conn_t {
 static tls_sc_t*
 newSC(lua_State *L)
 {
-  tls_sc_t* ctx = (tls_sc_t*)lua_newuserdata(L, sizeof(tls_sc_t));
+  tls_sc_t* ctx;
+  ctx = lua_newuserdata(L, sizeof(tls_sc_t));
   ctx->ctx = NULL;
   /* TODO: reference gloabl CA-store */
   ctx->ca_store = NULL;
@@ -79,7 +80,8 @@ getSC(lua_State *L)
 
 static int
 tls_sc_create(lua_State *L) {
-  tls_sc_t* ctx = newSC(L);
+  tls_sc_t* ctx;
+  ctx = newSC(L);
   return 1;
 }
 
@@ -109,7 +111,8 @@ tls_sc_gc(lua_State *L) {
 static tls_conn_t*
 newCONN(lua_State *L)
 {
-  tls_conn_t* tc = (tls_conn_t*)lua_newuserdata(L, sizeof(tls_conn_t));
+  tls_conn_t* tc;
+  tc = lua_newuserdata(L, sizeof(tls_conn_t));
   tc->bio_read = NULL;
   tc->bio_write = NULL;
   tc->ssl = NULL;
