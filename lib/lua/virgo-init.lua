@@ -92,7 +92,7 @@ local function hide(name)
   _G[name] = nil
 end
 hide("_G")
-hide("exit_process")
+hide("exitProcess")
 
 -- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
 -- These shouldn't hold open the event loop
