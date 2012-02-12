@@ -14,15 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local async = require('async')
-local table = require('table')
-local string = require('string')
-local math = require('math')
-local Object = require('core').Object
+local async = require 'async'
+local table = require 'table'
+local string = require 'string'
+local math = require 'math'
 
 local fmt = string.format
 
-local context = require('./context')
+local context = require './context'
 
 function is_test_key(k)
   return type(k) == "string" and k:match("_*test.*")
@@ -50,21 +49,26 @@ local function get_tests(mod)
   return ts
 end
 
-local TestBaton = Object:extend()
+local TestBaton = {}
+TestBaton.prototype = {}
 
-function TestBaton:initialize(runner, stats, callback)
-  self._callback = callback
-  self._stats = stats
-  self._runner = runner
-  self.done = function()
+function TestBaton.new(runner, stats, callback)
+  local tb = {}
+  tb._callback = callback
+  tb._stats = stats
+  tb._runner = runner
+  tb.done = function()
     stats:add_stats(runner.context)
     callback()
   end
+  setmetatable(tb, {__index=TestBaton.prototype})
+  return tb
 end
+
 
 local run_test = function(runner, stats, callback)
   process.stdout:write(fmt("Running %s", runner.name))
-  local test_baton = TestBaton:new(runner, stats, function(err)
+  local test_baton = TestBaton.new(runner, stats, function(err)
     process.stdout:write(" DONE\n")
 
     runner.context:dump_errors(function(line)
@@ -94,12 +98,12 @@ local run = function(options, mods, callback)
   end
 
   local function setup(callback)
-    local test_baton = TestBaton:new({context = context:new()}, stats, callback)
+    local test_baton = TestBaton.new({context = context:new()}, stats, callback)
     mods.setup(test_baton)
   end
 
   local function teardown(callback)
-    local test_baton = TestBaton:new({context = context:new()}, stats, callback)
+    local test_baton = TestBaton.new({context = context:new()}, stats, callback)
     mods.teardown(test_baton)
   end
 
@@ -120,7 +124,10 @@ local run = function(options, mods, callback)
   end
 
   async.forEachSeries(ops, function(fun, callback)
-    fun(callback)
+    local status, err = pcall(fun, callback)
+    if status ~= true then
+      callback(err)
+    end
   end, function(err)
     if err then
       process.stdout:write(err .. '\n')
