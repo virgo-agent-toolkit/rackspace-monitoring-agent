@@ -71,12 +71,6 @@ newSC(lua_State *L)
   ctx->ctx = NULL;
   /* TODO: reference gloabl CA-store */
   ctx->ca_store = NULL;
-
-  /* TODO: make method configurable */
-  ctx->ctx = SSL_CTX_new(TLSv1_method());
-  /* TODO: customize Session cache */
-  SSL_CTX_set_session_cache_mode(ctx->ctx, SSL_SESS_CACHE_SERVER);
-
   luaL_getmetatable(L, TLS_SECURE_CONTEXT_HANDLE);
   lua_setmetatable(L, -2);
   return ctx;
@@ -93,6 +87,12 @@ static int
 tls_sc_create(lua_State *L) {
   tls_sc_t* ctx;
   ctx = newSC(L);
+
+  /* TODO: make method configurable */
+  ctx->ctx = SSL_CTX_new(TLSv1_method());
+  /* TODO: customize Session cache */
+  SSL_CTX_set_session_cache_mode(ctx->ctx, SSL_SESS_CACHE_SERVER);
+
   return 1;
 }
 
@@ -160,6 +160,106 @@ tls_sc_set_key(lua_State *L) {
 
   SSL_CTX_use_PrivateKey(ctx->ctx, key);
   EVP_PKEY_free(key);
+  BIO_free(bio);
+
+  return 0;
+}
+
+/**
+ * Read a file that contains our certificate in "PEM" format,
+ * possibly followed by a sequence of CA certificates that should be
+ * sent to the peer in the Certificate message.
+ *
+ * Taken from OpenSSL & Node.js - editted for style.
+ */
+static int
+SSL_CTX_use_certificate_chain(SSL_CTX *ctx, BIO *in) {
+  int ret = 0;
+  X509 *x = NULL;
+
+  x = PEM_read_bio_X509_AUX(in, NULL, NULL, NULL);
+
+  if (x == NULL) {
+    SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_CHAIN_FILE, ERR_R_PEM_LIB);
+    goto end;
+  }
+
+  ret = SSL_CTX_use_certificate(ctx, x);
+
+  if (ERR_peek_error() != 0) {
+    /* Key/certificate mismatch doesn't imply ret==0 ... */
+    ret = 0;
+  }
+
+  if (ret) {
+    /* If we could set up our certificate, now proceed to the CA certificates. */
+    X509 *ca;
+    int r;
+    unsigned long err;
+
+    if (ctx->extra_certs != NULL) {
+      sk_X509_pop_free(ctx->extra_certs, X509_free);
+      ctx->extra_certs = NULL;
+    }
+
+    while ((ca = PEM_read_bio_X509(in, NULL, NULL, NULL))) {
+      r = SSL_CTX_add_extra_chain_cert(ctx, ca);
+
+      if (!r) {
+        X509_free(ca);
+        ret = 0;
+        goto end;
+      }
+      /* Note that we must not free r if it was successfully
+       * added to the chain (while we must free the main
+       * certificate, since its reference count is increased
+       * by SSL_CTX_use_certificate). */
+    }
+
+    /* When the while loop ends, it's usually just EOF. */
+    err = ERR_peek_last_error();
+    if (ERR_GET_LIB(err) == ERR_LIB_PEM &&
+        ERR_GET_REASON(err) == PEM_R_NO_START_LINE) {
+      ERR_clear_error();
+    } else  {
+      /* some real error */
+      ret = 0;
+    }
+  }
+
+end:
+  if (x != NULL) {
+    X509_free(x);
+  }
+  return ret;
+}
+
+static int
+tls_sc_set_cert(lua_State *L) {
+  tls_sc_t *ctx;
+  BIO *bio;
+  const char *keystr = NULL;
+  size_t klen = 0;
+  int rv;
+
+  ctx = getSC(L);
+
+  keystr = luaL_checklstring(L, 2, &klen);
+
+  bio = str2bio(keystr, klen);
+  if (!bio) {
+    return luaL_error(L, "tls_sc_set_key: Failed to convert Cert into a BIO");
+  }
+
+  ERR_clear_error();
+
+  rv = SSL_CTX_use_certificate_chain(ctx->ctx, bio);
+
+  if (!rv) {
+    BIO_free(bio);
+    return tls_fatal_error(L);
+  }
+
   BIO_free(bio);
 
   return 0;
@@ -234,8 +334,8 @@ tls_conn_gc(lua_State *L) {
 
 static const luaL_reg tls_sc_lib[] = {
   {"setKey", tls_sc_set_key},
-/*
   {"setCert", tls_sc_set_cert},
+/*
   {"addCACert", tls_sc_add_ca_cert},
   {"addRootCerts", tls_sc_add_root_certs},
   {"addCRL", tls_sc_add_root_certs},
