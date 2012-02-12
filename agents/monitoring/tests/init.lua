@@ -1,6 +1,7 @@
 local bourbon = require('bourbon')
 local async = require('async')
 local fmt = require('string').format
+local debugm = require('debug')
 
 local exports = {}
 
@@ -20,6 +21,8 @@ end
 exports.run = function()
   async.forEachSeries({"./tls", "./agent-protocol", "./crypto"}, runit, function(err)
     if err then
+      p(err)
+      debugm.traceback(err)
       process.exit(1)
     end
   end)
