@@ -68,11 +68,21 @@ dhU2Sz3Q60DwJEL1VenQHiVYlWWtqXBThe9ggqRPnCfsCRTP8qifKkjk45zWPcpN
 -----END CERTIFICATE-----
 ]]
 
-exports['test_secure_context'] = function(test, asserts)
+exports['test_set_key'] = function(test, asserts)
   local sc = tlsbinding.secure_context()
   local err, res = pcall(sc.setKey, sc, "foooooooo")
   asserts.equals(err, false)
   err, res = pcall(sc.setKey, sc, keyPem)
+  asserts.equals(err, true)
+  sc:close()
+  test.done()
+end
+
+exports['test_set_cert'] = function(test, asserts)
+  local sc = tlsbinding.secure_context()
+  local err, res = pcall(sc.setCert, sc, "barrrrrr")
+  asserts.equals(err, false)
+  err, res = pcall(sc.setCert, sc, certPem)
   asserts.equals(err, true)
   sc:close()
   test.done()
