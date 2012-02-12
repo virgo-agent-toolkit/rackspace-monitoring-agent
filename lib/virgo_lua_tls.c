@@ -71,6 +71,12 @@ newSC(lua_State *L)
   ctx->ctx = NULL;
   /* TODO: reference gloabl CA-store */
   ctx->ca_store = NULL;
+
+  /* TODO: make method configurable */
+  ctx->ctx = SSL_CTX_new(TLSv1_method());
+  /* TODO: customize Session cache */
+  SSL_CTX_set_session_cache_mode(ctx->ctx, SSL_SESS_CACHE_SERVER);
+
   luaL_getmetatable(L, TLS_SECURE_CONTEXT_HANDLE);
   lua_setmetatable(L, -2);
   return ctx;
