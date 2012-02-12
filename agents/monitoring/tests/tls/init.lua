@@ -71,9 +71,9 @@ dhU2Sz3Q60DwJEL1VenQHiVYlWWtqXBThe9ggqRPnCfsCRTP8qifKkjk45zWPcpN
 exports['test_secure_context'] = function(test, asserts)
   local sc = tlsbinding.secure_context()
   local err, res = pcall(sc.setKey, sc, "foooooooo")
-  assert(err == false)
+  asserts.equals(err, false)
   err, res = pcall(sc.setKey, sc, keyPem)
-  assert(err == true)
+  asserts.equals(err, true)
   sc:close()
   test.done()
 end
