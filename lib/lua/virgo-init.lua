@@ -217,8 +217,8 @@ local function myloadfile(filepath)
   local code = vfs:read(filepath)
 
   -- TODO: find out why inlining assert here breaks the require test
-  local fn = loadstring(code, '@' .. filepath)
-  assert(fn)
+  local fn, err = loadstring(code, '@' .. filepath)
+  assert(fn, err)
   local dirname = path.dirname(filepath)
   local realRequire = require
   setfenv(fn, setmetatable({
@@ -355,7 +355,8 @@ local virgo_init = {}
 function virgo_init.run(name)
   local mod = require(name)
 
-  mod.run()
+  assert(xpcall(mod.run, debugm.traceback))
+
   -- Start the event loop
   uv.run()
   -- trigger exit handlers and exit cleanly
