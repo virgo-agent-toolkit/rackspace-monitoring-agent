@@ -12,7 +12,7 @@ function ConnectionStream:initialize(id, token)
 end
 
 function ConnectionStream:createConnection(datacenter, host, port, callback)
-  local client = AgentClient:new(self._id, self._token, port, host, CONNECT_TIMEOUT)
+  local client = AgentClient:new(self._id, self._token, host, port, CONNECT_TIMEOUT)
   client:connect(function(err)
     if err then
       callback(err)

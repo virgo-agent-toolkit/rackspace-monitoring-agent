@@ -10,7 +10,7 @@ local fmt = require('string').format
 
 local AgentClient = Emitter:extend()
 
-function AgentClient:initialize(id, token, port, host, timeout)
+function AgentClient:initialize(id, token, host, port, timeout)
   self.protocol = nil
   self._id = id
   self._token = token
