@@ -10,6 +10,8 @@ local fmt = require('string').format
 
 local AgentProtocolConnection = Emitter:extend()
 
+local COMPLETION_TIMEOUT = 30
+
 local STATES = {}
 STATES.INITIAL = 1
 STATES.HANDSHAKE = 2
@@ -59,7 +61,7 @@ end
 
 function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
   local m = msg.HandshakeHello:new(token, agentId)
-  self:_send(m:serialize(self._msgid), 30, callback)
+  self:_send(m:serialize(self._msgid), COMPLETION_TIMEOUT, callback)
 end
 
 function AgentProtocolConnection:setState(state)
