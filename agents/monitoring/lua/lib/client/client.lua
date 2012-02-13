@@ -10,8 +10,9 @@ local fmt = require('string').format
 
 local AgentClient = Emitter:extend()
 
-function AgentClient:initialize(id, token, host, port, timeout)
+function AgentClient:initialize(datacenter, id, token, host, port, timeout)
   self.protocol = nil
+  self._datacenter = datacenter
   self._id = id
   self._token = token
   self._target = 'endpoint'
@@ -23,7 +24,7 @@ end
 
 function AgentClient:connect()
   -- Create connection timeout
-  connectTimeout = timer.setTimeout(self._timeout, function()
+  local connectTimeout = timer.setTimeout(self._timeout, function()
     self:emit('error', Error:new(fmt('Connect timeout to %s:%s', self._host, self._port)))
   end)
 
@@ -31,6 +32,9 @@ function AgentClient:connect()
   self._sock = net.createConnection(self._port, self._host, function()
     -- stop the timeout timer since there is a connect
     timer.clearTimer(connectTimeout);
+    connectTimeout = nil
+
+    -- Log
     logging.log(logging.INFO, fmt("Connected to %s:%s", self._host, self._port))
 
     -- setup protocol and begin handshake
@@ -38,13 +42,17 @@ function AgentClient:connect()
     self.protocol:startHandshake()
   end)
   self._sock:on('error', function(err)
-    timer.clearTimer(connectTimeout);
+    if connectTimeout then
+      timer.clearTimer(connectTimeout);
+    end
     self:emit('error', err)
   end)
 end
 
 function AgentClient:close()
-  self._sock:close()
+  if self._sock then
+    self._sock:close()
+  end
 end
 
 local exports = {}

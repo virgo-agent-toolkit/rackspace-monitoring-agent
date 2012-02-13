@@ -1,10 +1,10 @@
-local Object = require('core').Object
+local Emitter = require('core').Emitter
 local AgentClient = require('./client').AgentClient
 local logging = require('logging')
 
 local CONNECT_TIMEOUT = 6000
 
-local ConnectionStream = Object:extend()
+local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token)
   self._id = id
   self._token = token
@@ -12,7 +12,10 @@ function ConnectionStream:initialize(id, token)
 end
 
 function ConnectionStream:createConnection(datacenter, host, port, callback)
-  local client = AgentClient:new(self._id, self._token, host, port, CONNECT_TIMEOUT)
+  local client = AgentClient:new(datacenter, self._id, self._token, host, port, CONNECT_TIMEOUT)
+  client:on('error', function(err)
+    self:emit('error', err)
+  end)
   client:connect(function(err)
     if err then
       callback(err)
@@ -22,11 +25,7 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
     self._clients[datacenter] = client
     callback();
   end)
-  client:on('error', function(err)
-    logging.log(logging.ERR, err.message)
-    client:close()
-    callback(err)
-  end)
+  return client
 end
 
 local exports = {}
