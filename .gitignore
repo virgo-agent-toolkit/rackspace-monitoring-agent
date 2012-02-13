@@ -15,6 +15,7 @@ monitoring-agent
 *.vcxproj*
 *.sdf
 *.opensdf
+tags
 deps/openssl-configs/realized/openssl/*.h
 monitoring.zip
 monitoring-test.zip

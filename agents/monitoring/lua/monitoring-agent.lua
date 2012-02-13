@@ -1,7 +1,9 @@
 local async = require('async')
 local utils = require('utils')
 local Object = require('core').Object
+local logging = require('logging')
 
+local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
 local States = require('./lib/states')
 
 local MonitoringAgent = Object:extend()
@@ -44,20 +46,65 @@ function MonitoringAgent:sample()
   logging.log(logging.CRIT, "Server listening at http://localhost:8080/")
 end
 
-function MonitoringAgent:initialize(callback)
-  self._states = States:new('/var/run/agent/states')
-  async.waterfall({
-    -- Load States
+function MonitoringAgent:_verifyState(callback)
+  callback = callback or function() end
+  self._config = self._states:get('config')
+  if self._config == nil then
+    logging.log(logging.ERR, "statefile 'config' missing or invalid")
+    process.exit(1)
+  end
+  if self._config['id'] == nil then
+    logging.log(logging.ERR, "'id' is missing from 'config'")
+    process.exit(1)
+  end
+  if self._config['token'] == nil then
+    logging.log(logging.ERR, "'token' is missing from 'config'")
+    process.exit(1)
+  end
+  logging.log(logging.INFO, "using id " .. self._config['id'])
+  callback()
+end
+
+function MonitoringAgent:loadStates(callback)
+  async.series({
+    -- Load the States
     function(callback)
       self._states:load(callback)
+    end,
+    -- Verify
+    function(callback)
+      self:_verifyState(callback)
     end
-  }, callback)
+  }, function(err)
+    callback(err)
+  end)
+end
+
+function MonitoringAgent:connect(callback)
+  self._streams = ConnectionStream:new(self._config['id'], self._config['token'])
+  self._streams:on('error', function(err)
+    logging.log(logging.ERR, err.message)
+  end)
+  self._streams:createConnection('ord1', 'localhost', 50040, callback)
+end
+
+function MonitoringAgent:initialize()
+  self._states = States:new('/var/run/agent/states')
 end
 
 function MonitoringAgent.run()
-  local agent
-  agent = MonitoringAgent:new(function(err)
-    agent:sample()
+  local agent = MonitoringAgent:new()
+  async.waterfall({
+    function(callback)
+      agent:loadStates(callback)
+    end,
+    function(callback)
+      agent:connect(callback)
+    end
+  }, function(err)
+    if err then
+      logging.log(logging.ERR, err.message)
+    end
   end)
 end
 
