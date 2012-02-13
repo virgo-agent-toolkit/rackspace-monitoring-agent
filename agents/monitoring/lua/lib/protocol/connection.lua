@@ -1,14 +1,11 @@
-local JSON = require('json')
-local Emitter = require('core').Emitter
-local utils = require('utils')
-local table = require('table')
-local msg = require ('./messages')
 local AgentProtocol = require('./protocol')
-
-local logging = require('logging')
+local Emitter = require('core').Emitter
+local JSON = require('json')
 local fmt = require('string').format
-
-local AgentProtocolConnection = Emitter:extend()
+local logging = require('logging')
+local msg = require ('./messages')
+local table = require('table')
+local utils = require('utils')
 
 local COMPLETION_TIMEOUT = 30
 
@@ -16,6 +13,23 @@ local STATES = {}
 STATES.INITIAL = 1
 STATES.HANDSHAKE = 2
 STATES.RUNNING = 3
+
+local AgentProtocolConnection = Emitter:extend()
+
+function AgentProtocolConnection:initialize(myid, token, conn)
+  assert(conn ~= nil)
+  assert(myid ~= nil)
+  self._myid = myid
+  self._token = token
+  self._conn = conn
+  self._conn:on('data', utils.bind(AgentProtocolConnection._onData, self))
+  self._buf = ""
+  self._msgid = 0
+  self._endpoints = { }
+  self._target = 'endpoint'
+  self._completions = {}
+  self:setState(STATES.INITIAL)
+end
 
 function AgentProtocolConnection:_onData(data)
   local client = self._conn, obj
@@ -82,21 +96,6 @@ function AgentProtocolConnection:startHandshake()
     self:setState(STATES.RUNNING)
     logging.log(logging.INFO, "handshake successful")
   end)
-end
-
-function AgentProtocolConnection:initialize(myid, token, conn)
-  assert(conn ~= nil)
-  assert(myid ~= nil)
-  self._myid = myid
-  self._token = token
-  self._conn = conn
-  self._conn:on('data', utils.bind(AgentProtocolConnection._onData, self))
-  self._buf = ""
-  self._msgid = 0
-  self._endpoints = { }
-  self._target = 'endpoint'
-  self._completions = {}
-  self:setState(STATES.INITIAL)
 end
 
 return AgentProtocolConnection
