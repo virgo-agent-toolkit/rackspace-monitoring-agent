@@ -22,10 +22,10 @@ function AgentProtocol:initialize(hello, client)
   self._target = hello.source
   self._id = hello.target
   self._methods = {}
-  self._methods["handshake.hello"] = utils.bind(AgentProtocol.handshake_hello, self)
+  self._methods["handshake.hello"] = utils.bind(AgentProtocol.handshakeHello, self)
 end
 
-function AgentProtocol:handshake_hello(request)
+function AgentProtocol:handshakeHello(request)
   local response = Response:new()
   self._conn:write(JSON.stringify(response))
 end
@@ -34,4 +34,7 @@ function AgentProtocol:request(request)
   self._methods[request.method](request)
 end
 
-return AgentProtocol
+local exports = {}
+exports.Response = Response
+exports.AgentProtocol = AgentProtocol
+return exports

@@ -10,26 +10,30 @@ local uuid = require('./util/uuid')
 
 local fmt = string.format
 
+local STATE_EXTENSION = '.state'
+
 function endswith(s, send)
   return #s >= #send and s:find(send, #s-#send+1, true) and true or false
 end
 
 local States = Object:extend()
 
-function States:initialize(parent_dir)
-  self._parent_dir = parent_dir
+function States:initialize(parentDir)
+  self._parentDir = parentDir
   self._states = {}
 end
 
 function States:load(callback)
   local function iter(filename, callback)
-    local filepath = path.join(self._parent_dir, filename)
-    self._states[filename] = {}
-    fs.read_file(filepath, function(err, data)
+    local filepath = path.join(self._parentDir, filename)
+    fs.readFile(filepath, function(err, data)
       if err then
         callback(err)
         return
       end
+
+      local filenameWithoutExtension = filename:gsub(STATE_EXTENSION, '')
+      self._states[filenameWithoutExtension] = {}
 
       -- split file into lines
       for w in string.gfind(data, "[^\n]+") do
@@ -37,7 +41,7 @@ function States:load(callback)
         if not string.find(w, '^#') then
           -- find key/value pairs (delimited by an initial space)
           for key, value in string.gmatch(w, '(%w+) (.*)') do
-            self._states[filename][key] = value
+            self._states[filenameWithoutExtension][key] = value
           end
         end
       end
@@ -47,12 +51,12 @@ function States:load(callback)
 
   async.waterfall({
     function(callback)
-      fs.readdir(self._parent_dir, callback)
+      fs.readdir(self._parentDir, callback)
     end,
     function(files, callback)
       local state_files = {}
       for i=1,#files do
-        if endswith(files[i], ".state") then
+        if endswith(files[i], STATE_EXTENSION) then
           table.insert(state_files, files[i])
         end
       end
@@ -70,6 +74,10 @@ function States:dump(callback)
     end
   end
   callback()
+end
+
+function States:get(stateName)
+  return self._states[stateName]
 end
 
 return States

@@ -3,7 +3,7 @@
     'target_arch': 'ia32',
     'lua_modules': [
       'lib/lua',
-      'deps/luvit/lib',
+      'deps/luvit/lib/luvit',
       'lua_modules/async',
       'lua_modules/bourbon',
       'lua_modules/options',
