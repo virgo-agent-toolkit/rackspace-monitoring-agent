@@ -110,6 +110,7 @@ local createWriteableStdioStream = function(fd)
   local fd_type = uv.handleType(fd);
   if (fd_type == "TTY") then
     local tty = Tty:new(fd)
+    uv.unref()
     return tty
   elseif (fd_type == "FILE") then
     return fs.SyncWriteStream:new(fd)
@@ -127,6 +128,7 @@ local createReadableStdioStream = function(fd)
   local fd_type = uv.handleType(fd);
   if (fd_type == "TTY") then
     local tty = Tty:new(fd)
+    uv.unref()
     return tty
   elseif (fd_type == "FILE") then
     return fs.createReadStream(nil, {fd = fd})
