@@ -97,7 +97,7 @@ hide("exitProcess")
 
 -- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
 -- These shouldn't hold open the event loop
-if luvit_os ~= "win" then
+if OS_BINDING.type() ~= "win32" then
   uv.activateSignalHandler(constants.SIGPIPE)
   uv.unref()
   uv.activateSignalHandler(constants.SIGINT)
