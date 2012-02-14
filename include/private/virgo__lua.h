@@ -41,6 +41,7 @@ int virgo__lua_debugger_init(lua_State *L);
 void virgo__lua_debug_stackdump(lua_State *L, const char *msg);
 int virgo__lua_debug_stackwalk(lua_State *l);
 int virgo__lua_vfs_init(lua_State *L);
+int virgo__lua_tls_init(lua_State *L);
 
 int virgo__lua_logging_open(lua_State *L);
 
