@@ -18,7 +18,7 @@ local function runit(modname, callback)
 end
 
 exports.run = function()
-  async.forEachSeries({"./agent-protocol", "./crypto"}, runit, function(err)
+  async.forEachSeries({"./agent-protocol", "./crypto", "./misc"}, runit, function(err)
     if err then
       process.exit(1)
     end
