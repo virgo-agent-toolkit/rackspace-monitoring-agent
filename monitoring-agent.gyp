@@ -15,6 +15,9 @@
     'test_modules': [
       '<@(lua_modules)',
       'agents/monitoring/tests',
+      'agents/monitoring/tests/tls',
+      'agents/monitoring/tests/crypto',
+      'agents/monitoring/tests/agent-protocol',
     ],
     'test_modules_sources': [
       '<!@(python tools/bundle.py -l <(test_modules))',
