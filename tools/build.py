@@ -18,7 +18,7 @@ def build():
   print cmd
   sys.exit(subprocess.call(cmd, shell=True))
 
-def test():
+def test(stdout=None):
   if sys.platform != "win32":
     agent = os.path.join(root, 'out', 'Debug', 'monitoring-agent')
     agent_tests = os.path.join(root, 'out', 'Debug', 'monitoring-test.zip')
@@ -29,12 +29,28 @@ def test():
   agent_config = os.path.join(root, 'contrib', 'sample.state')
   cmd = '%s --zip %s -e tests -c %s' % (agent, agent_tests, agent_config)
   print cmd
-  rc = subprocess.call(cmd, shell=True)
+  rc = 0
+  if stdout == None:
+    rc = subprocess.call(cmd, shell=True)
+  else:
+    rc = subprocess.call(cmd, shell=True, stdout=stdout)
   sys.exit(rc)
+
+def test_std():
+  test()
+
+def test_pipe():
+  test(subprocess.PIPE)
+  
+def test_file():
+  stdout = open("stdout", "w+")
+  test(stdout)
 
 commands = {
   'build': build,
-  'test': test,
+  'test': test_std,
+  'test_pipe': test_pipe,
+  'test_file': test_file,
 }
 
 def usage():

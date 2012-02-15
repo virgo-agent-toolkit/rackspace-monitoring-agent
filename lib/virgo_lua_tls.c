@@ -127,7 +127,7 @@ tls_fatal_error_x(lua_State *L, const char *func) {
   return 0;
 }
 
-#define tls_fatal_error(L) tls_fatal_error_x(L, __func__)
+#define tls_fatal_error(L) tls_fatal_error_x(L, __FUNCTION__)
 
 static int
 tls_sc_set_key(lua_State *L) {
