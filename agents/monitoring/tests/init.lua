@@ -19,7 +19,7 @@ local function runit(modname, callback)
 end
 
 exports.run = function()
-  async.forEachSeries({"./tls", "./agent-protocol", "./crypto"}, runit, function(err)
+  async.forEachSeries({"./tls", "./agent-protocol", "./crypto", "./misc"}, runit, function(err)
     if err then
       p(err)
       debugm.traceback(err)
