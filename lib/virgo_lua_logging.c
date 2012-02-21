@@ -27,7 +27,7 @@ logging_log(lua_State *L) {
   unsigned int loglevel = 0;
   virgo_t *v = virgo__lua_context(L);
   loglevel = luaL_checknumber(L, 1);
-  
+
   if (virgo_log_level_get(v) < loglevel) {
     return 0;
   }
