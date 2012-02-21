@@ -46,11 +46,11 @@ int virgo__lua_tls_init(lua_State *L);
 int virgo__lua_logging_open(lua_State *L);
 
 #define VIRGO_DEFINE_CONSTANT_ALIAS(L, constant, alias) \
-  lua_pushinteger(L, constant);            \
+  lua_pushnumber(L, constant);             \
   lua_setfield(L, -2, alias)
 
 #define VIRGO_DEFINE_CONSTANT(L, constant) \
-  lua_pushinteger(L, constant);            \
+  lua_pushnumber(L, constant);             \
   lua_setfield(L, -2, #constant)
 
 
