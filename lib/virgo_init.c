@@ -32,7 +32,7 @@
  * too easily to accidently pull in an older version of OpenSSL on random platforms with
  * weird include paths.
  */
-#if OPENSSL_VERSION_NUMBER != 0x1000005fL
+#if OPENSSL_VERSION_NUMBER != VIRGO_OPENSSL_VERSION_NUMBER
 #error Invalid OpenSSL version number. Busted Include Paths?
 #endif
 
