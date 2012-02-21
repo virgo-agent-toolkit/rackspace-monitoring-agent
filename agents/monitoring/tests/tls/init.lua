@@ -107,9 +107,21 @@ end
 exports['test_set_ciphers'] = function(test, asserts)
   local sc = tlsbinding.secure_context()
   local err, res = pcall(sc.setCiphers, sc, "barrrrrr")
+  -- invalid cipher
   asserts.equals(err, false)
-  p(res)
   err, res = pcall(sc.setCiphers, sc, "AES256-SHA")
+  asserts.equals(err, true)
+  sc:close()
+  test.done()
+end
+
+exports['test_set_options'] = function(test, asserts)
+  local sc = tlsbinding.secure_context()
+  local err, res = pcall(sc.setOptions, sc, "barrrrrr")
+  -- expected string
+  asserts.equals(err, false)
+  asserts.equals(tlsbinding.SSL_OP_ALL, 2147487743)
+  err, res = pcall(sc.setOptions, sc, tlsbinding.SSL_OP_ALL)
   asserts.equals(err, true)
   sc:close()
   test.done()
