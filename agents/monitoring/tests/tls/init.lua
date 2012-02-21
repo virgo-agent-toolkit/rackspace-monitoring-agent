@@ -104,5 +104,43 @@ exports['test_set_cert'] = function(test, asserts)
   test.done()
 end
 
+exports['test_set_ciphers'] = function(test, asserts)
+  local sc = tlsbinding.secure_context()
+  local err, res = pcall(sc.setCiphers, sc, "barrrrrr")
+  -- invalid cipher
+  asserts.equals(err, false)
+  err, res = pcall(sc.setCiphers, sc, "AES256-SHA")
+  asserts.equals(err, true)
+  sc:close()
+  test.done()
+end
+
+exports['test_set_options'] = function(test, asserts)
+  local sc = tlsbinding.secure_context()
+  local err, res = pcall(sc.setOptions, sc, "barrrrrr")
+  -- expected string
+  asserts.equals(err, false)
+  asserts.equals(tlsbinding.SSL_OP_ALL, 2147487743)
+  err, res = pcall(sc.setOptions, sc, tlsbinding.SSL_OP_ALL)
+  asserts.equals(err, true)
+  sc:close()
+  test.done()
+end
+
+exports['test_add_trusted_cert'] = function(test, asserts)
+  local sc = tlsbinding.secure_context()
+  local err, res = pcall(sc.addTrustedCert, sc, 1)
+  -- invalid cert
+  asserts.equals(err, false)
+  err, res = pcall(sc.addTrustedCert, sc, certPem)
+  asserts.equals(err, true)
+  -- TODO: test a second unique cert added here works
+  -- OpenSSL rejects adding the same cert twice to the x509 Store
+  err, res = pcall(sc.addTrustedCert, sc, certPem)
+  asserts.equals(err, false)
+  sc:close()
+  test.done()
+end
+
 return exports
 
