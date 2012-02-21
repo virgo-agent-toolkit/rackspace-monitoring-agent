@@ -118,11 +118,16 @@ tls_fatal_error_x(lua_State *L, const char *func) {
   char buf[256];
   unsigned long err = ERR_get_error();
 
-  ERR_error_string(err, buf);
+  if (err == 0) {
+    luaL_error(L, "%s: unknown fatal error", func);
+  }
+  else {
+    ERR_error_string(err, buf);
 
-  ERR_clear_error();
+    ERR_clear_error();
 
-  luaL_error(L, "%s: %s", func, buf);
+    luaL_error(L, "%s: %s", func, buf);
+  }
 
   return 0;
 }
@@ -266,6 +271,28 @@ tls_sc_set_cert(lua_State *L) {
 }
 
 static int
+tls_sc_set_ciphers(lua_State *L) {
+  tls_sc_t *ctx;
+  const char *cipherstr = NULL;
+  size_t clen = 0;
+  int rv;
+
+  ctx = getSC(L);
+
+  cipherstr = luaL_checklstring(L, 2, &clen);
+
+  ERR_clear_error();
+
+  rv = SSL_CTX_set_cipher_list(ctx->ctx, cipherstr);
+
+  if (rv == 0) {
+    return tls_fatal_error(L);
+  }
+
+  return 0;
+}
+
+static int
 tls_sc_close(lua_State *L) {
   tls_sc_t *ctx = getSC(L);
 
@@ -335,12 +362,12 @@ tls_conn_gc(lua_State *L) {
 static const luaL_reg tls_sc_lib[] = {
   {"setKey", tls_sc_set_key},
   {"setCert", tls_sc_set_cert},
+  {"setCiphers", tls_sc_set_ciphers},
 /*
+  {"setOptions", tls_sc_set_options},
   {"addCACert", tls_sc_add_ca_cert},
   {"addRootCerts", tls_sc_add_root_certs},
   {"addCRL", tls_sc_add_root_certs},
-  {"setCiphers", tls_sc_set_ciphers},
-  {"setOptions", tls_sc_set_options},
 */
   {"close", tls_sc_close},
   {"__gc", tls_sc_gc},
