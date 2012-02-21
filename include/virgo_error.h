@@ -57,10 +57,13 @@ typedef int virgo_status_t;
 #define VIRGO_ENOTIMPL -3
 
 /** The I/O operation in question failed. */
-#define VIRGO_EIO      -4
+#define VIRGO_EIO -4
 
 /* Unable to allocate memory */
 #define VIRGO_ENOMEM -5
+
+/* Program usage was requested */
+#define VIRGO_EHELPREQ -6
 
 /** An exception object. */
 typedef struct {

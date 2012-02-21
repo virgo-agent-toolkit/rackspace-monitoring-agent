@@ -31,6 +31,23 @@ handle_error(const char *msg, virgo_error_t *err)
   virgo_error_clear(err);
 }
 
+static void
+show_help()
+{
+  /* TODO: improve for windows */
+  printf("Usage: monitoring-agent [options] \n"
+         "\n"
+         "Options:\n"
+         "  -v, --version         print monitoring-agent's version\n"
+         "  -c, --config=val      Set configuration file path. Default: /etc/rackspace.cfg\n"
+         "  -e=val                Entry module.\n"
+         "  -z, --zip=val         Path to Zip Bundle.\n"
+         "\n"
+         "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
+  fflush(stdout);
+
+}
+
 int main(int argc, char* argv[])
 {
   virgo_t *v;
@@ -59,7 +76,14 @@ int main(int argc, char* argv[])
 
   err = virgo_run(v);
   if (err) {
-    handle_error("Runtime Error", err);
+    if (err->err == VIRGO_EHELPREQ) {
+      show_help();
+      virgo_error_clear(err);
+      return 0;
+    }
+    else {
+      handle_error("Runtime Error", err);
+    }
     return EXIT_FAILURE;
   }
 
