@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local table = require('table')
+local string = require('string')
+
 -- Split address in IP:port format and return an array of [ip, port]
 function splitAddress(address)
   local start, result
@@ -29,7 +32,20 @@ function splitAddress(address)
   return result
 end
 
+-- See Also: http://lua-users.org/wiki/SplitJoin
+function split(str, pattern)
+  pattern = pattern or "[^%s]+"
+  if pattern:len() == 0 then pattern = "[^%s]+" end
+  local parts = {__index = table.insert}
+  setmetatable(parts, parts)
+  str:gsub(pattern, parts)
+  setmetatable(parts, nil)
+  parts.__index = nil
+  return parts
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.splitAddress = splitAddress
+exports.split = split
 return exports
