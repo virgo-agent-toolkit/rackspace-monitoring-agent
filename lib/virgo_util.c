@@ -21,7 +21,7 @@
 #include "virgo__types.h"
 
 const char*
-virgo__get_string_arg(virgo_t *v, const char *short_opt, const char *long_opt)
+virgo__argv_get_value(virgo_t *v, const char *short_opt, const char *long_opt)
 {
   int i = 0;
   int argc = v->argc;
@@ -42,4 +42,24 @@ virgo__get_string_arg(virgo_t *v, const char *short_opt, const char *long_opt)
   }
 
   return NULL;
+}
+
+int
+virgo__argv_has_flag(virgo_t *v, const char *short_opt, const char *long_opt)
+{
+  int i = 0;
+  int argc = v->argc;
+  char **argv = v->argv;
+  const char *arg;
+
+  while (i < argc) {
+    arg = argv[i];
+
+    if (strcmp(arg, short_opt) == 0 || strcmp(arg, long_opt) == 0) {
+      return 1;
+    }
+    i++;
+  }
+
+  return 0;
 }

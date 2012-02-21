@@ -47,7 +47,7 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
   v->argc = argc;
   v->argv = argv;
 
-  arg = virgo__get_string_arg(v, "-z", "--zip");
+  arg = virgo__argv_get_value(v, "-z", "--zip");
   if (arg != NULL) {
     err = virgo_conf_lua_load_path(v, arg);
     if (err) {
@@ -161,7 +161,9 @@ virgo__conf_get_path(virgo_t *v)
   char *programfiles;
   char *path;
 
-  if ((path = virgo__get_string_arg(v, "-c", "--config")) == NULL) {
+  path = virgo__argv_get_value(v, "-c", "--config");
+
+  if (path == NULL) {
     char gen_path[512];
     programfiles = getenv("ProgramFiles");
     if (programfiles == NULL) {
@@ -182,7 +184,10 @@ static const char *
 virgo__conf_get_path(virgo_t *v)
 {
   const char *path;
-  if ((path = virgo__get_string_arg(v, "-c", "--config")) == NULL) {
+
+  path = virgo__argv_get_value(v, "-c", "--config");
+
+  if (path == NULL) {
     return strdup(VIRGO_DEFAULT_CONFIG_UNIX_PATH);
   }
   return strdup(path);

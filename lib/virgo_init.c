@@ -20,6 +20,7 @@
 #include "virgo__types.h"
 #include "virgo__lua.h"
 #include "virgo__logging.h"
+#include "virgo__util.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -94,6 +95,10 @@ virgo_error_t*
 virgo_run(virgo_t *v)
 {
   virgo_error_t* err;
+
+  if (virgo__argv_has_flag(v, "-h", "--help") == 1) {
+    return virgo_error_create(VIRGO_EHELPREQ, "--help was passed");;
+  }
 
   err = virgo__conf_init(v);
 
