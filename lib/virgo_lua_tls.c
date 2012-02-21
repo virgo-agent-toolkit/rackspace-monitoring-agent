@@ -239,6 +239,50 @@ end:
   return ret;
 }
 
+/**
+ * Read from a BIO, adding to the x509 store.
+ */
+static int
+X509_STORE_load_bio(X509_STORE *ca_store, BIO *in) {
+  int ret = 1;
+  X509 *ca;
+  int r;
+  int found = 0;
+  unsigned long err;
+
+  while ((ca = PEM_read_bio_X509(in, NULL, NULL, NULL))) {
+
+    r = X509_STORE_add_cert(ca_store, ca);
+
+    if (r == 0) {
+      X509_free(ca);
+      ret = 0;
+      break;
+    }
+
+    found++;
+
+    /**
+     * The x509 cert object is reference counted by OpenSSL, so the STORE
+     * keeps it alive after its been added.
+     */
+    X509_free(ca);
+  }
+
+  /* When the while loop ends, it's usually just EOF. */
+  err = ERR_peek_last_error();
+  if (found != 0 &&
+      ERR_GET_LIB(err) == ERR_LIB_PEM &&
+      ERR_GET_REASON(err) == PEM_R_NO_START_LINE) {
+    ERR_clear_error();
+  } else  {
+    /* some real error */
+    ret = 0;
+  }
+
+  return ret;
+}
+
 static int
 tls_sc_set_cert(lua_State *L) {
   tls_sc_t *ctx;
@@ -259,6 +303,44 @@ tls_sc_set_cert(lua_State *L) {
   ERR_clear_error();
 
   rv = SSL_CTX_use_certificate_chain(ctx->ctx, bio);
+
+  if (!rv) {
+    BIO_free(bio);
+    return tls_fatal_error(L);
+  }
+
+  BIO_free(bio);
+
+  return 0;
+}
+
+static int
+tls_sc_add_trusted_cert(lua_State *L) {
+  tls_sc_t *ctx;
+  BIO *bio;
+  const char *certstr = NULL;
+  size_t clen = 0;
+  int rv;
+
+  ctx = getSC(L);
+
+  if (ctx->ca_store == NULL) {
+    /* TODO: better handling of global CA cert list */
+    ctx->ca_store = X509_STORE_new();
+    SSL_CTX_set_cert_store(ctx->ctx, ctx->ca_store);
+  }
+
+  certstr = luaL_checklstring(L, 2, &clen);
+
+  bio = str2bio(certstr, clen);
+
+  if (!bio) {
+    return luaL_error(L, "tls_sc_add_trusted_cert: Failed to convert Cert into a BIO");
+  }
+
+  ERR_clear_error();
+
+  rv = X509_STORE_load_bio(ctx->ca_store, bio);
 
   if (!rv) {
     BIO_free(bio);
@@ -379,8 +461,8 @@ static const luaL_reg tls_sc_lib[] = {
   {"setCert", tls_sc_set_cert},
   {"setCiphers", tls_sc_set_ciphers},
   {"setOptions", tls_sc_set_options},
+  {"addTrustedCert", tls_sc_add_trusted_cert},
 /*
-  {"addCACert", tls_sc_add_ca_cert},
   {"addRootCerts", tls_sc_add_root_certs},
   {"addCRL", tls_sc_add_root_certs},
 */
