@@ -104,5 +104,16 @@ exports['test_set_cert'] = function(test, asserts)
   test.done()
 end
 
+exports['test_set_ciphers'] = function(test, asserts)
+  local sc = tlsbinding.secure_context()
+  local err, res = pcall(sc.setCiphers, sc, "barrrrrr")
+  asserts.equals(err, false)
+  p(res)
+  err, res = pcall(sc.setCiphers, sc, "AES256-SHA")
+  asserts.equals(err, true)
+  sc:close()
+  test.done()
+end
+
 return exports
 
