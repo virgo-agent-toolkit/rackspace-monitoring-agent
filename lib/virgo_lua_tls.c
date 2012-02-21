@@ -295,7 +295,7 @@ tls_sc_set_ciphers(lua_State *L) {
 static int
 tls_sc_set_options(lua_State *L) {
   tls_sc_t *ctx;
-  unsigned int opts = 0;
+  uint64_t opts = 0;
   int rv;
 
   ctx = getSC(L);
