@@ -21,6 +21,7 @@ local Object = require('core').Object
 local logging = require('logging')
 
 local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
+local misc = require('./lib/util/misc')
 local States = require('./lib/states')
 
 local MonitoringAgent = Object:extend()
@@ -78,6 +79,27 @@ function MonitoringAgent:_verifyState(callback)
     logging.log(logging.ERR, "'token' is missing from 'config'")
     process.exit(1)
   end
+
+  if self._config['endpoints'] == nil then
+    logging.log(logging.ERR, "'endpoints' is missing from 'config'")
+    process.exit(1)
+  end
+
+  -- Verify that the endpoint addresses are specified in the correct format
+  local endpoints = misc.split(self._config['endpoints'], '[^,]+')
+
+  if #endpoints == 0 then
+    logging.log(logging.ERR, "at least one endpoint needs to be specified")
+    process.exit(1)
+  end
+
+  for i, address in ipairs(endpoints) do
+    if misc.splitAddress(address) == nil then
+      logging.log(logging.ERR, "endpoint needs to be specified in the following format ip:port")
+      process.exit(1)
+    end
+  end
+
   logging.log(logging.INFO, "using id " .. self._config['id'])
   callback()
 end
