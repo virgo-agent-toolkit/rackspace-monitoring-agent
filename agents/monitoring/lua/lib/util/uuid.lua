@@ -95,7 +95,7 @@ end
 
 -- lazy string creation.
 function Uuid:toString()
-  if self._string == null then
+  if self._string == nil then
     self._string = INT2HEX(self._bytes[1])..INT2HEX(self._bytes[2])..INT2HEX(self._bytes[3])..INT2HEX(self._bytes[4]).."-"..
          INT2HEX(self._bytes[5])..INT2HEX(self._bytes[6]).."-"..
          INT2HEX(self._bytes[7])..INT2HEX(self._bytes[8]).."-"..
