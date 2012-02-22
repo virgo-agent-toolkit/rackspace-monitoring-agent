@@ -18,16 +18,19 @@ local asserts = {}
 
 asserts.assert = assert
 
-asserts.equal = function(a, b)
-  bourbon_assert(a == b)
+asserts.equal = function(a, b, msg)
+  local msg = msg or tostring(a) .. ' != ' .. tostring(b)
+  bourbon_assert(a == b, 'a')
 end
 
-asserts.ok = function(a)
-  asserts.assert(a)
+asserts.ok = function(a, msg)
+  local msg = msg or tostring(a) .. ' != true'
+  asserts.assert(a, msg)
 end
 
-asserts.equals = function(a, b)
-  asserts.assert(a == b)
+asserts.equals = function(a, b, msg)
+  local msg = msg or tostring(a) .. ' != ' .. tostring(b)
+  asserts.assert(a == b, msg)
 end
 
 asserts.dequals = function(a, b)
