@@ -24,7 +24,6 @@ local Context = Object:extend()
 function Context:run(func, test)
   local bourbon_assert = function(assertion, msg)
     local ok, ret_or_err = pcall(assert, assertion, msg)
-
     if ok then
       self.passed = self.passed + 1
       return ok, ret_or_err
@@ -48,6 +47,18 @@ function Context:run(func, test)
 
   setfenv(func, newgt)
   ok, ret_or_err = pcall(func, test, asserts)
+
+  -- if test threw an exception without catching it we end up here
+  if ret_or_err then
+    local info = {}
+    info.ret = ret_or_err
+
+    self.failed = self.failed + 1
+    info.traceback = debug.traceback()
+    table.insert(self.errors, info)
+    test.done()
+  end
+
   return ret_or_err
 end
 
