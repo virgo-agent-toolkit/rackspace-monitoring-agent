@@ -14,9 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local async = require('async')
+
 local Emitter = require('core').Emitter
 local AgentClient = require('./client').AgentClient
 local logging = require('logging')
+local misc = require('../util/misc')
 
 local CONNECT_TIMEOUT = 6000
 
@@ -25,6 +28,23 @@ function ConnectionStream:initialize(id, token)
   self._id = id
   self._token = token
   self._clients = {}
+end
+
+-- Create connection to the multiple endpoints.
+--
+-- addresses - An Array of ip:port pairs
+-- callback - Callback which is called when all the connections have been
+-- established.
+function ConnectionStream:createConnections(addresses, callback)
+  local client, clients = {}
+
+  async.forEach(addresses, function(address, callback)
+    local client, split, host, port
+
+    split = misc.splitAddress(address)
+    host, port = split[1], split[2]
+    client = self:createConnection(address, host, port, callback)
+  end, callback)
 end
 
 function ConnectionStream:createConnection(datacenter, host, port, callback)

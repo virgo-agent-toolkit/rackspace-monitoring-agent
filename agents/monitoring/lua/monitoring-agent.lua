@@ -120,11 +120,13 @@ function MonitoringAgent:loadStates(callback)
 end
 
 function MonitoringAgent:connect(callback)
+  local endpoints = misc.split(self._config['endpoints'], '[^,]+')
   self._streams = ConnectionStream:new(self._config['id'], self._config['token'])
   self._streams:on('error', function(err)
     logging.log(logging.ERR, err.message)
   end)
-  self._streams:createConnection('ord1', 'localhost', 50040, callback)
+
+  self._streams:createConnections(endpoints, callback)
 end
 
 function MonitoringAgent:initialize()
