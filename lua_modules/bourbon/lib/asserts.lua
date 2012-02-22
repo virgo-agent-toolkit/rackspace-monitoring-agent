@@ -48,45 +48,55 @@ asserts.dequals = function(a, b)
 end
 
 asserts.array_equals = function(a, b)
-  asserts.assert(#a == #b)
+  local msg
+  asserts.assert(#a == #b, '#a (' .. #a .. ') != #b - (' .. #b .. ')')
   for k=1, #a do
-    asserts.assert(a[k] == b[k])
+    msg = tostring(a[k]) .. ' != ' .. tostring(b[k])
+    asserts.assert(a[k] == b[k], msg)
   end
 end
 
-asserts.not_nil = function(a)
-  asserts.assert(a ~= nil)
+asserts.not_nil = function(a, msg)
+  local msg = msg or tostring(a) .. ' == nil'
+  asserts.assert(a ~= nil, msg)
 end
 
-asserts.is_nil = function(a)
-  asserts.assert(a == nil)
+asserts.is_nil = function(a, msg)
+  local msg = msg or tostring(a) .. ' != nil'
+  asserts.assert(a == nil, msg)
 end
 
-asserts.is_number = function(a)
-  asserts.assert(type(a) == 'number')
+asserts.is_number = function(a, msg)
+  local msg = msg or tostring(a) .. ' is not a number'
+  asserts.assert(type(a) == 'number', msg)
 end
 
-asserts.is_boolean = function(a)
-  asserts.assert(type(a) == 'boolean')
+asserts.is_boolean = function(a, msg)
+  local msg = msg or tostring(a) .. ' is not a boolean'
+  asserts.assert(type(a) == 'boolean', msg)
 end
 
-asserts.is_string = function(a)
-  asserts.assert(type(a) == 'string')
+asserts.is_string = function(a, msg)
+  local msg = msg or tostring(a) .. ' is not a string'
+  asserts.assert(type(a) == 'string', msg)
 end
 
-asserts.is_table = function(a)
-  asserts.assert(type(a) == 'table')
+asserts.is_table = function(a, msg)
+  local msg = msg or tostring(a) .. ' is not a table'
+  asserts.assert(type(a) == 'table', msg)
 end
 
-asserts.is_array = function(a)
-  asserts.assert(type(a) == 'table')
+asserts.is_array = function(a, msg)
+  local msg = msg or tostring(a) .. ' is not an array'
+  asserts.assert(type(a) == 'table', msg)
   for k, v in pairs(a) do
     asserts.assert(false)
   end
 end
 
-asserts.is_hash = function(a)
-  asserts.assert(type(a) == 'table')
+asserts.is_hash = function(a, msg)
+  local msg = msg or tostring(a) .. ' is not a hash'
+  asserts.assert(type(a) == 'table', msg)
   for k, v in ipairs(a) do
     asserts.assert(false)
   end
