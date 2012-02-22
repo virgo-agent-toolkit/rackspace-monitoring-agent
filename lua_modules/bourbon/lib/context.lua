@@ -22,8 +22,8 @@ local table = require('table')
 local Context = Object:extend()
 
 function Context:run(func, test)
-  local bourbon_assert = function(assertion)
-    local ok, ret_or_err = pcall(assert, assertion)
+  local bourbon_assert = function(assertion, msg)
+    local ok, ret_or_err = pcall(assert, assertion, msg)
 
     if ok then
       self.passed = self.passed + 1
