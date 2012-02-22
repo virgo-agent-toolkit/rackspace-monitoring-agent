@@ -21,6 +21,8 @@ local debugm = require('debug')
 
 local exports = {}
 
+local failed = 0
+
 local function runit(modname, callback)
   local status, mod = pcall(require, modname)
   if status ~= true then
@@ -28,9 +30,14 @@ local function runit(modname, callback)
     callback(mod)
   end
   process.stdout:write(fmt('Executing test module [%s]\n\n', modname))
-  bourbon.run(nil, mod, function(err)
+  bourbon.run(nil, mod, function(err, stats)
     process.stdout:write('\n')
-    callback()
+
+    if stats then
+      failed = failed + stats.failed
+    end
+
+    callback(err)
   end)
 end
 
@@ -41,6 +48,8 @@ exports.run = function()
       debugm.traceback(err)
       process.exit(1)
     end
+
+    process.exit(failed)
   end)
 end
 
