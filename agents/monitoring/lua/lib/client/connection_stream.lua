@@ -50,6 +50,10 @@ end
 function ConnectionStream:createConnection(datacenter, host, port, callback)
   local client = AgentClient:new(datacenter, self._id, self._token, host, port, CONNECT_TIMEOUT)
   client:on('error', function(err)
+    err.host = host
+    err.port = port
+    err.datacenter = datacenter
+
     self:emit('error', err)
   end)
   client:connect(function(err)

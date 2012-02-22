@@ -123,7 +123,7 @@ function MonitoringAgent:connect(callback)
   local endpoints = misc.split(self._config['endpoints'], '[^,]+')
   self._streams = ConnectionStream:new(self._config['id'], self._config['token'])
   self._streams:on('error', function(err)
-    logging.log(logging.ERR, err.message)
+    logging.log(logging.ERR, err.host .. ':' .. err.port .. ': ' .. err.message)
   end)
 
   self._streams:createConnections(endpoints, callback)
