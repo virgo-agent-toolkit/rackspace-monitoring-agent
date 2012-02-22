@@ -19,6 +19,7 @@ local string = require('string')
 
 -- Split address in IP:port format and return an array of [ip, port]
 function splitAddress(address)
+  -- TODO: Split on last colon (ipv6)
   local start, result
   start, _ = address:find(':')
 
