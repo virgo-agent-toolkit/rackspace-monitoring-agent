@@ -67,7 +67,7 @@ end
 
 
 local run_test = function(runner, stats, callback)
-  process.stdout:write(fmt("Running %s", runner.name))
+  process.stdout:write(fmt("  Running %s", runner.name))
   local test_baton = TestBaton.new(runner, stats, function(err)
     process.stdout:write(" DONE\n")
 
@@ -136,6 +136,7 @@ local run = function(options, mods, callback)
     if options.print_summary then
       process.stdout:write('\nTotals' .. '\n')
       stats:print_summary()
+      process.stdout:write('---------------------------------------')
     end
 
     if callback then callback(nil, stats) end
