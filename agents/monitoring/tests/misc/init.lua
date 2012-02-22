@@ -20,8 +20,8 @@ no = {}
 local Uuid = require('monitoring/lib/util/uuid')
 
 exports['test_uuid_generation'] = function(test, asserts)
-  local uuid1 = Uuid:new('abcdefghji')
-  local uuid2 = Uuid:new('abcdefghji')
+  local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
+  local uuid2 = Uuid:new('01:02:ba:cd:32:6d')
 
   -- string reps should be different.
   asserts.ok(uuid1:toString() ~= uuid2:toString())
