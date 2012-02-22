@@ -126,7 +126,7 @@ local run = function(options, mods, callback)
   async.forEachSeries(ops, function(fun, callback)
     local status, err = pcall(fun, callback)
     if status ~= true then
-      callback(err)
+      callback(err, stats)
     end
   end, function(err)
     if err then
