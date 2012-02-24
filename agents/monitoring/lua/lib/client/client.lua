@@ -67,6 +67,9 @@ function AgentClient:connect()
     end
     self:emit('error', err)
   end)
+  self._sock:on('end', function()
+    self:emit('end')
+  end)
 end
 
 function AgentClient:close()
