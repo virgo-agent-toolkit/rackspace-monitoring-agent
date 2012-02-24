@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local os = require('os')
 local net = require('net')
 local timer = require('timer')
 local Error = require('core').Error
@@ -26,6 +27,9 @@ local fmt = require('string').format
 
 local AgentClient = Emitter:extend()
 
+local PING_INTERVAL = 5 * 60 * 1000-- ms
+local PING_INTERVAL = 4000
+
 function AgentClient:initialize(datacenter, id, token, host, port, timeout)
   self.protocol = nil
   self._datacenter = datacenter
@@ -36,6 +40,9 @@ function AgentClient:initialize(datacenter, id, token, host, port, timeout)
   self._host = host
   self._port = port
   self._timeout = timeout or 5000
+
+  self._sent_ping_count = 0
+  self._got_pong_count = 0
 end
 
 function AgentClient:connect()
@@ -57,7 +64,9 @@ function AgentClient:connect()
 
     -- setup protocol and begin handshake
     self.protocol = AgentProtocolConnection:new(self._id, self._token, self._sock)
-    self.protocol:startHandshake()
+    self.protocol:startHandshake(function()
+      self:startPingInterval()
+    end)
   end)
   self._sock:on('error', function(err)
     logging.log(logging.ERROR, fmt('Failed to connect to %s:%d: %s', self._host, self._port, tostring(err)))
@@ -72,7 +81,37 @@ function AgentClient:connect()
   end)
 end
 
+function AgentClient:startPingInterval()
+  logging.log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', PING_INTERVAL))
+
+  function startInterval()
+    self._pingTimeout = timer.setTimeout(PING_INTERVAL, function()
+      local timestamp = os.time()
+
+      logging.log(logging.DEBUG, fmt('Sending ping to %s:%d (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',
+                                     self._host, self._port, timestamp, self._sent_ping_count, self._got_pong_count))
+      self._sent_ping_count = self._sent_ping_count + 1
+      self.protocol:sendPing(timestamp, function(err, msg)
+        if msg.result.timestamp then
+          logging.log(logging.DEBUG, fmt('Got pong from %s:%d', self._host, self._port))
+          self._got_pong_count = self._got_pong_count + 1
+        else
+          logging.log(logging.DEBUG, fmt('Got invalid pong response from %s:%d', self._host, self._port))
+        end
+
+        startInterval()
+      end)
+    end)
+   end
+
+   startInterval()
+end
+
 function AgentClient:close()
+  if self._pingTimeout then
+    timer.clearTimer(self._pingTimeout)
+  end
+
   if self._sock then
     self._sock:close()
   end

@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local os = require('os')
 local AgentProtocol = require('./protocol')
 local Emitter = require('core').Emitter
 local JSON = require('json')
@@ -94,23 +95,31 @@ function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
   self:_send(m:serialize(self._msgid), COMPLETION_TIMEOUT, callback)
 end
 
+function AgentProtocolConnection:sendPing(timestamp, callback)
+  local m = msg.Ping:new(timestamp)
+  self:_send(m:serialize(self._msgid), COMPLETION_TIMEOUT, callback)
+end
+
 function AgentProtocolConnection:setState(state)
   self._state = state
 end
 
-function AgentProtocolConnection:startHandshake()
+function AgentProtocolConnection:startHandshake(callback)
   self:setState(STATES.HANDSHAKE)
   self:sendHandshakeHello(self._myid, self._token, function(err, msg)
     if err then
       logging.log(logging.ERR, fmt("handshake failed (message=%s)", err.message))
+      callback(err, msg)
       return
     end
     if msg.result ~= nil and msg.result.code ~= 200 then
       logging.log(logging.ERR, fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
+      callback(err, msg)
       return
     end
     self:setState(STATES.RUNNING)
     logging.log(logging.INFO, "handshake successful")
+    callback(nil, msg)
   end)
 end
 

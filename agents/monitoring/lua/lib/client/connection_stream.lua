@@ -85,6 +85,7 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
     err.port = port
     err.datacenter = datacenter
 
+    client:close()
     self:reconnect(datacenter, host, port, callback)
     self:emit('error', err)
   end)
@@ -96,6 +97,7 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
 
   client:connect(function(err)
     if err then
+      client:close()
       self:reconnect(datacenter, host, port, callback)
       callback(err)
       return
