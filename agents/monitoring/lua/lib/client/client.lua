@@ -41,23 +41,27 @@ end
 function AgentClient:connect()
   -- Create connection timeout
   local connectTimeout = timer.setTimeout(self._timeout, function()
+    logging.log(logging.ERROR, fmt('Failed to connect to %s:%d: timeout', self._host, self._port))
+
     self:emit('error', Error:new(fmt('Connect timeout to %s:%s', self._host, self._port)))
   end)
 
-  logging.log(logging.INFO, fmt("Connecting to %s:%s", self._host, self._port))
+  logging.log(logging.INFO, fmt('Connecting to %s:%s', self._host, self._port))
   self._sock = net.createConnection(self._port, self._host, function()
     -- stop the timeout timer since there is a connect
     timer.clearTimer(connectTimeout);
     connectTimeout = nil
 
     -- Log
-    logging.log(logging.INFO, fmt("Connected to %s:%s", self._host, self._port))
+    logging.log(logging.INFO, fmt('Connected to %s:%s', self._host, self._port))
 
     -- setup protocol and begin handshake
     self.protocol = AgentProtocolConnection:new(self._id, self._token, self._sock)
     self.protocol:startHandshake()
   end)
   self._sock:on('error', function(err)
+    logging.log(logging.ERROR, fmt('Failed to connect to %s:%d: %s', self._host, self._port, tostring(err)))
+
     if connectTimeout then
       timer.clearTimer(connectTimeout);
     end

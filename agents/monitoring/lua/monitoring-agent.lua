@@ -140,9 +140,12 @@ function MonitoringAgent.run()
       agent:loadStates(callback)
     end,
     function(callback)
-      agent:connect(callback)
+      agent:connect(function() end)
+      callback()
     end
-  }, function(err)
+  },
+
+  function(err)
     if err then
       logging.log(logging.ERR, err.message)
     end
@@ -150,4 +153,3 @@ function MonitoringAgent.run()
 end
 
 return MonitoringAgent
-
