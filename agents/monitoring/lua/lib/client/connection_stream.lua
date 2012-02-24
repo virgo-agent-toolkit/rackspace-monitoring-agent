@@ -103,6 +103,9 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
 
     client.datacenter = datacenter
     self._clients[datacenter] = client
+
+    -- TODO should do this after auth
+    self._delays[datacenter] = 0
     callback();
   end)
 
