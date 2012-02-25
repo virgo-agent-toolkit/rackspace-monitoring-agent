@@ -113,7 +113,8 @@ function AgentProtocolConnection:startHandshake(callback)
       return
     end
     if msg.result ~= nil and msg.result.code ~= 200 then
-      logging.log(logging.ERR, fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
+      err = Error:new(fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
+      logging.log(logging.ERR, err.message)
       callback(err, msg)
       return
     end
