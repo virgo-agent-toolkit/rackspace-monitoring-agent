@@ -64,8 +64,10 @@ function AgentClient:connect()
 
     -- setup protocol and begin handshake
     self.protocol = AgentProtocolConnection:new(self._id, self._token, self._sock)
-    self.protocol:startHandshake(function()
-      self:startPingInterval()
+    self.protocol:startHandshake(function(err, msg)
+      if not err then
+        self:startPingInterval()
+      end
     end)
   end)
   self._sock:on('error', function(err)
@@ -109,10 +111,12 @@ end
 
 function AgentClient:close()
   if self._pingTimeout then
+    logging.log(logging.DEBUG, 'Clearing ping interval')
     timer.clearTimer(self._pingTimeout)
   end
 
   if self._sock then
+    logging.log(logging.DEBUG, 'Closing socket')
     self._sock:close()
   end
 end
