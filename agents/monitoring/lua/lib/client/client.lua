@@ -27,8 +27,7 @@ local fmt = require('string').format
 
 local AgentClient = Emitter:extend()
 
-local PING_INTERVAL = 5 * 60 * 1000-- ms
-local PING_INTERVAL = 4000
+local PING_INTERVAL = 5 * 60 * 1000 -- ms
 
 function AgentClient:initialize(datacenter, id, token, host, port, timeout)
   self.protocol = nil
