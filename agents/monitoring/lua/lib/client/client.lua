@@ -40,6 +40,7 @@ function AgentClient:initialize(datacenter, id, token, host, port, timeout)
   self._port = port
   self._timeout = timeout or 5000
 
+  self._ping_interval = nil
   self._sent_ping_count = 0
   self._got_pong_count = 0
 end
@@ -67,6 +68,7 @@ function AgentClient:connect()
       if err then
         self:emit('error', err)
       else
+        self._ping_interval = msg.result.ping_interval
         self:startPingInterval()
       end
     end)
@@ -85,10 +87,10 @@ function AgentClient:connect()
 end
 
 function AgentClient:startPingInterval()
-  logging.log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', PING_INTERVAL))
+  logging.log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', self._ping_interval))
 
   function startInterval()
-    self._pingTimeout = timer.setTimeout(PING_INTERVAL, function()
+    self._pingTimeout = timer.setTimeout(self._ping_interval, function()
       local timestamp = os.time()
 
       logging.log(logging.DEBUG, fmt('Sending ping to %s:%d (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',

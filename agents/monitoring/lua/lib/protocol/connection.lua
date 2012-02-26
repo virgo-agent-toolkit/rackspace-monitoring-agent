@@ -140,7 +140,7 @@ function AgentProtocolConnection:startHandshake(callback)
       return
     end
 
-    if msg.result ~= nil and msg.result.code ~= 200 then
+    if msg.result.code and msg.result.code ~= 200 then
       err = Error:new(fmt('handshake failed [message=%s,code=%s]', msg.result.message, msg.result.code))
       logging.log(logging.ERR, err.message)
       callback(err, msg)
@@ -148,7 +148,7 @@ function AgentProtocolConnection:startHandshake(callback)
     end
 
     self:setState(STATES.RUNNING)
-    logging.log(logging.INFO, fmt('handshake successful (ping_interval=%d)', msg.result.ping_interval))
+    logging.log(logging.INFO, fmt('handshake successful (ping_interval=%dms)', msg.result.ping_interval))
     callback(nil, msg)
   end)
 end
