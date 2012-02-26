@@ -118,7 +118,7 @@ function AgentClient:close()
     timer.clearTimer(self._pingTimeout)
   end
 
-  if self._sock then
+  if self._sock and self._sock._handle then
     logging.log(logging.DEBUG, 'Closing socket')
     self._sock:close()
     self._sock = nil
