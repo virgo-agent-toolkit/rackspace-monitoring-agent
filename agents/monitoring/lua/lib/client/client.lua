@@ -64,7 +64,9 @@ function AgentClient:connect()
     -- setup protocol and begin handshake
     self.protocol = AgentProtocolConnection:new(self._id, self._token, self._sock)
     self.protocol:startHandshake(function(err, msg)
-      if not err then
+      if err then
+        self:emit('error', err)
+      else
         self:startPingInterval()
       end
     end)
