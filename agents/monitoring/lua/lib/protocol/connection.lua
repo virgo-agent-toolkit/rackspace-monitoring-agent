@@ -15,8 +15,10 @@ limitations under the License.
 --]]
 
 local os = require('os')
+local timer = require('timer')
 local AgentProtocol = require('./protocol')
 local Emitter = require('core').Emitter
+local Error = require('core').Error
 local JSON = require('json')
 local fmt = require('string').format
 local logging = require('logging')
@@ -24,7 +26,8 @@ local msg = require ('./messages')
 local table = require('table')
 local utils = require('utils')
 
-local COMPLETION_TIMEOUT = 30
+-- Response timeouts in ms
+local HANDSHAKE_TIMEOUT = 10000
 
 local STATES = {}
 STATES.INITIAL = 1
@@ -44,6 +47,7 @@ function AgentProtocolConnection:initialize(myid, token, conn)
   self._msgid = 0
   self._endpoints = { }
   self._target = 'endpoint'
+  self._timeoutIds = {}
   self._completions = {}
   self:setState(STATES.INITIAL)
 end
@@ -82,22 +86,45 @@ function AgentProtocolConnection:_send(msg, timeout, callback)
   msg.target = 'endpoint'
   msg.source = self._myid
   local data = JSON.stringify(msg) .. '\n'
+  local key = msg.target .. ':' .. msg.id
   logging.log(logging.DEBUG, fmt("SEND:%s", JSON.stringify(msg)))
-  if timeout and callback then
-    self._completions[msg.target .. ':' .. msg.id] = callback
+
+  if timeout then
+    self:_setCommandTimeoutHandler(key, timeout, callback)
   end
+
+  if callback then
+    self._completions[key] = function(err, msg)
+      if self._timeoutIds[key] ~= nil then
+        timer.clearTimer(self._timeoutIds[key])
+      end
+
+      callback(err, msg)
+    end
+  end
+
   self._conn:write(data)
   self._msgid = self._msgid + 1
 end
 
+-- Function which is called if a completion callback is not called in timeout ms
+function AgentProtocolConnection:_setCommandTimeoutHandler(key, timeout, callback)
+  local timeoutId
+
+  timeoutId = timer.setTimeout(timeout, function()
+    callback(Error:new(fmt('Command timeout, haven\'t received response in %d ms', timeout)))
+  end)
+  self._timeoutIds[key] = timeoutId
+end
+
 function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
   local m = msg.HandshakeHello:new(token, agentId)
-  self:_send(m:serialize(self._msgid), COMPLETION_TIMEOUT, callback)
+  self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, callback)
 end
 
 function AgentProtocolConnection:sendPing(timestamp, callback)
   local m = msg.Ping:new(timestamp)
-  self:_send(m:serialize(self._msgid), COMPLETION_TIMEOUT, callback)
+  self:_send(m:serialize(self._msgid), nil, callback)
 end
 
 function AgentProtocolConnection:setState(state)
@@ -108,18 +135,20 @@ function AgentProtocolConnection:startHandshake(callback)
   self:setState(STATES.HANDSHAKE)
   self:sendHandshakeHello(self._myid, self._token, function(err, msg)
     if err then
-      logging.log(logging.ERR, fmt("handshake failed (message=%s)", err.message))
+      logging.log(logging.ERR, fmt('handshake failed (message=%s)', err.message))
       callback(err, msg)
       return
     end
+
     if msg.result ~= nil and msg.result.code ~= 200 then
-      err = Error:new(fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
+      err = Error:new(fmt('handshake failed [message=%s,code=%s]', msg.result.message, msg.result.code))
       logging.log(logging.ERR, err.message)
       callback(err, msg)
       return
     end
+
     self:setState(STATES.RUNNING)
-    logging.log(logging.INFO, "handshake successful")
+    logging.log(logging.INFO, fmt('handshake successful (ping_interval=%d)', msg.result.ping_interval))
     callback(nil, msg)
   end)
 end
