@@ -121,6 +121,7 @@ function AgentClient:close()
   if self._sock then
     logging.log(logging.DEBUG, 'Closing socket')
     self._sock:close()
+    self._sock = nil
   end
 end
 
