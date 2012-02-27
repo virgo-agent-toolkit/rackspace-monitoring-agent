@@ -79,7 +79,7 @@ function ConnectionStream:reconnect(datacenter, host, port, callback)
   delay = math.min(previous_delay, max_delay) + (jitter * math.random())
   self._delays[datacenter] = delay
 
-  logging.log(logging.INFO, fmt('Retrying connection to %s (%s:%d) in %dms', datacenter, host, port, delay))
+  logging.log(logging.INFO, fmt('%s:%d -> Retrying connection in %dms', host, port, delay))
   timer.setTimeout(delay, function()
     self:createConnection(datacenter, host, port, callback)
   end)
@@ -107,7 +107,7 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
   end)
 
   client:on('end', function()
-    logging.log(logging.DEBUG, fmt('Remote endpoint (%s:%d) closed the connection', host, port))
+    logging.log(logging.DEBUG, fmt('%s:%d -> Remote endpoint closed the connection', host, port))
     client:close()
     self:reconnect(datacenter, host, port, callback)
   end)
