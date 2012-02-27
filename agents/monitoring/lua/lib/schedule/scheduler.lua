@@ -9,7 +9,7 @@ local Scheduler = Emitter:extend()
 local LINES_PER_STATE = 4
 
 function trim(s)
-  local from = s:match"^%s*()"
+  local from = s:match("^%s*()")
   return from > #s and "" or s:match(".*%S", from)
 end
 
