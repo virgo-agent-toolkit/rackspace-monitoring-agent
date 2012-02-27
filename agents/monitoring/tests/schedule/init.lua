@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local Scheduler = require('monitoring/lib/schedule').Scheduler
+local StateScanner = require('monitoring/lib/schedule').StateScanner
 
 local exports = {}
 
 exports['test_scheduler_scan'] = function(test, asserts)
-  local s = Scheduler:new('/data/virgo/agents/monitoring/tests/data/sample.state')
+  local s = StateScanner:new('/data/virgo/agents/monitoring/tests/data/sample.state')
   local count = 0
   s:on('check_needs_run', function(details)
     if count >= 3 then

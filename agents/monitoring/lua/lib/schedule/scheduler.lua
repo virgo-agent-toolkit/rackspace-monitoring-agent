@@ -5,7 +5,7 @@ local os = require('os')
 local Emitter = require('core').Emitter
 local async = require('async')
 
-local Scheduler = Emitter:extend()
+local StateScanner = Emitter:extend()
 local LINES_PER_STATE = 4
 
 function trim(s)
@@ -20,16 +20,16 @@ function split(s, transform)
   return fields  
 end
 
-function Scheduler:initialize(stateFile)
+function StateScanner:initialize(stateFile)
   self._stateFile = stateFile
   self._header = {}
 end
 
-function Scheduler:start()
+function StateScanner:start()
   
 end
 
-function Scheduler:scanStates()
+function StateScanner:scanStates()
   local preceeded = {}
   local stream = fs.createReadStream(self._stateFile)
   local scanAt = os.time()
@@ -68,7 +68,7 @@ function Scheduler:scanStates()
   end)
 end
 
-function Scheduler:consumeHeaderLine(version, line, lineNumber)
+function StateScanner:consumeHeaderLine(version, line, lineNumber)
   -- a version 1 header is this: version, \n, line count, \n, <line count> lines...
   if version == 1 then
     if lineNumber == 1 then
@@ -81,5 +81,5 @@ function Scheduler:consumeHeaderLine(version, line, lineNumber)
 end
 
 local exports = {}
-exports.Scheduler = Scheduler
+exports.StateScanner = StateScanner
 return exports
