@@ -27,7 +27,7 @@ local table = require('table')
 local utils = require('utils')
 
 -- Response timeouts in ms
-local HANDSHAKE_TIMEOUT = 10000
+local HANDSHAKE_TIMEOUT = 30000
 
 local STATES = {}
 STATES.INITIAL = 1
