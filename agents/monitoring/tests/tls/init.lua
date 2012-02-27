@@ -16,6 +16,8 @@ limitations under the License.
 
 local tlsbinding = require('_tls')
 local fs = require('fs')
+local table = require('table')
+local tls = require('tls');
 
 exports = {}
 no = {}
@@ -140,6 +142,37 @@ exports['test_add_trusted_cert'] = function(test, asserts)
   asserts.equals(err, false)
   sc:close()
   test.done()
+end
+
+exports['test_tls_connect'] = function(test, asserts)
+  tls.connect(443, '66.220.0.89', {}, function(err, cleartext)
+    cleartext:write('GET / HTTP/1.1\r\n\r\n')
+    cleartext:on('data', function(data)
+      asserts.ok(#data > 0)
+      cleartext.socket:close()
+      test.done()
+    end)
+    cleartext:on('error', function(err)
+      p(err)
+    end)
+  end)
+end
+
+exports['test_tls_server'] = function(test, asserts)
+  local PORT = 12341
+  local HOST = '127.0.0.1'
+  local server = nil
+  local options = {
+    key = keyPem,
+    cert = certPem
+  }
+  server = tls.createServer(options, function(client)
+    client.socket:close()
+    test.done()
+  end)
+  server:listen(12341)
+  client = tls.connect(PORT, HOST, {}, function(err, client)
+  end)
 end
 
 return exports

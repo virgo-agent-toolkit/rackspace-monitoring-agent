@@ -16,13 +16,8 @@
  */
 
 #include "virgo__lua.h"
+#include "virgo__tls.h"
 
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
-#include <openssl/x509v3.h>
 
 /**
  * This module is hevily inspired by Node.js' node_crypto.cc:
@@ -38,16 +33,8 @@
 #error Invalid OpenSSL version number. Busted Include Paths?
 #endif
 
-
 #define TLS_SECURE_CONTEXT_HANDLE "ltls_secure_context"
-
-/* SecureContext used to configure multiple connections */
-typedef struct tls_sc_t {
-  SSL_CTX *ctx;
-  /* TODO: figure out CA-store plan */
-  X509_STORE *ca_store;
-} tls_sc_t;
-
+#define getSC(L) virgo__lua_tls_sc_get(L, 1)
 
 /**
  * TLS Secure Context Methods
@@ -66,10 +53,10 @@ newSC(lua_State *L)
   return ctx;
 }
 
-static tls_sc_t*
-getSC(lua_State *L)
+tls_sc_t*
+virgo__lua_tls_sc_get(lua_State *L, int index)
 {
-  tls_sc_t *ctx = luaL_checkudata(L, 1, TLS_SECURE_CONTEXT_HANDLE);
+  tls_sc_t *ctx = luaL_checkudata(L, index, TLS_SECURE_CONTEXT_HANDLE);
   return ctx;
 }
 

@@ -141,6 +141,14 @@ VIRGO_API(void)  virgo_log_debugf(virgo_t *v, const char *fmt, ...) VIRGO_ATTR_F
 #define logDbg virgo_log_debugf
 #endif
 
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+
 /* Version number of OpenSSL that we hard link into */
 #define VIRGO_OPENSSL_VERSION_NUMBER 0x1000005fL
 
