@@ -6,6 +6,7 @@ local Emitter = require('core').Emitter
 local async = require('async')
 
 local StateScanner = Emitter:extend()
+local Scheduler = Emitter:extend()
 local LINES_PER_STATE = 4
 
 function trim(s)
@@ -78,6 +79,11 @@ function StateScanner:consumeHeaderLine(version, line, lineNumber)
       return self._header.lineCount - lineNumber < 0  
     end
   end
+end
+
+
+
+function Scheduler:initialize()
 end
 
 local exports = {}
