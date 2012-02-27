@@ -18,6 +18,7 @@ exports = {}
 no = {}
 
 local Uuid = require('monitoring/lib/util/uuid')
+local splitAddress = require('monitoring/lib/util/misc').splitAddress
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
@@ -27,6 +28,17 @@ exports['test_uuid_generation'] = function(test, asserts)
   asserts.ok(uuid1:toString() ~= uuid2:toString())
   -- last chunk should be the same.
   asserts.equals(uuid1:toString():reverse():sub(1, 10), uuid2:toString():reverse():sub(1, 10))
+  test.done()
+end
+
+exports['test_splitAddress'] = function(test, asserts)
+  local valid = '127.0.0.1:6000'
+  local invalid = '127.0.0.2'
+  local result = {'127.0.0.1', 6000}
+
+  asserts.equals(splitAddress(valid)[1], result[1])
+  asserts.equals(splitAddress(valid)[2], result[2])
+  asserts.equals(splitAddress(invalid), null)
   test.done()
 end
 

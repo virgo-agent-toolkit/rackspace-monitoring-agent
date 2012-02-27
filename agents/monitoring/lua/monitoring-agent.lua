@@ -18,9 +18,11 @@ limitations under the License.
 local async = require('async')
 local utils = require('utils')
 local Object = require('core').Object
+local fmt = require('string').format
 local logging = require('logging')
 
 local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
+local misc = require('./lib/util/misc')
 local States = require('./lib/states')
 
 local MonitoringAgent = Object:extend()
@@ -78,6 +80,27 @@ function MonitoringAgent:_verifyState(callback)
     logging.log(logging.ERR, "'token' is missing from 'config'")
     process.exit(1)
   end
+
+  if self._config['endpoints'] == nil then
+    logging.log(logging.ERR, "'endpoints' is missing from 'config'")
+    process.exit(1)
+  end
+
+  -- Verify that the endpoint addresses are specified in the correct format
+  local endpoints = misc.split(self._config['endpoints'], '[^,]+')
+
+  if #endpoints == 0 then
+    logging.log(logging.ERR, "at least one endpoint needs to be specified")
+    process.exit(1)
+  end
+
+  for i, address in ipairs(endpoints) do
+    if misc.splitAddress(address) == nil then
+      logging.log(logging.ERR, "endpoint needs to be specified in the following format ip:port")
+      process.exit(1)
+    end
+  end
+
   logging.log(logging.INFO, "using id " .. self._config['id'])
   callback()
 end
@@ -98,11 +121,13 @@ function MonitoringAgent:loadStates(callback)
 end
 
 function MonitoringAgent:connect(callback)
+  local endpoints = misc.split(self._config['endpoints'], '[^,]+')
   self._streams = ConnectionStream:new(self._config['id'], self._config['token'])
   self._streams:on('error', function(err)
-    logging.log(logging.ERR, err.message)
+    logging.log(logging.ERR, fmt('%s:%d: %s', err.host, err.port, err.message))
   end)
-  self._streams:createConnection('ord1', 'localhost', 50040, callback)
+
+  self._streams:createConnections(endpoints, callback)
 end
 
 function MonitoringAgent:initialize()
@@ -116,9 +141,12 @@ function MonitoringAgent.run()
       agent:loadStates(callback)
     end,
     function(callback)
-      agent:connect(callback)
+      agent:connect(function() end)
+      callback()
     end
-  }, function(err)
+  },
+
+  function(err)
     if err then
       logging.log(logging.ERR, err.message)
     end
@@ -126,4 +154,3 @@ function MonitoringAgent.run()
 end
 
 return MonitoringAgent
-
