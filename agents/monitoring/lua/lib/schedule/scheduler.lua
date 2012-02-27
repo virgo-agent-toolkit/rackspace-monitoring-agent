@@ -2,12 +2,16 @@ local fs = require('fs')
 local timer = require('timer')
 local table = require('table')
 local os = require('os')
+local fs = require('fs')
+local utils = require('utils')
 local Emitter = require('core').Emitter
+local Error = require('core').Error
 local async = require('async')
 
 local StateScanner = Emitter:extend()
 local Scheduler = Emitter:extend()
 local LINES_PER_STATE = 4
+local STATE_FILE_VERSION = 1
 
 function trim(s)
   local from = s:match("^%s*()")
@@ -65,7 +69,7 @@ function StateScanner:scanStates()
         preceeded = {}
       end
       if not index then break end
-    end 
+    end
   end)
 end
 
@@ -82,10 +86,53 @@ function StateScanner:consumeHeaderLine(version, line, lineNumber)
 end
 
 
-
-function Scheduler:initialize()
+-- checks: a table of BaseCheck
+function Scheduler:initialize(stateFile, checks, callback)
+  self._scanner = StateScanner:new(stateFile)
+  local fd, fp, now = nil, 0, os.time()
+  function writeLineHelper(data)
+    return function(callback)
+      fs.write(fd, fp, data..'\n', function(err, count)
+        fp = fp + count
+        callback(err)
+      end)
+    end
+  end
+  function writeCheck(check, callback)
+    async.waterfall({
+      writeLineHelper('#'),
+      writeLineHelper(check.id),
+      writeLineHelper(check.id), -- todo: change to a real path at some point.
+      writeLineHelper(check.state),
+      writeLineHelper(now)
+    }, function(err)
+      callback(err)
+    end)
+  end
+  -- write the initial state file.
+  async.waterfall({
+    utils.bind(fs.open, stateFile, 'w', '0644'),
+    function(_fd, callback)
+      fd = _fd
+      callback()
+    end,
+    writeLineHelper(STATE_FILE_VERSION),
+    writeLineHelper(0), -- nothing in the header.
+    function(callback)
+      async.forEachSeries(checks, writeCheck, function(err)
+        callback(err)
+      end)
+    end,
+    function(callback)
+      fs.close(fd, callback)
+    end
+      
+  }, function(err)
+    callback(err)
+  end)
 end
 
 local exports = {}
 exports.StateScanner = StateScanner
+exports.Scheduler = Scheduler
 return exports

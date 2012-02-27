@@ -15,7 +15,9 @@ limitations under the License.
 --]]
 
 local StateScanner = require('./scheduler').StateScanner
+local Scheduler = require('./scheduler').Scheduler
 
 local exports = {}
 exports.StateScanner = StateScanner
+exports.Scheduler = Scheduler
 return exports

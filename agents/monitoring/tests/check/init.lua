@@ -20,7 +20,7 @@ local CheckResult = require('monitoring/lib/check/base').CheckResult
 exports = {}
 
 exports['test_base_check'] = function(test, asserts)
-  local check = BaseCheck:new()
+  local check = BaseCheck:new({id='foo', state='OK'})
   asserts.ok(check._lastResults == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)

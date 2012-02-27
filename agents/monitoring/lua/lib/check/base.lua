@@ -21,8 +21,10 @@ local Emitter = require('core').Emitter
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 
-function BaseCheck:initialize()
+function BaseCheck:initialize(params)
   self._lastResults = nil
+  self.state = params.state
+  self.id = params.id
 end
 
 function BaseCheck:run(callback)
