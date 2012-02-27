@@ -18,6 +18,7 @@ limitations under the License.
 local async = require('async')
 local utils = require('utils')
 local Object = require('core').Object
+local fmt = require('string').format
 local logging = require('logging')
 
 local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
@@ -123,7 +124,7 @@ function MonitoringAgent:connect(callback)
   local endpoints = misc.split(self._config['endpoints'], '[^,]+')
   self._streams = ConnectionStream:new(self._config['id'], self._config['token'])
   self._streams:on('error', function(err)
-    logging.log(logging.ERR, err.host .. ':' .. err.port .. ': ' .. err.message)
+    logging.log(logging.ERR, fmt('%s:%d: %s', err.host, err.port, err.message))
   end)
 
   self._streams:createConnections(endpoints, callback)
