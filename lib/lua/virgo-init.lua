@@ -33,13 +33,12 @@ _G.print = nil
 -- Load libraries used in this file
 -- Load libraries used in this file
 local debugm = require('debug')
+local native = require('uv_native')
 local uv = require('uv')
 local env = require('env')
 local table = require('table')
 local utils = require('utils')
 local fs = require('fs')
-local Tty = require('tty').Tty
-local Pipe = require('pipe').Pipe
 local Emitter = require('core').Emitter
 local constants = require('constants')
 local path = require('path')
@@ -60,7 +59,7 @@ process = Emitter:new()
 process.version = VERSION
 process.versions = {
   luvit = VERSION,
-  uv = uv.VERSION_MAJOR .. "." .. uv.VERSION_MINOR .. "-" .. UV_VERSION,
+  uv = native.VERSION_MAJOR .. "." .. native.VERSION_MINOR .. "-" .. UV_VERSION,
   luajit = LUAJIT_VERSION,
   yajl = YAJL_VERSION,
   http_parser = HTTP_VERSION,
@@ -81,8 +80,8 @@ end
 function process:addHandlerType(name)
   local code = constants[name]
   if code then
-    uv.activateSignalHandler(code)
-    uv.unref()
+    native.activateSignalHandler(code)
+    .unref()
   end
 end
 
@@ -114,55 +113,19 @@ hide("exitProcess")
 -- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
 -- These shouldn't hold open the event loop
 if OS_BINDING.type() ~= "win32" then
-  uv.activateSignalHandler(constants.SIGPIPE)
-  uv.unref()
-  uv.activateSignalHandler(constants.SIGINT)
-  uv.unref()
-  uv.activateSignalHandler(constants.SIGTERM)
-  uv.unref()
-end
-
-local createWriteableStdioStream = function(fd)
-  local fd_type = uv.handleType(fd);
-  if (fd_type == "TTY") then
-    local tty = Tty:new(fd)
-    uv.unref()
-    return tty
-  elseif (fd_type == "FILE") then
-    return fs.SyncWriteStream:new(fd)
-  elseif (fd_type == "NAMED_PIPE") then
-    local pipe = Pipe:new(nil)
-    pipe:open(fd)
-    uv.unref()
-    return pipe
-  else
-    error("Unknown stream file type " .. fd)
-  end
-end
-
-local createReadableStdioStream = function(fd)
-  local fd_type = uv.handleType(fd);
-  if (fd_type == "TTY") then
-    local tty = Tty:new(fd)
-    uv.unref()
-    return tty
-  elseif (fd_type == "FILE") then
-    return fs.createReadStream(nil, {fd = fd})
-  elseif (fd_type == "NAMED_PIPE") then
-    local pipe = Pipe:new(nil)
-    pipe:open(fd)
-    uv.unref()
-    return pipe
-  else
-    error("Unknown stream file type " .. fd)
-  end
+  native.activateSignalHandler(constants.SIGPIPE)
+  native.unref()
+  native.activateSignalHandler(constants.SIGINT)
+  native.unref()
+  native.activateSignalHandler(constants.SIGTERM)
+  native.unref()
 end
 
 -- Load the tty as a pair of pipes
 -- But don't hold the event loop open for them
-process.stdin = createReadableStdioStream(0)
-process.stdout = createWriteableStdioStream(1)
-process.stderr = createWriteableStdioStream(2)
+process.stdin = uv.createReadableStdioStream(0)
+process.stdout = uv.createWriteableStdioStream(1)
+process.stderr = uv.createWriteableStdioStream(2)
 local stdout = process.stdout
 
 -- Replace print
@@ -408,8 +371,8 @@ function virgo_init.run(name)
 
   assert(xpcall(mod.run, debugm.traceback))
 
-  -- Start the event loop
-  uv.run()
+  -- Stagents/monitoring/tests/agent-protocol/handshake.hello.response.jsonart the event loop
+  native.run()
   -- trigger exit handlers and exit cleanly
   process.exit(0)
 end
