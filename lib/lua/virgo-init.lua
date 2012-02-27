@@ -14,6 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+-- Bootstrap require system
+local native = require('uv_native')
+process = {
+  execPath = native.execpath(),
+  cwd = getcwd,
+  argv = argv
+}
+_G.getcwd = nil
+_G.argv = nil
+
+local Emitter = require('core').Emitter
+local env = require('env')
+local constants = require('constants')
+local uv = require('uv')
+local utils = require('utils')
+
+setmetatable(process, Emitter.meta)
+
+-- Load the tty as a pair of pipes
+-- But don't hold the event loop open for them
+process.stdin = uv.createReadableStdioStream(0)
+process.stdout = uv.createWriteableStdioStream(1)
+process.stderr = uv.createWriteableStdioStream(2)
+local stdout = process.stdout
+
 -- clear some globals
 -- This will break lua code written for other lua runtimes
 _G.io = nil
@@ -27,34 +52,9 @@ _G.debug = nil
 _G.table = nil
 _G.loadfile = nil
 _G.dofile = nil
---_oldprint = print
-_G.print = nil
-
--- Load libraries used in this file
--- Load libraries used in this file
-local debugm = require('debug')
-local native = require('uv_native')
-local uv = require('uv')
-local env = require('env')
-local table = require('table')
-local utils = require('utils')
-local fs = require('fs')
-local Emitter = require('core').Emitter
-local constants = require('constants')
-local path = require('path')
-local LVFS = VFS
-_G.VFS = nil
-
--- Copy date and binding over from lua os module into luvit os module
-local OLD_OS = require('os')
-local OS_BINDING = require('os_binding')
-package.loaded.os = OS_BINDING
-package.preload.os_binding = nil
-package.loaded.os_binding = nil
-OS_BINDING.date = OLD_OS.date
-OS_BINDING.time = OLD_OS.time
-
-process = Emitter:new()
+_G.print = utils.print
+_G.p = utils.prettyPrint
+_G.debug = utils.debug
 
 process.version = VERSION
 process.versions = {
@@ -70,8 +70,6 @@ _G.LUAJIT_VERSION = nil
 _G.UV_VERSION = nil
 _G.HTTP_VERSION = nil
 
-local vfs = LVFS.open()
-
 function process.exit(exit_code)
   process:emit('exit', exit_code)
   exitProcess(exit_code or 0)
@@ -81,7 +79,7 @@ function process:addHandlerType(name)
   local code = constants[name]
   if code then
     native.activateSignalHandler(code)
-    .unref()
+    native.unref()
   end
 end
 
@@ -93,22 +91,26 @@ function process:missingHandlerType(name, ...)
   end
 end
 
-process.cwd = getcwd
-_G.getcwd = nil
-process.argv = argv
-_G.argv = nil
+-- Load libraries used in this file
+-- Load libraries used in this file
+local debugm = require('debug')
+local native = require('uv_native')
+local table = require('table')
+local fs = require('fs')
+local path = require('path')
+path.sep = '/'
+path.root = '/'
+local LVFS = VFS
+_G.VFS = nil
 
-local base_path = process.cwd()
-
--- Hide some stuff behind a metatable
-local hidden = {}
-setmetatable(_G, {__index=hidden})
-local function hide(name)
-  hidden[name] = _G[name]
-  _G[name] = nil
-end
-hide("_G")
-hide("exitProcess")
+-- Copy date and binding over from lua os module into luvit os module
+local OLD_OS = require('os')
+local OS_BINDING = require('os_binding')
+package.loaded.os = OS_BINDING
+package.preload.os_binding = nil
+package.loaded.os_binding = nil
+OS_BINDING.date = OLD_OS.date
+OS_BINDING.time = OLD_OS.time
 
 -- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
 -- These shouldn't hold open the event loop
@@ -121,12 +123,18 @@ if OS_BINDING.type() ~= "win32" then
   native.unref()
 end
 
--- Load the tty as a pair of pipes
--- But don't hold the event loop open for them
-process.stdin = uv.createReadableStdioStream(0)
-process.stdout = uv.createWriteableStdioStream(1)
-process.stderr = uv.createWriteableStdioStream(2)
-local stdout = process.stdout
+
+-- Hide some stuff behind a metatable
+local hidden = {}
+setmetatable(_G, {__index=hidden})
+local function hide(name)
+  hidden[name] = _G[name]
+  _G[name] = nil
+end
+hide("_G")
+hide("exitProcess")
+
+local vfs = LVFS.open()
 
 -- Replace print
 function print(...)
@@ -320,7 +328,7 @@ function require(filepath, dirname)
   if first == "/" then
     absolute_path = path.normalize(filepath)
   elseif first == "." then
-    absolute_path = path.join(dirname, filepath)
+    absolute_path = path.normalize(path.join(dirname, filepath))
   end
   if absolute_path then
     local loader = loadModule(absolute_path)
