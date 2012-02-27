@@ -1,2 +1,3 @@
 id testing
 token aToken
+endpoints localhost:50040,localhost:50041,localhost:50042
