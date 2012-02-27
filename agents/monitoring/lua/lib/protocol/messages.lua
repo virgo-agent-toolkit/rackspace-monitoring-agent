@@ -64,10 +64,24 @@ function HandshakeHello:serialize(msgId)
   return Request.serialize(self, msgId)
 end
 
+--[[ Ping ]]--
+local Ping = Request:extend()
+function Ping:initialize(timestamp)
+  Request.initialize(self)
+  self.method = 'heartbeat.ping'
+  self.timestamp = timestamp
+end
+
+function Ping:serialize(msgId)
+  self.params.timestamp = self.timestamp
+  return Request.serialize(self, msgId)
+end
+
 --[[ Exports ]]--
 
 local exports = {}
 exports.Request = Request
 exports.Response = Response
 exports.HandshakeHello = HandshakeHello
+exports.Ping = Ping
 return exports

@@ -15,8 +15,15 @@ limitations under the License.
 --]]
 
 local Emitter = require('core').Emitter
+local math = require('math')
+local timer = require('timer')
+local fmt = require('string').format
+
+local async = require('async')
+
 local AgentClient = require('./client').AgentClient
 local logging = require('logging')
+local misc = require('../util/misc')
 
 local CONNECT_TIMEOUT = 6000
 
@@ -25,22 +32,102 @@ function ConnectionStream:initialize(id, token)
   self._id = id
   self._token = token
   self._clients = {}
+  self._delays = {}
 end
 
+--[[
+Create and establish a connection to the multiple endpoints.
+
+addresses - An Array of ip:port pairs
+callback - Callback called with (err) when all the connections have been 
+established.
+--]]
+function ConnectionStream:createConnections(addresses, callback)
+  local client, clients = {}
+
+  async.forEach(addresses, function(address, callback)
+    local client, split, host, port
+
+    split = misc.splitAddress(address)
+    host, port = split[1], split[2]
+    client = self:createConnection(address, host, port, callback)
+  end, callback)
+end
+
+--[[
+Retry a connection to the endpoint.
+
+datacenter - Datacenter name / host alias.
+host - Hostname.
+port - Port.
+callback - Callback called with (err)
+]]--
+function ConnectionStream:reconnect(datacenter, host, port, callback)
+  local previous_delay, delay, max_delay, jitter, value
+
+  max_delay = 5 * 60 * 1000 -- max connection delay in ms
+  jitter = 7000 -- jitter in ms
+
+  previous_delay = self._delays[datacenter]
+
+  -- First reconnection attempt
+  if self._delays[datacenter] == nil then
+    self._delays[datacenter] = 0
+    previous_delay = 0
+  end
+
+  delay = math.min(previous_delay, max_delay) + (jitter * math.random())
+  self._delays[datacenter] = delay
+
+  logging.log(logging.INFO, fmt('Retrying connection to %s (%s:%d) in %dms', datacenter, host, port, delay))
+  timer.setTimeout(delay, function()
+    self:createConnection(datacenter, host, port, callback)
+  end)
+end
+
+--[[
+Create and establish a connection to the endpoint.
+
+datacenter - Datacenter name / host alias.
+host - Hostname.
+port - Port.
+callback - Callback called with (err)
+]]--
 function ConnectionStream:createConnection(datacenter, host, port, callback)
   local client = AgentClient:new(datacenter, self._id, self._token, host, port, CONNECT_TIMEOUT)
+
   client:on('error', function(err)
+    err.host = host
+    err.port = port
+    err.datacenter = datacenter
+
+    client:close()
+    self:reconnect(datacenter, host, port, callback)
     self:emit('error', err)
   end)
+
+  client:on('end', function()
+    logging.log(logging.DEBUG, fmt('Remote endpoint (%s:%d) closed the connection', host, port))
+    client:close()
+    self:reconnect(datacenter, host, port, callback)
+  end)
+
   client:connect(function(err)
     if err then
+      client:close()
+      self:reconnect(datacenter, host, port, callback)
       callback(err)
       return
     end
+
     client.datacenter = datacenter
     self._clients[datacenter] = client
+
+    -- TODO should do this after auth
+    self._delays[datacenter] = 0
     callback();
   end)
+
   return client
 end
 
