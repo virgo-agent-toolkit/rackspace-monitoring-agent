@@ -35,11 +35,13 @@ function ConnectionStream:initialize(id, token)
   self._delays = {}
 end
 
--- Create connection to the multiple endpoints.
---
--- addresses - An Array of ip:port pairs
--- callback - Callback which is called when all the connections have been
--- established.
+--[[
+Create and establish a connection to the multiple endpoints.
+
+addresses - An Array of ip:port pairs
+callback - Callback called with (err) when all the connections have been 
+established.
+--]]
 function ConnectionStream:createConnections(addresses, callback)
   local client, clients = {}
 
@@ -52,7 +54,14 @@ function ConnectionStream:createConnections(addresses, callback)
   end, callback)
 end
 
--- Retry a connection to the endpoint.
+--[[
+Retry a connection to the endpoint.
+
+datacenter - Datacenter name / host alias.
+host - Hostname.
+port - Port.
+callback - Callback called with (err)
+]]--
 function ConnectionStream:reconnect(datacenter, host, port, callback)
   local previous_delay, delay, max_delay, jitter, value
 
@@ -76,7 +85,14 @@ function ConnectionStream:reconnect(datacenter, host, port, callback)
   end)
 end
 
--- Create a connection to the endpoint.
+--[[
+Create and establish a connection to the endpoint.
+
+datacenter - Datacenter name / host alias.
+host - Hostname.
+port - Port.
+callback - Callback called with (err)
+]]--
 function ConnectionStream:createConnection(datacenter, host, port, callback)
   local client = AgentClient:new(datacenter, self._id, self._token, host, port, CONNECT_TIMEOUT)
 

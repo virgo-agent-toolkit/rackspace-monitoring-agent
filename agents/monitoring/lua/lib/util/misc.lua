@@ -17,7 +17,12 @@ limitations under the License.
 local table = require('table')
 local string = require('string')
 
--- Split address in IP:port format and return an array of [ip, port]
+--[[
+Split an address.
+
+address - Address in ip:port format.
+return [ip, port]
+]]--
 function splitAddress(address)
   -- TODO: Split on last colon (ipv6)
   local start, result

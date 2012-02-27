@@ -107,7 +107,13 @@ function AgentProtocolConnection:_send(msg, timeout, callback)
   self._msgid = self._msgid + 1
 end
 
--- Function which is called if a completion callback is not called in timeout ms
+--[[
+Set a timeout handler for a function.
+
+key - Command key.
+timeout - Timeout in ms.
+callback - Callback which is called with (err) if timeout has been reached.
+]]--
 function AgentProtocolConnection:_setCommandTimeoutHandler(key, timeout, callback)
   local timeoutId
 
