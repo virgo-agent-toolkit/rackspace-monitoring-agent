@@ -13,8 +13,16 @@ function trim(s)
   return from > #s and "" or s:match(".*%S", from)
 end
 
+-- split on commas.
+function split(s, transform)
+  local fields = {}
+  s:gsub('([^,]+)', function(c) fields[#fields + 1] = transform and transform(c) or c end)
+  return fields  
+end
+
 function Scheduler:initialize(stateFile)
   self._stateFile = stateFile
+  self._header = {}
 end
 
 function Scheduler:start()
@@ -25,6 +33,9 @@ function Scheduler:scanStates()
   local preceeded = {}
   local stream = fs.createReadStream(self._stateFile)
   local scanAt = os.time()
+  local version
+  local headerDone = false
+  local headerLine = 1
   stream:on('data', function(chunk, len)
     local pos = 1
     while true do
@@ -36,7 +47,12 @@ function Scheduler:scanStates()
       else
         line = chunk:sub(pos)
       end
-      if line:find('#', 1) ~= 1 then
+      if version == nil then
+        version = tonumber(trim(line))
+      elseif not headerDone then
+        headerDone = self:consumeHeaderLine(version, line, headerLine)
+        headerLine = headerLine + 1
+      elseif line:find('#', 1) ~= 1 then
         table.insert(preceeded, #preceeded + 1, line)
       end
       if #preceeded == LINES_PER_STATE then
@@ -50,6 +66,18 @@ function Scheduler:scanStates()
       if not index then break end
     end 
   end)
+end
+
+function Scheduler:consumeHeaderLine(version, line, lineNumber)
+  -- a version 1 header is this: version, \n, line count, \n, <line count> lines...
+  if version == 1 then
+    if lineNumber == 1 then
+      self._header.lineCount = tonumber(line)
+      return false
+    else
+      return self._header.lineCount - lineNumber < 0  
+    end
+  end
 end
 
 local exports = {}

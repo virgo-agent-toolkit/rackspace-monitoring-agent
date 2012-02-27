@@ -1,3 +1,9 @@
+1
+4
+first line is version, second line is how many lines remain in the header (this is the first). that means there are 4 (+2) header lines total.
+this is the second
+this is the third header line. I'm leaving the 4th header line empty to show that it is allowed, but still counted.
+
 # second
 check_000
 /tmp/check_001.check
