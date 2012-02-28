@@ -43,7 +43,7 @@ callback - Callback called with (err) when all the connections have been
 established.
 --]]
 function ConnectionStream:createConnections(addresses, callback)
-  local client, clients = {}
+  local client
 
   async.forEach(addresses, function(address, callback)
     local client, split, host, port
