@@ -20,6 +20,7 @@ local Emitter = require('core').Emitter
 
 local AgentProtocol = require('monitoring/lib/protocol/protocol').AgentProtocol
 local AgentProtocolConnection = require('monitoring/lib/protocol/connection')
+local loggingUtil = require ('monitoring/lib/util/logging')
 
 local exports = {}
 
@@ -57,7 +58,7 @@ exports['test_fragmented_message'] = function(test, asserts)
       asserts.is_nil(err)
       return
     end
-    conn = AgentProtocolConnection:new('MYID', 'TOKEN', sock)
+    conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
     conn:on('message', function(msg)
       asserts.equals(msg.target, 'endpoint')
       asserts.equals(msg.source, 'X')

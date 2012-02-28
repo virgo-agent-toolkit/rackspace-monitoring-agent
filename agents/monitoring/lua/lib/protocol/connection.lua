@@ -36,9 +36,11 @@ STATES.RUNNING = 3
 
 local AgentProtocolConnection = Emitter:extend()
 
-function AgentProtocolConnection:initialize(myid, token, conn)
+function AgentProtocolConnection:initialize(log, myid, token, conn)
   assert(conn ~= nil)
   assert(myid ~= nil)
+
+  self._log = log
   self._myid = myid
   self._token = token
   self._conn = conn
@@ -58,7 +60,7 @@ function AgentProtocolConnection:_onData(data)
   if newline then
     -- TODO: use a better buffer
     self._buf = self._buf .. data:sub(1, newline - 1)
-    logging.log(logging.DEBUG, fmt("RECV:%s", self._buf))
+    self._log(logging.DEBUG, fmt('RECV: %s', self._buf))
     obj = JSON.parse(self._buf)
     self:_processMessage(obj)
     self._buf = data:sub(newline + 1)
@@ -87,7 +89,7 @@ function AgentProtocolConnection:_send(msg, timeout, callback)
   msg.source = self._myid
   local data = JSON.stringify(msg) .. '\n'
   local key = msg.target .. ':' .. msg.id
-  logging.log(logging.DEBUG, fmt("SEND:%s", JSON.stringify(msg)))
+  self._log(logging.DEBUG, fmt('SEND: %s', data))
 
   if timeout then
     self:_setCommandTimeoutHandler(key, timeout, callback)
@@ -141,20 +143,20 @@ function AgentProtocolConnection:startHandshake(callback)
   self:setState(STATES.HANDSHAKE)
   self:sendHandshakeHello(self._myid, self._token, function(err, msg)
     if err then
-      logging.log(logging.ERR, fmt('handshake failed (message=%s)', err.message))
+      self._log(logging.ERR, fmt('handshake failed (message=%s)', err.message))
       callback(err, msg)
       return
     end
 
     if msg.result.code and msg.result.code ~= 200 then
       err = Error:new(fmt('handshake failed [message=%s,code=%s]', msg.result.message, msg.result.code))
-      logging.log(logging.ERR, err.message)
+      self._log(logging.ERR, err.message)
       callback(err, msg)
       return
     end
 
     self:setState(STATES.RUNNING)
-    logging.log(logging.INFO, fmt('handshake successful (ping_interval=%dms)', msg.result.ping_interval))
+    self._log(logging.INFO, fmt('handshake successful (ping_interval=%dms)', msg.result.ping_interval))
     callback(nil, msg)
   end)
 end
