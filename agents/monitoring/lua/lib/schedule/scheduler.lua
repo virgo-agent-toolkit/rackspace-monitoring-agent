@@ -85,12 +85,9 @@ function StateScanner:consumeHeaderLine(version, line, lineNumber)
   end
 end
 
-
--- checks: a table of BaseCheck
-function Scheduler:initialize(stateFile, checks, callback)
-  self._scanner = StateScanner:new(stateFile)
+function StateScanner:dumpChecks(checks, callback)
   local fd, fp, now = nil, 0, os.time()
-  function writeLineHelper(data)
+  local writeLineHelper = function(data)
     return function(callback)
       fs.write(fd, fp, data..'\n', function(err, count)
         fp = fp + count
@@ -98,7 +95,7 @@ function Scheduler:initialize(stateFile, checks, callback)
       end)
     end
   end
-  function writeCheck(check, callback)
+  local writeCheck= function(check, callback)
     async.waterfall({
       writeLineHelper('#'),
       writeLineHelper(check.id),
@@ -111,7 +108,7 @@ function Scheduler:initialize(stateFile, checks, callback)
   end
   -- write the initial state file.
   async.waterfall({
-    utils.bind(fs.open, stateFile, 'w', '0644'),
+    utils.bind(fs.open, self._stateFile, 'w', '0644'),
     function(_fd, callback)
       fd = _fd
       callback()
@@ -126,10 +123,16 @@ function Scheduler:initialize(stateFile, checks, callback)
     function(callback)
       fs.close(fd, callback)
     end
-      
   }, function(err)
     callback(err)
   end)
+end
+
+
+-- checks: a table of BaseCheck
+function Scheduler:initialize(stateFile, checks, callback)
+  self._scanner = StateScanner:new(stateFile)
+  self._scanner:dumpChecks(checks, callback)
 end
 
 local exports = {}
