@@ -26,7 +26,7 @@ local exports = {}
 exports['test_scheduler_scan'] = function(test, asserts)
   local s = StateScanner:new('/data/virgo/agents/monitoring/tests/data/sample.state')
   local count = 0
-  s:on('check_needs_run', function(details)
+  s:on('check_scheduled', function(details)
     count = count + 1
     if count >= 3 then
       test.done()
@@ -54,7 +54,7 @@ exports['test_scheduler_initialize'] = function(test, asserts)
     function(callback)
       local count = 0
       local s = StateScanner:new(testFile)
-      s:on('check_needs_run', function(details)
+      s:on('check_scheduled', function(details)
         count = count + 1
         if count >= #checks then
           callback()

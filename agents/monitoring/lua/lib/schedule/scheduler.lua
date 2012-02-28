@@ -64,7 +64,7 @@ function StateScanner:scanStates()
         -- todo: if state is correct and time is later than now, emit that puppy.
         preceeded[4] = tonumber(preceeded[4])
         if preceeded[4] <= scanAt then
-          self:emit('check_needs_run', preceeded)
+          self:emit('check_scheduled', preceeded)
         end
         preceeded = {}
       end
