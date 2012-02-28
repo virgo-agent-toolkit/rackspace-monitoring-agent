@@ -98,6 +98,11 @@ function AgentClient:startPingInterval()
                                     timestamp, self._sent_ping_count, self._got_pong_count))
       self._sent_ping_count = self._sent_ping_count + 1
       self.protocol:sendPing(timestamp, function(err, msg)
+        if err then
+          self._log(logging.DEBUG, 'Got an error while sending ping: ' .. tostring(err))
+          return
+        end
+
         if msg.result.timestamp then
           self._got_pong_count = self._got_pong_count + 1
           self._log(logging.DEBUG, fmt('Got pong (sent_ping_count=%d,got_pong_count=%d)',
