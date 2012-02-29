@@ -28,6 +28,12 @@ asserts.ok = function(a, msg)
   asserts.assert(a, msg)
 end
 
+asserts.not_ok = function(a, msg)
+  local msg = msg or tostring(a) .. ' != false'
+  asserts.assert(not a, msg)
+end
+
+
 asserts.equals = function(a, b, msg)
   local msg = msg or tostring(a) .. ' != ' .. tostring(b)
   asserts.assert(a == b, msg)
@@ -105,8 +111,12 @@ end
 asserts.throws = function(...)
   local s, e = pcall(...)
   asserts.assert(not s)
-  asserts.assert(e)
+  asserts.ok(e, 'Function didn\'t throw')
 end
 
+asserts.doesnt_throw = function(...)
+  local s, e = pcall(...)
+  asserts.ok(not e, 'Function thrown an error')
+end
 
 return asserts
