@@ -15,7 +15,6 @@ limitations under the License.
 --]]
 
 local math = require('math')
-local table = require('table')
 local path = require('path')
 local fs = require('fs')
 local os = require('os')
@@ -43,7 +42,7 @@ exports['test_mkdirp'] = function(test, asserts)
     components[i] = component
   end
 
-  fullPath = table.concat(components, path.sep)
+  fullPath = path.join(unpack(components))
 
   asserts.not_ok(fs.existsSync(fullPath))
 
