@@ -320,6 +320,13 @@ _G.module = nil
 function require(filepath, dirname)
   if not dirname then dirname = "" end
 
+  -- Because of VFS we want to change the separator and root without modifying a
+  -- global path.sep and path.root
+  filepath = filepath:gsub('\\', '/')
+  dirname = dirname:gsub('\\', '/')
+  filepath = filepath:gsub('c:', '/')
+  dirname = dirname:gsub('c:', '/')
+
   -- Absolute and relative required modules
   local first = filepath:sub(1, 1)
   local absolute_path
