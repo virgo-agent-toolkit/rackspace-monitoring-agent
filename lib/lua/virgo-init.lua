@@ -317,16 +317,11 @@ package.seeall = nil
 package.config = nil
 _G.module = nil
 
+local origRoot = path.root
+local origSep = path.sep
+
 function require(filepath, dirname)
   if not dirname then dirname = "" end
-
-  -- Because of VFS we want to change the separator and root without modifying a
-  -- global path.sep and path.root
-  filepath = filepath:gsub('\\', '/')
-  dirname = dirname:gsub('\\', '/')
-  filepath = filepath:gsub('c:', '/')
-  dirname = dirname:gsub('c:', '/')
-
   -- Absolute and relative required modules
   local first = filepath:sub(1, 1)
   local absolute_path
@@ -360,6 +355,10 @@ function require(filepath, dirname)
     end
   end
 
+  -- Because of VFS we want to use a different separator and root here.
+  path.root = '/'
+  path.sep = '/'
+
   -- Bundled path modules
   local dir = dirname .. "/"
   repeat
@@ -367,11 +366,17 @@ function require(filepath, dirname)
     local full_path = dir .. "/modules/" .. filepath
     local loader = loadModule(dir .. "/modules/" .. filepath)
     if type(loader) == "function" then
+      path.root = origRoot
+      path.sep = origSep
+
       return loader()
     else
       errors[#errors + 1] = loader
     end
   until #dir == 0
+
+  path.root = origRoot
+  path.sep = origSep
 
   error("Failed to find module '" .. filepath .."'" .. table.concat(errors, ""))
 
