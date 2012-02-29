@@ -98,8 +98,6 @@ local native = require('uv_native')
 local table = require('table')
 local fs = require('fs')
 local path = require('path')
-path.sep = '/'
-path.root = '/'
 local LVFS = VFS
 _G.VFS = nil
 
