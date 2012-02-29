@@ -16,6 +16,7 @@ limitations under the License.
 
 local math = require('math')
 local table = require('table')
+local path = require('path')
 local fs = require('fs')
 local os = require('os')
 
@@ -28,21 +29,21 @@ exports['test_mkdirp'] = function(test, asserts)
   local separator, component, components, fulPath
 
   components = {}
+  components[1] = path.root
 
   if os.type() == 'win32' then
-    separator = '\\'
-    components[1] = 'C:'
+    -- TODO: Should eventually move to util/fs
+    components[2] = 'Temp'
   else
-    separator = '/'
-    components[1] = '/tmp'
+    components[2] = 'tmp'
   end
 
-  for i=2,5 do
+  for i=3,6 do
     component = 'test' .. tostring(math.random(0, 1000))
     components[i] = component
   end
 
-  fullPath = table.concat(components, separator)
+  fullPath = table.concat(components, path.sep)
 
   asserts.not_ok(fs.existsSync(fullPath))
 
