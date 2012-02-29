@@ -81,7 +81,13 @@ end
 function Context:dump_errors(func)
   for i, v in ipairs(self.errors) do
     func("Error #" .. i)
-    func("\t" .. v.ret)
+
+    if type(v.ret) == 'string' then
+      func("\t" .. v.ret)
+    else
+      func("\t" .. utils.dump(v.ret))
+    end
+
     func("\t" .. v.traceback)
   end
 end
