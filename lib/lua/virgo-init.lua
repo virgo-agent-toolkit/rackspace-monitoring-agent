@@ -226,7 +226,7 @@ end
 
 
 local function myloadfile(filepath, cache)
-  if not cache then cache = true end
+  if cache == nil then cache = true end
 
   if not vfs:exists(filepath) then return end
   -- Not done by luvit, we don't have synlinks in the zip file.
@@ -262,7 +262,7 @@ local function myloadfile(filepath, cache)
 end
 
 local function myloadlib(filepath)
-  if not cache then cache = true end
+  if cache  == nil then cache = true end
 
   if not vfs:exists(filepath) then return end
 
@@ -295,7 +295,7 @@ end
 
 -- tries to load a module at a specified absolute path
 local function loadModule(filepath, verbose, cache)
-  if not cache then cache = true end
+  if cache == nil then cache = true end
 
   -- First, look for exact file match if the extension is given
   local extension = path.extname(filepath)
@@ -334,7 +334,7 @@ _G.module = nil
 
 function require(filepath, dirname, cache)
   if not dirname then dirname = "" end
-  if not cache then cache = true end
+  if cache == nil then cache = true end
 
   -- Absolute and relative required modules
   local first = filepath:sub(1, 1)
