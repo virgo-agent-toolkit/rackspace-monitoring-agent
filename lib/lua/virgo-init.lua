@@ -98,8 +98,6 @@ local native = require('uv_native')
 local table = require('table')
 local fs = require('fs')
 local path = require('path')
-path.sep = '/'
-path.root = '/'
 local LVFS = VFS
 _G.VFS = nil
 
@@ -218,10 +216,10 @@ local function partialRealpath(filepath)
   local link
   link = fs.lstatSync(filepath).is_symbolic_link and fs.readlinkSync(filepath)
   while link do
-    filepath = path.resolve(path.dirname(filepath), link)
+    filepath = path.posix:resolve(path.posix:dirname(filepath), link)
     link = fs.lstatSync(filepath).is_symbolic_link and fs.readlinkSync(filepath)
   end
-  return path.normalize(filepath)
+  return path.posix:normalize(filepath)
 end
 
 
@@ -241,7 +239,7 @@ local function myloadfile(filepath)
   -- TODO: find out why inlining assert here breaks the require test
   local fn, err = loadstring(code, '@' .. filepath)
   assert(fn, err)
-  local dirname = path.dirname(filepath)
+  local dirname = path.posix:dirname(filepath)
   local realRequire = require
   setfenv(fn, setmetatable({
     __filename = filepath,
@@ -266,9 +264,9 @@ local function myloadlib(filepath)
     end
   end
 
-  local name = path.basename(filepath)
+  local name = path.posix:basename(filepath)
   if name == "init.luvit" then
-    name = path.basename(path.dirname(filepath))
+    name = path.posix:basename(path.posix:dirname(filepath))
   end
   local base_name = name:sub(1, #name - 6)
   package.loaded[filepath] = base_name -- Hook to allow C modules to find their path
@@ -285,7 +283,7 @@ end
 local function loadModule(filepath, verbose)
 
   -- First, look for exact file match if the extension is given
-  local extension = path.extname(filepath)
+  local extension = path.posix:extname(filepath)
   if extension == ".lua" then
     return myloadfile(filepath)
   end
@@ -297,7 +295,7 @@ local function loadModule(filepath, verbose)
   if vfs:exists(filepath .. "/package.lua") then
     local metadata = loadModule(filepath .. "/package.lua")()
     if metadata.main then
-      return loadModule(path.join(filepath, metadata.main))
+      return loadModule(path.posix:join(filepath, metadata.main))
     end
   end
 
@@ -326,9 +324,9 @@ function require(filepath, dirname)
   local first = filepath:sub(1, 1)
   local absolute_path
   if first == "/" then
-    absolute_path = path.normalize(filepath)
+    absolute_path = path.posix:normalize(filepath)
   elseif first == "." then
-    absolute_path = path.normalize(path.join(dirname, filepath))
+    absolute_path = path.posix:normalize(path.posix:join(dirname, filepath))
   end
   if absolute_path then
     local loader = loadModule(absolute_path)
