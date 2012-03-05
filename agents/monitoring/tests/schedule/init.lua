@@ -16,12 +16,20 @@ limitations under the License.
 
 local async = require('async')
 local utils = require('utils')
+local timer = require('timer')
 
 local StateScanner = require('monitoring/lib/schedule').StateScanner
 local Scheduler = require('monitoring/lib/schedule').Scheduler
 local BaseCheck = require('monitoring/lib/check/base').BaseCheck
 
 local exports = {}
+
+local checks = {
+  BaseCheck:new({id='ch0001', state='OK', period=30, path='/tmp/0001.chk'}),
+  BaseCheck:new({id='ch0002', state='OK', period=35, path='/tmp/0002.chk'}),
+  BaseCheck:new({id='ch0003', state='OK', period=40, path='/tmp/0003.chk'}),
+  BaseCheck:new({id='ch0004', state='OK', period=45, path='/tmp/0004.chk'}),
+}
 
 exports['test_scheduler_scan'] = function(test, asserts)
   local s = StateScanner:new('/data/virgo/agents/monitoring/tests/data/sample.state')
@@ -36,13 +44,7 @@ exports['test_scheduler_scan'] = function(test, asserts)
 end
 
 exports['test_scheduler_initialize'] = function(test, asserts)
-  local checks = {
-    BaseCheck:new({id='ch0001', state='OK'}),
-    BaseCheck:new({id='ch0002', state='OK'}),
-    BaseCheck:new({id='ch0003', state='OK'}),
-    BaseCheck:new({id='ch0004', state='OK'}),
-  }
-  local testFile = '/tmp/test_checks_0001.state'
+  local testFile = '/tmp/test_scheduler_initialize.state'
   
   async.waterfall({
     -- write a scan file. the scheduler does this.
@@ -61,6 +63,28 @@ exports['test_scheduler_initialize'] = function(test, asserts)
         end
       end)
       s:scanStates()
+    end
+  }, function(err)
+    asserts.ok(err == nil)
+    test.done()
+  end)
+end
+
+exports['test_scheduler_scans'] = function(test, asserts)
+  local testFile = '/tmp/test_scheduler_scans.state'
+  local scheduler
+  
+  async.waterfall({
+    function(callback)
+      scheduler = Scheduler:new(testFile, checks, callback)
+    end,
+    function(callback)
+      scheduler:start()
+      local timeout = timer.setTimeout(5000, function()
+        -- they all should have run.
+        asserts.equals(scheduler._runCount, #checks)
+        callback()
+      end)
     end
   }, function(err)
     asserts.ok(err == nil)

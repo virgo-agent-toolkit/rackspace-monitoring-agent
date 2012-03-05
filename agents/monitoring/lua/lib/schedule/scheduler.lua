@@ -7,9 +7,14 @@ local utils = require('utils')
 local Emitter = require('core').Emitter
 local Error = require('core').Error
 local async = require('async')
+local math = require('math')
+
+local logging = require('logging')
+local loggingUtil = require('../util/logging')
 
 local StateScanner = Emitter:extend()
 local Scheduler = Emitter:extend()
+local CheckMeta = Emitter:extend()
 local LINES_PER_STATE = 4
 local STATE_FILE_VERSION = 1
 
@@ -25,15 +30,21 @@ function split(s, transform)
   return fields  
 end
 
+-- CheckMeta holds the pieces of a check that will appear in a state file.
+function CheckMeta:initialize(lines)
+  self.id = lines[1]
+  self.path = lines[2]
+  self.state = lines[3]
+  self.nextRun = tonumber(lines[4])
+end
+
+-- StateScanner is in charge of reading/writing the state file.
 function StateScanner:initialize(stateFile)
   self._stateFile = stateFile
   self._header = {}
 end
 
-function StateScanner:start()
-  
-end
-
+-- Scans the state file and emits 'check_scheduled' events for checks that need to be run.
 function StateScanner:scanStates()
   local preceeded = {}
   local stream = fs.createReadStream(self._stateFile)
@@ -64,7 +75,7 @@ function StateScanner:scanStates()
         -- todo: if state is correct and time is later than now, emit that puppy.
         preceeded[4] = tonumber(preceeded[4])
         if preceeded[4] <= scanAt then
-          self:emit('check_scheduled', preceeded)
+          self:emit('check_scheduled', CheckMeta:new(preceeded))
         end
         preceeded = {}
       end
@@ -85,6 +96,7 @@ function StateScanner:consumeHeaderLine(version, line, lineNumber)
   end
 end
 
+-- dumps all checks to the state file.  totally clobbers the existing file, so watch out yo.
 function StateScanner:dumpChecks(checks, callback)
   local fd, fp, now = nil, 0, os.time()
   local writeLineHelper = function(data)
@@ -95,13 +107,13 @@ function StateScanner:dumpChecks(checks, callback)
       end)
     end
   end
-  local writeCheck= function(check, callback)
+  local writeCheck = function(check, callback)
     async.waterfall({
       writeLineHelper('#'),
       writeLineHelper(check.id),
-      writeLineHelper(check.id), -- todo: change to a real path at some point.
+      writeLineHelper(check.path),
       writeLineHelper(check.state),
-      writeLineHelper(now)
+      writeLineHelper(check:getNextRun())
     }, function(err)
       callback(err)
     end)
@@ -129,10 +141,59 @@ function StateScanner:dumpChecks(checks, callback)
 end
 
 
+-- Scheduler is in charge of determining if a check should be run and then maintaining the state of the checks.
+-- stateFile: file to store checks in.
 -- checks: a table of BaseCheck
+-- callback: function called after the state file is written
 function Scheduler:initialize(stateFile, checks, callback)
+  -- todo: I can see there might be a need for a constructor that will read all checks from the state file
+  -- in that case, the states will be read and then used as pointers to deserialize checks that already exist on the fs.
+  self._log = loggingUtil.makeLogger('scheduler')
+  self._nextScan = 0
+  self._scanTimer = nil
+  local checkMap = {}
+  -- todo: the check:run closer captures the checks param. thay may end up being a memory liability for cases where
+  -- there are many checks.
+  for index, check in ipairs(checks) do
+    checkMap[check.id] = check
+    self._nextScan = math.min(self._nextScan, check:getNextRun())
+  end
+  self._runCount = 0
   self._scanner = StateScanner:new(stateFile)
-  self._scanner:dumpChecks(checks, callback)
+  
+  -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a 
+  -- check needs to be run.
+  self._scanner:dumpChecks(checks, function()
+    self._scanner:on('check_scheduled', function(checkMeta)
+      -- run the check.
+      -- todo: need a process of determining at this point if a check SHOULD NOT be run.
+      local check = checkMap[checkMeta.id]
+      check:run(function(checkResult)
+        self._runCount = self._runCount + 1
+        self._scanner:dumpChecks(checks, function()
+          self._log(logging.INFO, 'checks dumped at '..os.time())
+        end)
+        -- determine when the next scan should be.
+        local oldNextScan = self._nextScan
+        -- todo: check for invalid next run.
+        self._nextScan = math.min(self._nextScan, checkResult._nextRun)
+        -- maybe clear timer, set next.
+        if oldNextScan ~= self._nextScan then
+          if self._scanTimer then
+            timer.clearTimeout(self._scanTimer)
+          end
+          self._scanTimer = timer.setTimeout(self._nextScan - os.time(), utils.bind(self._scanner.scanStates, self._scanner))
+        end
+      end)
+    end)
+    callback()
+  end)
+    
+end
+
+-- start scanning.
+function Scheduler:start()
+  self._scanner:scanStates()
 end
 
 local exports = {}
