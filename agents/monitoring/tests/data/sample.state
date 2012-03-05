@@ -1,0 +1,30 @@
+1
+4
+first line is version, second line is how many lines remain in the header (this is the first). that means there are 4 (+2) header lines total.
+this is the second
+this is the third header line. I'm leaving the 4th header line empty to show that it is allowed, but still counted.
+
+# second
+check_000
+/tmp/check_001.check
+OK
+1330095321
+# third
+check_0002
+/tmp/check_002.check
+OK
+1330095421
+# fourth
+check_0003
+/tmp/check_003.check
+OK
+2660190842
+check_0005
+/tmp/check_005.check       
+OK
+2660200842                   
+# first
+check_0004              
+/tmp/check_004.check  
+OK             
+1330085321
