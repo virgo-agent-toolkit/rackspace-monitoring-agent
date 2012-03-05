@@ -11,7 +11,7 @@ local net = require('net')
 local fmt = require('string').format
 
 local END_OF_FILE = 42
-local DEBUG = false
+local DEBUG = true
 
 local function dbg(format, ...)
   if DEBUG == true then
@@ -101,7 +101,6 @@ function CryptoStream:initialize(pair, typeString)
   self.pair = pair
   self.readable = true
   self.writable = true
-  self._destroyAfterPush = false
   self._paused = false
   self._pending = {}
   self._pendingCallbacks = {}
@@ -252,7 +251,7 @@ function CryptoStream:_push()
     assert(#data >= 0)
 
     if #data == 0 then
-      if self:_internallyPendingBytes() == 0 and self._destroyAfterPush == true then
+      if self:_internallyPendingBytes() == 0 then
         self:_done()
       end
       return
@@ -460,7 +459,6 @@ function SecurePair:destroy()
     self._doneFlag = true
 
     if self.ssl then
-      self.ssl.err = nil
       self.ssl.close()
       self.ssl = nil
     end
@@ -489,7 +487,7 @@ function SecurePair:err()
     self:destroy()
     self:emit('error', err)
   else
-    local err = self.ssl.err
+    local err = self.ssl:getError()
     self.ssl:clearError()
     self.cleartext:emit('error', err)
   end
