@@ -246,7 +246,7 @@ function CryptoStream:_push()
       if chunkBytes > 0 then
         data  = data .. tmpData
       end
-    until chunkBytes < 0 or #data > MAX_BUFFER_LENGTH
+    until chunkBytes <= 0 or #data > MAX_BUFFER_LENGTH
 
     assert(#data >= 0)
 
