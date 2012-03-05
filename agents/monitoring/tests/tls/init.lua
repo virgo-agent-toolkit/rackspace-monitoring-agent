@@ -167,6 +167,7 @@ exports['test_tls_server'] = function(test, asserts)
     cert = certPem
   }
   server = tls.createServer(options, function(cleartext, encrypted)
+    p(cleartext:getCipher())
     cleartext.socket:close()
     test.done()
   end)
