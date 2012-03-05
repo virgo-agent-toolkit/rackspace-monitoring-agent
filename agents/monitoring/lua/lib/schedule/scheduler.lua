@@ -98,7 +98,7 @@ end
 
 -- dumps all checks to the state file.  totally clobbers the existing file, so watch out yo.
 function StateScanner:dumpChecks(checks, callback)
-  local fd, fp, now = nil, 0, os.time()
+  local fd, fp, tmpFile = nil, 0, self._stateFile..'.tmp'
   local writeLineHelper = function(data)
     return function(callback)
       fs.write(fd, fp, data..'\n', function(err, count)
@@ -120,7 +120,7 @@ function StateScanner:dumpChecks(checks, callback)
   end
   -- write the initial state file.
   async.waterfall({
-    utils.bind(fs.open, self._stateFile, 'w', '0644'),
+    utils.bind(fs.open, tmpFile, 'w', '0644'),
     function(_fd, callback)
       fd = _fd
       callback()
@@ -134,7 +134,8 @@ function StateScanner:dumpChecks(checks, callback)
     end,
     function(callback)
       fs.close(fd, callback)
-    end
+    end,
+    utils.bind(fs.rename, tmpFile, self._stateFile)
   }, function(err)
     callback(err)
   end)
