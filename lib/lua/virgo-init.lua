@@ -14,6 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+-- Bootstrap require system
+local native = require('uv_native')
+process = {
+  execPath = native.execpath(),
+  cwd = getcwd,
+  argv = argv
+}
+_G.getcwd = nil
+_G.argv = nil
+
+local Emitter = require('core').Emitter
+local env = require('env')
+local constants = require('constants')
+local uv = require('uv')
+local utils = require('utils')
+
+setmetatable(process, Emitter.meta)
+
+-- Load the tty as a pair of pipes
+-- But don't hold the event loop open for them
+process.stdin = uv.createReadableStdioStream(0)
+process.stdout = uv.createWriteableStdioStream(1)
+process.stderr = uv.createWriteableStdioStream(2)
+local stdout = process.stdout
+
 -- clear some globals
 -- This will break lua code written for other lua runtimes
 _G.io = nil
@@ -27,21 +52,51 @@ _G.debug = nil
 _G.table = nil
 _G.loadfile = nil
 _G.dofile = nil
---_oldprint = print
-_G.print = nil
+_G.print = utils.print
+_G.p = utils.prettyPrint
+_G.debug = utils.debug
+
+process.version = VERSION
+process.versions = {
+  luvit = VERSION,
+  uv = native.VERSION_MAJOR .. "." .. native.VERSION_MINOR .. "-" .. UV_VERSION,
+  luajit = LUAJIT_VERSION,
+  yajl = YAJL_VERSION,
+  http_parser = HTTP_VERSION,
+}
+_G.VERSION = nil
+_G.YAJL_VERSION = nil
+_G.LUAJIT_VERSION = nil
+_G.UV_VERSION = nil
+_G.HTTP_VERSION = nil
+
+function process.exit(exit_code)
+  process:emit('exit', exit_code)
+  exitProcess(exit_code or 0)
+end
+
+function process:addHandlerType(name)
+  local code = constants[name]
+  if code then
+    native.activateSignalHandler(code)
+    native.unref()
+  end
+end
+
+function process:missingHandlerType(name, ...)
+  if name == "error" then
+    error(...)
+  elseif name == "SIGINT" or name == "SIGTERM" then
+    process.exit()
+  end
+end
 
 -- Load libraries used in this file
 -- Load libraries used in this file
 local debugm = require('debug')
-local uv = require('uv')
-local env = require('env')
+local native = require('uv_native')
 local table = require('table')
-local utils = require('utils')
 local fs = require('fs')
-local Tty = require('tty').Tty
-local Pipe = require('pipe').Pipe
-local Emitter = require('core').Emitter
-local constants = require('constants')
 local path = require('path')
 local LVFS = VFS
 _G.VFS = nil
@@ -55,51 +110,17 @@ package.loaded.os_binding = nil
 OS_BINDING.date = OLD_OS.date
 OS_BINDING.time = OLD_OS.time
 
-process = Emitter:new()
-
-process.version = VERSION
-process.versions = {
-  luvit = VERSION,
-  uv = uv.VERSION_MAJOR .. "." .. uv.VERSION_MINOR .. "-" .. UV_VERSION,
-  luajit = LUAJIT_VERSION,
-  yajl = YAJL_VERSION,
-  http_parser = HTTP_VERSION,
-}
-_G.VERSION = nil
-_G.YAJL_VERSION = nil
-_G.LUAJIT_VERSION = nil
-_G.UV_VERSION = nil
-_G.HTTP_VERSION = nil
-
-local vfs = LVFS.open()
-
-function process.exit(exit_code)
-  process:emit('exit', exit_code)
-  exitProcess(exit_code or 0)
+-- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
+-- These shouldn't hold open the event loop
+if OS_BINDING.type() ~= "win32" then
+  native.activateSignalHandler(constants.SIGPIPE)
+  native.unref()
+  native.activateSignalHandler(constants.SIGINT)
+  native.unref()
+  native.activateSignalHandler(constants.SIGTERM)
+  native.unref()
 end
 
-function process:addHandlerType(name)
-  local code = constants[name]
-  if code then
-    uv.activateSignalHandler(code)
-    uv.unref()
-  end
-end
-
-function process:missingHandlerType(name, ...)
-  if name == "error" then
-    error(...)
-  elseif name == "SIGINT" or name == "SIGTERM" then
-    process.exit()
-  end
-end
-
-process.cwd = getcwd
-_G.getcwd = nil
-process.argv = argv
-_G.argv = nil
-
-local base_path = process.cwd()
 
 -- Hide some stuff behind a metatable
 local hidden = {}
@@ -111,59 +132,7 @@ end
 hide("_G")
 hide("exitProcess")
 
--- Ignore sigpipe and exit cleanly on SIGINT and SIGTERM
--- These shouldn't hold open the event loop
-if OS_BINDING.type() ~= "win32" then
-  uv.activateSignalHandler(constants.SIGPIPE)
-  uv.unref()
-  uv.activateSignalHandler(constants.SIGINT)
-  uv.unref()
-  uv.activateSignalHandler(constants.SIGTERM)
-  uv.unref()
-end
-
-local createWriteableStdioStream = function(fd)
-  local fd_type = uv.handleType(fd);
-  if (fd_type == "TTY") then
-    local tty = Tty:new(fd)
-    uv.unref()
-    return tty
-  elseif (fd_type == "FILE") then
-    return fs.SyncWriteStream:new(fd)
-  elseif (fd_type == "NAMED_PIPE") then
-    local pipe = Pipe:new(nil)
-    pipe:open(fd)
-    uv.unref()
-    return pipe
-  else
-    error("Unknown stream file type " .. fd)
-  end
-end
-
-local createReadableStdioStream = function(fd)
-  local fd_type = uv.handleType(fd);
-  if (fd_type == "TTY") then
-    local tty = Tty:new(fd)
-    uv.unref()
-    return tty
-  elseif (fd_type == "FILE") then
-    return fs.createReadStream(nil, {fd = fd})
-  elseif (fd_type == "NAMED_PIPE") then
-    local pipe = Pipe:new(nil)
-    pipe:open(fd)
-    uv.unref()
-    return pipe
-  else
-    error("Unknown stream file type " .. fd)
-  end
-end
-
--- Load the tty as a pair of pipes
--- But don't hold the event loop open for them
-process.stdin = createReadableStdioStream(0)
-process.stdout = createWriteableStdioStream(1)
-process.stderr = createWriteableStdioStream(2)
-local stdout = process.stdout
+local vfs = LVFS.open()
 
 -- Replace print
 function print(...)
@@ -247,19 +216,21 @@ local function partialRealpath(filepath)
   local link
   link = fs.lstatSync(filepath).is_symbolic_link and fs.readlinkSync(filepath)
   while link do
-    filepath = path.resolve(path.dirname(filepath), link)
+    filepath = path.posix:resolve(path.posix:dirname(filepath), link)
     link = fs.lstatSync(filepath).is_symbolic_link and fs.readlinkSync(filepath)
   end
-  return path.normalize(filepath)
+  return path.posix:normalize(filepath)
 end
 
 
-local function myloadfile(filepath)
+local function myloadfile(filepath, cache)
+  if cache == nil then cache = true end
+
   if not vfs:exists(filepath) then return end
   -- Not done by luvit, we don't have synlinks in the zip file.
   -- filepath = partialRealpath(filepath)
 
-  if package.loaded[filepath] then
+  if cache and package.loaded[filepath] then
     return function ()
       return package.loaded[filepath]
     end
@@ -270,7 +241,7 @@ local function myloadfile(filepath)
   -- TODO: find out why inlining assert here breaks the require test
   local fn, err = loadstring(code, '@' .. filepath)
   assert(fn, err)
-  local dirname = path.dirname(filepath)
+  local dirname = path.posix:dirname(filepath)
   local realRequire = require
   setfenv(fn, setmetatable({
     __filename = filepath,
@@ -280,53 +251,64 @@ local function myloadfile(filepath)
     end,
   }, global_meta))
   local module = fn()
-  package.loaded[filepath] = module
+
+  if cache then
+    package.loaded[filepath] = module
+  end
+
   return function() return module end
 end
 
 local function myloadlib(filepath)
+  if cache  == nil then cache = true end
+
   if not vfs:exists(filepath) then return end
 
   filepath = partialRealpath(filepath)
 
-  if package.loaded[filepath] then
+  if cache and package.loaded[filepath] then
     return function ()
       return package.loaded[filepath]
     end
   end
 
-  local name = path.basename(filepath)
+  local name = path.posix:basename(filepath)
   if name == "init.luvit" then
-    name = path.basename(path.dirname(filepath))
+    name = path.posix:basename(path.posix:dirname(filepath))
   end
   local base_name = name:sub(1, #name - 6)
   package.loaded[filepath] = base_name -- Hook to allow C modules to find their path
   local fn, error_message = package.loadlib(filepath, "luaopen_" .. base_name)
   if fn then
     local module = fn()
-    package.loaded[filepath] = module
+
+    if cache then
+      package.loaded[filepath] = module
+    end
+
     return function() return module end
   end
   error(error_message)
 end
 
 -- tries to load a module at a specified absolute path
-local function loadModule(filepath, verbose)
+local function loadModule(filepath, verbose, cache)
+  if cache == nil then cache = true end
 
   -- First, look for exact file match if the extension is given
-  local extension = path.extname(filepath)
+  local extension = path.posix:extname(filepath)
   if extension == ".lua" then
-    return myloadfile(filepath)
+    return myloadfile(filepath, cache)
   end
   if extension == ".luvit" then
-    return myloadlib(filepath)
+    return myloadlib(filepath, cache)
   end
 
   -- Then, look for module/package.lua config file
   if vfs:exists(filepath .. "/package.lua") then
     local metadata = loadModule(filepath .. "/package.lua")()
     if metadata.main then
-      return loadModule(path.join(filepath, metadata.main))
+      return loadModule(path.posix:join(filepath, metadata.main))
     end
   end
 
@@ -348,16 +330,17 @@ package.seeall = nil
 package.config = nil
 _G.module = nil
 
-function require(filepath, dirname)
+function require(filepath, dirname, cache)
   if not dirname then dirname = "" end
+  if cache == nil then cache = true end
 
   -- Absolute and relative required modules
   local first = filepath:sub(1, 1)
   local absolute_path
   if first == "/" then
-    absolute_path = path.normalize(filepath)
+    absolute_path = path.posix:normalize(filepath)
   elseif first == "." then
-    absolute_path = path.join(dirname, filepath)
+    absolute_path = path.posix:normalize(path.posix:join(dirname, filepath))
   end
   if absolute_path then
     local loader = loadModule(absolute_path)
@@ -377,7 +360,11 @@ function require(filepath, dirname)
     local loader = builtinLoader(filepath)
     if type(loader) == "function" then
       module = loader()
-      package.loaded[filepath] = module
+
+      if cache then
+        package.loaded[filepath] = module
+      end
+
       return module
     else
       errors[#errors + 1] = loader
@@ -408,8 +395,8 @@ function virgo_init.run(name)
 
   assert(xpcall(mod.run, debugm.traceback))
 
-  -- Start the event loop
-  uv.run()
+  -- Stagents/monitoring/tests/agent-protocol/handshake.hello.response.jsonart the event loop
+  native.run()
   -- trigger exit handlers and exit cleanly
   process.exit(0)
 end
