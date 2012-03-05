@@ -48,7 +48,13 @@ typedef struct tls_conn_t {
   BIO *bio_write;
   SSL *ssl;
   int is_server;
+  int error;
 } tls_conn_t;
+
+static const int X509_NAME_FLAGS = ASN1_STRFLGS_ESC_CTRL
+  | ASN1_STRFLGS_ESC_MSB
+  | XN_FLAG_SEP_MULTILINE
+  | XN_FLAG_FN_SN;
 
 #define TLS_CONNECTION_HANDLE "ltls_connection"
 
@@ -92,6 +98,7 @@ newCONN(lua_State *L)
   tc->bio_write = BIO_new(BIO_s_mem());
   tc->ssl = SSL_new(sc->ctx);
   tc->is_server = is_server;
+  tc->error = 0;
 
   if (tc->is_server) {
     if (!is_request_cert) {
@@ -169,7 +176,7 @@ tls_handle_ssl_error_x(SSL *ssl, int rv, const char *func) {
 }
 
 static int
-tls_handle_bio_error_x(BIO *bio, SSL *ssl, int rv, const char *func) {
+tls_handle_bio_error_x(tls_conn_t *tc, BIO *bio, SSL *ssl, int rv, const char *func) {
   int retry;
 
   if (rv >= 0) {
@@ -189,6 +196,7 @@ tls_handle_bio_error_x(BIO *bio, SSL *ssl, int rv, const char *func) {
   } else {
     char ssl_error_buf[512];
     assert(rv == SSL_ERROR_SSL || rv == SSL_ERROR_SYSCALL);
+    tc->error = rv;
     ERR_error_string_n(rv, ssl_error_buf, sizeof(ssl_error_buf));
     DBG("[%p] BIO: %s failed: (%d) %s\n", ssl, func, rv, ssl_error_buf);
     return rv;
@@ -198,7 +206,7 @@ tls_handle_bio_error_x(BIO *bio, SSL *ssl, int rv, const char *func) {
 }
 
 #define tls_handle_ssl_error(ssl, rv) tls_handle_ssl_error_x(ssl, rv, __FUNCTION__)
-#define tls_handle_bio_error(bio, ssl, rv) tls_handle_bio_error_x(bio, ssl, rv, __FUNCTION__)
+#define tls_handle_bio_error(tc, bio, ssl, rv) tls_handle_bio_error_x(tc, bio, ssl, rv, __FUNCTION__)
 
 static int
 tls_conn_start(lua_State *L) {
@@ -232,7 +240,7 @@ tls_conn_enc_in(lua_State *L) {
   tls_conn_t *tc = getCONN(L, 1);
   const char *data = luaL_checklstring(L, 2, &len);
   int bytes_written = BIO_write(tc->bio_read, data, len);
-  tls_handle_bio_error(tc->bio_read, tc->ssl, bytes_written);
+  tls_handle_bio_error(tc, tc->bio_read, tc->ssl, bytes_written);
   lua_pushnumber(L, bytes_written);
   return 1;
 }
@@ -242,7 +250,7 @@ tls_conn_enc_out(lua_State *L) {
   char pool[4096];
   tls_conn_t *tc = getCONN(L, 1);
   int bytes_read = BIO_read(tc->bio_write, pool, sizeof(pool));
-  tls_handle_bio_error(tc->bio_write, tc->ssl, bytes_read);
+  tls_handle_bio_error(tc, tc->bio_write, tc->ssl, bytes_read);
   lua_pushnumber(L, bytes_read);
   if (bytes_read > 0) {
     lua_pushlstring(L, pool, bytes_read);
@@ -340,6 +348,20 @@ tls_conn_shutdown(lua_State *L) {
   int rv = SSL_shutdown(tc->ssl);
   lua_pushnumber(L, rv);
   return 1;
+}
+
+static int
+tls_conn_get_error(lua_State *L) {
+  tls_conn_t *tc = getCONN(L, 1);
+  tc->error ? lua_pushnumber(L, tc->error) : lua_pushnil(L);
+  return 1;
+}
+
+static int
+tls_conn_clear_error(lua_State *L) {
+  tls_conn_t *tc = getCONN(L, 1);
+  tc->error = 0;
+  return 0;
 }
 
 static int
@@ -453,6 +475,170 @@ tls_conn_is_init_finished(lua_State *L) {
 }
 
 static int
+tls_conn_get_current_cipher(lua_State *L) {
+  SSL_CIPHER *c;
+  tls_conn_t *tc = getCONN(L, 1);
+  if (!tc->ssl) {
+    lua_pushnil(L);
+    return 1;
+  }
+  c = SSL_get_current_cipher(tc->ssl);
+  if (c == NULL) {
+    lua_pushnil(L);
+    return 1;
+  }
+  lua_newtable(L);
+  lua_pushstring(L, "name");
+  lua_pushstring(L, SSL_CIPHER_get_name(c));
+  lua_settable(L, -2);
+  lua_pushstring(L, "version");
+  lua_pushstring(L, SSL_CIPHER_get_version(c));
+  lua_settable(L, -2);
+  return 1;
+}
+
+static int
+tls_conn_get_peer_certificate(lua_State *L)
+{
+  X509 *peer_cert = NULL;
+  BIO *bio = NULL;
+  BUF_MEM* mem;
+  EVP_PKEY *pkey = NULL;
+  RSA *rsa = NULL;
+  tls_conn_t *tc = NULL;
+  int index;
+  unsigned int md_size, i;
+  unsigned char md[EVP_MAX_MD_SIZE];
+  STACK_OF(ASN1_OBJECT) *eku;
+
+  tc = getCONN(L, 1);
+  if (!tc->ssl) {
+    lua_pushnil(L);
+    return 1;
+  }
+  peer_cert = SSL_get_peer_certificate(tc->ssl);
+  if (!peer_cert) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  bio = BIO_new(BIO_s_mem());
+  lua_newtable(L);
+
+  if (X509_NAME_print_ex(bio, X509_get_subject_name(peer_cert), 0,
+                         X509_NAME_FLAGS) > 0) {
+    BIO_get_mem_ptr(bio, &mem);
+    lua_pushstring(L, "subject");
+    lua_pushlstring(L, mem->data, mem->length);
+    lua_settable(L, -2);
+  }
+  (void) BIO_reset(bio);
+
+  if (X509_NAME_print_ex(bio, X509_get_issuer_name(peer_cert), 0,
+                         X509_NAME_FLAGS) > 0) {
+    BIO_get_mem_ptr(bio, &mem);
+    lua_pushstring(L, "issuer");
+    lua_pushlstring(L, mem->data, mem->length);
+    lua_settable(L, -2);
+  }
+  (void) BIO_reset(bio);
+
+  index = X509_get_ext_by_NID(peer_cert, NID_subject_alt_name, -1);
+  if (index >= 0) {
+    X509_EXTENSION* ext;
+    int rv;
+
+    ext = X509_get_ext(peer_cert, index);
+    assert(ext != NULL);
+
+    rv = X509V3_EXT_print(bio, ext, 0, 0);
+    assert(rv == 1);
+
+    BIO_get_mem_ptr(bio, &mem);
+    lua_pushstring(L, "subjectaltname");
+    lua_pushlstring(L, mem->data, mem->length);
+    lua_settable(L, -2);
+
+    (void) BIO_reset(bio);
+  }
+
+  if( NULL != (pkey = X509_get_pubkey(peer_cert))
+      && NULL != (rsa = EVP_PKEY_get1_RSA(pkey)) ) {
+    BN_print(bio, rsa->n);
+    BIO_get_mem_ptr(bio, &mem);
+    lua_pushstring(L, "modulus");
+    lua_pushlstring(L, mem->data, mem->length);
+    lua_settable(L, -2);
+    (void) BIO_reset(bio);
+
+    BN_print(bio, rsa->e);
+    BIO_get_mem_ptr(bio, &mem);
+    lua_pushstring(L, "e");
+    lua_pushlstring(L, mem->data, mem->length);
+    lua_settable(L, -2);
+    (void) BIO_reset(bio);
+  }
+
+  ASN1_TIME_print(bio, X509_get_notBefore(peer_cert));
+  BIO_get_mem_ptr(bio, &mem);
+  lua_pushstring(L, "valid_from");
+  lua_pushlstring(L, mem->data, mem->length);
+  lua_settable(L, -2);
+  (void) BIO_reset(bio);
+
+  ASN1_TIME_print(bio, X509_get_notAfter(peer_cert));
+  BIO_get_mem_ptr(bio, &mem);
+  lua_pushstring(L, "valid_to");
+  lua_pushlstring(L, mem->data, mem->length);
+  lua_settable(L, -2);
+  BIO_free(bio);
+
+  if (X509_digest(peer_cert, EVP_sha1(), md, &md_size)) {
+    const char hex[] = "0123456789ABCDEF";
+    char fingerprint[EVP_MAX_MD_SIZE * 3];
+
+    for (i=0; i<md_size; i++) {
+      fingerprint[3*i] = hex[(md[i] & 0xf0) >> 4];
+      fingerprint[(3*i)+1] = hex[(md[i] & 0x0f)];
+      fingerprint[(3*i)+2] = ':';
+    }
+
+    if (md_size > 0) {
+      fingerprint[(3*(md_size-1))+2] = '\0';
+    }
+    else {
+      fingerprint[0] = '\0';
+    }
+
+    lua_pushstring(L, "fingerprint");
+    lua_pushstring(L, fingerprint);
+    lua_settable(L, -2);
+  }
+
+
+  eku = (STACK_OF(ASN1_OBJECT) *)X509_get_ext_d2i(peer_cert, NID_ext_key_usage,
+                                                  NULL, NULL);
+  if (eku != NULL) {
+    char buf[256];
+    lua_pushstring(L, "ext_key_usage");
+    lua_newtable(L);
+    for (i = 0; i < sk_ASN1_OBJECT_num(eku); i++) {
+      memset(buf, 0, sizeof(buf));
+      OBJ_obj2txt(buf, sizeof(buf) - 1, sk_ASN1_OBJECT_value(eku, i), 1);
+      lua_pushnumber(L, i + 1);
+      lua_pushstring(L, buf);
+      lua_settable(L, -2);
+    }
+    sk_ASN1_OBJECT_pop_free(eku, ASN1_OBJECT_free);
+    lua_settable(L, -2);
+  }
+
+  BIO_free(bio);
+  X509_free(peer_cert);
+  return 1;
+}
+
+static int
 tls_conn_gc(lua_State *L) {
   return tls_conn_close(L);
 }
@@ -461,14 +647,16 @@ static const luaL_reg tls_conn_lib[] = {
   {"encIn", tls_conn_enc_in},
   {"encOut", tls_conn_enc_out},
   {"encPending", tls_conn_enc_pending},
+  {"getError", tls_conn_get_error},
+  {"clearError", tls_conn_clear_error},
   {"clearOut", tls_conn_clear_out},
   {"clearIn", tls_conn_clear_in},
   {"clearPending", tls_conn_clear_pending},
-/*
   {"getPeerCertificate", tls_conn_get_peer_certificate},
+  {"getCurrentCipher", tls_conn_get_current_cipher},
+/*
   {"getSession", tls_conn_get_session},
   {"setSession", tls_conn_set_session},
-  {"getCurrentCipher", tls_conn_get_current_cipher},
 */
   {"isInitFinished", tls_conn_is_init_finished},
   {"shutdown", tls_conn_shutdown},

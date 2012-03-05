@@ -187,6 +187,17 @@ function CryptoStream:destroySoon()
   end
 end
 
+function CryptoStream:getPeerCertificate()
+  if self.pair.ssl then
+    local c = self.pair.ssl:getPeerCertificate()
+    p(c)
+    if c then
+      return c
+    end
+  end
+  return nil
+end
+
 function CryptoStream:destroy()
   dbg('destroy')
   if self.pair._doneFlag == true then
@@ -226,6 +237,11 @@ function CryptoStream:_push()
     repeat
       chunkBytes, tmpData = self:_pusher()
 
+      if self.pair.ssl and self.pair.ssl:getError() then
+        self.pair:err()
+        return
+      end
+
       self.pair:maybeInitFinished()
 
       if chunkBytes > 0 then
@@ -259,6 +275,11 @@ function CryptoStream:_pull()
     local callback = table.remove(self._pendingCallbacks, 1)
 
     local rv = self:_puller(tmp)
+
+    if self.pair.ssl and self.pair.ssl:getError() then
+      self.pair:err()
+      return
+    end
 
     self.pair:maybeInitFinished()
 
@@ -460,7 +481,7 @@ end
 function SecurePair:err()
   dbg('SecurePair:err')
   if self._secureEstablished == false then
-    local err = self.ssl.err
+    local err = self.ssl:getError()
     if not err then
       err = Error:new('socket hang up')
       err.code = 'ECONNRESET'
@@ -469,7 +490,7 @@ function SecurePair:err()
     self:emit('error', err)
   else
     local err = self.ssl.err
-    self.ssl.err = nil
+    self.ssl:clearError()
     self.cleartext:emit('error', err)
   end
 end
