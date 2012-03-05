@@ -14,20 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local BaseCheck = require('monitoring/lib/check/base').BaseCheck
-local CheckResult = require('monitoring/lib/check/base').CheckResult
+local StateScanner = require('./scheduler').StateScanner
+local Scheduler = require('./scheduler').Scheduler
 
-exports = {}
-
-exports['test_base_check'] = function(test, asserts)
-  local check = BaseCheck:new({id='foo', state='OK'})
-  asserts.ok(check._lastResults == nil)
-  check:run(function(results)
-    asserts.ok(results ~= nil)
-    asserts.ok(check._lastResults ~= nil)
-    asserts.ok(check._lastResults._nextRun)
-    test.done()
-  end)
-end
-
+local exports = {}
+exports.StateScanner = StateScanner
+exports.Scheduler = Scheduler
 return exports

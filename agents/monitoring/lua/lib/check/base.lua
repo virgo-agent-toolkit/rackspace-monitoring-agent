@@ -21,8 +21,12 @@ local Emitter = require('core').Emitter
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 
-function BaseCheck:initialize()
+function BaseCheck:initialize(params)
   self._lastResults = nil
+  self.state = params.state
+  self.id = params.id
+  self.period = params.period
+  self.path = params.path
 end
 
 function BaseCheck:run(callback)
@@ -32,10 +36,19 @@ function BaseCheck:run(callback)
   callback(checkResult)
 end
 
+function BaseCheck:getNextRun()
+  if self._lastResults then
+    return self._lastResults._nextRun
+  else
+    return os.time() 
+  end
+end
+
 function CheckResult:initialize(options)
   self._nextRun = os.time() + 30; -- default to 30 seconds now.
 end
 
+-- todo: serialize/deserialize methods.
 
 local exports = {}
 exports.BaseCheck = BaseCheck

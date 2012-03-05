@@ -23,7 +23,7 @@ local exports = {}
 
 local failed = 0
 
-local TESTS_TO_RUN = {'./tls', './agent-protocol', './crypto', './misc', './check', './fs'}
+local TESTS_TO_RUN = {'./tls', './agent-protocol', './crypto', './misc', './check', './fs', './schedule'}
 
 local function runit(modname, callback)
   local status, mod = pcall(require, modname)
