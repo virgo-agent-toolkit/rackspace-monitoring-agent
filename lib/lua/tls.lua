@@ -11,7 +11,7 @@ local net = require('net')
 local fmt = require('string').format
 
 local END_OF_FILE = 42
-local DEBUG = true
+local DEBUG = false
 
 local function dbg(format, ...)
   if DEBUG == true then
