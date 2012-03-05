@@ -170,8 +170,10 @@ exports['test_tls_server'] = function(test, asserts)
     cleartext.socket:close()
     test.done()
   end)
-  server:listen(12341)
-  client = tls.connect(PORT, HOST, {}, function(err, client)
+  server:listen(12341, function()
+    tls.connect(PORT, HOST, {}, function(err, client)
+      client:close()
+    end)
   end)
 end
 
