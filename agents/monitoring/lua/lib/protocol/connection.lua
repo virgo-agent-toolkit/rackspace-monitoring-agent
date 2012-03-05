@@ -14,8 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local os = require('os')
+local timer = require('timer')
 local AgentProtocol = require('./protocol')
 local Emitter = require('core').Emitter
+local Error = require('core').Error
 local JSON = require('json')
 local fmt = require('string').format
 local logging = require('logging')
@@ -23,7 +26,8 @@ local msg = require ('./messages')
 local table = require('table')
 local utils = require('utils')
 
-local COMPLETION_TIMEOUT = 30
+-- Response timeouts in ms
+local HANDSHAKE_TIMEOUT = 30000
 
 local STATES = {}
 STATES.INITIAL = 1
@@ -32,9 +36,11 @@ STATES.RUNNING = 3
 
 local AgentProtocolConnection = Emitter:extend()
 
-function AgentProtocolConnection:initialize(myid, token, conn)
+function AgentProtocolConnection:initialize(log, myid, token, conn)
   assert(conn ~= nil)
   assert(myid ~= nil)
+
+  self._log = log
   self._myid = myid
   self._token = token
   self._conn = conn
@@ -43,6 +49,7 @@ function AgentProtocolConnection:initialize(myid, token, conn)
   self._msgid = 0
   self._endpoints = { }
   self._target = 'endpoint'
+  self._timeoutIds = {}
   self._completions = {}
   self:setState(STATES.INITIAL)
 end
@@ -53,7 +60,7 @@ function AgentProtocolConnection:_onData(data)
   if newline then
     -- TODO: use a better buffer
     self._buf = self._buf .. data:sub(1, newline - 1)
-    logging.log(logging.DEBUG, fmt("RECV:%s", self._buf))
+    self._log(logging.DEBUG, fmt('RECV: %s', self._buf))
     obj = JSON.parse(self._buf)
     self:_processMessage(obj)
     self._buf = data:sub(newline + 1)
@@ -81,36 +88,76 @@ function AgentProtocolConnection:_send(msg, timeout, callback)
   msg.target = 'endpoint'
   msg.source = self._myid
   local data = JSON.stringify(msg) .. '\n'
-  logging.log(logging.DEBUG, fmt("SEND:%s", JSON.stringify(msg)))
-  if timeout and callback then
-    self._completions[msg.target .. ':' .. msg.id] = callback
+  local key = msg.target .. ':' .. msg.id
+  self._log(logging.DEBUG, fmt('SEND: %s', data))
+
+  if timeout then
+    self:_setCommandTimeoutHandler(key, timeout, callback)
   end
+
+  if callback then
+    self._completions[key] = function(err, msg)
+      if self._timeoutIds[key] ~= nil then
+        timer.clearTimer(self._timeoutIds[key])
+      end
+
+      callback(err, msg)
+    end
+  end
+
   self._conn:write(data)
   self._msgid = self._msgid + 1
 end
 
+--[[
+Set a timeout handler for a function.
+
+key - Command key.
+timeout - Timeout in ms.
+callback - Callback which is called with (err) if timeout has been reached.
+]]--
+function AgentProtocolConnection:_setCommandTimeoutHandler(key, timeout, callback)
+  local timeoutId
+
+  timeoutId = timer.setTimeout(timeout, function()
+    callback(Error:new(fmt('Command timeout, haven\'t received response in %d ms', timeout)))
+  end)
+  self._timeoutIds[key] = timeoutId
+end
+
 function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
   local m = msg.HandshakeHello:new(token, agentId)
-  self:_send(m:serialize(self._msgid), COMPLETION_TIMEOUT, callback)
+  self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, callback)
+end
+
+function AgentProtocolConnection:sendPing(timestamp, callback)
+  local m = msg.Ping:new(timestamp)
+  self:_send(m:serialize(self._msgid), nil, callback)
 end
 
 function AgentProtocolConnection:setState(state)
   self._state = state
 end
 
-function AgentProtocolConnection:startHandshake()
+function AgentProtocolConnection:startHandshake(callback)
   self:setState(STATES.HANDSHAKE)
   self:sendHandshakeHello(self._myid, self._token, function(err, msg)
     if err then
-      logging.log(logging.ERR, fmt("handshake failed (message=%s)", err.message))
+      self._log(logging.ERR, fmt('handshake failed (message=%s)', err.message))
+      callback(err, msg)
       return
     end
-    if msg.result ~= nil and msg.result.code ~= 200 then
-      logging.log(logging.ERR, fmt("handshake failed [message=%s,code=%s]", msg.result.message, msg.result.code))
+
+    if msg.result.code and msg.result.code ~= 200 then
+      err = Error:new(fmt('handshake failed [message=%s,code=%s]', msg.result.message, msg.result.code))
+      self._log(logging.ERR, err.message)
+      callback(err, msg)
       return
     end
+
     self:setState(STATES.RUNNING)
-    logging.log(logging.INFO, "handshake successful")
+    self._log(logging.INFO, fmt('handshake successful (ping_interval=%dms)', msg.result.ping_interval))
+    callback(nil, msg)
   end)
 end
 

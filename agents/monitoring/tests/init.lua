@@ -23,6 +23,8 @@ local exports = {}
 
 local failed = 0
 
+local TESTS_TO_RUN = {'./tls', './agent-protocol', './crypto', './misc', './check', './fs', './schedule'}
+
 local function runit(modname, callback)
   local status, mod = pcall(require, modname)
   if status ~= true then
@@ -42,7 +44,7 @@ local function runit(modname, callback)
 end
 
 exports.run = function()
-  async.forEachSeries({"./tls", "./agent-protocol", "./crypto", "./misc", "./check", "./schedule"}, runit, function(err)
+  async.forEachSeries(TESTS_TO_RUN, runit, function(err)
     if err then
       p(err)
       debugm.traceback(err)
