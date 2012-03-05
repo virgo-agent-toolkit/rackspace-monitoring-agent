@@ -188,7 +188,6 @@ function Scheduler:initialize(stateFile, checks, callback)
     end)
     callback()
   end)
-    
 end
 
 -- start scanning.
