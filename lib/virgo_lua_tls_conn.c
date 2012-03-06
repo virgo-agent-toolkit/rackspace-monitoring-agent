@@ -189,11 +189,13 @@ tls_handle_bio_error_x(tls_conn_t *tc, BIO *bio, SSL *ssl, int rv, const char *f
     DBG("[%p] BIO: %s want write. should retry %d\n", ssl, func, retry);
     return 0;
 
-  } else if (BIO_should_read(bio)) {
+  }
+  else if (BIO_should_read(bio)) {
     DBG("[%p] BIO: %s want read. should retry %d\n", ssl, func, retry);
     return 0;
 
-  } else {
+  }
+  else {
     char ssl_error_buf[512];
     assert(rv == SSL_ERROR_SSL || rv == SSL_ERROR_SYSCALL);
     tc->error = rv;
@@ -281,7 +283,8 @@ tls_conn_clear_out(lua_State *L) {
     if (tc->is_server) {
       rv = SSL_accept(tc->ssl);
       tls_handle_ssl_error(tc->ssl, rv);
-    } else {
+    }
+    else {
       rv = SSL_connect(tc->ssl);
       tls_handle_ssl_error(tc->ssl, rv);
     }
@@ -316,7 +319,8 @@ tls_conn_clear_in(lua_State *L) {
     if (tc->is_server) {
       rv = SSL_accept(tc->ssl);
       tls_handle_ssl_error(tc->ssl, rv);
-    } else {
+    }
+    else {
       rv = SSL_connect(tc->ssl);
       tls_handle_ssl_error(tc->ssl, rv);
     }

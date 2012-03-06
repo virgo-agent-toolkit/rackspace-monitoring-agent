@@ -226,7 +226,8 @@ SSL_CTX_use_certificate_chain(SSL_CTX *ctx, BIO *in) {
     if (ERR_GET_LIB(err) == ERR_LIB_PEM &&
         ERR_GET_REASON(err) == PEM_R_NO_START_LINE) {
       ERR_clear_error();
-    } else  {
+    }
+    else  {
       /* some real error */
       ret = 0;
     }
