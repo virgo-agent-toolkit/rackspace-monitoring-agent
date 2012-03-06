@@ -21,8 +21,10 @@ local string = require('string')
 local table = require('table')
 local utils = require('utils')
 local Object = require('core').Object
+local logging = require('logging')
 
 local uuid = require('./util/uuid')
+local fsUtil = require('./util/fs')
 
 local fmt = string.format
 
@@ -66,6 +68,28 @@ function States:load(callback)
   end
 
   async.waterfall({
+    function(callback)
+      -- Check if state directory exists and if it doesn't, create it
+      fs.exists(self._parentDir, function(err, exists)
+        if err then
+          callback(err)
+          return
+        end
+
+        if not exists then
+          logging.log(logging.DEBUG, fmt('State directory (%s) doesn\'t exist, creating it...', self._parentDir))
+          fsUtil.mkdirp(self._parentDir, 0600, function(err)
+            if err then
+              logging.log(logging.ERROR, 'Failed to create state directory: ' .. err.message)
+            end
+            callback(err)
+          end)
+          return
+        end
+
+        callback()
+      end)
+    end,
     function(callback)
       fs.readdir(self._parentDir, callback)
     end,
