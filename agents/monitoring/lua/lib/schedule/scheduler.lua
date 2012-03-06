@@ -36,6 +36,9 @@ function CheckMeta:initialize(lines)
   self.path = lines[2]
   self.state = lines[3]
   self.nextRun = tonumber(lines[4])
+  self:on('error', function(err)
+    p(err)
+  end)
 end
 
 -- StateScanner is in charge of reading/writing the state file.
