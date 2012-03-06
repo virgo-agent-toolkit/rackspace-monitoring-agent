@@ -32,7 +32,7 @@ local checks = {
 }
 
 exports['test_scheduler_scan'] = function(test, asserts)
-  local s = StateScanner:new('/data/virgo/agents/monitoring/tests/data/sample.state')
+  local s = StateScanner:new(process.cwd()..'/agents/monitoring/tests/data/sample.state')
   local count = 0
   s:on('check_scheduled', function(details)
     count = count + 1

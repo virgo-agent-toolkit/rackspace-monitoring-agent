@@ -52,6 +52,9 @@ function StateScanner:scanStates()
   local version
   local headerDone = false
   local headerLine = 1
+  stream:on('error', function(err)
+     p(error)
+  end)
   stream:on('data', function(chunk, len)
     local pos = 1
     while true do
@@ -172,7 +175,7 @@ function Scheduler:initialize(stateFile, checks, callback)
       check:run(function(checkResult)
         self._runCount = self._runCount + 1
         self._scanner:dumpChecks(checks, function()
-          --self._log(logging.INFO, 'checks dumped at '..os.time())
+          self._log(logging.INFO, 'checks dumped at '..os.time())
         end)
         -- determine when the next scan should be.
         local oldNextScan = self._nextScan
