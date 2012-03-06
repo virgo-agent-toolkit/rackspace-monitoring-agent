@@ -36,9 +36,6 @@ function CheckMeta:initialize(lines)
   self.path = lines[2]
   self.state = lines[3]
   self.nextRun = tonumber(lines[4])
-  self:on('error', function(err)
-    p(err)
-  end)
 end
 
 -- StateScanner is in charge of reading/writing the state file.
@@ -175,7 +172,7 @@ function Scheduler:initialize(stateFile, checks, callback)
       check:run(function(checkResult)
         self._runCount = self._runCount + 1
         self._scanner:dumpChecks(checks, function()
-          self._log(logging.INFO, 'checks dumped at '..os.time())
+          --self._log(logging.INFO, 'checks dumped at '..os.time())
         end)
         -- determine when the next scan should be.
         local oldNextScan = self._nextScan
@@ -190,14 +187,7 @@ function Scheduler:initialize(stateFile, checks, callback)
         end
       end)
     end)
-    self._scanner:on('error', function(err)
-      self._log(logging.ERROR, err)
-    end)
     callback()
-  end)
-  
-  self:on('error', function(err)
-    self._log(logging.ERROR, err)
   end)
 end
 
