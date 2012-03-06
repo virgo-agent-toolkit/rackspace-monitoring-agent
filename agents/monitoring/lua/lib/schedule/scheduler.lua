@@ -187,7 +187,14 @@ function Scheduler:initialize(stateFile, checks, callback)
         end
       end)
     end)
+    self._scanner:on('error', function(err)
+      self._log(logging.ERROR, err)
+    end)
     callback()
+  end)
+  
+  self:on('error', function(err)
+    self._log(logging.ERROR, err)
   end)
 end
 
