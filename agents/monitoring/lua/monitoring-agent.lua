@@ -27,6 +27,8 @@ local States = require('./lib/states')
 
 local MonitoringAgent = Object:extend()
 
+DEFAULT_STATE_DIRECTORY = '/var/run/agent/states'
+
 function MonitoringAgent:sample()
   local HTTP = require("http")
   local Utils = require("utils")
@@ -130,12 +132,14 @@ function MonitoringAgent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
-function MonitoringAgent:initialize()
-  self._states = States:new('/var/run/agent/states')
+function MonitoringAgent:initialize(stateDirectory)
+  if not stateDirectory then stateDirectory = DEFAULT_STATE_DIRECTORY end
+  self._states = States:new(stateDirectory)
 end
 
-function MonitoringAgent.run()
-  local agent = MonitoringAgent:new()
+function MonitoringAgent.run(options)
+  if not options then options = {} end
+  local agent = MonitoringAgent:new(options.stateDirectory)
   async.waterfall({
     function(callback)
       agent:loadStates(callback)

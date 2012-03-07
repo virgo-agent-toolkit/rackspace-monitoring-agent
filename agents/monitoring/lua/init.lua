@@ -21,7 +21,8 @@ local Entry = {}
 local argv = require("options")
   :usage("Usage: ")
   :describe("e", "entry module")
-  :argv("he:")
+  :describe("s", "state directory path")
+  :argv("he:c:s:")
 
 function Entry.run()
   local mod = argv.args.e or 'monitoring-agent'
@@ -30,7 +31,7 @@ function Entry.run()
   logging.log(logging.INFO, 'Running Module ' .. mod)
 
   local err, msg = pcall(function()
-    require(mod).run()
+    require(mod).run({stateDirectory = argv.args.s})
   end)
 
   if err == false then
