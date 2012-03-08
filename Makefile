@@ -1,10 +1,18 @@
 BUILDTYPE ?= Debug
 
-all: out/Makefile
+zip_files = monitoring.zip monitoring-test.zip
+sig_files = $(zip_files:%.zip=%.zip.sig)
+
+%.zip:
+	-ln -fs out/Debug/$@ $@
+
+%.zip.sig: $(zip_files)
+	openssl dgst -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/Debug/$@
+	-ln -fs out/Debug/$@ $@
+
+all: out/Makefile $(zip_files) $(sig_files)
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/Debug/monitoring-agent monitoring-agent
-	-ln -fs out/Debug/monitoring.zip monitoring.zip
-	-ln -fs out/Debug/monitoring-test.zip monitoring-test.zip
 
 out/Release/monitoring-agent: all
 
@@ -21,7 +29,7 @@ VERSION=$(shell git describe)
 TARNAME=virgo-$(VERSION)
 
 test: tests
-tests: all
+tests: all sign
 	./monitoring-agent --zip monitoring-test.zip -e tests -c contrib/sample.state
 
 dist:
