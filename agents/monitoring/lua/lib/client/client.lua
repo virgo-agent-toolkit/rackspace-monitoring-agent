@@ -75,7 +75,7 @@ function AgentClient:connect()
     end)
   end)
   self._sock:on('error', function(err)
-    self._log(logging.ERROR, fmt('Failed to connect: %s', tostring(err)))
+    self._log(logging.ERROR, fmt('Failed to connect: %s', err.message))
 
     if connectTimeout then
       timer.clearTimer(connectTimeout);
