@@ -67,7 +67,7 @@
         ],
         [ 'OS=="mac"',
           {
-            'libraries': [ '-framework Carbon -framework IOKit' ]
+            'libraries': [ '-framework CoreServices -framework Carbon -framework IOKit' ]
           }
         ],
         [ 'OS=="linux"',

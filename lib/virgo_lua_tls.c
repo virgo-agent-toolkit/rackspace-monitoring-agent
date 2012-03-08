@@ -16,13 +16,9 @@
  */
 
 #include "virgo__lua.h"
+#include "virgo__tls.h"
+#include "virgo__tls_root_certs.h"
 
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
-#include <openssl/x509v3.h>
 
 /**
  * This module is hevily inspired by Node.js' node_crypto.cc:
@@ -38,16 +34,30 @@
 #error Invalid OpenSSL version number. Busted Include Paths?
 #endif
 
-
 #define TLS_SECURE_CONTEXT_HANDLE "ltls_secure_context"
+#define getSC(L) virgo__lua_tls_sc_get(L, 1)
 
-/* SecureContext used to configure multiple connections */
-typedef struct tls_sc_t {
-  SSL_CTX *ctx;
-  /* TODO: figure out CA-store plan */
-  X509_STORE *ca_store;
-} tls_sc_t;
+static BIO* __lua_load_bio(lua_State *L, int index) {
+  const char *data;
+  size_t len;
+  int r = -1;
 
+  data = luaL_checklstring(L, index, &len);
+
+  BIO *bio = BIO_new(BIO_s_mem());
+  if (!bio) {
+    return NULL;
+  }
+
+  r = BIO_write(bio, data, len);
+
+  if (r <= 0) {
+    BIO_free(bio);
+    return NULL;
+  }
+
+  return bio;
+}
 
 /**
  * TLS Secure Context Methods
@@ -66,10 +76,10 @@ newSC(lua_State *L)
   return ctx;
 }
 
-static tls_sc_t*
-getSC(lua_State *L)
+tls_sc_t*
+virgo__lua_tls_sc_get(lua_State *L, int index)
 {
-  tls_sc_t *ctx = luaL_checkudata(L, 1, TLS_SECURE_CONTEXT_HANDLE);
+  tls_sc_t *ctx = luaL_checkudata(L, index, TLS_SECURE_CONTEXT_HANDLE);
   return ctx;
 }
 
@@ -216,7 +226,8 @@ SSL_CTX_use_certificate_chain(SSL_CTX *ctx, BIO *in) {
     if (ERR_GET_LIB(err) == ERR_LIB_PEM &&
         ERR_GET_REASON(err) == PEM_R_NO_START_LINE) {
       ERR_clear_error();
-    } else  {
+    }
+    else  {
       /* some real error */
       ret = 0;
     }
@@ -392,10 +403,79 @@ tls_sc_close(lua_State *L) {
 }
 
 static int
+tls_sc_add_root_certs(lua_State *L) {
+  int i;
+  tls_sc_t *ctx = getSC(L);
+
+  if (ctx->ca_store) {
+    X509_STORE_free(ctx->ca_store);
+  }
+
+  ctx->ca_store = X509_STORE_new();
+
+  for (i = 0; root_certs[i]; i++) {
+    BIO *bp = BIO_new(BIO_s_mem());
+
+    if (!BIO_write(bp, root_certs[i], strlen(root_certs[i]))) {
+      BIO_free(bp);
+      lua_pushboolean(L, 0);
+      return 1;
+    }
+
+    X509 *x509 = PEM_read_bio_X509(bp, NULL, NULL, NULL);
+
+    if (x509 == NULL) {
+      BIO_free(bp);
+      lua_pushboolean(L, 0);
+      return 1;
+    }
+
+    X509_STORE_add_cert(ctx->ca_store, x509);
+
+    BIO_free(bp);
+    X509_free(x509);
+  }
+
+  SSL_CTX_set_cert_store(ctx->ctx, ctx->ca_store);
+  lua_pushboolean(L, 1);
+  return 1;
+}
+
+static int
+tls_sc_add_crl(lua_State *L) {
+
+  tls_sc_t *ctx = getSC(L);
+  X509_CRL *x509;
+  BIO *bio;
+
+  bio = __lua_load_bio(L, -1);
+  if (!bio) {
+    lua_pushboolean(L, 0);
+    return 1;
+  }
+
+  x509 = PEM_read_bio_X509_CRL(bio, NULL, NULL, NULL);
+  if (x509 == NULL) {
+    BIO_free(bio);
+    lua_pushboolean(L, 0);
+    return 1;
+  }
+
+  X509_STORE_add_crl(ctx->ca_store, x509);
+  X509_STORE_set_flags(ctx->ca_store,
+                       X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
+
+  BIO_free(bio);
+  X509_CRL_free(x509);
+
+  lua_pushboolean(L, 1);
+  return 1;
+}
+
+static int
 tls_sc_gc(lua_State *L) {
   return tls_sc_close(L);
 }
-
 
 
 static const luaL_reg tls_sc_lib[] = {
@@ -404,10 +484,8 @@ static const luaL_reg tls_sc_lib[] = {
   {"setCiphers", tls_sc_set_ciphers},
   {"setOptions", tls_sc_set_options},
   {"addTrustedCert", tls_sc_add_trusted_cert},
-/*
   {"addRootCerts", tls_sc_add_root_certs},
-  {"addCRL", tls_sc_add_root_certs},
-*/
+  {"addCRL", tls_sc_add_crl},
   {"close", tls_sc_close},
   {"__gc", tls_sc_gc},
   {NULL, NULL}
