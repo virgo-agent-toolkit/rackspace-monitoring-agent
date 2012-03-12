@@ -4,7 +4,7 @@
       'target_name': 'luacrypto',
       'type': '<(library)',
       'dependencies': [
-        'openssl.gyp:openssl',
+        'luvit/deps/openssl/openssl.gyp:openssl',
         'luvit/deps/luajit.gyp:*',
         'luvit/luvit.gyp:libluvit',
       ],

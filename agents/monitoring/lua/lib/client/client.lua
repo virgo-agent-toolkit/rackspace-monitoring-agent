@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 local os = require('os')
-local net = require('net')
+local tls = require('tls')
 local timer = require('timer')
 local Error = require('core').Error
 local Object = require('core').Object
@@ -55,7 +55,7 @@ function AgentClient:connect()
   end)
 
   self._log(logging.INFO, 'Connecting...')
-  self._sock = net.createConnection(self._port, self._host, function()
+  self._sock = tls.connect(self._port, self._host, {}, function(err, cleartext)
     -- stop the timeout timer since there is a connect
     timer.clearTimer(connectTimeout);
     connectTimeout = nil
@@ -64,7 +64,7 @@ function AgentClient:connect()
     self._log(logging.INFO, 'Connected')
 
     -- setup protocol and begin handshake
-    self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, self._sock)
+    self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, cleartext)
     self.protocol:startHandshake(function(err, msg)
       if err then
         self:emit('error', err)
