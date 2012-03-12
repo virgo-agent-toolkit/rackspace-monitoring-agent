@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 local os = require('os')
-local net = require('net')
+local tls = require('tls')
 local timer = require('timer')
 local Error = require('core').Error
 local Object = require('core').Object
@@ -55,7 +55,7 @@ function AgentClient:connect()
   end)
 
   self._log(logging.INFO, 'Connecting...')
-  self._sock = net.createConnection(self._port, self._host, function()
+  self._sock = tls.connect(self._port, self._host, {}, function()
     -- stop the timeout timer since there is a connect
     timer.clearTimer(connectTimeout);
     connectTimeout = nil
