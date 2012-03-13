@@ -20,22 +20,36 @@ def build():
   print cmd
   sys.exit(subprocess.call(cmd, shell=True))
 
-def test(stdout=None):
+def test_cmd(additional=""):
   if sys.platform != "win32":
     agent = os.path.join(root, 'out', 'Debug', 'monitoring-agent')
-    agent_tests = os.path.join(root, 'out', 'Debug', 'monitoring-test.zip')
   else:
     agent = os.path.join(root, 'Debug', 'monitoring-agent.exe')
+
+  state_config = os.path.join(root, 'contrib')
+  monitoring_config = os.path.join(root, 'contrib', 'monitoring.cfg')
+  return '%s -c %s -s %s %s' % (agent, monitoring_config, state_config, additional)
+
+def test(stdout=None):
+  if sys.platform != "win32":
+    agent_tests = os.path.join(root, 'out', 'Debug', 'monitoring-test.zip')
+  else:
     agent_tests = os.path.join(root, 'Debug', 'monitoring-test.zip')
 
-  agent_config = os.path.join(root, 'contrib', 'sample.state')
-  cmd = '%s --zip %s -e tests -c %s' % (agent, agent_tests, agent_config)
+  cmd = test_cmd("--zip %s -e tests" % agent_tests)
   print cmd
   rc = 0
   if stdout == None:
     rc = subprocess.call(cmd, shell=True)
   else:
     rc = subprocess.call(cmd, shell=True, stdout=stdout)
+  sys.exit(rc)
+
+def test_endpoint(stdout=None):
+  cmd = test_cmd()
+  print cmd
+  rc = 0
+  rc = subprocess.call(cmd, shell=True, stdout=stdout)
   sys.exit(rc)
 
 def test_std():
@@ -51,6 +65,7 @@ def test_file():
 commands = {
   'build': build,
   'test': test_std,
+  'test_endpoint': test_endpoint,
   'test_pipe': test_pipe,
   'test_file': test_file,
 }
