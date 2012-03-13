@@ -10,9 +10,10 @@ sig_files = $(zip_files:%.zip=%.zip.sig)
 	openssl dgst -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/Debug/$@
 	-ln -fs out/Debug/$@ $@
 
-all: out/Makefile $(zip_files) $(sig_files)
+all: out/Makefile
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/Debug/monitoring-agent monitoring-agent
+	$(MAKE) $(sig_files)
 
 out/Release/monitoring-agent: all
 
@@ -29,7 +30,7 @@ VERSION=$(shell git describe)
 TARNAME=virgo-$(VERSION)
 
 test: tests
-tests: all sign
+tests: all
 	python tools/build.py test
 
 test_endpoint:
