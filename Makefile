@@ -30,7 +30,10 @@ TARNAME=virgo-$(VERSION)
 
 test: tests
 tests: all sign
-	./monitoring-agent --zip monitoring-test.zip -e tests -c contrib/sample.state
+	python tools/build.py test
+
+test_endpoint:
+	python tools/build.py test_endpoint
 
 dist:
 	git archive --format=tar --prefix=$(TARNAME)/ HEAD | tar xf -
@@ -41,4 +44,4 @@ dist:
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
-.PHONY: clean dist distclean all test tests
+.PHONY: clean dist distclean all test tests endpoint-tests
