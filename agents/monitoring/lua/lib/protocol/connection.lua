@@ -76,10 +76,10 @@ function AgentProtocolConnection:_processMessage(msg)
   else
     -- response
     local key = msg.source .. ':' .. msg.id
-    local cpl = self._completions[key]
-    if cpl then
+    local callback = self._completions[key]
+    if callback then
       self._completions[key] = nil
-      cpl(null, msg)
+      callback(null, msg)
     end
   end
 end
@@ -125,6 +125,8 @@ function AgentProtocolConnection:_setCommandTimeoutHandler(key, timeout, callbac
   self._timeoutIds[key] = timeoutId
 end
 
+--[[ Protocol Functions ]]--
+
 function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
   local m = msg.HandshakeHello:new(token, agentId)
   self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, callback)
@@ -134,6 +136,13 @@ function AgentProtocolConnection:sendPing(timestamp, callback)
   local m = msg.Ping:new(timestamp)
   self:_send(m:serialize(self._msgid), nil, callback)
 end
+
+function AgentProtocolConnection:sendSystemInfo(request, callback)
+  local m = msg.SystemInfoResponse:new(request)
+  self:_send(m:serialize(self._msgid), nil, callback)
+end
+
+--[[ Public Functions ]] --
 
 function AgentProtocolConnection:setState(state)
   self._state = state
@@ -160,5 +169,20 @@ function AgentProtocolConnection:startHandshake(callback)
     callback(nil, msg)
   end)
 end
+
+--[[
+Process an async message
+
+msg - The Incoming Message
+]]--
+function AgentProtocolConnection:execute(msg)
+  if msg.method == 'system.info' then
+    self:sendSystemInfo(msg)
+  else
+    local err = Error:new(fmt('invalid method [method=%s]', msg.method))
+    self:emit('error', err)
+  end
+end
+
 
 return AgentProtocolConnection
