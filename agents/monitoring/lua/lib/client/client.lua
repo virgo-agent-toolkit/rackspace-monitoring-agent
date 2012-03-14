@@ -82,8 +82,9 @@ function AgentClient:connect()
           if err then
             -- TODO error
           else
-            p('Got manifest')
-            p(manifest)
+            for i, _ in ipairs(manifest.checks) do
+              p(manifest.checks[i])
+            end
           end
         end)
       end
