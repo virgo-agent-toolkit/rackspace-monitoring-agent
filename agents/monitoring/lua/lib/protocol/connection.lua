@@ -142,6 +142,11 @@ function AgentProtocolConnection:sendSystemInfo(request, callback)
   self:_send(m:serialize(self._msgid), nil, callback)
 end
 
+function AgentProtocolConnection:sendManifest(callback)
+  local m = msg.Manifest:new()
+  self:_send(m:serialize(self._msgid), nil, callback)
+end
+
 --[[ Public Functions ]] --
 
 function AgentProtocolConnection:setState(state)
@@ -167,6 +172,16 @@ function AgentProtocolConnection:startHandshake(callback)
     self:setState(STATES.RUNNING)
     self._log(logging.INFO, fmt('handshake successful (ping_interval=%dms)', msg.result.ping_interval))
     callback(nil, msg)
+  end)
+end
+
+function AgentProtocolConnection:getManifest(callback)
+  self:sendManifest(function(err, response)
+    if err then
+      callback(err)
+    else
+      callback(nil, response.result)
+    end
   end)
 end
 

@@ -76,6 +76,16 @@ function AgentClient:connect()
       else
         self._ping_interval = msg.result.ping_interval
         self:startPingInterval()
+
+        -- retrieve manifest
+        self.protocol:getManifest(function(err, manifest)
+          if err then
+            -- TODO error
+          else
+            p('Got manifest')
+            p(manifest)
+          end
+        end)
       end
     end)
   end)

@@ -99,6 +99,18 @@ function Ping:serialize(msgId)
   return Request.serialize(self, msgId)
 end
 
+--[[ Manifest.get ]]--
+local Manifest = Request:extend()
+function Manifest:initialize()
+  Request.initialize(self)
+  self.method = 'manifest.get'
+end
+
+function Manifest:serialize(msgId)
+  self.params.blah = 1
+  return Request.serialize(self, msgId)
+end
+
 --[[ System Info ]]--
 local SystemInfoResponse = Response:extend()
 function SystemInfoResponse:initialize(replyToMsg, result)
@@ -138,5 +150,6 @@ exports.Request = Request
 exports.Response = Response
 exports.HandshakeHello = HandshakeHello
 exports.Ping = Ping
+exports.Manifest = Manifest
 exports.SystemInfoResponse = SystemInfoResponse
 return exports
