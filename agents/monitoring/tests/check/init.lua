@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 local Check = require('monitoring/lib/check')
-local BaseCheck =Check.BaseCheck
+local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
 
 local CpuCheck = Check.CpuCheck
