@@ -17,8 +17,10 @@ limitations under the License.
 local Check = require('monitoring/lib/check')
 local BaseCheck =Check.BaseCheck
 local CheckResult = Check.CheckResult
-local MemoryCheck = Check.MemoryCheck
+
 local CpuCheck = Check.CpuCheck
+local DiskCheck = Check.DiskCheck
+local MemoryCheck = Check.MemoryCheck
 local NetworkCheck = Check.NetworkCheck
 
 exports = {}
@@ -59,6 +61,18 @@ end
 
 exports['test_network_check'] = function(test, asserts)
   local check = NetworkCheck:new({id='foo', state='OK'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(results)
+    asserts.ok(results ~= nil)
+    asserts.ok(#results._metrics > 0)
+    asserts.ok(check._lastResults ~= nil)
+    asserts.ok(check._lastResults._nextRun)
+    test.done()
+  end)
+end
+
+exports['test_disks_check'] = function(test, asserts)
+  local check = DiskCheck:new({id='foo', state='OK'})
   asserts.ok(check._lastResults == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)

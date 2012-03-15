@@ -16,8 +16,10 @@ limitations under the License.
 
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
-local MemoryCheck = require('./memory').MemoryCheck
+
 local CpuCheck = require('./cpu').CpuCheck
+local DiskCheck = require('./disk').DiskCheck
+local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
 
 local exports = {}
@@ -25,6 +27,7 @@ exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
 
 exports.CpuCheck = CpuCheck
+exports.DiskCheck = DiskCheck
 exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
 return exports
