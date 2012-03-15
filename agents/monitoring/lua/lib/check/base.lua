@@ -44,9 +44,22 @@ function BaseCheck:getNextRun()
   end
 end
 
-function CheckResult:initialize(options)
+function CheckResult:initialize(options, metrics)
+  self._options = options or {}
+  self._metrics = metrics or {}
   self._nextRun = os.time() + 30; -- default to 30 seconds now.
 end
+
+function CheckResult:setMetric(key, value)
+  self._metrics[key] = value
+end
+
+function CheckResult:setMetricWithObject(metrics)
+  for key, value in pairs(metrics) do
+    self._metrics[key] = value
+  end
+end
+
 
 -- todo: serialize/deserialize methods.
 
