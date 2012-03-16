@@ -27,7 +27,7 @@ end
 function split(s, transform)
   local fields = {}
   s:gsub('([^,]+)', function(c) fields[#fields + 1] = transform and transform(c) or c end)
-  return fields  
+  return fields
 end
 
 -- CheckMeta holds the pieces of a check that will appear in a state file.
@@ -94,7 +94,7 @@ function StateScanner:consumeHeaderLine(version, line, lineNumber)
       self._header.lineCount = tonumber(line)
       return false
     else
-      return self._header.lineCount - lineNumber < 0  
+      return self._header.lineCount - lineNumber < 0
     end
   end
 end
@@ -164,8 +164,8 @@ function Scheduler:initialize(stateFile, checks, callback)
   end
   self._runCount = 0
   self._scanner = StateScanner:new(stateFile)
-  
-  -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a 
+
+  -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a
   -- check needs to be run.
   self._scanner:dumpChecks(checks, function()
     self._scanner:on('check_scheduled', function(checkMeta)

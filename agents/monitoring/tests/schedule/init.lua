@@ -45,13 +45,13 @@ end
 
 exports['test_scheduler_initialize'] = function(test, asserts)
   local testFile = '/tmp/test_scheduler_initialize.state'
-  
+
   async.waterfall({
     -- write a scan file. the scheduler does this.
     function(callback)
       Scheduler:new(testFile, checks, callback)
     end,
-    
+
     -- load with scanner.
     function(callback)
       local count = 0
@@ -73,7 +73,7 @@ end
 exports['test_scheduler_scans'] = function(test, asserts)
   local testFile = '/tmp/test_scheduler_scans.state'
   local scheduler
-  
+
   async.waterfall({
     function(callback)
       scheduler = Scheduler:new(testFile, checks, callback)

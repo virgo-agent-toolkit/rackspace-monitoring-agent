@@ -20,9 +20,12 @@ local timer = require('timer')
 local Error = require('core').Error
 local Object = require('core').Object
 local Emitter = require('core').Emitter
+local check = require('../check')
 local logging = require('logging')
 local loggingUtil = require ('../util/logging')
 local AgentProtocolConnection = require('../protocol/connection')
+local table = require('table')
+local Scheduler = require('../schedule').Scheduler
 
 local fmt = require('string').format
 
@@ -41,11 +44,26 @@ function AgentClient:initialize(datacenter, id, token, host, port, timeout)
   self._port = port
   self._timeout = timeout or 5000
 
+  self._scheduler = nil
   self._ping_interval = nil
   self._sent_ping_count = 0
   self._got_pong_count = 0
 
   self._log = loggingUtil.makeLogger(fmt('%s:%s', host, port))
+end
+
+function AgentClient:_createChecks(manifest)
+  local checks = {}
+
+  for i, _ in ipairs(manifest.checks) do
+    local check = check.create(manifest.checks[i])
+    if check then
+      self._log(logging.INFO, 'Created Check: ' .. check:toString())
+      table.insert(checks, check)
+    end
+  end
+
+  return checks
 end
 
 function AgentClient:connect()
@@ -82,9 +100,10 @@ function AgentClient:connect()
           if err then
             -- TODO error
           else
-            for i, _ in ipairs(manifest.checks) do
-              p(manifest.checks[i])
-            end
+            local checks = self:_createChecks(manifest)
+            self._scheduler = Scheduler:new('statefile.txt', checks, function() 
+              self._scheduler:start()
+            end)
           end
         end)
       end

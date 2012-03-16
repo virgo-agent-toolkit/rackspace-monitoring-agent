@@ -17,12 +17,15 @@ limitations under the License.
 local os = require('os')
 local Object = require('core').Object
 local Emitter = require('core').Emitter
+local fmt = require('string').format
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 
-function BaseCheck:initialize(params)
+
+function BaseCheck:initialize(params, checkType)
   self._lastResults = nil
+  self._type = checkType or 'UNDEFINED'
   self.state = params.state
   self.id = params.id
   self.period = params.period
@@ -42,6 +45,10 @@ function BaseCheck:getNextRun()
   else
     return os.time() 
   end
+end
+
+function BaseCheck:toString()
+  return fmt('%s (id=%s, period=%s)', self._type, self.id, self.period)
 end
 
 function CheckResult:initialize(options, metrics)

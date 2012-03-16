@@ -4,7 +4,7 @@ local CheckResult = require('./base').CheckResult
 local NetworkCheck = BaseCheck:extend()
 
 function NetworkCheck:initialize(params)
-  BaseCheck.initialize(self, params)
+  BaseCheck.initialize(self, params, 'Network')
 end
 
 function NetworkCheck:run(callback)

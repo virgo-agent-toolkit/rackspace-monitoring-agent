@@ -22,6 +22,30 @@ local DiskCheck = require('./disk').DiskCheck
 local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
 
+local fmt = require('string').format
+
+function create(checkData)
+  local _type = checkData.type
+  local obj = {
+    id = checkData.id,
+    period = checkData.period,
+    state = 'OK',
+    path = fmt('/tmp/%s.chk', checkData.id)
+  }
+  if _type == 'agent.memory' then
+    return MemoryCheck:new(obj)
+  elseif _type == 'agent.disk' then
+    return DiskCheck:new(obj)
+  elseif _type == 'agent.memory' then
+    return MemoryCheck:new(obj)
+  elseif _type == 'agent.network' then
+    return NetworkCheck:new(obj)
+  elseif _type == 'agent.cpu' then
+    return CpuCheck:new(obj)
+  end
+  return nil
+end
+
 local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
@@ -30,4 +54,6 @@ exports.CpuCheck = CpuCheck
 exports.DiskCheck = DiskCheck
 exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
+
+exports.create = create
 return exports

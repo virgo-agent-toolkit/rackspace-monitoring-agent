@@ -4,7 +4,7 @@ local CheckResult = require('./base').CheckResult
 local CpuCheck = BaseCheck:extend()
 
 function CpuCheck:initialize(params)
-  BaseCheck.initialize(self, params)
+  BaseCheck.initialize(self, params, 'Cpu')
 end
 
 function CpuCheck:run(callback)
