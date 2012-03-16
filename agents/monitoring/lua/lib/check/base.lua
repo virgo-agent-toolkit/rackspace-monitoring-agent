@@ -43,7 +43,7 @@ function BaseCheck:getNextRun()
   if self._lastResults then
     return self._lastResults._nextRun
   else
-    return os.time() 
+    return os.time()
   end
 end
 

@@ -101,8 +101,11 @@ function AgentClient:connect()
             -- TODO error
           else
             local checks = self:_createChecks(manifest)
-            self._scheduler = Scheduler:new('statefile.txt', checks, function() 
+            self._scheduler = Scheduler:new('scheduler.state', checks, function()
               self._scheduler:start()
+            end)
+            self._scheduler:on('check', function(check, checkResults)
+              p(checkResults)
             end)
           end
         end)

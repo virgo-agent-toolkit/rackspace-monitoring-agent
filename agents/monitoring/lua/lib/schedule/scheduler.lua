@@ -12,6 +12,8 @@ local math = require('math')
 local logging = require('logging')
 local loggingUtil = require('../util/logging')
 
+local fmt = require('string').format
+
 local StateScanner = Emitter:extend()
 local Scheduler = Emitter:extend()
 local CheckMeta = Emitter:extend()
@@ -160,6 +162,9 @@ function Scheduler:initialize(stateFile, checks, callback)
   -- there are many checks.
   for index, check in ipairs(checks) do
     checkMap[check.id] = check
+    if self._nextScan == 0 then
+      self._nextScan = check:getNextRun()
+    end
     self._nextScan = math.min(self._nextScan, check:getNextRun())
   end
   self._runCount = 0
@@ -177,10 +182,14 @@ function Scheduler:initialize(stateFile, checks, callback)
         self._scanner:dumpChecks(checks, function()
           self._log(logging.INFO, 'checks dumped at '..os.time())
         end)
+        -- emit check
+        self:emit('check', check, checkResult)
         -- determine when the next scan should be.
         local oldNextScan = self._nextScan
         -- todo: check for invalid next run.
         self._nextScan = math.min(self._nextScan, checkResult._nextRun)
+        local timeout = self._nextScan - os.time()
+        self._log(logging.DEBUG, fmt('Check %s scheduled at %s', check.id, self._nextScan))
         -- maybe clear timer, set next.
         if oldNextScan ~= self._nextScan then
           if self._scanTimer then
