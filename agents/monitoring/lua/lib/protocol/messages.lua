@@ -144,6 +144,21 @@ function SystemInfoResponse:serialize(msgId)
   return Response.serialize(self, msgId)
 end
 
+--[[ Metrics Request ]]--
+local MetricsRequest = Request:extend()
+function MetricsRequest:initialize(check, checkResults)
+  Request.initialize(self)
+  self.check = check
+  self.checkResults = checkResults
+  self.method = 'metrics.set'
+end
+
+function MetricsRequest:serialize(msgId)
+  self.params.metrics = self.checkResults._metrics
+  self.params.check_id = self.check.id
+  return Request.serialize(self, msgId)
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.Request = Request
@@ -151,5 +166,6 @@ exports.Response = Response
 exports.HandshakeHello = HandshakeHello
 exports.Ping = Ping
 exports.Manifest = Manifest
+exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse
 return exports

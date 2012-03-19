@@ -147,6 +147,11 @@ function AgentProtocolConnection:sendManifest(callback)
   self:_send(m:serialize(self._msgid), nil, callback)
 end
 
+function AgentProtocolConnection:sendMetrics(check, checkResults, callback)
+  local m = msg.MetricsRequest:new(check, checkResults)
+  self:_send(m:serialize(self._msgid), nil, callback)
+end
+
 --[[ Public Functions ]] --
 
 function AgentProtocolConnection:setState(state)

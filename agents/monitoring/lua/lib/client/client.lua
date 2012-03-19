@@ -106,6 +106,7 @@ function AgentClient:connect()
             end)
             self._scheduler:on('check', function(check, checkResults)
               p(checkResults)
+              self.protocol:sendMetrics(check, checkResults)
             end)
           end
         end)
