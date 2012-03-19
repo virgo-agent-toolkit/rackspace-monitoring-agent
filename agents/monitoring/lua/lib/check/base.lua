@@ -54,7 +54,7 @@ end
 function CheckResult:initialize(options, metrics)
   self._options = options or {}
   self._metrics = metrics or {}
-  self._nextRun = os.time() + 30; -- default to 30 seconds now.
+  self._nextRun = os.time() + 30 -- default to 30 seconds now.
 end
 
 function CheckResult:setMetric(key, value)
