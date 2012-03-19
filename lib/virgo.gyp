@@ -10,7 +10,7 @@
         }],
       ],
       'dependencies': [
-        '../deps/zlib.gyp:zlib',
+        '../deps/luvit/deps/zlib/zlib.gyp:zlib',
         '../deps/minizip.gyp:libminizip',
         '../deps/luvit/luvit.gyp:libluvit',
         '../deps/luacrypto.gyp:luacrypto',
