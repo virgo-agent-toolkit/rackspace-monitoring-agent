@@ -20,7 +20,7 @@ function CpuCheck:run(callback)
   end
 
   -- Return Result
-  local checkResult = CheckResult:new({}, metrics)
+  local checkResult = CheckResult:new(self, {}, metrics)
   self._lastResults = checkResult
   callback(checkResult)
 end

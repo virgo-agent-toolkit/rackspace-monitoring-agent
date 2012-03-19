@@ -13,7 +13,7 @@ function MemoryCheck:run(callback)
   local meminfo = s:mem()
 
   -- Return Result
-  local checkResult = CheckResult:new({}, meminfo)
+  local checkResult = CheckResult:new(self, {}, meminfo)
   self._lastResults = checkResult
   callback(checkResult)
 end

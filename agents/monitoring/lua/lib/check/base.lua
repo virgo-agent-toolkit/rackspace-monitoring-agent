@@ -48,13 +48,13 @@ function BaseCheck:getNextRun()
 end
 
 function BaseCheck:toString()
-  return fmt('%s (id=%s, period=%s)', self._type, self.id, self.period)
+  return fmt('%s (id=%s, period=%ss)', self._type, self.id, self.period)
 end
 
-function CheckResult:initialize(options, metrics)
+function CheckResult:initialize(check, options, metrics)
   self._options = options or {}
   self._metrics = metrics or {}
-  self._nextRun = os.time() + 30 -- default to 30 seconds now.
+  self._nextRun = os.time() + check.period
 end
 
 function CheckResult:setMetric(key, value)
