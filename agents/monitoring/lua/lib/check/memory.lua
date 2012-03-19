@@ -10,7 +10,8 @@ end
 function MemoryCheck:run(callback)
   -- Perform Check
   local s = sigar:new()
-  local meminfo = s:mem()
+  local meminfo = {}
+  meminfo[1]  = s:mem()
 
   -- Return Result
   local checkResult = CheckResult:new(self, {}, meminfo)
