@@ -19,6 +19,8 @@ local Object = require('core').Object
 local Emitter = require('core').Emitter
 local fmt = require('string').format
 
+local toString = require('../util/misc').toString
+
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 
@@ -59,6 +61,10 @@ end
 
 function CheckResult:setMetric(key, value)
   self._metrics[key] = value
+end
+
+function CheckResult:toString()
+  return toString(self)
 end
 
 function CheckResult:setMetricWithObject(metrics)
