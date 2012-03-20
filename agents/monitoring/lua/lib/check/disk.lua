@@ -17,11 +17,10 @@ function DiskCheck:run(callback)
   for i=1, #disks do
     name = disks[i]:name()
     usage = disks[i]:usage()
-    local Utils = require('utils')
 
     if usage then
       for key, value in pairs(usage) do
-        checkResult:addMetric(key, nil, i, value)
+        checkResult:addMetric(key, nil, name, value)
       end
     end
   end
