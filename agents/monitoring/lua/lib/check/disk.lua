@@ -4,7 +4,7 @@ local CheckResult = require('./base').CheckResult
 local DiskCheck = BaseCheck:extend()
 
 function DiskCheck:initialize(params)
-  BaseCheck.initialize(self, params, 'Disk')
+  BaseCheck.initialize(self, params, 'agent.disk')
 end
 
 function DiskCheck:run(callback)

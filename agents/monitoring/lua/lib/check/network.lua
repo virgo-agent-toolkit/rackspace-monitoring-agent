@@ -4,7 +4,7 @@ local CheckResult = require('./base').CheckResult
 local NetworkCheck = BaseCheck:extend()
 
 function NetworkCheck:initialize(params)
-  BaseCheck.initialize(self, params, 'Network')
+  BaseCheck.initialize(self, params, 'agent.network')
 end
 
 function NetworkCheck:run(callback)
@@ -13,7 +13,7 @@ function NetworkCheck:run(callback)
   local netifs = s:netifs()
   local metrics = {}
 
-  for i=1, #netifs do 
+  for i=1, #netifs do
     metrics[i] = {}
     metrics[i].info = netifs[i]:info()
     metrics[i].usage = netifs[i]:usage()
