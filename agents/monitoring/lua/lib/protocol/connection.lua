@@ -55,15 +55,22 @@ function AgentProtocolConnection:initialize(log, myid, token, conn)
 end
 
 function AgentProtocolConnection:_onData(data)
-  local client = self._conn, obj
+  local client = self._conn, obj, status
   newline = data:find("\n")
   if newline then
     -- TODO: use a better buffer
     self._buf = self._buf .. data:sub(1, newline - 1)
     self._log(logging.DEBUG, fmt('RECV: %s', self._buf))
-    obj = JSON.parse(self._buf)
-    self:_processMessage(obj)
+    status, obj = pcall(JSON.parse, self._buf)
+
     self._buf = data:sub(newline + 1)
+
+    if not status then
+      self._log(logging.ERROR, fmt('Failed to parse incoming line: line=%s,err=%s', self._buf, obj))
+      return
+    end
+
+    self:_processMessage(obj)
   else
     self._buf = self._buf .. data
   end
