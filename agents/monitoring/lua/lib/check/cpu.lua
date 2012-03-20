@@ -1,5 +1,6 @@
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
+local Metric = require('./base').Metric
 
 local CpuCheck = BaseCheck:extend()
 
@@ -12,15 +13,15 @@ function CpuCheck:run(callback)
   local s = sigar:new()
   local cpuinfo = s:cpus()
   local metrics = {}
+  local checkResult = CheckResult:new(self, {})
 
   for i=1, #cpuinfo do
-    metrics[i] = {}
-    metrics[i].info = cpuinfo[i]:info()
-    metrics[i].data = cpuinfo[i]:data()
+    for key, value in pairs(cpuinfo[i]:data()) do
+      checkResult.addMetric(key, nil, i, value)
+    end
   end
 
   -- Return Result
-  local checkResult = CheckResult:new(self, {}, metrics)
   self._lastResults = checkResult
   callback(checkResult)
 end
