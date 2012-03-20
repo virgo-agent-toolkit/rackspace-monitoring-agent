@@ -98,7 +98,8 @@ function AgentClient:connect()
         -- retrieve manifest
         self.protocol:getManifest(function(err, manifest)
           if err then
-            -- TODO error
+            -- TODO Abort connection?
+            self._log(logging.ERROR, 'Error while retrieving manifest: ' .. err.message)
           else
             local checks = self:_createChecks(manifest)
             self._scheduler = Scheduler:new('scheduler.state', checks, function()
