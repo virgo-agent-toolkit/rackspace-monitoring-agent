@@ -23,6 +23,7 @@ local toString = require('../util/misc').toString
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
+local Metric = Object:extend()
 
 
 function BaseCheck:initialize(params, checkType)
@@ -74,9 +75,19 @@ function CheckResult:setMetricWithObject(metrics)
 end
 
 
+function Metric:initialize(name, type, dimension, value)
+  -- TODO: Figure auto-figure out the type based on the value
+  self.name = name
+  self.type = type
+  self.dimension = dimension or 'default'
+  self.value = value
+end
+
+
 -- todo: serialize/deserialize methods.
 
 local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
+exports.Metric = Metric
 return exports
