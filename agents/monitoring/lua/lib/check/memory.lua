@@ -10,11 +10,14 @@ end
 function MemoryCheck:run(callback)
   -- Perform Check
   local s = sigar:new()
-  local meminfo = {}
-  meminfo[1]  = s:mem()
+  local meminfo = s:mem()
+  local checkResult = CheckResult:new(self, {})
+
+  for key, value in pairs(meminfo) do
+    checkResult:addMetric(key, nil, nil, value)
+  end
 
   -- Return Result
-  local checkResult = CheckResult:new(self, {}, meminfo)
   self._lastResults = checkResult
   callback(checkResult)
 end

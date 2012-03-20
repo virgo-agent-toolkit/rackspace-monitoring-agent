@@ -17,7 +17,7 @@ function CpuCheck:run(callback)
 
   for i=1, #cpuinfo do
     for key, value in pairs(cpuinfo[i]:data()) do
-      checkResult.addMetric(key, nil, i, value)
+      checkResult:addMetric(key, nil, i, value)
     end
   end
 

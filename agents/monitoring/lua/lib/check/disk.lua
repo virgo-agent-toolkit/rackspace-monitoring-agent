@@ -11,16 +11,22 @@ function DiskCheck:run(callback)
   -- Perform Check
   local s = sigar:new()
   local disks = s:disks()
-  local metrics = {}
+  local checkResult = CheckResult:new(self, {})
+  local name, usage
 
   for i=1, #disks do
-    metrics[i] = {}
-    metrics[i].name = disks[i]:name()
-    metrics[i].usage = disks[i]:usage()
+    name = disks[i]:name()
+    usage = disks[i]:usage()
+    local Utils = require('utils')
+
+    if usage then
+      for key, value in pairs(usage) do
+        checkResult:addMetric(key, nil, i, value)
+      end
+    end
   end
 
   -- Return Result
-  local checkResult = CheckResult:new(self, {}, metrics)
   self._lastResults = checkResult
   callback(checkResult)
 end
