@@ -38,7 +38,7 @@ end
 
 function BaseCheck:run(callback)
   -- do something, produce a CheckResult
-  local checkResult = CheckResult:new({})
+  local checkResult = CheckResult:new(self, {})
   self._lastResults = checkResult
   callback(checkResult)
 end
