@@ -83,10 +83,15 @@ function AgentClient:connect()
 
     -- setup protocol
     self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, cleartext)
+
+    self.protocol:on('error', function(err)
+      self:emit(err)
+    end)
     -- response to messages
     self.protocol:on('message', function(msg)
       self.protocol:execute(msg)
     end)
+
     -- begin handshake
     self.protocol:startHandshake(function(err, msg)
       if err then
