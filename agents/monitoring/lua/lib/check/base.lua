@@ -18,11 +18,13 @@ local os = require('os')
 local Object = require('core').Object
 local Emitter = require('core').Emitter
 local fmt = require('string').format
+local table = require('table')
 
 local toString = require('../util/misc').toString
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
+local Metric = Object:extend()
 
 
 function BaseCheck:initialize(params, checkType)
@@ -36,7 +38,7 @@ end
 
 function BaseCheck:run(callback)
   -- do something, produce a CheckResult
-  local checkResult = CheckResult:new({})
+  local checkResult = CheckResult:new(self, {})
   self._lastResults = checkResult
   callback(checkResult)
 end
@@ -53,23 +55,50 @@ function BaseCheck:toString()
   return fmt('%s (id=%s, period=%ss)', self._type, self.id, self.period)
 end
 
-function CheckResult:initialize(check, options, metrics)
+function CheckResult:initialize(check, options)
   self._options = options or {}
-  self._metrics = metrics or {}
+  self._metrics = {}
   self._nextRun = os.time() + check.period
 end
 
-function CheckResult:setMetric(key, value)
-  self._metrics[key] = value
+function CheckResult:addMetric(name, type, dimension, value)
+  local metric = Metric:new(name, type, dimension, value)
+  table.insert(self._metrics, metric)
 end
 
 function CheckResult:toString()
+  -- TODO
   return toString(self)
 end
 
-function CheckResult:setMetricWithObject(metrics)
-  for key, value in pairs(metrics) do
-    self._metrics[key] = value
+function Metric:initialize(name, type, dimension, value)
+  self.name = name
+  self.dimension = dimension or 'default'
+  self.value = value
+
+  if not type then
+    self.type = getMetricType(value)
+  else
+    self.type = type
+  end
+end
+
+
+-- Determinate the metric type based on the value type.
+function getMetricType(value)
+  local valueType = type(value)
+
+  if valueType == 'string' then
+    return 'str'
+  elseif valueType == 'boolean' then
+    return 'bool'
+  elseif valueType == 'number' then
+    if not tostring(value):find('.') then
+      -- TODO 34 / 64 bit
+      return 'int64'
+    else
+      return 'double'
+    end
   end
 end
 
@@ -79,4 +108,5 @@ end
 local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
+exports.Metric = Metric
 return exports

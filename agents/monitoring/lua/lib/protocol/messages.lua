@@ -156,6 +156,7 @@ end
 function MetricsRequest:serialize(msgId)
   self.params.metrics = self.checkResults._metrics
   self.params.check_id = self.check.id
+  self.params.check_type = self.check._type
   return Request.serialize(self, msgId)
 end
 

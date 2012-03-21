@@ -55,15 +55,22 @@ function AgentProtocolConnection:initialize(log, myid, token, conn)
 end
 
 function AgentProtocolConnection:_onData(data)
-  local client = self._conn, obj
+  local client = self._conn, obj, status
   newline = data:find("\n")
   if newline then
     -- TODO: use a better buffer
     self._buf = self._buf .. data:sub(1, newline - 1)
     self._log(logging.DEBUG, fmt('RECV: %s', self._buf))
-    obj = JSON.parse(self._buf)
-    self:_processMessage(obj)
+    status, obj = pcall(JSON.parse, self._buf)
+
     self._buf = data:sub(newline + 1)
+
+    if not status then
+      self._log(logging.ERROR, fmt('Failed to parse incoming line: line=%s,err=%s', self._buf, obj))
+      return
+    end
+
+    self:_processMessage(obj)
   else
     self._buf = self._buf .. data
   end
@@ -84,11 +91,14 @@ function AgentProtocolConnection:_processMessage(msg)
   end
 end
 
-function AgentProtocolConnection:_send(msg, timeout, callback)
+function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
   msg.target = 'endpoint'
   msg.source = self._myid
   local data = JSON.stringify(msg) .. '\n'
   local key = msg.target .. ':' .. msg.id
+
+  if not expectedCode then expectedCode = 200 end
+
   self._log(logging.DEBUG, fmt('SEND: %s', data))
 
   if timeout then
@@ -97,8 +107,16 @@ function AgentProtocolConnection:_send(msg, timeout, callback)
 
   if callback then
     self._completions[key] = function(err, msg)
+      local result = nil
+
+      if msg and msg.result then result = msg.result end
+
       if self._timeoutIds[key] ~= nil then
         timer.clearTimer(self._timeoutIds[key])
+      end
+
+      if not err and msg and result and result.code and result.code ~= expectedCode then
+        err = Error:new(fmt('Unexpected status code returned: code=%s, message=%s', result.code, result.message))
       end
 
       callback(err, msg)
@@ -129,27 +147,27 @@ end
 
 function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
   local m = msg.HandshakeHello:new(token, agentId)
-  self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, callback)
+  self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, 200, callback)
 end
 
 function AgentProtocolConnection:sendPing(timestamp, callback)
   local m = msg.Ping:new(timestamp)
-  self:_send(m:serialize(self._msgid), nil, callback)
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
 function AgentProtocolConnection:sendSystemInfo(request, callback)
   local m = msg.SystemInfoResponse:new(request)
-  self:_send(m:serialize(self._msgid), nil, callback)
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
 function AgentProtocolConnection:sendManifest(callback)
   local m = msg.Manifest:new()
-  self:_send(m:serialize(self._msgid), nil, callback)
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
 function AgentProtocolConnection:sendMetrics(check, checkResults, callback)
   local m = msg.MetricsRequest:new(check, checkResults)
-  self:_send(m:serialize(self._msgid), nil, callback)
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
 --[[ Public Functions ]] --
