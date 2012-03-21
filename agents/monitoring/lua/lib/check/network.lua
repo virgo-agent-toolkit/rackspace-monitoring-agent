@@ -7,6 +7,8 @@ function NetworkCheck:initialize(params)
   BaseCheck.initialize(self, params, 'agent.network')
 end
 
+-- Dimension is is the interface name, e.g. eth0, lo0, etc
+
 function NetworkCheck:run(callback)
   -- Perform Check
   local s = sigar:new()
@@ -16,9 +18,11 @@ function NetworkCheck:run(callback)
 
   for i=1, #netifs do
     local usage = netifs[i]:usage()
+    local info = netifs[i]:info()
+
     if usage then
       for key, value in pairs(usage) do
-        checkResult:addMetric(key, nil, i, value)
+        checkResult:addMetric(key, nil, info.name, value)
       end
     end
   end

@@ -7,6 +7,8 @@ function DiskCheck:initialize(params)
   BaseCheck.initialize(self, params, 'agent.disk')
 end
 
+-- Dimension key is the mount point name, e.g. /, /home
+
 function DiskCheck:run(callback)
   -- Perform Check
   local s = sigar:new()
