@@ -22,7 +22,7 @@ function NetworkCheck:run(callback)
 
     if usage then
       for key, value in pairs(usage) do
-        checkResult:addMetric(key, nil, info.name, value)
+        checkResult:addMetric(key, info.name, value)
       end
     end
   end

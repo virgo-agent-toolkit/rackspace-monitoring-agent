@@ -61,8 +61,8 @@ function CheckResult:initialize(check, options)
   self._nextRun = os.time() + check.period
 end
 
-function CheckResult:addMetric(name, type, dimension, value)
-  local metric = Metric:new(name, type, dimension, value)
+function CheckResult:addMetric(name, dimension, value)
+  local metric = Metric:new(name, dimension, value)
   table.insert(self._metrics, metric)
 end
 
@@ -71,16 +71,12 @@ function CheckResult:toString()
   return toString(self)
 end
 
-function Metric:initialize(name, type, dimension, value)
+function Metric:initialize(name, dimension, value)
   self.name = name
   self.dimension = dimension or 'default'
   self.value = value
 
-  if not type then
-    self.type = getMetricType(value)
-  else
-    self.type = type
-  end
+  self.type = getMetricType(value)
 end
 
 

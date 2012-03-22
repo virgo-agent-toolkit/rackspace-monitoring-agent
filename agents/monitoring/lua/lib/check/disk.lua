@@ -22,7 +22,7 @@ function DiskCheck:run(callback)
 
     if usage then
       for key, value in pairs(usage) do
-        checkResult:addMetric(key, nil, name, value)
+        checkResult:addMetric(key, name, value)
       end
     end
   end
