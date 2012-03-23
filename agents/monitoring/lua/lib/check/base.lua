@@ -16,6 +16,7 @@ limitations under the License.
 
 local os = require('os')
 local Object = require('core').Object
+local JSON = require('json')
 local Emitter = require('core').Emitter
 local fmt = require('string').format
 local table = require('table')
@@ -64,7 +65,7 @@ end
 function CheckResult:addMetric(name, dimension, value)
   local metric = Metric:new(name, dimension, value)
 
-  if not self._metrics[dimension] then
+  if not self._metrics[metric.dimension] then
     self._metrics[metric.dimension] = {}
   end
 
@@ -83,7 +84,7 @@ function CheckResult:serialize()
 
   for dimension, metrics in pairs(self._metrics) do
     if dimension == 'none' then
-      dimension = nil
+      dimension = JSON.null
     end
 
     table.insert(result, {dimension, metrics})
