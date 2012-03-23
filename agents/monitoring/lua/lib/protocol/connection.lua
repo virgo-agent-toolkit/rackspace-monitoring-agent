@@ -45,7 +45,7 @@ function AgentProtocolConnection:initialize(log, myid, token, conn)
   self._token = token
   self._conn = conn
   self._conn:on('data', utils.bind(AgentProtocolConnection._onData, self))
-  self._buf = ""
+  self._buf = ''
   self._msgid = 0
   self._endpoints = { }
   self._target = 'endpoint'
@@ -54,25 +54,34 @@ function AgentProtocolConnection:initialize(log, myid, token, conn)
   self:setState(STATES.INITIAL)
 end
 
-function AgentProtocolConnection:_onData(data)
-  local client = self._conn, obj, status
-  newline = data:find("\n")
-  if newline then
-    -- TODO: use a better buffer
-    self._buf = self._buf .. data:sub(1, newline - 1)
-    self._log(logging.DEBUG, fmt('RECV: %s', self._buf))
-    status, obj = pcall(JSON.parse, self._buf)
+function AgentProtocolConnection:_popLine()
+  local line = false
+  local index = self._buf:find('\n')
 
-    self._buf = data:sub(newline + 1)
+  if index then
+    line = self._buf:sub(0, index - 1)
+    self._buf = self._buf:sub(index + 1)
+  end
+
+  return line
+end
+
+function AgentProtocolConnection:_onData(data)
+  local obj, status, line
+
+  self._buf = self._buf .. data
+
+  line = self:_popLine()
+  while line do
+    status, obj = pcall(JSON.parse, line)
 
     if not status then
-      self._log(logging.ERROR, fmt('Failed to parse incoming line: line=%s,err=%s', self._buf, obj))
-      return
+      self._log(logging.ERROR, fmt('Failed to parse incoming line: line="%s",err=%s', line, obj))
+    else
+      self:_processMessage(obj)
     end
 
-    self:_processMessage(obj)
-  else
-    self._buf = self._buf .. data
+    line = self:_popLine()
   end
 end
 
