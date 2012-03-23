@@ -165,11 +165,16 @@ function AgentClient:startPingInterval()
    startInterval()
 end
 
-function AgentClient:close()
+function AgentClient:clearPingInterval()
   if self._pingTimeout then
     self._log(logging.DEBUG, 'Clearing ping interval')
     timer.clearTimer(self._pingTimeout)
+    self._pingTimeout = nil
   end
+end
+
+function AgentClient:close()
+  self:clearPingInterval()
 
   if self._sock and self._sock._handle then
     self._log(logging.DEBUG, 'Closing socket')
