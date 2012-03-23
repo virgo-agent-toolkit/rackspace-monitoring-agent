@@ -63,17 +63,38 @@ end
 
 function CheckResult:addMetric(name, dimension, value)
   local metric = Metric:new(name, dimension, value)
-  table.insert(self._metrics, metric)
+
+  if not self._metrics[dimension] then
+    self._metrics[metric.dimension] = {}
+  end
+
+  self._metrics[metric.dimension][metric.name] = value
 end
 
 function CheckResult:toString()
-  -- TODO
   return toString(self)
+end
+
+
+-- Serialize a result to the format which is understood by the endpoint.
+function CheckResult:serialize()
+  local dimension, metric
+  local result = {}
+
+  for dimension, metrics in pairs(self._metrics) do
+    if dimension == 'none' then
+      dimension = nil
+    end
+
+    table.insert(result, {dimension, metrics})
+  end
+
+  return result
 end
 
 function Metric:initialize(name, dimension, value)
   self.name = name
-  self.dimension = dimension or 'default'
+  self.dimension = dimension or 'none'
   self.value = value
 
   self.type = getMetricType(value)
