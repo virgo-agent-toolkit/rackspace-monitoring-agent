@@ -91,6 +91,10 @@ function process:missingHandlerType(name, ...)
   end
 end
 
+process:on('SIGUSR1', function()
+  collectgarbage()
+end)
+
 -- Load libraries used in this file
 -- Load libraries used in this file
 local debugm = require('debug')
@@ -118,6 +122,8 @@ if OS_BINDING.type() ~= "win32" then
   native.activateSignalHandler(constants.SIGINT)
   native.unref()
   native.activateSignalHandler(constants.SIGTERM)
+  native.unref()
+  native.activateSignalHandler(constants.SIGUSR1)
   native.unref()
 end
 

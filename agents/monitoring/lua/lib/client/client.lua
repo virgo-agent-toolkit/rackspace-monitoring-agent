@@ -20,9 +20,12 @@ local timer = require('timer')
 local Error = require('core').Error
 local Object = require('core').Object
 local Emitter = require('core').Emitter
+local check = require('../check')
 local logging = require('logging')
 local loggingUtil = require ('../util/logging')
 local AgentProtocolConnection = require('../protocol/connection')
+local table = require('table')
+local Scheduler = require('../schedule').Scheduler
 
 local fmt = require('string').format
 
@@ -41,11 +44,26 @@ function AgentClient:initialize(datacenter, id, token, host, port, timeout)
   self._port = port
   self._timeout = timeout or 5000
 
+  self._scheduler = nil
   self._ping_interval = nil
   self._sent_ping_count = 0
   self._got_pong_count = 0
 
   self._log = loggingUtil.makeLogger(fmt('%s:%s', host, port))
+end
+
+function AgentClient:_createChecks(manifest)
+  local checks = {}
+
+  for i, _ in ipairs(manifest.checks) do
+    local check = check.create(manifest.checks[i])
+    if check then
+      self._log(logging.INFO, 'Created Check: ' .. check:toString())
+      table.insert(checks, check)
+    end
+  end
+
+  return checks
 end
 
 function AgentClient:connect()
@@ -63,14 +81,42 @@ function AgentClient:connect()
     -- Log
     self._log(logging.INFO, 'Connected')
 
-    -- setup protocol and begin handshake
+    -- setup protocol
     self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, cleartext)
+
+    self.protocol:on('error', function(err)
+      self:emit(err)
+    end)
+    -- response to messages
+    self.protocol:on('message', function(msg)
+      self.protocol:execute(msg)
+    end)
+
+    -- begin handshake
     self.protocol:startHandshake(function(err, msg)
       if err then
         self:emit('error', err)
       else
         self._ping_interval = msg.result.ping_interval
         self:startPingInterval()
+
+        -- retrieve manifest
+        self.protocol:getManifest(function(err, manifest)
+          if err then
+            -- TODO Abort connection?
+            self._log(logging.ERROR, 'Error while retrieving manifest: ' .. err.message)
+          else
+            local checks = self:_createChecks(manifest)
+            self._scheduler = Scheduler:new('scheduler.state', checks, function()
+              self._scheduler:start()
+            end)
+            self._scheduler:on('check', function(check, checkResults)
+              self._log(logging.DEBUG, 'Check Results')
+              self._log(logging.DEBUG, checkResults:toString())
+              self.protocol:sendMetrics(check, checkResults)
+            end)
+          end
+        end)
       end
     end)
   end)
@@ -119,11 +165,16 @@ function AgentClient:startPingInterval()
    startInterval()
 end
 
-function AgentClient:close()
+function AgentClient:clearPingInterval()
   if self._pingTimeout then
     self._log(logging.DEBUG, 'Clearing ping interval')
     timer.clearTimer(self._pingTimeout)
+    self._pingTimeout = nil
   end
+end
+
+function AgentClient:close()
+  self:clearPingInterval()
 
   if self._sock and self._sock._handle then
     self._log(logging.DEBUG, 'Closing socket')
