@@ -71,4 +71,20 @@ exports['test_fragmented_message'] = function(test, asserts)
   end)
 end
 
+exports['test_multiple_messages_in_a_single_chunk'] = function(test, asserts)
+  local sock = Emitter:new(), conn
+  local messagesEmitted = 0
+
+    conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+    conn:on('message', function(msg)
+      messagesEmitted = messagesEmitted + 1
+
+      if messagesEmitted == 2 then
+        test.done()
+      end
+    end)
+
+    sock:emit('data', '{"v": "1", "id": 0, "target": "endpoint", "source": "X", "method": "handshake.hello", "params": { "token": "MYTOKEN", "agent_id": "MYUID" }}\n{"v": "1", "id": 0, "target": "endpoint", "source": "X", "method": "handshake.hello", "params": { "token": "MYTOKEN", "agent_id": "MYUID" }}\n')
+end
+
 return exports

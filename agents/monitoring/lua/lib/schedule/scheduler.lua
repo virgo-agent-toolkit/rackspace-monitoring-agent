@@ -12,6 +12,8 @@ local math = require('math')
 local logging = require('logging')
 local loggingUtil = require('../util/logging')
 
+local fmt = require('string').format
+
 local StateScanner = Emitter:extend()
 local Scheduler = Emitter:extend()
 local CheckMeta = Emitter:extend()
@@ -27,7 +29,7 @@ end
 function split(s, transform)
   local fields = {}
   s:gsub('([^,]+)', function(c) fields[#fields + 1] = transform and transform(c) or c end)
-  return fields  
+  return fields
 end
 
 -- CheckMeta holds the pieces of a check that will appear in a state file.
@@ -94,7 +96,7 @@ function StateScanner:consumeHeaderLine(version, line, lineNumber)
       self._header.lineCount = tonumber(line)
       return false
     else
-      return self._header.lineCount - lineNumber < 0  
+      return self._header.lineCount - lineNumber < 0
     end
   end
 end
@@ -153,19 +155,23 @@ function Scheduler:initialize(stateFile, checks, callback)
   -- todo: I can see there might be a need for a constructor that will read all checks from the state file
   -- in that case, the states will be read and then used as pointers to deserialize checks that already exist on the fs.
   self._log = loggingUtil.makeLogger('scheduler')
-  self._nextScan = 0
+  self._nextScan = nil
   self._scanTimer = nil
   local checkMap = {}
   -- todo: the check:run closer captures the checks param. thay may end up being a memory liability for cases where
   -- there are many checks.
   for index, check in ipairs(checks) do
     checkMap[check.id] = check
-    self._nextScan = math.min(self._nextScan, check:getNextRun())
+    if self._nextScan == nil then
+      self._nextScan = check:getNextRun()
+    else
+      self._nextScan = math.min(self._nextScan, check:getNextRun())
+    end
   end
   self._runCount = 0
   self._scanner = StateScanner:new(stateFile)
-  
-  -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a 
+
+  -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a
   -- check needs to be run.
   self._scanner:dumpChecks(checks, function()
     self._scanner:on('check_scheduled', function(checkMeta)
@@ -177,16 +183,28 @@ function Scheduler:initialize(stateFile, checks, callback)
         self._scanner:dumpChecks(checks, function()
           self._log(logging.INFO, 'checks dumped at '..os.time())
         end)
+        -- emit check
+        self:emit('check', check, checkResult)
         -- determine when the next scan should be.
         local oldNextScan = self._nextScan
-        -- todo: check for invalid next run.
-        self._nextScan = math.min(self._nextScan, checkResult._nextRun)
+        local now = os.time()
+        -- if the _nextScan is in the future, then find the minimum nextScan timeout
+        if self._nextScan > now then
+          self._nextScan = math.min(self._nextScan, checkResult._nextRun)
+        else
+          self._nextScan = checkResult._nextRun
+        end
+        self._log(logging.DEBUG, fmt('Check %s scheduled at %s, current time %s', check.id, self._nextScan, os.time()))
         -- maybe clear timer, set next.
         if oldNextScan ~= self._nextScan then
           if self._scanTimer then
-            timer.clearTimeout(self._scanTimer)
+            timer.clearTimer(self._scanTimer)
           end
-          self._scanTimer = timer.setTimeout(self._nextScan - os.time(), utils.bind(self._scanner.scanStates, self._scanner))
+          local timeout = (self._nextScan - os.time()) * 1000 -- milliseconds
+          self._scanTimer = timer.setTimeout(timeout, function()
+            self._scanTimer = nil
+            self._scanner:scanStates()
+          end)
         end
       end)
     end)

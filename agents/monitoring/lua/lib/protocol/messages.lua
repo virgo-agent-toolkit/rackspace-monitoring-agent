@@ -25,6 +25,28 @@ function Message:initialize()
   self.source = ''
 end
 
+-- [[ Response ]]--
+local Response = Message:extend()
+function Response:initialize(replyToMsg, result)
+  Message.initialize(self)
+  if replyToMsg then
+    self.id = replyToMsg.id
+    self.target = replyToMsg.source
+    self.source = replyToMsg.target
+  end
+  self.result = result or {}
+end
+
+function Response:serialize(msgId)
+  return {
+    v = '1',
+    id = self.id,
+    target = self.target,
+    source = self.source,
+    result = self.result
+  }
+end
+
 --[[ Request ]]--
 
 local Request = Message:extend()
@@ -77,11 +99,75 @@ function Ping:serialize(msgId)
   return Request.serialize(self, msgId)
 end
 
---[[ Exports ]]--
+--[[ Manifest.get ]]--
+local Manifest = Request:extend()
+function Manifest:initialize()
+  Request.initialize(self)
+  self.method = 'manifest.get'
+end
 
+function Manifest:serialize(msgId)
+  self.params.blah = 1
+  return Request.serialize(self, msgId)
+end
+
+--[[ System Info ]]--
+local SystemInfoResponse = Response:extend()
+function SystemInfoResponse:initialize(replyToMsg, result)
+  Response.initialize(self)
+
+  local s = sigar:new()
+  local cpus = s:cpus()
+  local netifs = s:netifs()
+
+  self.sysinfo = s:sysinfo()
+  self.netifs = {}
+  self.cpus = {}
+
+  for i=1,#cpus do
+    self.cpus[i] = {}
+    self.cpus[i].info = cpus[i]:info()
+    self.cpus[i].data = cpus[i]:data()
+  end
+
+  for i=1,#netifs do
+    self.netifs[i] = {}
+    self.netifs[i].info = netifs[i]:info()
+    self.netifs[i].usage = netifs[i]:usage()
+  end
+end
+
+function SystemInfoResponse:serialize(msgId)
+  self.result.sysinfo = self.sysinfo
+  self.result.cpus = self.cpus
+  self.result.netifs = self.netifs
+  return Response.serialize(self, msgId)
+end
+
+--[[ Metrics Request ]]--
+local MetricsRequest = Request:extend()
+function MetricsRequest:initialize(check, checkResults)
+  Request.initialize(self)
+  self.check = check
+  self.checkResults = checkResults
+  self.method = 'metrics.set'
+end
+
+function MetricsRequest:serialize(msgId)
+  self.params.metrics = self.checkResults:serialize()
+  self.params.check_id = self.check.id
+  self.params.check_type = self.check._type
+
+  return Request.serialize(self, msgId)
+end
+
+--[[ Exports ]]--
 local exports = {}
 exports.Request = Request
 exports.Response = Response
 exports.HandshakeHello = HandshakeHello
 exports.Ping = Ping
+exports.Manifest = Manifest
+exports.MetricsRequest = MetricsRequest
+exports.SystemInfoResponse = SystemInfoResponse
 return exports

@@ -16,13 +16,21 @@ limitations under the License.
 
 local os = require('os')
 local Object = require('core').Object
+local JSON = require('json')
 local Emitter = require('core').Emitter
+local fmt = require('string').format
+local table = require('table')
+
+local toString = require('../util/misc').toString
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
+local Metric = Object:extend()
 
-function BaseCheck:initialize(params)
+
+function BaseCheck:initialize(params, checkType)
   self._lastResults = nil
+  self._type = checkType or 'UNDEFINED'
   self.state = params.state
   self.id = params.id
   self.period = params.period
@@ -31,7 +39,7 @@ end
 
 function BaseCheck:run(callback)
   -- do something, produce a CheckResult
-  local checkResult = CheckResult:new({})
+  local checkResult = CheckResult:new(self, {})
   self._lastResults = checkResult
   callback(checkResult)
 end
@@ -40,17 +48,83 @@ function BaseCheck:getNextRun()
   if self._lastResults then
     return self._lastResults._nextRun
   else
-    return os.time() 
+    return os.time()
   end
 end
 
-function CheckResult:initialize(options)
-  self._nextRun = os.time() + 30; -- default to 30 seconds now.
+function BaseCheck:toString()
+  return fmt('%s (id=%s, period=%ss)', self._type, self.id, self.period)
 end
+
+function CheckResult:initialize(check, options)
+  self._options = options or {}
+  self._metrics = {}
+  self._nextRun = os.time() + check.period
+end
+
+function CheckResult:addMetric(name, dimension, value)
+  local metric = Metric:new(name, dimension, value)
+
+  if not self._metrics[metric.dimension] then
+    self._metrics[metric.dimension] = {}
+  end
+
+  self._metrics[metric.dimension][metric.name] = value
+end
+
+function CheckResult:toString()
+  return toString(self)
+end
+
+
+-- Serialize a result to the format which is understood by the endpoint.
+function CheckResult:serialize()
+  local dimension, metric
+  local result = {}
+
+  for dimension, metrics in pairs(self._metrics) do
+    if dimension == 'none' then
+      dimension = JSON.null
+    end
+
+    table.insert(result, {dimension, metrics})
+  end
+
+  return result
+end
+
+function Metric:initialize(name, dimension, value)
+  self.name = name
+  self.dimension = dimension or 'none'
+  self.value = value
+
+  self.type = getMetricType(value)
+end
+
+
+-- Determinate the metric type based on the value type.
+function getMetricType(value)
+  local valueType = type(value)
+
+  if valueType == 'string' then
+    return 'str'
+  elseif valueType == 'boolean' then
+    return 'bool'
+  elseif valueType == 'number' then
+    if not tostring(value):find('.') then
+      -- TODO 34 / 64 bit
+      return 'int64'
+    else
+      return 'double'
+    end
+  end
+end
+
 
 -- todo: serialize/deserialize methods.
 
 local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
+exports.Metric = Metric
 return exports
