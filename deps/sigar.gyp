@@ -1,4 +1,56 @@
 {
+  'target_defaults': {
+    'include_dirs': [
+      'sigar/include',
+    ],
+    'conditions': [
+      [ 'OS=="win"',
+        {
+          'include_dirs': [
+            'sigar/src/os/win32',
+          ],
+          'defines': [
+            '_BIND_TO_CURRENT_MFC_VERSION=1',
+            '_BIND_TO_CURRENT_CRT_VERSION=1',
+            '_CRT_SECURE_NO_WARNINGS',
+          ],
+        }
+      ],
+      ['OS=="mac" or OS=="freebsd"',
+        {
+          'include_dirs': [
+            'sigar/src/os/darwin',
+          ],
+        }
+      ],
+      ['OS=="mac"',
+        {
+          'include_dirs': [
+            '/Developer/Headers/FlatCarbon/',
+          ],
+          'defines': [
+          # TODO: test on freebsd
+            'DARWIN',
+          ],
+        }
+      ],
+      ['OS=="solaris"',
+        {
+          'include_dirs': [
+            'sigar/src/os/solaris',
+          ],
+        }
+      ],
+      ['OS=="linux"',
+        {
+          'include_dirs': [
+            'sigar/src/os/linux',
+          ],
+        }
+      ],
+    ],
+  },
+
   'targets': [
     {
       'target_name': 'sigar',
@@ -25,15 +77,6 @@
       'conditions': [
         [ 'OS=="win"',
           {
-            'include_dirs': [
-              'sigar/src/os/win32',
-            ],
-            'defines': [
-              'WIN32_LEAN_AND_MEAN',
-              '_BIND_TO_CURRENT_MFC_VERSION=1',
-              '_BIND_TO_CURRENT_CRT_VERSION=1',
-              '_CRT_SECURE_NO_WARNINGS',
-            ],
             'sources': [
               'sigar/src/os/win32/peb.c',
               'sigar/src/os/win32/win32_sigar.c',
@@ -43,30 +86,13 @@
         ],
         ['OS=="mac" or OS=="freebsd"',
           {
-            'include_dirs': [
-              'sigar/src/os/darwin',
-            ],
             'sources': [
               'sigar/src/os/darwin/darwin_sigar.c',
             ],
           }
         ],
-        ['OS=="mac"',
-          {
-            'include_dirs': [
-              '/Developer/Headers/FlatCarbon/',
-            ],
-            'defines': [
-            # TODO: test on freebsd
-              'DARWIN',
-            ],
-          }
-        ],
         ['OS=="solaris"',
           {
-            'include_dirs': [
-              'sigar/src/os/solaris',
-            ],
             'sources': [
               'sigar/src/os/solaris/get_mib2.c',
               'sigar/src/os/solaris/kstats.c',
@@ -77,9 +103,6 @@
         ],
         ['OS=="linux"',
           {
-            'include_dirs': [
-              'sigar/src/os/linux',
-            ],
             'sources': [
               'sigar/src/os/linux/linux_sigar.c',
             ],
