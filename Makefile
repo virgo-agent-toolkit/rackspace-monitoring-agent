@@ -7,7 +7,7 @@ sig_files = $(zip_files:%.zip=%.zip.sig)
 	-ln -fs out/Debug/$@ $@
 
 %.zip.sig: $(zip_files)
-	openssl dgst -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/Debug/$@
+	openssl dgst -sign tests/ca/server.key.insecure -sha256 $(patsubst %.zip.sig, %.zip, $@) > out/Debug/$@
 	-ln -fs out/Debug/$@ $@
 
 all: out/Makefile

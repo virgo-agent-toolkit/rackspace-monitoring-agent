@@ -41,6 +41,7 @@ show_help()
          "  -v, --version         print monitoring-agent's version\n"
          "  -c, --config=val      Set configuration file path. Default: /etc/rackspace.cfg\n"
          "  -e=val                Entry module.\n"
+         "  -n, --no-verify       Do not verify Zip Bundle.\n"
          "  -z, --zip=val         Path to Zip Bundle.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
