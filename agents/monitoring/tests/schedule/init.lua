@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local path = require('path')
 local async = require('async')
 local utils = require('utils')
 local timer = require('timer')
@@ -21,14 +22,15 @@ local timer = require('timer')
 local StateScanner = require('monitoring/lib/schedule').StateScanner
 local Scheduler = require('monitoring/lib/schedule').Scheduler
 local BaseCheck = require('monitoring/lib/check/base').BaseCheck
+local tmp = path.join('tests', 'tmp')
 
 local exports = {}
 
 local checks = {
-  BaseCheck:new({id='ch0001', state='OK', period=30, path='/tmp/0001.chk'}),
-  BaseCheck:new({id='ch0002', state='OK', period=35, path='/tmp/0002.chk'}),
-  BaseCheck:new({id='ch0003', state='OK', period=40, path='/tmp/0003.chk'}),
-  BaseCheck:new({id='ch0004', state='OK', period=45, path='/tmp/0004.chk'}),
+  BaseCheck:new({id='ch0001', state='OK', period=30, path=path.join(tmp, '0001.chk')}),
+  BaseCheck:new({id='ch0002', state='OK', period=35, path=path.join(tmp, '0002.chk')}),
+  BaseCheck:new({id='ch0003', state='OK', period=40, path=path.join(tmp, '0003.chk')}),
+  BaseCheck:new({id='ch0004', state='OK', period=45, path=path.join(tmp, '0004.chk')}),
 }
 
 exports['test_scheduler_scan'] = function(test, asserts)
@@ -44,7 +46,7 @@ exports['test_scheduler_scan'] = function(test, asserts)
 end
 
 exports['test_scheduler_initialize'] = function(test, asserts)
-  local testFile = '/tmp/test_scheduler_initialize.state'
+  local testFile = path.join(tmp, 'test_scheduler_initialize.state')
 
   async.waterfall({
     -- write a scan file. the scheduler does this.
@@ -71,7 +73,7 @@ exports['test_scheduler_initialize'] = function(test, asserts)
 end
 
 exports['test_scheduler_scans'] = function(test, asserts)
-  local testFile = '/tmp/test_scheduler_scans.state'
+  local testFile = path.join(tmp, 'test_scheduler_initialize.state')
   local scheduler
 
   async.waterfall({

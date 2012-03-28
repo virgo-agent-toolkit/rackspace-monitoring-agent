@@ -18,11 +18,25 @@ local bourbon = require('bourbon')
 local async = require('async')
 local fmt = require('string').format
 local debugm = require('debug')
+local path = require('path')
+local fs = require('fs')
 
 local exports = {}
 
 local failed = 0
 
+local tmp_dir = path.join('tests', 'tmp')
+local function remove_tmp(callback)
+  fs.readdir(tmp_dir, function(err, files)
+    if (files ~= nil) then
+      for i, v in ipairs(files) do
+        fs.unlinkSync(path.join(tmp_dir, v))
+      end
+    end
+    fs.rmdir(tmp_dir, callback)
+  end)
+end
+ 
 local TESTS_TO_RUN = {'./tls', './agent-protocol', './crypto', './misc', './check', './fs', './schedule'}
 
 local function runit(modname, callback)
@@ -44,14 +58,19 @@ local function runit(modname, callback)
 end
 
 exports.run = function()
+  fs.mkdirSync(tmp_dir, "0755")
   async.forEachSeries(TESTS_TO_RUN, runit, function(err)
     if err then
       p(err)
       debugm.traceback(err)
-      process.exit(1)
+      remove_tmp(function()
+        process.exit(1)
+      end)
     end
 
-    process.exit(failed)
+    remove_tmp(function()
+      process.exit(failed)
+    end)
   end)
 end
 
