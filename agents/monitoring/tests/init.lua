@@ -58,18 +58,19 @@ local function runit(modname, callback)
 end
 
 exports.run = function()
-  fs.mkdirSync(tmp_dir, "0755")
-  async.forEachSeries(TESTS_TO_RUN, runit, function(err)
-    if err then
-      p(err)
-      debugm.traceback(err)
-      remove_tmp(function()
-        process.exit(1)
-      end)
-    end
+  fs.mkdir(tmp_dir, "0755", function()
+    async.forEachSeries(TESTS_TO_RUN, runit, function(err)
+      if err then
+        p(err)
+        debugm.traceback(err)
+        remove_tmp(function()
+          process.exit(1)
+        end)
+      end
 
-    remove_tmp(function()
-      process.exit(failed)
+      remove_tmp(function()
+        process.exit(failed)
+      end)
     end)
   end)
 end

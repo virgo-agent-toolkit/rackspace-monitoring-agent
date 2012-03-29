@@ -35,7 +35,7 @@ function Entry.run()
   end)
 
   if err == false then
-    logging.log(logging.ERR, msg)
+    logging.log(logging.ERR, msg.message)
   end
 end
 

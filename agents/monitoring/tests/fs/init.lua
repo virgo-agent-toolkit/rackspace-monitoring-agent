@@ -49,7 +49,7 @@ exports['test_mkdirp'] = function(test, asserts)
   fsUtil.mkdirp(fullPath, 0755, function(err)
     asserts.ok(not err)
     asserts.ok(fs.existsSync(fullPath))
-    test.done()
+    fs.rmdir(fullPath, function() test.done() end)
   end)
 end
 
