@@ -1,9 +1,6 @@
 [submodule "deps/luvit"]
 	path = deps/luvit
 	url = https://github.com/racker/luvit.git
-[submodule "deps/luacrypto"]
-	path = deps/luacrypto
-	url = git://github.com/racker/luacrypto.git
 [submodule "deps/sigar"]
 	path = deps/sigar
 	url = https://github.com/racker/sigar.git
