@@ -25,6 +25,7 @@ _G.getcwd = nil
 _G.argv = nil
 
 local Emitter = require('core').Emitter
+local timer = require('timer')
 local env = require('env')
 local constants = require('constants')
 local uv = require('uv')
@@ -94,6 +95,10 @@ end
 process:on('SIGUSR1', function()
   collectgarbage()
 end)
+
+function process.nextTick(callback)
+  timer.setTimeout(0, callback)
+end
 
 -- Load libraries used in this file
 -- Load libraries used in this file
