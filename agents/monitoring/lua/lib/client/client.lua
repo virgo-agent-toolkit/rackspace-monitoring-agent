@@ -68,16 +68,8 @@ end
 
 function AgentClient:connect()
   -- Create connection timeout
-  local connectTimeout = timer.setTimeout(self._timeout, function()
-    self:emit('error', Error:new(fmt('Connect timeout to %s:%s', self._host, self._port)))
-  end)
-
   self._log(logging.INFO, 'Connecting...')
   self._sock = tls.connect(self._port, self._host, {}, function(err, cleartext)
-    -- stop the timeout timer since there is a connect
-    timer.clearTimer(connectTimeout);
-    connectTimeout = nil
-
     -- Log
     self._log(logging.INFO, 'Connected')
 
@@ -120,12 +112,12 @@ function AgentClient:connect()
       end
     end)
   end)
+  self._log(logging.DBG, fmt('Using timeout %sms', self._timeout))
+  self._sock.socket:setTimeout(self._timeout, function()
+    self:emit('timeout')
+  end)
   self._sock:on('error', function(err)
     self._log(logging.ERROR, fmt('Failed to connect: %s', err.message))
-
-    if connectTimeout then
-      timer.clearTimer(connectTimeout);
-    end
     self:emit('error', err)
   end)
   self._sock:on('end', function()

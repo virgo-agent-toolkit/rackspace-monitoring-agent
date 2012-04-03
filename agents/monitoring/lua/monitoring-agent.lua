@@ -117,9 +117,7 @@ function MonitoringAgent:loadStates(callback)
     function(callback)
       self:_verifyState(callback)
     end
-  }, function(err)
-    callback(err)
-  end)
+  }, callback)
 end
 
 function MonitoringAgent:connect(callback)
@@ -134,6 +132,7 @@ end
 
 function MonitoringAgent:initialize(stateDirectory)
   if not stateDirectory then stateDirectory = DEFAULT_STATE_DIRECTORY end
+  logging.log(logging.INFO, 'Using state directory ' .. stateDirectory)
   self._states = States:new(stateDirectory)
 end
 
@@ -145,11 +144,9 @@ function MonitoringAgent.run(options)
       agent:loadStates(callback)
     end,
     function(callback)
-      agent:connect(function() end)
-      callback()
+      agent:connect(callback)
     end
   },
-
   function(err)
     if err then
       logging.log(logging.ERR, err.message)

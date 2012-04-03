@@ -106,14 +106,15 @@ function States:load(callback)
 end
 
 function States:dump(callback)
-  callback = callback or function() end
   for filename in pairs(self._states) do
     process.stdout:write(fmt('State: %s\n', filename))
     for k, v in pairs(self._states[filename]) do
       process.stdout:write(fmt('  %s=%s\n', k, v))
     end
   end
-  callback()
+  if callback then
+    callback()
+  end
 end
 
 function States:get(stateName)

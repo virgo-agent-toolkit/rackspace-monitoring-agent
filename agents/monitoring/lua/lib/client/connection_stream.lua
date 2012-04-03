@@ -39,7 +39,7 @@ end
 Create and establish a connection to the multiple endpoints.
 
 addresses - An Array of ip:port pairs
-callback - Callback called with (err) when all the connections have been 
+callback - Callback called with (err) when all the connections have been
 established.
 --]]
 function ConnectionStream:createConnections(addresses, callback)
@@ -103,7 +103,14 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
 
     client:close()
     self:reconnect(datacenter, host, port, callback)
-    self:emit('error', err)
+    if err then
+      self:emit('error', err)
+    end
+  end)
+
+  client:on('timeout', function()
+    client:close()
+    self:reconnect(datacenter, host, port, callback)
   end)
 
   client:on('end', function()
