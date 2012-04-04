@@ -103,12 +103,13 @@ end
 function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
   msg.target = 'endpoint'
   msg.source = self._myid
-  local data = JSON.stringify(msg) .. '\n'
+  local msg_str = JSON.stringify(msg)
+  local data = msg_str .. '\n'
   local key = msg.target .. ':' .. msg.id
 
-  if not expectedCode then expectedCode = 200 end
+  self._log(logging.DEBUG, fmt('SEND: %s', msg_str))
 
-  self._log(logging.DEBUG, fmt('SEND: %s', data))
+  if not expectedCode then expectedCode = 200 end
 
   if timeout then
     self:_setCommandTimeoutHandler(key, timeout, callback)
