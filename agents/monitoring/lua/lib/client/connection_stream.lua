@@ -101,7 +101,7 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
     err.port = port
     err.datacenter = datacenter
 
-    client:close()
+    client:destroy()
     self:reconnect(datacenter, host, port, callback)
     if err then
       self:emit('error', err)
@@ -109,19 +109,19 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
   end)
 
   client:on('timeout', function()
-    client:close()
+    client:destroy()
     self:reconnect(datacenter, host, port, callback)
   end)
 
   client:on('end', function()
     logging.log(logging.DEBUG, fmt('%s:%d -> Remote endpoint closed the connection', host, port))
-    client:close()
+    client:destroy()
     self:reconnect(datacenter, host, port, callback)
   end)
 
   client:connect(function(err)
     if err then
-      client:close()
+      client:destroy()
       self:reconnect(datacenter, host, port, callback)
       callback(err)
       return

@@ -165,12 +165,12 @@ function AgentClient:clearPingInterval()
   end
 end
 
-function AgentClient:close()
+function AgentClient:destroy()
   self:clearPingInterval()
 
-  if self._sock and self._sock._handle then
+  if self._sock then
     self._log(logging.DEBUG, 'Closing socket')
-    self._sock:close()
+    self._sock:destroy()
     self._sock = nil
   end
 end
