@@ -26,7 +26,6 @@ local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
 local AgentProtocolConnection = require('../protocol/connection')
 local table = require('table')
-local Scheduler = require('../schedule').Scheduler
 
 local fmt = require('string').format
 
@@ -49,8 +48,13 @@ function AgentClient:initialize(options)--datacenter, id, token, host, port, tim
   self._ping_interval = nil
   self._sent_ping_count = 0
   self._got_pong_count = 0
+  self._latency = 0
 
   self._log = loggingUtil.makeLogger(fmt('%s:%s', self._host, self._port))
+end
+
+function AgentClient:getDatacenter()
+  return self._datacenter
 end
 
 function AgentClient:_createChecks(manifest)
@@ -67,8 +71,12 @@ function AgentClient:_createChecks(manifest)
   return checks
 end
 
+function AgentClient:getLog()
+  return self._log
+end
+
 function AgentClient:_socketTimeout()
-  return misc.createJitterTimeout(self._timeout, 19)
+  return misc.calcJitter(PING_INTERVAL, 19000)
 end
 
 function AgentClient:connect()
@@ -80,12 +88,12 @@ function AgentClient:connect()
 
     -- setup protocol
     self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, cleartext)
-
     self.protocol:on('error', function(err)
       self:emit(err)
     end)
     -- response to messages
     self.protocol:on('message', function(msg)
+      self:emit('message', msg, self)
       self.protocol:execute(msg)
     end)
 
@@ -97,27 +105,11 @@ function AgentClient:connect()
         self._ping_interval = msg.result.ping_interval
         self:startPingInterval()
 
-        -- retrieve manifest
-        self.protocol:getManifest(function(err, manifest)
-          if err then
-            -- TODO Abort connection?
-            self._log(logging.ERROR, 'Error while retrieving manifest: ' .. err.message)
-          else
-            local checks = self:_createChecks(manifest)
-            self._scheduler = Scheduler:new('scheduler.state', checks, function()
-              self._scheduler:start()
-            end)
-            self._scheduler:on('check', function(check, checkResults)
-              self._log(logging.DEBUG, 'Check Results')
-              self._log(logging.DEBUG, checkResults:toString())
-              self.protocol:sendMetrics(check, checkResults)
-            end)
-          end
-        end)
+        self:emit('handshake_success')
       end
     end)
   end)
-  self._log(logging.DBG, fmt('Using timeout %sms', self._timeout))
+  self._log(logging.DBG, fmt('Using timeout %sms', self:_socketTimeout()))
   self._sock.socket:setTimeout(self:_socketTimeout(), function()
     self:emit('timeout')
   end)
@@ -130,11 +122,15 @@ function AgentClient:connect()
   end)
 end
 
+function AgentClient:getLatency()
+  return self._latency
+end
+
 function AgentClient:startPingInterval()
   self._log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', self._ping_interval))
 
   function startInterval()
-    self._pingTimeout = timer.setTimeout(misc.createJitterTimeout(self._ping_interval, 7000), function()
+    self._pingTimeout = timer.setTimeout(misc.calcJitter(self._ping_interval, 7000), function()
       local timestamp = os.time()
 
       self._log(logging.DEBUG, fmt('Sending ping (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',
@@ -153,6 +149,8 @@ function AgentClient:startPingInterval()
         else
           self._log(logging.DEBUG, 'Got invalid pong response')
         end
+
+        self._latency = os.time() - timestamp
 
         startInterval()
       end)
