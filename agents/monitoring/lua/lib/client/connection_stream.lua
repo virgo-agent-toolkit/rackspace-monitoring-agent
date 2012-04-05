@@ -46,24 +46,29 @@ function ConnectionStream:createConnections(addresses, callback)
   local client
 
   async.forEach(addresses, function(address, callback)
-    local client, split, host, port
+    local client, split, host, port, options
 
     split = misc.splitAddress(address)
-    host, port = split[1], split[2]
-    client = self:createConnection(address, host, port, callback)
+    options = {}
+    options.host = split[1]
+    options.port = split[2]
+    options.datacenter = address
+    client = self:createConnection(options, callback)
   end, callback)
 end
 
 --[[
 Retry a connection to the endpoint.
 
-datacenter - Datacenter name / host alias.
-host - Hostname.
-port - Port.
+options - datacenter, host, port
+  datacenter - Datacenter name / host alias.
+  host - Hostname.
+  port - Port.
 callback - Callback called with (err)
 ]]--
-function ConnectionStream:reconnect(datacenter, host, port, callback)
+function ConnectionStream:reconnect(options, callback)
   local previous_delay, delay, max_delay, jitter, value
+  local datacenter = options.datacenter
 
   max_delay = 5 * 60 * 1000 -- max connection delay in ms
   jitter = 7000 -- jitter in ms
@@ -79,9 +84,9 @@ function ConnectionStream:reconnect(datacenter, host, port, callback)
   delay = math.min(previous_delay, max_delay) + (jitter * math.random())
   self._delays[datacenter] = delay
 
-  logging.log(logging.INFO, fmt('%s:%d -> Retrying connection in %dms', host, port, delay))
+  logging.log(logging.INFO, fmt('%s:%d -> Retrying connection in %dms', options.host, options.port, delay))
   timer.setTimeout(delay, function()
-    self:createConnection(datacenter, host, port, callback)
+    self:createConnection(options, callback)
   end)
 end
 
@@ -93,16 +98,21 @@ host - Hostname.
 port - Port.
 callback - Callback called with (err)
 ]]--
-function ConnectionStream:createConnection(datacenter, host, port, callback)
-  local client = AgentClient:new(datacenter, self._id, self._token, host, port, CONNECT_TIMEOUT)
+function ConnectionStream:createConnection(options, callback)
 
+  local opts = misc.merge({}, options)
+  opts.id = self._id
+  opts.token = self._token
+  opts.timeout = CONNECT_TIMEOUT
+
+  local client = AgentClient:new(opts)
   client:on('error', function(err)
     err.host = host
     err.port = port
     err.datacenter = datacenter
 
     client:destroy()
-    self:reconnect(datacenter, host, port, callback)
+    self:reconnect(opts, callback)
     if err then
       self:emit('error', err)
     end
@@ -110,19 +120,19 @@ function ConnectionStream:createConnection(datacenter, host, port, callback)
 
   client:on('timeout', function()
     client:destroy()
-    self:reconnect(datacenter, host, port, callback)
+    self:reconnect(opts, callback)
   end)
 
   client:on('end', function()
     logging.log(logging.DEBUG, fmt('%s:%d -> Remote endpoint closed the connection', host, port))
     client:destroy()
-    self:reconnect(datacenter, host, port, callback)
+    self:reconnect(opts, callback)
   end)
 
   client:connect(function(err)
     if err then
       client:destroy()
-      self:reconnect(datacenter, host, port, callback)
+      self:reconnect(opts, callback)
       callback(err)
       return
     end

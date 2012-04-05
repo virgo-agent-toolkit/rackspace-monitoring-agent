@@ -22,6 +22,7 @@ local Object = require('core').Object
 local Emitter = require('core').Emitter
 local check = require('../check')
 local logging = require('logging')
+local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
 local AgentProtocolConnection = require('../protocol/connection')
 local table = require('table')
@@ -33,23 +34,23 @@ local AgentClient = Emitter:extend()
 
 local PING_INTERVAL = 5 * 60 * 1000 -- ms
 
-function AgentClient:initialize(datacenter, id, token, host, port, timeout)
+function AgentClient:initialize(options)--datacenter, id, token, host, port, timeout)
+
   self.protocol = nil
-  self._datacenter = datacenter
-  self._id = id
-  self._token = token
+  self._datacenter = options.datacenter
+  self._id = options.id
+  self._token = options.token
   self._target = 'endpoint'
-  self._sock = nil
-  self._host = host
-  self._port = port
-  self._timeout = timeout or 5000
+  self._host = options.host
+  self._port = options.port
+  self._timeout = options.timeout or 5000
 
   self._scheduler = nil
   self._ping_interval = nil
   self._sent_ping_count = 0
   self._got_pong_count = 0
 
-  self._log = loggingUtil.makeLogger(fmt('%s:%s', host, port))
+  self._log = loggingUtil.makeLogger(fmt('%s:%s', self._host, self._port))
 end
 
 function AgentClient:_createChecks(manifest)
@@ -64,6 +65,10 @@ function AgentClient:_createChecks(manifest)
   end
 
   return checks
+end
+
+function AgentClient:_socketTimeout()
+  return misc.createJitterTimeout(self._timeout, 19)
 end
 
 function AgentClient:connect()
@@ -113,7 +118,7 @@ function AgentClient:connect()
     end)
   end)
   self._log(logging.DBG, fmt('Using timeout %sms', self._timeout))
-  self._sock.socket:setTimeout(self._timeout, function()
+  self._sock.socket:setTimeout(self:_socketTimeout(), function()
     self:emit('timeout')
   end)
   self._sock:on('error', function(err)
@@ -129,7 +134,7 @@ function AgentClient:startPingInterval()
   self._log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', self._ping_interval))
 
   function startInterval()
-    self._pingTimeout = timer.setTimeout(self._ping_interval, function()
+    self._pingTimeout = timer.setTimeout(misc.createJitterTimeout(self._ping_interval, 7000), function()
       local timestamp = os.time()
 
       self._log(logging.DEBUG, fmt('Sending ping (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',

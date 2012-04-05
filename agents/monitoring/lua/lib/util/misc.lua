@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local math = require('math')
+local timer = require('timer')
 local table = require('table')
 local string = require('string')
 
@@ -88,8 +90,31 @@ function toString(tbl)
   end
 end
 
+function createJitterTimeout(n, jitter)
+  return n + (jitter * math.random())
+end
+
+-- merge tables
+function merge(...)
+  local args = {...}
+  local first = args[1]
+
+  for i, _ in ipairs(args) do
+    if i ~= 1 then
+      local t = args[i]
+      for k, _ in pairs(t) do
+        first[k] = t[k]
+      end
+    end
+  end
+
+  return first
+end
+
 --[[ Exports ]]--
 local exports = {}
+exports.createJitterTimeout = createJitterTimeout
+exports.merge = merge
 exports.splitAddress = splitAddress
 exports.split = split
 exports.toString = toString
