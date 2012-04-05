@@ -100,10 +100,11 @@ callback - Callback called with (err)
 ]]--
 function ConnectionStream:createConnection(options, callback)
 
-  local opts = misc.merge({}, options)
-  opts.id = self._id
-  opts.token = self._token
-  opts.timeout = CONNECT_TIMEOUT
+  local opts = misc.merge({
+    id = self._id,
+    token = self._token,
+    timeout = CONNECT_TIMEOUT
+  }, options)
 
   local client = AgentClient:new(opts)
   client:on('error', function(err)
