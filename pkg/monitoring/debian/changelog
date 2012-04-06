@@ -1,0 +1,5 @@
+rackspace-monitoring-agent (0.1-1) stable; urgency=low
+
+  * Initial release
+
+ -- Brandon Philips <brandon.philips@rackspace.com>  Fri, 06 Apr 2012 19:49:25 +0200
