@@ -1,0 +1,14 @@
+Source: rackspace-monitoring-agent
+Section: admin
+Priority: optional
+Maintainer: Rackspace Cloud Monitoring <cloud-monitoring@rackspace.com>
+Build-Depends: debhelper (>= 7), python, build-essential
+Standards-Version: 3.9.1
+
+Package: rackspace-monitoring-agent
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Rackspace Cloud Monitoring Agent
+ rackspace-monitoring-agent is a daemon that is installed on a host to gather
+ statistics and run checks and report data back to the cloud monitoring service.
+ See: http://www.rackspace.com/cloud/cloud_hosting_products/monitoring/
