@@ -27,6 +27,7 @@ install: build
 	mkdir -p $(SHAREDIR)
 	cp out/Debug/monitoring.zip $(SHAREDIR)
 	cp out/Debug/monitoring-test.zip $(SHAREDIR)
+	mkdir -p $(ETCDIR)
 	touch $(ETCDIR)/rackspace.cfg
 
 binary-arch: build install
