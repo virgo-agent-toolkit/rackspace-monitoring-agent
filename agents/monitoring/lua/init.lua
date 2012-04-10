@@ -22,6 +22,7 @@ local argv = require("options")
   :usage("Usage: ")
   :describe("e", "entry module")
   :describe("s", "state directory path")
+  :describe("c", "config file path")
   :argv("he:c:s:")
 
 function Entry.run()
@@ -31,7 +32,7 @@ function Entry.run()
   logging.log(logging.INFO, 'Running Module ' .. mod)
 
   local err, msg = pcall(function()
-    require(mod).run({stateDirectory = argv.args.s})
+    require(mod).run({stateDirectory = argv.args.s, configFile = argv.args.c})
   end)
 
   if err == false then

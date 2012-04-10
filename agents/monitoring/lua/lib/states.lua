@@ -26,6 +26,8 @@ local logging = require('logging')
 local uuid = require('./util/uuid')
 local fsUtil = require('./util/fs')
 
+local stateFile = require('./state_file')
+
 local fmt = string.format
 
 local STATE_EXTENSION = '.state'
@@ -44,25 +46,14 @@ end
 function States:load(callback)
   local function iter(filename, callback)
     local filepath = path.join(self._parentDir, filename)
-    fs.readFile(filepath, function(err, data)
+    stateFile.load(filepath, function(err, properties)
       if err then
         callback(err)
         return
       end
 
       local filenameWithoutExtension = filename:gsub(STATE_EXTENSION, '')
-      self._states[filenameWithoutExtension] = {}
-
-      -- split file into lines
-      for w in string.gfind(data, "[^\n]+") do
-        -- check for comment
-        if not string.find(w, '^#') then
-          -- find key/value pairs (delimited by an initial space)
-          for key, value in string.gmatch(w, '(%w+) (.*)') do
-            self._states[filenameWithoutExtension][key] = value
-          end
-        end
-      end
+      self._states[filenameWithoutExtension] = properties
       callback()
     end)
   end

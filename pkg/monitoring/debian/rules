@@ -28,7 +28,9 @@ install: build
 	cp out/Debug/monitoring.zip $(SHAREDIR)
 	cp out/Debug/monitoring-test.zip $(SHAREDIR)
 	mkdir -p $(ETCDIR)
-	touch $(ETCDIR)/rackspace.cfg
+	cp pkg/monitoring/rackspace-monitoring-agent.cfg $(ETCDIR)/
+	mkdir -p $(ETCDIR)/init
+	cp pkg/monitoring/upstart/rackspace-monitoring-agent.conf $(ETCDIR)/init
 
 binary-arch: build install
 	dh_testdir
