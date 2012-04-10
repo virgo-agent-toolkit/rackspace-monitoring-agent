@@ -136,7 +136,7 @@ function MonitoringAgent:initialize(stateDirectory, configFile)
   if not configFile then configFile = DEFAULT_CONFIG_FILE end
   logging.log(logging.INFO, 'Using state directory ' .. stateDirectory)
   self._states = States:new(stateDirectory)
-  self._config = stateFile.loadSync(configFile)
+  self._config = virgo.config
 end
 
 function MonitoringAgent.run(options)
