@@ -103,8 +103,6 @@ function AgentClient:connect()
         self:emit('error', err)
       else
         self._ping_interval = msg.result.ping_interval
-        self:startPingInterval()
-
         self:emit('handshake_success')
       end
     end)
@@ -127,39 +125,39 @@ function AgentClient:getLatency()
 end
 
 function AgentClient:startPingInterval()
-  function startInterval()
+  function startInterval(this)
     local timeout = misc.calcJitter(self._ping_interval, 7000)
 
-    self._log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', self._ping_interval))
+    this._log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', this._ping_interval))
 
-    self._pingTimeout = timer.setTimeout(timeout, function()
+    this._pingTimeout = timer.setTimeout(timeout, function()
       local timestamp = os.time()
 
-      self._log(logging.DEBUG, fmt('Sending ping (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',
-                                    timestamp, self._sent_ping_count, self._got_pong_count))
-      self._sent_ping_count = self._sent_ping_count + 1
-      self.protocol:sendPing(timestamp, function(err, msg)
+      this._log(logging.DEBUG, fmt('Sending ping (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',
+                                    timestamp, this._sent_ping_count, this._got_pong_count))
+      this._sent_ping_count = this._sent_ping_count + 1
+      this.protocol:sendPing(timestamp, function(err, msg)
         if err then
-          self._log(logging.DEBUG, 'Got an error while sending ping: ' .. tostring(err))
+          this._log(logging.DEBUG, 'Got an error while sending ping: ' .. tostring(err))
           return
         end
 
         if msg.result.timestamp then
-          self._got_pong_count = self._got_pong_count + 1
-          self._log(logging.DEBUG, fmt('Got pong (sent_ping_count=%d,got_pong_count=%d)',
-                                       self._sent_ping_count, self._got_pong_count))
+          this._got_pong_count = this._got_pong_count + 1
+          this._log(logging.DEBUG, fmt('Got pong (sent_ping_count=%d,got_pong_count=%d)',
+                                       this._sent_ping_count, this._got_pong_count))
         else
-          self._log(logging.DEBUG, 'Got invalid pong response')
+          this._log(logging.DEBUG, 'Got invalid pong response')
         end
 
-        self._latency = os.time() - timestamp
+        this._latency = os.time() - timestamp
 
-        startInterval()
+        startInterval(this)
       end)
     end)
    end
 
-   startInterval()
+   startInterval(self)
 end
 
 function AgentClient:clearPingInterval()
