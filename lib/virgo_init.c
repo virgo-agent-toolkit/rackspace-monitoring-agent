@@ -100,12 +100,6 @@ virgo_run(virgo_t *v)
     return virgo_error_create(VIRGO_EHELPREQ, "--help was passed");;
   }
 
-  err = virgo__conf_init(v);
-
-  if (err) {
-    return err;
-  }
-
   err = virgo__log_rotate(v);
 
   if (err) {
@@ -113,6 +107,12 @@ virgo_run(virgo_t *v)
   }
 
   err = virgo__lua_init(v);
+
+  if (err) {
+    return err;
+  }
+
+  err = virgo__conf_init(v);
 
   if (err) {
     return err;

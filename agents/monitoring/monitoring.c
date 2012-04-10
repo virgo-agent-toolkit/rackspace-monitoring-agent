@@ -39,7 +39,7 @@ show_help()
          "\n"
          "Options:\n"
          "  -v, --version         print monitoring-agent's version\n"
-         "  -c, --config=val      Set configuration file path. Default: /etc/rackspace.cfg\n"
+         "  -c, --config=val      Set configuration file path. Default: /etc/rackspace-monitoring-agent.cfg\n"
          "  -e=val                Entry module.\n"
          "  -z, --zip=val         Path to Zip Bundle.\n"
          "\n"
