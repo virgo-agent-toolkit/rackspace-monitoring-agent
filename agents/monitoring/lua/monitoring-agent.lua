@@ -24,10 +24,12 @@ local logging = require('logging')
 local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
 local misc = require('./lib/util/misc')
 local States = require('./lib/states')
+local stateFile = require('./lib/state_file')
 
 local MonitoringAgent = Object:extend()
 
-DEFAULT_STATE_DIRECTORY = '/var/run/agent/states'
+DEFAULT_STATE_DIRECTORY = '/var/run/rackspace-monitoring-agent/states'
+DEFAULT_CONFIG_FILE = '/etc/rackspace-monitoring-agent.cfg'
 
 function MonitoringAgent:sample()
   local HTTP = require("http")
@@ -69,7 +71,6 @@ end
 
 function MonitoringAgent:_verifyState(callback)
   callback = callback or function() end
-  self._config = self._states:get('config')
   if self._config == nil then
     logging.log(logging.ERR, "statefile 'config' missing or invalid")
     process.exit(1)
@@ -130,15 +131,17 @@ function MonitoringAgent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
-function MonitoringAgent:initialize(stateDirectory)
+function MonitoringAgent:initialize(stateDirectory, configFile)
   if not stateDirectory then stateDirectory = DEFAULT_STATE_DIRECTORY end
+  if not configFile then configFile = DEFAULT_CONFIG_FILE end
   logging.log(logging.INFO, 'Using state directory ' .. stateDirectory)
   self._states = States:new(stateDirectory)
+  self._config = stateFile.loadSync(configFile)
 end
 
 function MonitoringAgent.run(options)
   if not options then options = {} end
-  local agent = MonitoringAgent:new(options.stateDirectory)
+  local agent = MonitoringAgent:new(options.stateDirectory, options.configFile)
   async.waterfall({
     function(callback)
       agent:loadStates(callback)
