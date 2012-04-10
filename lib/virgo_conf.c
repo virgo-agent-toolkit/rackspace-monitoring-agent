@@ -93,6 +93,14 @@ next_chunk(char **x_p)
 }
 
 static void
+conf_insert_node_to_table(virgo_t *v, const char *key, const char *value)
+{
+  lua_pushstring(v->L, key);
+  lua_pushstring(v->L, value);
+  lua_settable(v->L, -3);
+}
+
+static void
 conf_parse(virgo_t *v, FILE *fp)
 {
   char buf[8096];
@@ -124,6 +132,7 @@ conf_parse(virgo_t *v, FILE *fp)
     node->value = strdup(p);
 
     free(key);
+    conf_insert_node_to_table(v, node->key, node->value);
   }
 }
 
@@ -215,7 +224,13 @@ virgo__conf_init(virgo_t *v)
     virgo__conf_destroy(v);
   }
 
+
+  /* put config in virgo.config table */
+  lua_getglobal(v->L, "virgo");
+  lua_pushstring(v->L, "config");
+  lua_newtable(v->L);
   conf_parse(v, fp);
+  lua_settable(v->L, -3);
 
   fclose(fp);
   free((void*)path);

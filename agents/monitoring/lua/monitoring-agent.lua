@@ -24,14 +24,52 @@ local logging = require('logging')
 local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
 local misc = require('./lib/util/misc')
 local States = require('./lib/states')
+local stateFile = require('./lib/state_file')
 
 local MonitoringAgent = Object:extend()
 
 DEFAULT_STATE_DIRECTORY = '/var/run/agent/states'
 
+function MonitoringAgent:sample()
+  local HTTP = require("http")
+  local Utils = require("utils")
+  local logging = require('logging')
+  local s = sigar:new()
+  local sysinfo = s:sysinfo()
+  local cpus = s:cpus()
+  local netifs = s:netifs()
+  local i = 1;
+
+  HTTP.createServer("0.0.0.0", 8080, function (req, res)
+    local body = Utils.dump({req=req,headers=req.headers}) .. "\n"
+    res:write_head(200, {
+      ["Content-Type"] = "text/plain",
+      ["Content-Length"] = #body
+    })
+    res:finish(body)
+  end)
+
+  print("sigar.sysinfo = ".. Utils.dump(sysinfo))
+
+  while i <= #cpus do
+    print("sigar.cpus[".. i .."].info = ".. Utils.dump(cpus[i]:info()))
+    print("sigar.cpus[".. i .."].data = ".. Utils.dump(cpus[i]:data()))
+    i = i + 1
+  end
+
+  i = 1;
+
+  while i <= #netifs do
+    print("sigar.netifs[".. i .."].info = ".. Utils.dump(netifs[i]:info()))
+    print("sigar.netifs[".. i .."].usage = ".. Utils.dump(netifs[i]:usage()))
+    i = i + 1
+  end
+
+  logging.log(logging.CRIT, "Server listening at http://localhost:8080/")
+end
+
 function MonitoringAgent:_verifyState(callback)
   callback = callback or function() end
-  self._config = self._states:get('config')
   if self._config == nil then
     logging.log(logging.ERR, "statefile 'config' missing or invalid")
     process.exit(1)
@@ -91,15 +129,16 @@ function MonitoringAgent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
-function MonitoringAgent:initialize(stateDirectory)
-  if not stateDirectory then stateDirectory = DEFAULT_STATE_DIRECTORY end
+function MonitoringAgent:initialize(stateDirectory, configFile)
+  if not stateDirectory then stateDirectory = virgo.default_state_unix_directory end
   logging.log(logging.INFO, 'Using state directory ' .. stateDirectory)
   self._states = States:new(stateDirectory)
+  self._config = virgo.config
 end
 
 function MonitoringAgent.run(options)
   if not options then options = {} end
-  local agent = MonitoringAgent:new(options.stateDirectory)
+  local agent = MonitoringAgent:new(options.stateDirectory, options.configFile)
   async.waterfall({
     function(callback)
       agent:loadStates(callback)
