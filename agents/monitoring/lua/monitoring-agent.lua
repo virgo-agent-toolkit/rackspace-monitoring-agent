@@ -28,9 +28,6 @@ local stateFile = require('./lib/state_file')
 
 local MonitoringAgent = Object:extend()
 
-DEFAULT_STATE_DIRECTORY = '/var/run/rackspace-monitoring-agent/states'
-DEFAULT_CONFIG_FILE = '/etc/rackspace-monitoring-agent.cfg'
-
 function MonitoringAgent:sample()
   local HTTP = require("http")
   local Utils = require("utils")
@@ -132,8 +129,7 @@ function MonitoringAgent:connect(callback)
 end
 
 function MonitoringAgent:initialize(stateDirectory, configFile)
-  if not stateDirectory then stateDirectory = DEFAULT_STATE_DIRECTORY end
-  if not configFile then configFile = DEFAULT_CONFIG_FILE end
+  if not stateDirectory then stateDirectory = virgo.default_state_unix_directory end
   logging.log(logging.INFO, 'Using state directory ' .. stateDirectory)
   self._states = States:new(stateDirectory)
   self._config = virgo.config
