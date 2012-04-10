@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
   }
 
   /* default filename */
-  err = virgo_conf_lua_load_path(v, "monitoring.zip");
+  err = virgo_conf_lua_load_path(v, VIRGO_DEFAULT_ZIP_UNIX_PATH);
   if (err) {
     handle_error("Error in setting lua load path", err);
     return EXIT_FAILURE;

@@ -36,4 +36,11 @@
   VIRGO_DEFAULT_NAME \
   "/states"
 
+#define VIRGO_DEFAULT_ZIP_FILENAME "monitoring.zip"
+
+#define VIRGO_DEFAULT_ZIP_UNIX_PATH \
+  "/usr/share/" \
+  VIRGO_DEFAULT_NAME \
+  "/" VIRGO_DEFAULT_ZIP_FILENAME
+
 #endif
