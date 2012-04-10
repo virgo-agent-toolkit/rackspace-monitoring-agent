@@ -127,10 +127,12 @@ function AgentClient:getLatency()
 end
 
 function AgentClient:startPingInterval()
-  self._log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', self._ping_interval))
-
   function startInterval()
-    self._pingTimeout = timer.setTimeout(misc.calcJitter(self._ping_interval, 7000), function()
+    local timeout = misc.calcJitter(self._ping_interval, 7000)
+
+    self._log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', self._ping_interval))
+
+    self._pingTimeout = timer.setTimeout(timeout, function()
       local timestamp = os.time()
 
       self._log(logging.DEBUG, fmt('Sending ping (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',

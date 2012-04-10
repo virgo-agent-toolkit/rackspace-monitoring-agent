@@ -91,7 +91,7 @@ function toString(tbl)
 end
 
 function calcJitter(n, jitter)
-  return n + (jitter * math.random())
+  return math.floor(n + (jitter * math.random()))
 end
 
 -- merge tables

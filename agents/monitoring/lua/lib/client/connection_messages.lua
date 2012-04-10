@@ -73,7 +73,7 @@ function RegisterCheckState:onHandshake()
       timer.clearTimer(self._timer)
     end
     self._log(logging.DEBUG, fmt('registering timeout %d', self._timeout))
-    self._timer = timer.setTimeout(0, run)
+    self._timer = process.nextTick(run)
     self._lastFetchTime = os.time()
   end
 end
