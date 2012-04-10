@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+
+DESTDIR=$(CURDIR)/debian/rackspace-monitoring-agent
+ETCDIR=$(DESTDIR)/etc
+BINDIR=$(DESTDIR)/usr/bin
+SHAREDIR=$(DESTDIR)/usr/share/rackspace-monitoring-agent
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	./configure
+	$(MAKE)
+	touch build-stamp
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	mkdir -p $(BINDIR)
+	cp out/Debug/monitoring-agent $(BINDIR)/rackspace-monitoring-agent
+	mkdir -p $(SHAREDIR)
+	cp out/Debug/monitoring.zip $(SHAREDIR)
+	cp out/Debug/monitoring-test.zip $(SHAREDIR)
+	mkdir -p $(ETCDIR)
+	cp pkg/monitoring/rackspace-monitoring-agent.cfg $(ETCDIR)/
+	mkdir -p $(ETCDIR)/init
+	cp pkg/monitoring/upstart/rackspace-monitoring-agent.conf $(ETCDIR)/init
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_install
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure
