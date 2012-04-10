@@ -77,9 +77,15 @@ virgo__lua_init(virgo_t *v)
   lua_pushlightuserdata(L, v);
   lua_setfield(L, LUA_REGISTRYINDEX, "virgo.context");
 
-  /* TODO: cleanup/standarize */
+  /* Create global config object called virgo */
+  lua_newtable(L);
+  lua_setglobal(L, "virgo");
+
+  /* Set virgo.os */
+  lua_getglobal(L, "virgo");
+  lua_pushstring(L, "os");
   lua_pushstring(L, VIRGO_OS);
-  lua_setglobal(L, "virgo_os");
+  lua_settable(L, -3);
 
   luaL_openlibs(L);
   luaopen_sigar(L);
