@@ -101,7 +101,9 @@ function ConnectionStream:reconnect(options, callback)
 end
 
 function ConnectionStream:getClient()
-  local client, min_latency = 2147483647, latency
+  local client
+  local latency
+  local min_latency = 2147483647
   for k, v in pairs(self._clients) do
     latency = self._clients[k]:getLatency()
     if latency == nil then
