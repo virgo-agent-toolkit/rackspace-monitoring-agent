@@ -71,8 +71,8 @@ function AgentClient:_createChecks(manifest)
   return checks
 end
 
-function AgentClient:getLog()
-  return self._log
+function AgentClient:log(priority, ...)
+  self._log(priority, unpack({...}))
 end
 
 function AgentClient:_socketTimeout()

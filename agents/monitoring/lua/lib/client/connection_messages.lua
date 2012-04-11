@@ -65,7 +65,7 @@ function RegisterCheckState:onHandshake()
       client.protocol:getManifest(function(err, manifest)
         if err then
           -- TODO Abort connection?
-          client:getLog()(logging.ERROR, 'Error while retrieving manifest: ' .. err.message)
+          client:log(logging.ERROR, 'Error while retrieving manifest: ' .. err.message)
         else
           self:_scheduleManifest(client, manifest)
         end
@@ -104,7 +104,7 @@ function ConnectionMessages:getStream()
 end
 
 function ConnectionMessages:onClientEnd(client)
-  client:getLog()(logging.INFO, 'Detected client disconnect')
+  client:log(logging.INFO, 'Detected client disconnect')
   for i in ipairs(self._states) do
     if self._states[i].onClientEnd then
       self._states[i]:onClientEnd(client)
@@ -113,7 +113,7 @@ function ConnectionMessages:onClientEnd(client)
 end
 
 function ConnectionMessages:onHandshake(client)
-  client:getLog()(logging.DEBUG, '(onHandshake)')
+  client:log(logging.DEBUG, '(onHandshake)')
   for i in ipairs(self._states) do
     if self._states[i].onHandshake then
       self._states[i]:onHandshake(client)
@@ -122,7 +122,7 @@ function ConnectionMessages:onHandshake(client)
 end
 
 function ConnectionMessages:onMessage(client, msg)
-  client:getLog()(logging.DEBUG, '(onMessage)')
+  client:log(logging.DEBUG, '(onMessage)')
   for i in ipairs(self._states) do
     if self._states[i].onMessage then
       self._states[i]:onMessage(client, msg)

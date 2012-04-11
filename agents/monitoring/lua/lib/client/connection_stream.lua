@@ -118,7 +118,7 @@ client - the client.
 ]]--
 function ConnectionStream:_promoteClient(client)
   local datacenter = client:getDatacenter()
-  client:getLog()(logging.INFO, fmt('Connection has been authenticated to %s', datacenter))
+  client:log(logging.INFO, fmt('Connection has been authenticated to %s', datacenter))
   self._clients[datacenter] = client
   self._unauthedClients[datacenter] = nil
 end
