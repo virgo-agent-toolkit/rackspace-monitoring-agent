@@ -11,10 +11,6 @@ local Scheduler = require('../schedule').Scheduler
 
 local fmt = require('string').format
 
-function SECONDS(n, jitter)
-  return misc.calcJitter(n * 1000, jitter * 1000)
-end
-
 -- State
 
 local State = Emitter:extend()
