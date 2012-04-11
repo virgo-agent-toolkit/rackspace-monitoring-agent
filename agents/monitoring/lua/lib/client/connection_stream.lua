@@ -104,10 +104,12 @@ function ConnectionStream:getClient()
   local client, min_latency = 2147483647, latency
   for k, v in pairs(self._clients) do
     latency = self._clients[k]:getLatency()
-    if latency == nil or min_latency > latency then
+    if latency == nil then
       client = self._clients[k]
+    elseif min_latency > latency then
+      client = self._clients[k]
+      min_latency = latency
     end
-    min_latency = latency
   end
   return client
 end
