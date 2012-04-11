@@ -48,7 +48,7 @@ function AgentClient:initialize(options)--datacenter, id, token, host, port, tim
   self._ping_interval = nil
   self._sent_ping_count = 0
   self._got_pong_count = 0
-  self._latency = 0
+  self._latency = nil
 
   self._log = loggingUtil.makeLogger(fmt('%s:%s', self._host, self._port))
 end
