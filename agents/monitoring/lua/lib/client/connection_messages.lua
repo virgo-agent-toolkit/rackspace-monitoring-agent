@@ -29,7 +29,14 @@ function State:getName()
   return self._name
 end
 
--- RegisterCheckState State
+--[[ RegisterCheckState State
+  Whenever a client handshake is successful the onHandshake function gets
+  called. We only want to load the manifest once for now, so this small
+  state machine handles this.
+
+  We may want to add more advance logic to pull the manifest at certain
+  intervals.
+]]--
 
 local RegisterCheckState = State:extend()
 function RegisterCheckState:initialize(messages)
