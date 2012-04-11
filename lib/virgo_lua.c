@@ -97,6 +97,7 @@ virgo__lua_init(virgo_t *v)
   virgo__set_virgo_key(L, "default_config_filename", VIRGO_DEFAULT_CONFIG_FILENAME);
   virgo__set_virgo_key(L, "default_config_unix_path", VIRGO_DEFAULT_CONFIG_UNIX_PATH);
   virgo__set_virgo_key(L, "default_state_unix_directory", VIRGO_DEFAULT_STATE_UNIX_DIRECTORY);
+  virgo__set_virgo_key(L, "default_zip_unix_path", VIRGO_DEFAULT_ZIP_UNIX_PATH);
 
   luaL_openlibs(L);
   luaopen_sigar(L);
