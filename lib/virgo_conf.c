@@ -140,6 +140,11 @@ const char*
 virgo__conf_get(virgo_t *v, const char *key)
 {
   virgo_conf_t *p = v->config;
+
+  if (strcmp("lua_load_path", key) == 0) {
+    return v->lua_load_path;
+  }
+
   while (p) {
     if (strcmp(p->key, key) == 0) {
       return p->value;
