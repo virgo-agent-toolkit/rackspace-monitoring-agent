@@ -28,8 +28,6 @@ local stateFile = require('./lib/state_file')
 
 local MonitoringAgent = Object:extend()
 
-DEFAULT_STATE_DIRECTORY = '/var/run/agent/states'
-
 function MonitoringAgent:sample()
   local HTTP = require("http")
   local Utils = require("utils")
@@ -126,6 +124,7 @@ function MonitoringAgent:connect(callback)
   self._streams:on('error', function(err)
     logging.log(logging.ERR, fmt('%s:%d -> %s', err.host, err.port, err.message))
   end)
+
   self._streams:createConnections(endpoints, callback)
 end
 
