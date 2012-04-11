@@ -133,7 +133,7 @@ virgo__lua_run(virgo_t *v)
   rv = lua_pcall(v->L, 1, 1, 0);
   if (rv != 0) {
     lua_err = lua_tostring(v->L, -1);
-    return virgo_error_createf(VIRGO_EINVAL, "Failed to load init: %s", lua_err);
+    return virgo_error_createf(VIRGO_EINVAL, "Failed to load init from %s: %s", v->lua_load_path, lua_err);
   }
 
   lua_getfield(v->L, -1, "run");

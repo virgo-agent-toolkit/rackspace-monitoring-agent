@@ -18,6 +18,10 @@
 #include "virgo.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 static void
 handle_error(const char *msg, virgo_error_t *err)
@@ -52,6 +56,7 @@ int main(int argc, char* argv[])
 {
   virgo_t *v;
   virgo_error_t *err;
+  int fd;
 
   err = virgo_create(&v, "monitoring");
 
@@ -72,6 +77,16 @@ int main(int argc, char* argv[])
   if (err) {
     handle_error("Error in settings args", err);
     return EXIT_FAILURE;
+  }
+
+  /* Ensure we can read the zip file */
+  fd = open(virgo_conf_get(v, "lua_load_path"), O_RDONLY);
+  if (fd < 0) {
+    fprintf(stderr, "Error: zip can't be opened %s\n", virgo_conf_get(v, "lua_load_path"));
+    return EXIT_FAILURE;
+  }
+  else {
+    close(fd);
   }
 
   err = virgo_run(v);
