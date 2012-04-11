@@ -41,7 +41,6 @@ end
 local RegisterCheckState = State:extend()
 function RegisterCheckState:initialize(messages)
   State.initialize(self, 'RegisterCheckState', messages)
-  self._timeout = SECONDS(20, 10)
   self._lastFetchTime = 0
 end
 
@@ -79,7 +78,6 @@ function RegisterCheckState:onHandshake()
     if self._timer then
       timer.clearTimer(self._timer)
     end
-    self._log(logging.DEBUG, fmt('registering timeout %d', self._timeout))
     self._timer = process.nextTick(run)
     self._lastFetchTime = os.time()
   end
