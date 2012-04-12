@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 local os = require('os')
+local consts = require('../util/constants')
 local tls = require('tls')
 local timer = require('timer')
 local Error = require('core').Error
@@ -76,7 +77,7 @@ function AgentClient:log(priority, ...)
 end
 
 function AgentClient:_socketTimeout()
-  return misc.calcJitter(PING_INTERVAL, 19000)
+  return misc.calcJitter(PING_INTERVAL, consts.SOCKET_TIMEOUT)
 end
 
 function AgentClient:connect()
@@ -126,7 +127,7 @@ end
 
 function AgentClient:startPingInterval()
   function startInterval(this)
-    local timeout = misc.calcJitter(self._ping_interval, 7000)
+    local timeout = misc.calcJitter(self._ping_interval, consts.PING_INTERVAL_JITTER)
 
     this._log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', this._ping_interval))
 

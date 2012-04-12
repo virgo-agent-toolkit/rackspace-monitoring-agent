@@ -24,11 +24,10 @@ local async = require('async')
 local AgentClient = require('./client').AgentClient
 local ConnectionMessages = require('./connection_messages').ConnectionMessages
 local logging = require('logging')
+local consts = require('../util/constants')
 local misc = require('../util/misc')
 
 local fmt = require('string').format
-
-local CONNECT_TIMEOUT = 6000
 
 local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token)
@@ -65,8 +64,8 @@ function ConnectionStream:createConnections(addresses, callback)
 end
 
 function ConnectionStream:_setDelay(datacenter)
-  local maxDelay = 5 * 60 * 1000 -- max connection delay in ms
-  local jitter = 7000 -- jitter in ms
+  local maxDelay = consts.DATACENTER_MAX_DELAY
+  local jitter = consts.DATACENTER_MAX_DELAY_JITTER
   local previousDelay = self._delays[datacenter]
   local delay
 
@@ -139,7 +138,7 @@ function ConnectionStream:createConnection(options, callback)
   local opts = misc.merge({
     id = self._id,
     token = self._token,
-    timeout = CONNECT_TIMEOUT
+    timeout = consts.CONNECT_TIMEOUT
   }, options)
 
   local client = AgentClient:new(opts)
