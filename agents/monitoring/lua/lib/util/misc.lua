@@ -90,8 +90,8 @@ function toString(tbl)
   end
 end
 
-function createJitterTimeout(n, jitter)
-  return n + (jitter * math.random())
+function calcJitter(n, jitter)
+  return math.floor(n + (jitter * math.random()))
 end
 
 -- merge tables
@@ -113,7 +113,7 @@ end
 
 --[[ Exports ]]--
 local exports = {}
-exports.createJitterTimeout = createJitterTimeout
+exports.calcJitter = calcJitter
 exports.merge = merge
 exports.splitAddress = splitAddress
 exports.split = split
