@@ -36,8 +36,7 @@
         },
       },
       'Release': {
-        'defines': [ 'NDEBUG' ],
-        'cflags': [ '-Os' ],
+        'cflags': [ '-g', '-O3', '-fdata-sections', '-ffunction-sections' ],
         'msvs_settings': {
           'VCCLCompilerTool': {
             'target_conditions': [
@@ -150,6 +149,7 @@
           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
           'GCC_VERSION': '4.2',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
+          'GCC_OPTIMIZATION_LEVEL': '3',            # -O3
           'MACOSX_DEPLOYMENT_TARGET': '10.4',       # -mmacosx-version-min=10.4
           'PREBINDING': 'NO',                       # No -Wl,-prebind
           'USE_HEADERMAP': 'NO',

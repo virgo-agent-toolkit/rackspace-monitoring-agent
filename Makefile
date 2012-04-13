@@ -4,15 +4,15 @@ zip_files = monitoring.zip monitoring-test.zip
 sig_files = $(zip_files:%.zip=%.zip.sig)
 
 %.zip:
-	-ln -fs out/Debug/$@ $@
+	-ln -fs out/${BUILDTYPE}/$@ $@
 
 %.zip.sig: $(zip_files)
-	openssl dgst -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/Debug/$@
-	-ln -fs out/Debug/$@ $@
+	openssl dgst -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/${BUILDTYPE}/$@
+	-ln -fs out/${BUILDTYPE}/$@ $@
 
 all: out/Makefile
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE) -j4
-	-ln -fs out/Debug/monitoring-agent monitoring-agent
+	-ln -fs out/${BUILDTYPE}/monitoring-agent monitoring-agent
 	$(MAKE) $(sig_files)
 
 out/Release/monitoring-agent: all
