@@ -20,6 +20,16 @@ BRANCH = 'master'
 ENVIRONMENT = 'virgo buildbot'
 BUILDER_NAME = 'virgo-ubuntu10.04_x86_64'
 
+# Get the git revision
+virgo_git_dir = os.path.join(os.path.dirname(sys.argv[0]), '..', '..', '.git')
+git_rev = "git --git-dir=%s rev-parse HEAD" % virgo_git_dir
+try:
+    p = sub.Popen(git_rev.split(), stdout=sub.PIPE, stderr=sub.PIPE)
+except OSError as e:
+    print "ERROR: running: %s" % git_rev
+    sys.exit(1)
+REVISION, errors = p.communicate()
+
 SLEEP_SECONDS = 60 * 60
 
 COMMAND = '%s ' + \
@@ -105,7 +115,8 @@ if __name__ == '__main__':
                       help='Codespeed instance url')
     parser.add_option('--builder', dest='builder', default=BUILDER_NAME,
                       help='Name of the builder')
-    parser.add_option('--revision', dest='revision', help='Revision hash')
+    parser.add_option('--revision', dest='revision', default=REVISION,
+            help='Revision hash')
     parser.add_option('--executable', dest='executable', default='rackspace-monitoring-agent',
                       help='Executable name (e.g. rackspace-monitoring-agent)')
     parser.add_option('--sleep', dest='sleep', default=SLEEP_SECONDS,
