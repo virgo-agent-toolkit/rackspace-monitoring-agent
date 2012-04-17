@@ -1,0 +1,30 @@
+#!/sbin/runscript
+# Copyright 1999-2012 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+PIDFILE=/var/run/monitoring-agent.pid
+
+depend() {
+    use net
+    use logger dns
+}
+
+start() {
+    ebegin "Starting monitoring-agent"
+    start-stop-daemon --background --start --exec /usr/bin/monitoring-agent \
+      --make-pidfile --pidfile $PIDFILE
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping monitoring-agent"
+    start-stop-daemon --stop --exec /usr/bin/monitoring-agent \
+      --pidfile $PIDFILE
+    eend $?
+}
+
+restart() {
+    stop
+    start
+}

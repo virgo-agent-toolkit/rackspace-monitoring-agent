@@ -21,17 +21,20 @@ DEPEND="dev-vcs/git"
 RDEPEND="${DEPEND}"
 
 pkg_setup() {
-    git submodule update --init --recursive
+	git submodule update --init --recursive
 }
 
 src_configure() {
-    ./configure || die "failed configure"
+	./configure || die "failed configure"
 }
 
 src_compile() {
-    make || die "failed make"
+	make || die "failed make"
 }
 
 src_install() {
-    make install DESTDIR="${D}" || die "failed install"
+	make install DESTDIR="${D}" || die "failed install"
+
+	dodir /etc/init.d
+	cp "${FILESDIR}"/init "${D}"/etc/init.d/rackspace-monitoring-agent
 }
