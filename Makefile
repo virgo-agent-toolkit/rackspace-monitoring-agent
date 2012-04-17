@@ -1,5 +1,10 @@
 BUILDTYPE ?= Debug
 
+DESTDIR ?=
+BINDIR = ${DESTDIR}/usr/bin
+SHAREDIR = ${DESTDIR}/usr/share/rackspace-monitoring-agent
+ETCDIR = ${DESTDIR}/etc
+
 zip_files = monitoring.zip monitoring-test.zip
 sig_files = $(zip_files:%.zip=%.zip.sig)
 
@@ -35,6 +40,15 @@ tests: all
 
 test_endpoint:
 	python tools/build.py test_endpoint
+
+install: all
+	install -d ${BINDIR}
+	install -d ${ETCDIR}
+	install -d ${SHAREDIR}
+	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}
+	install out/${BUILDTYPE}/monitoring.zip ${SHAREDIR}
+	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
+	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
 dist:
 	git archive --format=tar --prefix=$(TARNAME)/ HEAD | tar xf -
