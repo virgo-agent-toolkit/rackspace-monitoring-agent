@@ -114,14 +114,13 @@ local checks4 = {
       scheduler = Scheduler:new(testFile, checks2, callback)
     end,
     function(callback)
-      scheduler:rebuild(checks3, callback);
+      scheduler:rebuild(checks3, callback)
     end,
     function(callback)
       scheduler:start()
       local timeout = timer.setTimeout(5000, function()
         -- they all should have run.
         asserts.equals(scheduler._runCount, 10)
-        print('rebuild');
         scheduler:rebuild(checks4, callback);
       end)
     end,
