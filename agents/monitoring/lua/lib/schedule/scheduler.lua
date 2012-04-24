@@ -223,12 +223,14 @@ end
 -- callback: function called after the state file is written
 function Scheduler:rebuild(checks, callback)
   for index, check in ipairs(checks) do
-    self._checkMap[check.id] = check
-    table.insert(self._checks,check)
-    if self._nextScan == nil then
-      self._nextScan = check:getNextRun()
-    else
-      self._nextScan = math.min(self._nextScan, check:getNextRun())
+    if (self._checkMap[check.id] == nil) or self._checkMap[check.id]:toString() ~= check:toString() then
+      self._checkMap[check.id] = check
+      table.insert(self._checks,check)
+      if self._nextScan == nil then
+        self._nextScan = check:getNextRun()
+      else
+        self._nextScan = math.min(self._nextScan, check:getNextRun())
+      end
     end
   end
   self._scanner:dumpChecks(self._checks, function()
