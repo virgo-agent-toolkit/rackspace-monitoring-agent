@@ -74,7 +74,7 @@ end
 
 
 exports['test_scheduler_scans'] = function(test, asserts)
-  local testFile = path.join(tmp, 'test_scheduler_initialize.state')
+  local testFile = path.join(tmp, 'test_scheduler_scans.state')
   local scheduler
 
   async.waterfall({
@@ -128,9 +128,9 @@ local checks4 = {
     function(callback)
       scheduler:start()
       local timeout = timer.setTimeout(5000, function()
-        -- they all should have run.
-        asserts.ok(scheduler._runCount > 15)
-        asserts.ok(scheduler._runCount < 18)
+        -- tests are a bit dicey at this point depending on exactly where in the clock we are..
+        asserts.ok(scheduler._runCount >= 15)
+        asserts.ok(scheduler._runCount <= 18)
         callback()
       end)
     end
