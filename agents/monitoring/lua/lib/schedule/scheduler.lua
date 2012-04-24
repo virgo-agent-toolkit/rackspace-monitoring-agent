@@ -222,7 +222,9 @@ end
 -- checks: a table of BaseChecks
 -- callback: function called after the state file is written
 function Scheduler:rebuild(checks, callback)
+  local seen = {}
   for index, check in ipairs(checks) do
+    seen[check.id] = true;
     if (self._checkMap[check.id] == nil) or self._checkMap[check.id]:toString() ~= check:toString() then
       self._checkMap[check.id] = check
       table.insert(self._checks,check)
@@ -231,6 +233,13 @@ function Scheduler:rebuild(checks, callback)
       else
         self._nextScan = math.min(self._nextScan, check:getNextRun())
       end
+    end
+  end
+  for index, check in ipairs(self._checks) do
+    if (seen[check.id] == nil) then
+      table.remove(self._checks,index);
+---      table.remove(self._checkMap,check.id);
+
     end
   end
   self._scanner:dumpChecks(self._checks, function()

@@ -106,6 +106,9 @@ local checks3 = {
   BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
   BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
 }
+local checks4 = {
+  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+}
   async.waterfall({
     function(callback)
       scheduler = Scheduler:new(testFile, checks2, callback)
@@ -118,6 +121,16 @@ local checks3 = {
       local timeout = timer.setTimeout(5000, function()
         -- they all should have run.
         asserts.equals(scheduler._runCount, 10)
+        print('rebuild');
+        scheduler:rebuild(checks4, callback);
+      end)
+    end,
+    function(callback)
+      scheduler:start()
+      local timeout = timer.setTimeout(5000, function()
+        -- they all should have run.
+        asserts.ok(scheduler._runCount > 15)
+        asserts.ok(scheduler._runCount < 18)
         callback()
       end)
     end
