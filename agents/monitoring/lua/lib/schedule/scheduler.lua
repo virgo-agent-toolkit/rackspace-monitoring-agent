@@ -157,11 +157,12 @@ function Scheduler:initialize(stateFile, checks, callback)
   self._log = loggingUtil.makeLogger('scheduler')
   self._nextScan = nil
   self._scanTimer = nil
-  local checkMap = {}
+  self._checkMap = {}
+  self._checks = checks;
   -- todo: the check:run closer captures the checks param. thay may end up being a memory liability for cases where
   -- there are many checks.
   for index, check in ipairs(checks) do
-    checkMap[check.id] = check
+    self._checkMap[check.id] = check
     if self._nextScan == nil then
       self._nextScan = check:getNextRun()
     else
@@ -170,14 +171,13 @@ function Scheduler:initialize(stateFile, checks, callback)
   end
   self._runCount = 0
   self._scanner = StateScanner:new(stateFile)
-
   -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a
   -- check needs to be run.
   self._scanner:dumpChecks(checks, function()
     self._scanner:on('check_scheduled', function(checkMeta)
       -- run the check.
       -- todo: need a process of determining at this point if a check SHOULD NOT be run.
-      local check = checkMap[checkMeta.id]
+      local check = self._checkMap[checkMeta.id]
       check:run(function(checkResult)
         self._runCount = self._runCount + 1
         self._scanner:dumpChecks(checks, function()
@@ -202,6 +202,7 @@ function Scheduler:initialize(stateFile, checks, callback)
           end
           local timeout = (self._nextScan - os.time()) * 1000 -- milliseconds
           self._scanTimer = timer.setTimeout(timeout, function()
+
             self._scanTimer = nil
             self._scanner:scanStates()
           end)
@@ -215,6 +216,24 @@ end
 -- start scanning.
 function Scheduler:start()
   self._scanner:scanStates()
+end
+
+-- Scheduler is in charge of determining if a check should be run and then maintaining the state of the checks.
+-- checks: a table of BaseChecks
+-- callback: function called after the state file is written
+function Scheduler:rebuild(checks, callback)
+  for index, check in ipairs(checks) do
+    self._checkMap[check.id] = check
+    table.insert(self._checks,check)
+    if self._nextScan == nil then
+      self._nextScan = check:getNextRun()
+    else
+      self._nextScan = math.min(self._nextScan, check:getNextRun())
+    end
+  end
+  self._scanner:dumpChecks(self._checks, function()
+    callback()
+  end)
 end
 
 local exports = {}

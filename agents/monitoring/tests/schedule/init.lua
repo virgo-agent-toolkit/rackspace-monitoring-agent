@@ -72,6 +72,7 @@ exports['test_scheduler_initialize'] = function(test, asserts)
   end)
 end
 
+
 exports['test_scheduler_scans'] = function(test, asserts)
   local testFile = path.join(tmp, 'test_scheduler_initialize.state')
   local scheduler
@@ -93,5 +94,37 @@ exports['test_scheduler_scans'] = function(test, asserts)
     test.done()
   end)
 end
+
+
+exports['test_scheduler_adds'] = function(test, asserts)
+  local testFile = path.join(tmp, 'test_scheduler_adds.state')
+  local scheduler
+local checks2 = {
+  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+}
+local checks3 = {
+  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+}
+  async.waterfall({
+    function(callback)
+      scheduler = Scheduler:new(testFile, checks2, callback)
+    end,
+    function(callback)
+      scheduler:rebuild(checks3, callback);
+    end,
+    function(callback)
+      scheduler:start()
+      local timeout = timer.setTimeout(5000, function()
+        -- they all should have run.
+        asserts.equals(scheduler._runCount, 10)
+        callback()
+      end)
+    end
+  }, function(err)
+    asserts.ok(err == nil)
+    test.done()
+  end)
+end
+
 
 return exports
