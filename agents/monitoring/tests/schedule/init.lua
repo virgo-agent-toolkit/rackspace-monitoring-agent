@@ -118,6 +118,7 @@ local checks6 = {
 local checks7 = {
   BaseCheck:new({id='ch0001', state='OK', period=2, path=path.join(tmp, '0001.chk')}),
 }
+  local lastRun = 0
   async.waterfall({
     function(callback)
       scheduler = Scheduler:new(testFile, checks2, callback)
@@ -130,6 +131,7 @@ local checks7 = {
       local timeout = timer.setTimeout(5000, function()
         -- they all should have run.
         asserts.equals(scheduler._runCount, 10)
+        lastRun = scheduler._runCount
         asserts.equals(scheduler:numChecks(), 2)
         scheduler:rebuild(checks4, callback);
       end)
@@ -139,7 +141,9 @@ local checks7 = {
         asserts.equals(scheduler:numChecks(), 1)
         -- tests are a bit dicey at this point depending on exactly where in the clock we are..
         asserts.ok(scheduler._runCount >= 15)
-        asserts.ok(scheduler._runCount <= 18)
+        asserts.ok(scheduler._runCount <= 16)
+        asserts.ok(scheduler._runCount > lastRun)
+        lastRun = scheduler._runCount
         callback()
       end)
     end,
@@ -159,8 +163,9 @@ local checks7 = {
       local timeout = timer.setTimeout(3000, function()
         asserts.equals(scheduler:numChecks(), 1)
         -- tests are a bit dicey at this point depending on exactly where in the clock we are..
-        asserts.ok(scheduler._runCount >= 15)
-        asserts.ok(scheduler._runCount <= 18)
+        asserts.ok(scheduler._runCount >= lastRun + 1)
+        asserts.ok(scheduler._runCount <= lastRun + 2)
+        asserts.ok(scheduler._runCount > lastRun)
         callback()
       end)
     end,

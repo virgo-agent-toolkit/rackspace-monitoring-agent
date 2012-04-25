@@ -229,13 +229,20 @@ end
 -- callback: function called after the state file is written
 function Scheduler:rebuild(checks, callback)
   local seen = {}
-  local newCheckMap = {};
+  local newCheckMap = {}
+  local altered = {}
+  local vis = false;
   for index, check in ipairs(checks) do
     seen[check.id] = true;
     newCheckMap[check.id] = check
-    if (self._checkMap[check.id] == nil) or self._checkMap[check.id]:toString() ~= check:toString() then
+    vis = self._checkMap[check.id] == nil
+    if vis or self._checkMap[check.id]:toString() ~= check:toString() then
       self._checkMap[check.id] = check
-      table.insert(self._checks,check)
+      if ( not vis) then
+        altered[check.id] = true;
+      else
+        table.insert(self._checks,check)
+      end
       if self._nextScan == nil then
         self._nextScan = check:getNextRun()
       else
@@ -244,6 +251,9 @@ function Scheduler:rebuild(checks, callback)
     end
   end
   for index, check in ipairs(self._checks) do
+    if (altered[check.id] == true) then
+      table[index] = newCheckMap[check.id];
+    end
     if (seen[check.id] == nil) then
       table.remove(self._checks,index);
     end
