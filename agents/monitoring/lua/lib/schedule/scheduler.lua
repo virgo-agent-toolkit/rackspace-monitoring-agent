@@ -220,7 +220,11 @@ function Scheduler:start()
   self._scanner:scanStates()
 end
 
--- Scheduler is in charge of determining if a check should be run and then maintaining the state of the checks.
+function Scheduler:numChecks()
+  return #self._checks
+end
+
+-- We can rebuid it.  We have the technology.  Better.. faster.. stronger..
 -- checks: a table of BaseChecks
 -- callback: function called after the state file is written
 function Scheduler:rebuild(checks, callback)

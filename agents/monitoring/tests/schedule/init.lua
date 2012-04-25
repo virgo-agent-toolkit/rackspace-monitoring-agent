@@ -109,6 +109,15 @@ local checks3 = {
 local checks4 = {
   BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
 }
+local checks5 = {
+  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+}
+local checks6 = {
+  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+}
+local checks7 = {
+  BaseCheck:new({id='ch0001', state='OK', period=2, path=path.join(tmp, '0001.chk')}),
+}
   async.waterfall({
     function(callback)
       scheduler = Scheduler:new(testFile, checks2, callback)
@@ -121,18 +130,40 @@ local checks4 = {
       local timeout = timer.setTimeout(5000, function()
         -- they all should have run.
         asserts.equals(scheduler._runCount, 10)
+        asserts.equals(scheduler:numChecks(), 2)
         scheduler:rebuild(checks4, callback);
       end)
     end,
     function(callback)
-      scheduler:start()
       local timeout = timer.setTimeout(5000, function()
+        asserts.equals(scheduler:numChecks(), 1)
         -- tests are a bit dicey at this point depending on exactly where in the clock we are..
         asserts.ok(scheduler._runCount >= 15)
         asserts.ok(scheduler._runCount <= 18)
         callback()
       end)
-    end
+    end,
+    function(callback)
+      scheduler:rebuild(checks5, callback)
+    end,
+    function(callback)
+      asserts.equals(scheduler:numChecks(), 1)
+      scheduler:rebuild(checks6, callback)
+    end,
+    function(callback)
+      asserts.equals(scheduler:numChecks(), 1)
+      scheduler:rebuild(checks7, callback)
+    end,
+    function(callback)
+      asserts.equals(scheduler:numChecks(), 1)
+      local timeout = timer.setTimeout(3000, function()
+        asserts.equals(scheduler:numChecks(), 1)
+        -- tests are a bit dicey at this point depending on exactly where in the clock we are..
+        asserts.ok(scheduler._runCount >= 15)
+        asserts.ok(scheduler._runCount <= 18)
+        callback()
+      end)
+    end,
   }, function(err)
     asserts.ok(err == nil)
     test.done()
