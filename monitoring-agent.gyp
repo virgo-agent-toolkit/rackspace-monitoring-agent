@@ -51,6 +51,7 @@
         'PLATFORM="<(OS)"',
         '_LARGEFILE_SOURCE',
         '_FILE_OFFSET_BITS=64',
+        'VIRGO_VERSION="<!(git --git-dir .git rev-parse HEAD)"',
       ],
 
       'conditions': [
