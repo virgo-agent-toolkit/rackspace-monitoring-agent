@@ -108,7 +108,7 @@
         ],
       }],
       [ 'OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-        'cflags': [ '-Wall', '-pthread'],
+        'cflags': [ '-Wall', '-pthread', '-fno-strict-aliasing'],
         'cflags_cc': [ '-fno-rtti', '-fno-exceptions' ],
         'ldflags': [ '-pthread', '-Wl,-E', ],
         'conditions': [
