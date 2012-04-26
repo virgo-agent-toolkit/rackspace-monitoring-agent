@@ -234,6 +234,7 @@ function Scheduler:rebuild(checks, callback)
       if ( not vis) then
         altered[check.id] = true;
       else
+        self:emit('added', check)
         table.insert(self._checks,check)
       end
       if self._nextScan == nil then
@@ -245,10 +246,12 @@ function Scheduler:rebuild(checks, callback)
   end
   for index, check in ipairs(self._checks) do
     if (altered[check.id] == true) then
-      self._checks[index] = newCheckMap[check.id];
+      self:emit('altered', check)
+      self._checks[index] = newCheckMap[check.id]
     end
     if (seen[check.id] == nil) then
-      table.remove(self._checks,index);
+      self:emit('removed', check)
+      table.remove(self._checks,index)
     end
   end
   self._checkMap = newCheckMap 
