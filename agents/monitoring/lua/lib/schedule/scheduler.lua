@@ -245,7 +245,7 @@ function Scheduler:rebuild(checks, callback)
   end
   for index, check in ipairs(self._checks) do
     if (altered[check.id] == true) then
-      table[index] = newCheckMap[check.id];
+      self._checks[index] = newCheckMap[check.id];
     end
     if (seen[check.id] == nil) then
       table.remove(self._checks,index);
