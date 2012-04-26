@@ -158,22 +158,13 @@ function Scheduler:initialize(stateFile, checks, callback)
   self._nextScan = nil
   self._scanTimer = nil
   self._checkMap = {}
-  self._checks = checks;
-  -- todo: the check:run closer captures the checks param. thay may end up being a memory liability for cases where
-  -- there are many checks.
-  for index, check in ipairs(checks) do
-    self._checkMap[check.id] = check
-    if self._nextScan == nil then
-      self._nextScan = check:getNextRun()
-    else
-      self._nextScan = math.min(self._nextScan, check:getNextRun())
-    end
-  end
+  self._checks = {}
   self._runCount = 0
-  self._scanner = StateScanner:new(stateFile)
-  -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a
-  -- check needs to be run.
-  self._scanner:dumpChecks(checks, function()
+  self._scanner = StateScanner:new(stateFile)  
+  self:rebuild(checks, function() 
+
+    -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a
+    -- check needs to be run.
     self._scanner:on('check_scheduled', function(checkMeta)
       -- run the check.
       -- todo: need a process of determining at this point if a check SHOULD NOT be run.
@@ -181,7 +172,7 @@ function Scheduler:initialize(stateFile, checks, callback)
       if (check ~= nil) then 
         check:run(function(checkResult)
           self._runCount = self._runCount + 1
-          self._scanner:dumpChecks(checks, function()
+          self._scanner:dumpChecks(self._checks, function()
             self._log(logging.INFO, 'checks dumped at '..os.time())
           end)
           -- emit check
@@ -232,6 +223,8 @@ function Scheduler:rebuild(checks, callback)
   local newCheckMap = {}
   local altered = {}
   local vis = false;
+  -- todo: the check:run closer captures the checks param. thay may end up being a memory liability for cases where
+  -- there are many checks.
   for index, check in ipairs(checks) do
     seen[check.id] = true;
     newCheckMap[check.id] = check
