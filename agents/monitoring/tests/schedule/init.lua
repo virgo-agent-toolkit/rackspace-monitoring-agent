@@ -116,7 +116,7 @@ local checks6 = {
   BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
 }
 local checks7 = {
-  BaseCheck:new({id='ch0001', state='OK', period=2, path=path.join(tmp, '0001.chk')}),
+  BaseCheck:new({id='ch0001', state='OK', period=2, path=path.join(tmp, '0002.chk')}),
 }
   local lastRun = 0
   async.waterfall({
@@ -157,6 +157,19 @@ local checks7 = {
     function(callback)
       asserts.equals(scheduler:numChecks(), 1)
       scheduler:rebuild(checks7, callback)
+    end,
+    function(callback)
+      --- validate that we are, in fact, writing to disk and that the check details changed.
+      local count = 0
+      local s = StateScanner:new(testFile)
+      s:on('check_scheduled', function(details)
+        count = count + 1
+        if count >= #checks7 then
+          callback()
+        end
+        asserts.equals(path.join(tmp, '0002.chk'),details.path)
+      end)
+      s:scanStates()
     end,
     function(callback)
       asserts.equals(scheduler:numChecks(), 1)
