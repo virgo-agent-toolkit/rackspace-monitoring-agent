@@ -72,8 +72,9 @@ exports['test_scheduler_initialize'] = function(test, asserts)
   end)
 end
 
+
 exports['test_scheduler_scans'] = function(test, asserts)
-  local testFile = path.join(tmp, 'test_scheduler_initialize.state')
+  local testFile = path.join(tmp, 'test_scheduler_scans.state')
   local scheduler
 
   async.waterfall({
@@ -93,5 +94,99 @@ exports['test_scheduler_scans'] = function(test, asserts)
     test.done()
   end)
 end
+
+
+exports['test_scheduler_adds'] = function(test, asserts)
+  local testFile = path.join(tmp, 'test_scheduler_adds.state')
+  local scheduler
+local checks2 = {
+  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+}
+local checks3 = {
+  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+}
+local checks4 = {
+  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+}
+local checks5 = {
+  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+}
+local checks6 = {
+  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+}
+local checks7 = {
+  BaseCheck:new({id='ch0001', state='OK', period=2, path=path.join(tmp, '0002.chk')}),
+}
+  local lastRun = 0
+  async.waterfall({
+    function(callback)
+      scheduler = Scheduler:new(testFile, checks2, callback)
+    end,
+    function(callback)
+      scheduler:rebuild(checks3, callback)
+    end,
+    function(callback)
+      scheduler:start()
+      local timeout = timer.setTimeout(2000, function()
+        -- they all should have run.
+        asserts.equals(scheduler._runCount, 4)
+        lastRun = scheduler._runCount
+        asserts.equals(scheduler:numChecks(), 2)
+        scheduler:rebuild(checks4, callback);
+      end)
+    end,
+    function(callback)
+      local timeout = timer.setTimeout(2000, function()
+        asserts.equals(scheduler:numChecks(), 1)
+        -- tests are a bit dicey at this point depending on exactly where in the clock we are..
+        asserts.ok(scheduler._runCount >= 6)
+        asserts.ok(scheduler._runCount <= 7)
+        asserts.ok(scheduler._runCount > lastRun)
+        lastRun = scheduler._runCount
+        callback()
+      end)
+    end,
+    function(callback)
+      scheduler:rebuild(checks5, callback)
+    end,
+    function(callback)
+      asserts.equals(scheduler:numChecks(), 1)
+      scheduler:rebuild(checks6, callback)
+    end,
+    function(callback)
+      asserts.equals(scheduler:numChecks(), 1)
+      scheduler:rebuild(checks7, callback)
+    end,
+    function(callback)
+      --- validate that we are, in fact, writing to disk and that the check details changed.
+      local count = 0
+      local s = StateScanner:new(testFile)
+      s:on('check_scheduled', function(details)
+        count = count + 1
+        if count >= #checks7 then
+          callback()
+        end
+        asserts.equals(path.join(tmp, '0002.chk'),details.path)
+      end)
+      s:scanStates()
+    end,
+    function(callback)
+      asserts.equals(scheduler:numChecks(), 1)
+      local timeout = timer.setTimeout(3000, function()
+        asserts.equals(scheduler:numChecks(), 1)
+        -- tests are a bit dicey at this point depending on exactly where in the clock we are..
+        asserts.ok(scheduler._runCount >= lastRun + 1)
+        asserts.ok(scheduler._runCount <= lastRun + 2)
+        asserts.ok(scheduler._runCount > lastRun)
+        callback()
+      end)
+    end,
+  }, function(err)
+    asserts.ok(err == nil)
+    test.done()
+  end)
+end
+
 
 return exports
