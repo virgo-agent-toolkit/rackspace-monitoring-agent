@@ -169,7 +169,7 @@ function Scheduler:initialize(stateFile, checks, callback)
       -- run the check.
       -- todo: need a process of determining at this point if a check SHOULD NOT be run.
       local check = self._checkMap[checkMeta.id]
-      if (check ~= nil) then 
+      if check ~= nil then 
         check:run(function(checkResult)
           self._runCount = self._runCount + 1
           self._scanner:dumpChecks(self._checks, function()
@@ -194,7 +194,6 @@ function Scheduler:initialize(stateFile, checks, callback)
             end
             local timeout = (self._nextScan - os.time()) * 1000 -- milliseconds
             self._scanTimer = timer.setTimeout(timeout, function()
-
               self._scanTimer = nil
               self._scanner:scanStates()
             end)
@@ -245,11 +244,11 @@ function Scheduler:rebuild(checks, callback)
     end
   end
   for index, check in ipairs(self._checks) do
-    if (altered[check.id] == true) then
+    if altered[check.id] == true then
       self:emit('altered', check)
       self._checks[index] = newCheckMap[check.id]
     end
-    if (seen[check.id] == nil) then
+    if seen[check.id] == nil then
       self:emit('removed', check)
       table.remove(self._checks,index)
     end
