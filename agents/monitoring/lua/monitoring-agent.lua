@@ -21,11 +21,22 @@ local JSON = require('json')
 local Object = require('core').Object
 local fmt = require('string').format
 local logging = require('logging')
+local timer = require('timer')
 
 local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
 local misc = require('./lib/util/misc')
 local States = require('./lib/states')
 local stateFile = require('./lib/state_file')
+
+function gc()
+  collectgarbage('collect')
+end
+
+-- Setup GC on USR1
+process:on('SIGUSR1', gc)
+
+-- Setup GC
+timer.setInterval(5 * 1000, gc)
 
 local MonitoringAgent = Object:extend()
 
