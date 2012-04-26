@@ -52,6 +52,13 @@ show_help()
 
 }
 
+static void
+show_version()
+{
+  printf("%s\n", VIRGO_VERSION);
+  fflush(stdout);
+}
+
 int main(int argc, char* argv[])
 {
   virgo_t *v;
@@ -79,6 +86,12 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
+  err = virgo_conf_args(v, argc, argv);
+  if (err) {
+    handle_error("Error in settings args", err);
+    return EXIT_FAILURE;
+  }
+
   /* Ensure we can read the zip file */
   fd = open(virgo_conf_get(v, "lua_load_path"), O_RDONLY);
   if (fd < 0) {
@@ -93,6 +106,11 @@ int main(int argc, char* argv[])
   if (err) {
     if (err->err == VIRGO_EHELPREQ) {
       show_help();
+      virgo_error_clear(err);
+      return 0;
+    }
+    else if (err->err == VIRGO_EVERSIONREQ) {
+      show_version();
       virgo_error_clear(err);
       return 0;
     }
