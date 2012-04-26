@@ -92,10 +92,6 @@ function process:missingHandlerType(name, ...)
   end
 end
 
-process:on('SIGUSR1', function()
-  collectgarbage()
-end)
-
 function process.nextTick(callback)
   timer.setTimeout(0, callback)
 end
