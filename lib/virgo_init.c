@@ -100,6 +100,10 @@ virgo_run(virgo_t *v)
     return virgo_error_create(VIRGO_EHELPREQ, "--help was passed");;
   }
 
+  if (virgo__argv_has_flag(v, "-v", "--version") == 1) {
+    return virgo_error_create(VIRGO_EVERSIONREQ, "--version was passed");;
+  }
+
   err = virgo__log_rotate(v);
 
   if (err) {
