@@ -83,7 +83,7 @@ def main(options):
 
     max_row = None
     for row in csv_reader:
-        if max_row == None or max_row['VSIZE'] < row['VSIZE']:
+        if max_row == None or max_row['RSS'] < row['RSS']:
             max_row = row
 
     date = max_row['DATE'] + ' ' + max_row['TIME']
@@ -95,7 +95,7 @@ def main(options):
         'executable': options.executable,
         'benchmark': benchmark,
         'environment': options.environment,
-        'result_value': float(max_row['VSIZE']),
+        'result_value': float(max_row['RSS']),
         'revision_date': date,
         'result_date': date
     }
