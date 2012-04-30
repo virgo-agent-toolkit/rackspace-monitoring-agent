@@ -1,3 +1,4 @@
 id agentA
 token aToken
-endpoints 127.0.0.1:50041,127.0.0.1:50051,127.0.0.1:50061
+query_endpoints _agent._tcp.ord1.test.monitoring.api.rackspacecloud.com,_agent._tcp.dfw1.test.monitoring.api.rackspacecloud.com,_agent._tcp.lon1.test.monitoring.api.rackspacecloud.com
+#endpoints 127.0.0.1:50041,127.0.0.1:50051,127.0.0.1:50061
