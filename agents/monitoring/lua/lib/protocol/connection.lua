@@ -218,6 +218,12 @@ function AgentProtocolConnection:getManifest(callback)
   end)
 end
 
+function AgentProtocolConnection:processMessage(msg)
+  if msg.method == 'check.schedule_changed' then
+    p('schedule change');
+  end
+end
+
 --[[
 Process an async message
 
