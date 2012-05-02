@@ -55,9 +55,11 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
     end)
   end
   async.map(domains, iter, function(err, results)
-    local i, v
+    local i, v, serverPort
     for i, v in pairs(results) do
-      endpoints = endpoints .. results[i][1].name .. ':' .. results[i][1].port
+      serverPort = results[i][1].name .. ':' .. results[i][1].port
+      endpoints = endpoints .. serverPort
+      logging.log(logging.INFO, 'found endpoint: ' .. serverPort)
       if i ~= #results then
         endpoints = endpoints .. ','
       end
