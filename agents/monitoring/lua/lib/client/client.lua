@@ -27,6 +27,7 @@ local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
 local AgentProtocolConnection = require('../protocol/connection')
 local table = require('table')
+local Scheduler = require('../schedule').Scheduler
 
 local fmt = require('string').format
 
@@ -46,6 +47,7 @@ function AgentClient:initialize(options)--datacenter, id, token, host, port, tim
   self._timeout = options.timeout or 5000
 
   self._scheduler = nil
+  
   self._ping_interval = nil
   self._sent_ping_count = 0
   self._got_pong_count = 0
@@ -56,6 +58,21 @@ end
 
 function AgentClient:getDatacenter()
   return self._datacenter
+end
+
+function AgentClient:_scheduleManifest(manifest)
+  local checks = self:_createChecks(manifest)
+  if self._scheduler == nil then
+    self._scheduler = Scheduler:new('scheduler.state', checks, function()
+    end)
+    self._scheduler:start()
+  else 
+    self._scheduler:rebuild(checks, function()
+    end)
+  end
+  self._scheduler:on('check', function(check, checkResults)
+    self.protocol:sendMetrics(check, checkResults)
+  end)
 end
 
 function AgentClient:_createChecks(manifest)
