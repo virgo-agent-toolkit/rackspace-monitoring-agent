@@ -71,11 +71,11 @@ function MonitoringAgent:_verifyState(callback)
     logging.log(logging.ERR, "statefile 'config' missing or invalid")
     process.exit(1)
   end
-  if self._config['id'] == nil then
+  if self._config['monitoring_id'] == nil then
     logging.log(logging.ERR, "'id' is missing from 'config'")
     process.exit(1)
   end
-  if self._config['token'] == nil then
+  if self._config['monitoring_token'] == nil then
     logging.log(logging.ERR, "'token' is missing from 'config'")
     process.exit(1)
   end
@@ -85,22 +85,22 @@ end
 function MonitoringAgent:_loadEndpoints(callback)
   local endpoints
   local query_endpoints
-  if self._config['query_endpoints'] and
-     self._config['endpoints'] == nil then
+  if self._config['monitoring_query_endpoints'] and
+     self._config['monitoring_endpoints'] == nil then
     -- Verify that the endpoint addresses are specified in the correct format
-    query_endpoints = misc.split(self._config['query_endpoints'], '[^,]+')
+    query_endpoints = misc.split(self._config['monitoring_query_endpoints'], '[^,]+')
     logging.log(logging.INFO, "querying for endpoints")
     self:_queryForEndpoints(query_endpoints, function(err, endpoints)
       if err then
         callback(err)
         return
       end
-      self._config['endpoints'] = endpoints
+      self._config['monitoring_endpoints'] = endpoints
       callback()
     end)
   else
     -- Verify that the endpoint addresses are specified in the correct format
-    endpoints = misc.split(self._config['endpoints'], '[^,]+')
+    endpoints = misc.split(self._config['monitoring_endpoints'], '[^,]+')
     if #endpoints == 0 then
       logging.log(logging.ERR, "at least one endpoint needs to be specified")
       process.exit(1)
@@ -111,7 +111,7 @@ function MonitoringAgent:_loadEndpoints(callback)
         process.exit(1)
       end
     end
-    logging.log(logging.INFO, "using id " .. self._config['id'])
+    logging.log(logging.INFO, "using id " .. self._config['monitoring_id'])
     callback()
   end
 end
@@ -133,7 +133,7 @@ function MonitoringAgent:loadStates(callback)
 end
 
 function MonitoringAgent:connect(callback)
-  local endpoints = misc.split(self._config['endpoints'], '[^,]+')
+  local endpoints = misc.split(self._config['monitoring_endpoints'], '[^,]+')
   if #endpoints <= 0 then
     logging.log(logging.ERR, 'no endpoints')
     timer.setTimeout(misc.calcJitter(constants.SRV_RECORD_FAILURE_DELAY, constants.SRV_RECORD_FAILURE_DELAY_JITTER), function()
@@ -141,7 +141,7 @@ function MonitoringAgent:connect(callback)
     end)
     return
   end
-  self._streams = ConnectionStream:new(self._config['id'], self._config['token'])
+  self._streams = ConnectionStream:new(self._config['monitoring_id'], self._config['monitoring_token'])
   self._streams:on('error', function(err)
     logging.log(logging.ERR, JSON.stringify(err))
   end)
