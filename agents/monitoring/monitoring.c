@@ -21,7 +21,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 static void
 handle_error(const char *msg, virgo_error_t *err)
