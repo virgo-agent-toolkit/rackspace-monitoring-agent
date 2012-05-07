@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local JSON = require('json')
+
 local Check = require('monitoring/lib/check')
 local Metric = require('monitoring/lib/check/base').Metric
 local BaseCheck = Check.BaseCheck
@@ -74,7 +76,7 @@ exports['test_network_check'] = function(test, asserts)
 end
 
 exports['test_disks_check'] = function(test, asserts)
-  local check = DiskCheck:new({id='foo', state='OK', period=30})
+  local check = DiskCheck:new({id='foo', state='ok', period=30})
   asserts.ok(check._lastResults == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)
@@ -108,6 +110,23 @@ exports['test_metric_type_detection_and_casting'] = function(test, asserts)
   asserts.equals(m3.value, '222.33')
   asserts.equals(m4.value, 'foobar')
   asserts.equals(m5.value, 'true')
+
+  test.done()
+end
+
+exports['test_checkresult_serialization'] = function(test, asserts)
+  local cr, serialized
+
+  cr = CheckResult:new({id='foo', state='ok', period=30})
+  cr:addMetric('m1', nil, 1.23456)
+
+  serialized = cr:serialize()
+
+  asserts.equals(#serialized, 1)
+  asserts.equals(serialized[1][1], JSON.null)
+  asserts.equals(serialized[1][2]['m1']['t'], 'double')
+  asserts.equals(serialized[1][2]['m1']['t'], 'double')
+  asserts.equals(serialized[1][2]['m1']['v'], '1.23456')
 
   test.done()
 end
