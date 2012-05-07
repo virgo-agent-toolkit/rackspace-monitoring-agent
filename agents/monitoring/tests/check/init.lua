@@ -88,19 +88,21 @@ exports['test_disks_check'] = function(test, asserts)
 end
 
 exports['test_metric_type_detection_and_casting'] = function(test, asserts)
-  local m1, m2, m3, m4, m5
+  local m1, m2, m3, m4, m5, g6
 
   m1 = Metric:new('test', 'eth0', nil, 5)
   m2 = Metric:new('test', nil, nil, 1.23456)
   m3 = Metric:new('test', nil, nil, 222.33)
   m4 = Metric:new('test', nil, nil, "foobar")
   m5 = Metric:new('test', nil, nil, true)
+  m6 = Metric:new('test', nil, 'gauge', '2')
 
   asserts.equals(m1.type, 'int64')
   asserts.equals(m2.type, 'double')
   asserts.equals(m3.type, 'double')
   asserts.equals(m4.type, 'string')
   asserts.equals(m5.type, 'bool')
+  asserts.equals(m6.type, 'gauge')
 
   asserts.equals(m1.dimension, 'eth0')
   asserts.equals(m2.dimension, 'none')
