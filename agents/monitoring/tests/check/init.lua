@@ -125,7 +125,6 @@ exports['test_checkresult_serialization'] = function(test, asserts)
   asserts.equals(#serialized, 1)
   asserts.equals(serialized[1][1], JSON.null)
   asserts.equals(serialized[1][2]['m1']['t'], 'double')
-  asserts.equals(serialized[1][2]['m1']['t'], 'double')
   asserts.equals(serialized[1][2]['m1']['v'], '1.23456')
 
   test.done()
