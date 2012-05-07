@@ -22,7 +22,7 @@ local fmt = require('string').format
 local table = require('table')
 
 local toString = require('../util/misc').toString
-local inTable = require('../util/misc').inTable
+local tableContains = require('../util/misc').tableContains
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
@@ -102,7 +102,7 @@ function Metric:initialize(name, dimension, type, value)
   self.value = tostring(value)
 
   if type then
-    if not inTable(function(v) return type == v end, VALID_METRIC_TYPES) then
+    if not tableContains(function(v) return type == v end, VALID_METRIC_TYPES) then
       error('Invalid metric type: ' .. type)
     end
     self.type = type

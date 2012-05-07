@@ -115,7 +115,7 @@ end
 -- f - function which is called on every item and should return true if the item
 -- matches, false otherwise
 -- t - table
-function inTable(f, t)
+function tableContains(f, t)
   for _, v in ipairs(t) do
     if f(v) then
       return true
@@ -132,5 +132,5 @@ exports.merge = merge
 exports.splitAddress = splitAddress
 exports.split = split
 exports.toString = toString
-exports.inTable = inTable
+exports.tableContains = tableContains
 return exports
