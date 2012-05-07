@@ -24,7 +24,7 @@ function NetworkCheck:run(callback)
 
     if usage then
       for key, value in pairs(usage) do
-        checkResult:addMetric(key, DIMENSION_PREFIX .. info.name, value)
+        checkResult:addMetric(key, DIMENSION_PREFIX .. info.name, 'gauge', value)
       end
     end
   end
