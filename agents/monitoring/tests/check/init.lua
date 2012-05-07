@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 local Check = require('monitoring/lib/check')
+local Metric = require('monitoring/lib/check/base').Metric
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
 
@@ -82,6 +83,33 @@ exports['test_disks_check'] = function(test, asserts)
     asserts.ok(check._lastResults._nextRun)
     test.done()
   end)
+end
+
+exports['test_metric_type_detection_and_casting'] = function(test, asserts)
+  local m1, m2, m3, m4, m5
+
+  m1 = Metric:new('test', 'eth0', 5)
+  m2 = Metric:new('test', nil, 1.23456)
+  m3 = Metric:new('test', nil, 222.33)
+  m4 = Metric:new('test', nil, "foobar")
+  m5 = Metric:new('test', nil, true)
+
+  asserts.equals(m1.type, 'int64')
+  asserts.equals(m2.type, 'double')
+  asserts.equals(m3.type, 'double')
+  asserts.equals(m4.type, 'string')
+  asserts.equals(m5.type, 'bool')
+
+  asserts.equals(m1.dimension, 'eth0')
+  asserts.equals(m2.dimension, 'none')
+
+  asserts.equals(m1.value, '5')
+  asserts.equals(m2.value, '1.23456')
+  asserts.equals(m3.value, '222.33')
+  asserts.equals(m4.value, 'foobar')
+  asserts.equals(m5.value, 'true')
+
+  test.done()
 end
 
 return exports
