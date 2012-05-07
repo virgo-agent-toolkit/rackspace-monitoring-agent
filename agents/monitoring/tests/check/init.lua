@@ -97,6 +97,8 @@ exports['test_metric_type_detection_and_casting'] = function(test, asserts)
   m5 = Metric:new('test', nil, nil, true)
   m6 = Metric:new('test', nil, 'gauge', '2')
 
+  asserts.throws(function() Metric:new('test', nil, 'invalidtype', '2') end)
+
   asserts.equals(m1.type, 'int64')
   asserts.equals(m2.type, 'double')
   asserts.equals(m3.type, 'double')

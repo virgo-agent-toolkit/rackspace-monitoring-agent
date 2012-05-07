@@ -111,6 +111,17 @@ function merge(...)
   return first
 end
 
+-- find item in a table
+function inTable(i, t)
+  for _, v in ipairs(t) do
+    if i == v then
+      return true
+    end
+  end
+
+  return false
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.calcJitter = calcJitter
@@ -118,4 +129,5 @@ exports.merge = merge
 exports.splitAddress = splitAddress
 exports.split = split
 exports.toString = toString
+exports.inTable = inTable
 return exports

@@ -22,10 +22,13 @@ local fmt = require('string').format
 local table = require('table')
 
 local toString = require('../util/misc').toString
+local inTable = require('../util/misc').inTable
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 local Metric = Object:extend()
+
+local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
 
 
 function BaseCheck:initialize(params, checkType)
@@ -99,6 +102,9 @@ function Metric:initialize(name, dimension, type, value)
   self.value = tostring(value)
 
   if type then
+    if not inTable(type, VALID_METRIC_TYPES) then
+      error('Invalid metric type: ' .. type)
+    end
     self.type = type
   else
     self.type = getMetricType(value)
