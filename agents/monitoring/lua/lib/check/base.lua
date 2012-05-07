@@ -102,7 +102,7 @@ function Metric:initialize(name, dimension, type, value)
   self.value = tostring(value)
 
   if type then
-    if not inTable(type, VALID_METRIC_TYPES) then
+    if not inTable(function(v) return type == v end, VALID_METRIC_TYPES) then
       error('Invalid metric type: ' .. type)
     end
     self.type = type

@@ -111,10 +111,13 @@ function merge(...)
   return first
 end
 
--- find item in a table
-function inTable(i, t)
+-- Return true if an item is in a table, false otherwise.
+-- f - function which is called on every item and should return true if the item
+-- matches, false otherwise
+-- t - table
+function inTable(f, t)
   for _, v in ipairs(t) do
-    if i == v then
+    if f(v) then
       return true
     end
   end
