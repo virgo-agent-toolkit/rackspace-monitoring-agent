@@ -62,8 +62,8 @@ function CheckResult:initialize(check, options)
   self._nextRun = os.time() + check.period
 end
 
-function CheckResult:addMetric(name, dimension, value)
-  local metric = Metric:new(name, dimension, value)
+function CheckResult:addMetric(name, dimension, type, value)
+  local metric = Metric:new(name, dimension, type, value)
 
   if not self._metrics[metric.dimension] then
     self._metrics[metric.dimension] = {}
@@ -93,12 +93,16 @@ function CheckResult:serialize()
   return result
 end
 
-function Metric:initialize(name, dimension, value)
+function Metric:initialize(name, dimension, type, value)
   self.name = name
   self.dimension = dimension or 'none'
   self.value = tostring(value)
 
-  self.type = getMetricType(value)
+  if type then
+    self.type = type
+  else
+    self.type = getMetricType(value)
+  end
 end
 
 

@@ -90,11 +90,11 @@ end
 exports['test_metric_type_detection_and_casting'] = function(test, asserts)
   local m1, m2, m3, m4, m5
 
-  m1 = Metric:new('test', 'eth0', 5)
-  m2 = Metric:new('test', nil, 1.23456)
-  m3 = Metric:new('test', nil, 222.33)
-  m4 = Metric:new('test', nil, "foobar")
-  m5 = Metric:new('test', nil, true)
+  m1 = Metric:new('test', 'eth0', nil, 5)
+  m2 = Metric:new('test', nil, nil, 1.23456)
+  m3 = Metric:new('test', nil, nil, 222.33)
+  m4 = Metric:new('test', nil, nil, "foobar")
+  m5 = Metric:new('test', nil, nil, true)
 
   asserts.equals(m1.type, 'int64')
   asserts.equals(m2.type, 'double')
@@ -118,8 +118,8 @@ exports['test_checkresult_serialization'] = function(test, asserts)
   local cr, serialized
 
   cr = CheckResult:new({id='foo', state='ok', period=30})
-  cr:addMetric('m1', nil, 1.23456)
-  cr:addMetric('m2', 'eth0', 'test')
+  cr:addMetric('m1', nil, nil, 1.23456)
+  cr:addMetric('m2', 'eth0', nil, 'test')
 
   serialized = cr:serialize()
 
