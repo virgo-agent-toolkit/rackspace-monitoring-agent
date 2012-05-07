@@ -111,6 +111,20 @@ function merge(...)
   return first
 end
 
+-- Return true if an item is in a table, false otherwise.
+-- f - function which is called on every item and should return true if the item
+-- matches, false otherwise
+-- t - table
+function tableContains(f, t)
+  for _, v in ipairs(t) do
+    if f(v) then
+      return true
+    end
+  end
+
+  return false
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.calcJitter = calcJitter
@@ -118,4 +132,5 @@ exports.merge = merge
 exports.splitAddress = splitAddress
 exports.split = split
 exports.toString = toString
+exports.tableContains = tableContains
 return exports

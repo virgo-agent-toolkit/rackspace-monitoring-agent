@@ -22,10 +22,13 @@ local fmt = require('string').format
 local table = require('table')
 
 local toString = require('../util/misc').toString
+local tableContains = require('../util/misc').tableContains
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 local Metric = Object:extend()
+
+local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
 
 
 function BaseCheck:initialize(params, checkType)
@@ -62,14 +65,14 @@ function CheckResult:initialize(check, options)
   self._nextRun = os.time() + check.period
 end
 
-function CheckResult:addMetric(name, dimension, value)
-  local metric = Metric:new(name, dimension, value)
+function CheckResult:addMetric(name, dimension, type, value)
+  local metric = Metric:new(name, dimension, type, value)
 
   if not self._metrics[metric.dimension] then
     self._metrics[metric.dimension] = {}
   end
 
-  self._metrics[metric.dimension][metric.name] = value
+  self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value}
 end
 
 function CheckResult:toString()
@@ -93,12 +96,19 @@ function CheckResult:serialize()
   return result
 end
 
-function Metric:initialize(name, dimension, value)
+function Metric:initialize(name, dimension, type, value)
   self.name = name
   self.dimension = dimension or 'none'
-  self.value = value
+  self.value = tostring(value)
 
-  self.type = getMetricType(value)
+  if type then
+    if not tableContains(function(v) return type == v end, VALID_METRIC_TYPES) then
+      error('Invalid metric type: ' .. type)
+    end
+    self.type = type
+  else
+    self.type = getMetricType(value)
+  end
 end
 
 
@@ -107,12 +117,13 @@ function getMetricType(value)
   local valueType = type(value)
 
   if valueType == 'string' then
-    return 'str'
+    -- TODO gauge
+    return 'string'
   elseif valueType == 'boolean' then
     return 'bool'
   elseif valueType == 'number' then
-    if not tostring(value):find('.') then
-      -- TODO 34 / 64 bit
+    if not tostring(value):find('%.') then
+      -- TODO int32, uint32, uint64
       return 'int64'
     else
       return 'double'
