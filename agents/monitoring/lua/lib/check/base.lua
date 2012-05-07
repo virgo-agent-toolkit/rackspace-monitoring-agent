@@ -112,7 +112,7 @@ function getMetricType(value)
   elseif valueType == 'boolean' then
     return 'bool'
   elseif valueType == 'number' then
-    if not tostring(value):find('.') then
+    if not tostring(value):find('%.') then
       -- TODO int32, uint32, uint64
       return 'int64'
     else
