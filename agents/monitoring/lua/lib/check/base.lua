@@ -69,7 +69,7 @@ function CheckResult:addMetric(name, dimension, value)
     self._metrics[metric.dimension] = {}
   end
 
-  self._metrics[metric.dimension][metric.name] = value
+  self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value}
 end
 
 function CheckResult:toString()
@@ -96,7 +96,7 @@ end
 function Metric:initialize(name, dimension, value)
   self.name = name
   self.dimension = dimension or 'none'
-  self.value = value
+  self.value = tostring(value)
 
   self.type = getMetricType(value)
 end
@@ -107,12 +107,13 @@ function getMetricType(value)
   local valueType = type(value)
 
   if valueType == 'string' then
-    return 'str'
+    -- TODO gauge
+    return 'string'
   elseif valueType == 'boolean' then
     return 'bool'
   elseif valueType == 'number' then
     if not tostring(value):find('.') then
-      -- TODO 34 / 64 bit
+      -- TODO int32, uint32, uint64
       return 'int64'
     else
       return 'double'
