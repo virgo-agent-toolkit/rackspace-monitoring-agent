@@ -119,13 +119,18 @@ exports['test_checkresult_serialization'] = function(test, asserts)
 
   cr = CheckResult:new({id='foo', state='ok', period=30})
   cr:addMetric('m1', nil, 1.23456)
+  cr:addMetric('m2', 'eth0', 'test')
 
   serialized = cr:serialize()
 
-  asserts.equals(#serialized, 1)
+  asserts.equals(#serialized, 2)
   asserts.equals(serialized[1][1], JSON.null)
   asserts.equals(serialized[1][2]['m1']['t'], 'double')
   asserts.equals(serialized[1][2]['m1']['v'], '1.23456')
+
+  asserts.equals(serialized[2][1], 'eth0')
+  asserts.equals(serialized[2][2]['m2']['t'], 'string')
+  asserts.equals(serialized[2][2]['m2']['v'], 'test')
 
   test.done()
 end
