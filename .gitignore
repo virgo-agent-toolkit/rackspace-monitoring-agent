@@ -20,3 +20,4 @@ deps/openssl-configs/realized/openssl/*.h
 monitoring.zip
 monitoring-test.zip
 *.sig
+scheduler.state
