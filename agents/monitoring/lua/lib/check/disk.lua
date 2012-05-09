@@ -24,7 +24,7 @@ function DiskCheck:run(callback)
 
     if usage then
       for key, value in pairs(usage) do
-        checkResult:addMetric(key, DIMENSION_PREFIX .. name, value)
+        checkResult:addMetric(key, DIMENSION_PREFIX .. name, nil, value)
       end
     end
   end

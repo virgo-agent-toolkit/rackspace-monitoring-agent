@@ -1,0 +1,11 @@
+{
+    "v": "1",
+    "id": 0,
+    "target": "endpoint",
+    "source": "agentA",
+    "method": "handshake.hello",
+    "params": {
+        "token": "MYTOKEN",
+        "agent_id": "MYUID"
+    }
+}
