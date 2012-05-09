@@ -46,7 +46,12 @@ function AgentClient:initialize(options)--datacenter, id, token, host, port, tim
   self._port = options.port
   self._timeout = options.timeout or 5000
 
-  self._scheduler = nil
+  self._scheduler = Scheduler:new('scheduler.state', {}, function()
+    end)
+  self._scheduler:start()
+  self._scheduler:on('check', function(check, checkResults)
+    self.protocol:sendMetrics(check, checkResults)
+  end)
   
   self._ping_interval = nil
   self._sent_ping_count = 0
@@ -62,16 +67,7 @@ end
 
 function AgentClient:_scheduleManifest(manifest)
   local checks = self:_createChecks(manifest)
-  if self._scheduler == nil then
-    self._scheduler = Scheduler:new('scheduler.state', checks, function()
-    end)
-    self._scheduler:start()
-  else 
-    self._scheduler:rebuild(checks, function()
-    end)
-  end
-  self._scheduler:on('check', function(check, checkResults)
-    self.protocol:sendMetrics(check, checkResults)
+  self._scheduler:rebuild(checks, function()
   end)
 end
 
