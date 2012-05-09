@@ -1,0 +1,9 @@
+{
+    "v": "1",
+    "id": 0,
+    "target": "agentA",
+    "source": "endpoint",
+    "result": {
+        "ping_interval": 1000
+    }
+}
