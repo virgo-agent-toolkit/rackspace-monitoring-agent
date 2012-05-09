@@ -23,7 +23,7 @@ function Response:initialize()
   self.v = 1
   self.id = 1
   self.source = 'endpoint'
-  self.target = 'X'
+  self.target = 'agentA'
   self.result = nil
 end
 
