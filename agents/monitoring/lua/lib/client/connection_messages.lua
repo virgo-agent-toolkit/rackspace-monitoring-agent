@@ -30,6 +30,10 @@ function ConnectionMessages:onClientEnd(client)
 end
 
 function ConnectionMessages:onHandshake(client)
+  self:fetchManifest(client);
+end
+
+function ConnectionMessages:fetchManifest(client)
   function run()
     if client then
       client.protocol:getManifest(function(err, manifest)
@@ -56,9 +60,7 @@ function ConnectionMessages:onMessage(client, msg)
   client:log(logging.DEBUG, '(onMessage)')
   if msg.method == 'check.schedule_changed' then
     self._lastFetchTime = 0
-    self:onHandshake(client)
-  else
-    client.protocol:processMessage(msg)
+    self:fetchManifest(client)
   end
 end
 

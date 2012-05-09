@@ -218,10 +218,6 @@ function AgentProtocolConnection:getManifest(callback)
   end)
 end
 
-function AgentProtocolConnection:processMessage(msg)
-
-end
-
 --[[
 Process an async message
 
