@@ -164,7 +164,7 @@ end
 --[[ ScheduleChangeAck ]]--
 local ScheduleChangeAck = Response:extend()
 function ScheduleChangeAck:initialize(replyTo)
-  Response.initialize(self,replyTo)
+  Response.initialize(self, replyTo)
 end
 
 function ScheduleChangeAck:serialize(msgId)
