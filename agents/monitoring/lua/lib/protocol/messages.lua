@@ -161,6 +161,16 @@ function MetricsRequest:serialize(msgId)
   return Request.serialize(self, msgId)
 end
 
+--[[ ScheduleChangeAck ]]--
+local ScheduleChangeAck = Response:extend()
+function ScheduleChangeAck:initialize(replyTo)
+  Response.initialize(self,replyTo)
+end
+
+function ScheduleChangeAck:serialize(msgId)
+  return Response.serialize(self, msgId)
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.Request = Request
@@ -170,4 +180,5 @@ exports.Ping = Ping
 exports.Manifest = Manifest
 exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse
+exports.ScheduleChangeAck = ScheduleChangeAck
 return exports
