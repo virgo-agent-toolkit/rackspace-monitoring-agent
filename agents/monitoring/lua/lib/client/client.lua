@@ -34,7 +34,7 @@ local AgentClient = Emitter:extend()
 
 local PING_INTERVAL = 5 * 60 * 1000 -- ms
 
-function AgentClient:initialize(options, scheduler)--datacenter, id, token, host, port, timeout)
+function AgentClient:initialize(options, scheduler)
 
   self.protocol = nil
   self._datacenter = options.datacenter
