@@ -27,7 +27,6 @@ local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
 local AgentProtocolConnection = require('../protocol/connection')
 local table = require('table')
-local Scheduler = require('../schedule').Scheduler
 
 local fmt = require('string').format
 
@@ -35,7 +34,7 @@ local AgentClient = Emitter:extend()
 
 local PING_INTERVAL = 5 * 60 * 1000 -- ms
 
-function AgentClient:initialize(options)--datacenter, id, token, host, port, timeout)
+function AgentClient:initialize(options, scheduler)--datacenter, id, token, host, port, timeout)
 
   self.protocol = nil
   self._datacenter = options.datacenter
@@ -46,13 +45,8 @@ function AgentClient:initialize(options)--datacenter, id, token, host, port, tim
   self._port = options.port
   self._timeout = options.timeout or 5000
 
-  self._scheduler = Scheduler:new('scheduler.state', {}, function()
-    end)
-  self._scheduler:start()
-  self._scheduler:on('check', function(check, checkResults)
-    self.protocol:sendMetrics(check, checkResults)
-  end)
-  
+  self._scheduler = scheduler
+
   self._ping_interval = nil
   self._sent_ping_count = 0
   self._got_pong_count = 0
@@ -68,6 +62,7 @@ end
 function AgentClient:_scheduleManifest(manifest)
   local checks = self:_createChecks(manifest)
   self._scheduler:rebuild(checks, function()
+    self._log(logging.INFO, 'Reloaded manifest')
   end)
 end
 

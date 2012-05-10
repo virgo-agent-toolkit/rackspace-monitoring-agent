@@ -133,17 +133,13 @@ function StateScanner:dumpChecks(checks, callback)
     writeLineHelper(STATE_FILE_VERSION),
     writeLineHelper(0), -- nothing in the header.
     function(callback)
-      async.forEachSeries(checks, writeCheck, function(err)
-        callback(err)
-      end)
+      async.forEachSeries(checks, writeCheck, callback)
     end,
     function(callback)
       fs.close(fd, callback)
     end,
     utils.bind(fs.rename, tmpFile, self._stateFile)
-  }, function(err)
-    callback(err)
-  end)
+  }, callback)
 end
 
 
@@ -151,57 +147,51 @@ end
 -- stateFile: file to store checks in.
 -- checks: a table of BaseCheck
 -- callback: function called after the state file is written
-function Scheduler:initialize(stateFile, checks, callback)
+function Scheduler:initialize(stateFile, checks)
   -- todo: I can see there might be a need for a constructor that will read all checks from the state file
   -- in that case, the states will be read and then used as pointers to deserialize checks that already exist on the fs.
   self._log = loggingUtil.makeLogger('scheduler')
   self._nextScan = nil
   self._scanTimer = nil
   self._checkMap = {}
-  self._checks = {}
+  self._checks = checks or {}
   self._runCount = 0
-  self._scanner = StateScanner:new(stateFile)  
-  self:rebuild(checks, function() 
-
-    -- serialize all checks. when that is done, create a listener that decides what to when the scanner determines a
-    -- check needs to be run.
-    self._scanner:on('check_scheduled', function(checkMeta)
-      -- run the check.
-      -- todo: need a process of determining at this point if a check SHOULD NOT be run.
-      local check = self._checkMap[checkMeta.id]
-      if check ~= nil then 
-        check:run(function(checkResult)
-          self._runCount = self._runCount + 1
-          self._scanner:dumpChecks(self._checks, function()
-            self._log(logging.INFO, 'checks dumped at '..os.time())
-          end)
-          -- emit check
-          self:emit('check', check, checkResult)
-          -- determine when the next scan should be.
-          local oldNextScan = self._nextScan
-          local now = os.time()
-          -- if the _nextScan is in the future, then find the minimum nextScan timeout
-          if self._nextScan > now then
-            self._nextScan = math.min(self._nextScan, checkResult._nextRun)
-          else
-            self._nextScan = checkResult._nextRun
-          end
-          self._log(logging.DEBUG, fmt('Check %s scheduled at %s, current time %s', check.id, self._nextScan, os.time()))
-          -- maybe clear timer, set next.
-          if oldNextScan ~= self._nextScan then
-            if self._scanTimer then
-              timer.clearTimer(self._scanTimer)
-            end
-            local timeout = (self._nextScan - os.time()) * 1000 -- milliseconds
-            self._scanTimer = timer.setTimeout(timeout, function()
-              self._scanTimer = nil
-              self._scanner:scanStates()
-            end)
-          end
+  self._scanner = StateScanner:new(stateFile)
+  self._scanner:on('check_scheduled', function(checkMeta)
+    -- run the check.
+    -- todo: need a process of determining at this point if a check SHOULD NOT be run.
+    local check = self._checkMap[checkMeta.id]
+    if check ~= nil then
+      check:run(function(checkResult)
+        self._runCount = self._runCount + 1
+        self._scanner:dumpChecks(self._checks, function()
+          self._log(logging.INFO, 'checks dumped at '..os.time())
         end)
-      end
-    end)
-    callback()
+        -- emit check
+        self:emit('check', check, checkResult)
+        -- determine when the next scan should be.
+        local oldNextScan = self._nextScan
+        local now = os.time()
+        -- if the _nextScan is in the future, then find the minimum nextScan timeout
+        if self._nextScan > now then
+          self._nextScan = math.min(self._nextScan, checkResult._nextRun)
+        else
+          self._nextScan = checkResult._nextRun
+        end
+        self._log(logging.DEBUG, fmt('Check %s scheduled at %s, current time %s', check.id, self._nextScan, os.time()))
+        -- maybe clear timer, set next.
+        if oldNextScan ~= self._nextScan then
+          if self._scanTimer then
+            timer.clearTimer(self._scanTimer)
+          end
+          local timeout = (self._nextScan - os.time()) * 1000 -- milliseconds
+          self._scanTimer = timer.setTimeout(timeout, function()
+            self._scanTimer = nil
+            self._scanner:scanStates()
+          end)
+        end
+      end)
+    end
   end)
 end
 
@@ -234,7 +224,7 @@ function Scheduler:rebuild(checks, callback)
         altered[check.id] = true;
       else
         self:emit('added', check)
-        table.insert(self._checks,check)
+        table.insert(self._checks, check)
       end
       if self._nextScan == nil then
         self._nextScan = check:getNextRun()
@@ -253,9 +243,12 @@ function Scheduler:rebuild(checks, callback)
       table.remove(self._checks,index)
     end
   end
-  self._checkMap = newCheckMap 
-  self._scanner:dumpChecks(self._checks, function()
-    callback()
+  self._checkMap = newCheckMap
+  self._scanner:dumpChecks(self._checks, function(err)
+    if not err then
+      self._scanner:scanStates()
+    end
+    callback(err)
   end)
 end
 

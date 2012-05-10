@@ -21,6 +21,7 @@ local fmt = require('string').format
 
 local async = require('async')
 
+local Scheduler = require('../schedule').Scheduler
 local AgentClient = require('./client').AgentClient
 local ConnectionMessages = require('./connection_messages').ConnectionMessages
 local logging = require('logging')
@@ -37,6 +38,10 @@ function ConnectionStream:initialize(id, token)
   self._unauthedClients = {}
   self._delays = {}
   self._messages = ConnectionMessages:new(self)
+  self._scheduler = Scheduler:new('scheduler.state', {})
+  self._scheduler:on('check', function(check, checkResult)
+    self:_sendMetrics(check, checkResult)
+  end)
 end
 
 --[[
@@ -48,6 +53,13 @@ established.
 --]]
 function ConnectionStream:createConnections(addresses, callback)
   async.series({
+    function(callback)
+      self._scheduler:rebuild({}, callback)
+    end,
+    function(callback)
+      self._scheduler:start()
+      callback()
+    end,
     -- connect
     function(callback)
       async.forEach(addresses, function(address, callback)
@@ -61,6 +73,13 @@ function ConnectionStream:createConnections(addresses, callback)
       end)
     end
   }, callback)
+end
+
+function ConnectionStream:_sendMetrics(check, checkResults)
+  local client = self:getClient()
+  if client then
+    client.protocol:sendMetrics(check, checkResults)
+  end
 end
 
 function ConnectionStream:_setDelay(datacenter)
@@ -141,7 +160,7 @@ function ConnectionStream:createConnection(options, callback)
     timeout = consts.CONNECT_TIMEOUT
   }, options)
 
-  local client = AgentClient:new(opts)
+  local client = AgentClient:new(opts, self._scheduler)
   client:on('error', function(err)
     err.host = opts.host
     err.port = opts.port
