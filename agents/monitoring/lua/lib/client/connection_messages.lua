@@ -60,7 +60,11 @@ function ConnectionMessages:onMessage(client, msg)
   client:log(logging.DEBUG, '(onMessage)')
   if msg.method == 'check.schedule_changed' then
     self._lastFetchTime = 0
-    self:fetchManifest(client)
+    client:log(logging.DEBUG, 'received schedule change')
+    client.protocol:sendScheduleChangeAck(msg, function ()
+      client:log(logging.DEBUG, 'fetching manifest')
+      self:fetchManifest(client)
+    end)
   end
 end
 
