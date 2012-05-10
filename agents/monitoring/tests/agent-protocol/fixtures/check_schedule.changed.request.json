@@ -1,9 +1,7 @@
 {
   "v": "1",
-  "id": 1,
+  "id": 3,
   "source": "endpoint",
   "target": "agentA",
-  "result": {
-    "timestamp": 1325645515246
-  }
+  "method": "check_schedule.changed"
 }
