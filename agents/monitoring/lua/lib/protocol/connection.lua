@@ -180,6 +180,12 @@ function AgentProtocolConnection:sendMetrics(check, checkResults, callback)
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
+function AgentProtocolConnection:sendScheduleChangeAck(replyTo, callback)
+  local m = msg.ScheduleChangeAck:new(replyTo)
+  self:_send(m:serialize(self._msgid), nil, 200)
+  callback()
+end
+
 --[[ Public Functions ]] --
 
 function AgentProtocolConnection:setState(state)
