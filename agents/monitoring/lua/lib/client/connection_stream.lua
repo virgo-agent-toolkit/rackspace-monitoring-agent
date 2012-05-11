@@ -38,10 +38,6 @@ function ConnectionStream:initialize(id, token)
   self._unauthedClients = {}
   self._delays = {}
   self._messages = ConnectionMessages:new(self)
-  self._scheduler = Scheduler:new('scheduler.state', {})
-  self._scheduler:on('check', function(check, checkResult)
-    self:_sendMetrics(check, checkResult)
-  end)
 end
 
 --[[
@@ -54,7 +50,10 @@ established.
 function ConnectionStream:createConnections(addresses, callback)
   async.series({
     function(callback)
-      self._scheduler:rebuild({}, callback)
+      self._scheduler = Scheduler:new('scheduler.state', {}, callback)
+      self._scheduler:on('check', function(check, checkResult)
+        self:_sendMetrics(check, checkResult)
+      end)
     end,
     function(callback)
       self._scheduler:start()
