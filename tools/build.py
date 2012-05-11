@@ -27,7 +27,7 @@ def test_cmd(additional=""):
     agent = os.path.join(root, 'Debug', 'monitoring-agent.exe')
 
   state_config = os.path.join(root, 'contrib')
-  monitoring_config = os.path.join(root, 'contrib', 'monitoring.cfg')
+  monitoring_config = os.path.join(root, 'pkg', 'monitoring', 'rackspace-monitoring-agent.cfg')
   return '%s -c %s -s %s %s' % (agent, monitoring_config, state_config, additional)
 
 def test(stdout=None):
