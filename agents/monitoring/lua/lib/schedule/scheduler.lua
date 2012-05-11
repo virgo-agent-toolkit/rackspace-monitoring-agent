@@ -43,6 +43,7 @@ end
 -- StateScanner is in charge of reading/writing the state file.
 function StateScanner:initialize(stateFile)
   self._stateFile = stateFile
+  self._stream = nil
   self._header = {}
 end
 
@@ -241,7 +242,7 @@ function Scheduler:rebuild(checks, callback)
     end
     if seen[check.id] == nil then
       self:emit('removed', check)
-      table.remove(self._checks,index)
+      table.remove(self._checks, index)
     end
   end
   self._checkMap = newCheckMap

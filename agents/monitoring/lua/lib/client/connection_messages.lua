@@ -41,7 +41,7 @@ function ConnectionMessages:fetchManifest(client)
           -- TODO Abort connection?
           client:log(logging.ERROR, 'Error while retrieving manifest: ' .. err.message)
         else
-          client:_scheduleManifest(manifest)
+          client:scheduleManifest(manifest)
         end
       end)
     end
