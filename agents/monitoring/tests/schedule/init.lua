@@ -130,18 +130,18 @@ local checks7 = {
       scheduler:start()
       local timeout = timer.setTimeout(2000, function()
         -- they all should have run.
-        asserts.equals(scheduler._runCount, 4)
+        asserts.equals(scheduler._runCount, 6)
         lastRun = scheduler._runCount
-        asserts.equals(scheduler:numChecks(), 2)
+        asserts.equals(scheduler:numChecks(), 3)
         scheduler:rebuild(checks4, callback);
       end)
     end,
     function(callback)
       local timeout = timer.setTimeout(2000, function()
-        asserts.equals(scheduler:numChecks(), 1)
+        asserts.equals(scheduler:numChecks(), 2)
         -- tests are a bit dicey at this point depending on exactly where in the clock we are..
         asserts.ok(scheduler._runCount >= 6)
-        asserts.ok(scheduler._runCount <= 7)
+        asserts.ok(scheduler._runCount <= 10)
         asserts.ok(scheduler._runCount > lastRun)
         lastRun = scheduler._runCount
         callback()

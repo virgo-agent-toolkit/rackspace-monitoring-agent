@@ -59,10 +59,11 @@ function AgentClient:getDatacenter()
   return self._datacenter
 end
 
-function AgentClient:_scheduleManifest(manifest)
+function AgentClient:scheduleManifest(manifest)
   local checks = self:_createChecks(manifest)
   self._scheduler:rebuild(checks, function()
     self._log(logging.INFO, 'Reloaded manifest')
+    self._scheduler:start()
   end)
 end
 
