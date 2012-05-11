@@ -147,7 +147,7 @@ end
 -- stateFile: file to store checks in.
 -- checks: a table of BaseCheck
 -- callback: function called after the state file is written
-function Scheduler:initialize(stateFile, checks)
+function Scheduler:initialize(stateFile, checks, callback)
   -- todo: I can see there might be a need for a constructor that will read all checks from the state file
   -- in that case, the states will be read and then used as pointers to deserialize checks that already exist on the fs.
   self._log = loggingUtil.makeLogger('scheduler')
@@ -193,6 +193,7 @@ function Scheduler:initialize(stateFile, checks)
       end)
     end
   end)
+  self:rebuild(checks, callback)
 end
 
 -- start scanning.
@@ -244,12 +245,7 @@ function Scheduler:rebuild(checks, callback)
     end
   end
   self._checkMap = newCheckMap
-  self._scanner:dumpChecks(self._checks, function(err)
-    if not err then
-      self._scanner:scanStates()
-    end
-    callback(err)
-  end)
+  self._scanner:dumpChecks(self._checks, callback)
 end
 
 local exports = {}
