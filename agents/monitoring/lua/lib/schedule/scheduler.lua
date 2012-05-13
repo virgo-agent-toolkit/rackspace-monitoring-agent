@@ -114,15 +114,19 @@ function StateScanner:dumpChecks(checks, callback)
     end
   end
   local writeCheck = function(check, callback)
+    if not check or not check.id or not check.path or not check.state then
+      self._log(logging.ERR, fmt('check data corrupted'))
+      p(check)
+      callback()
+      return
+    end
     async.waterfall({
       writeLineHelper('#'),
       writeLineHelper(check.id),
       writeLineHelper(check.path),
       writeLineHelper(check.state),
       writeLineHelper(check:getNextRun())
-    }, function(err)
-      callback(err)
-    end)
+    }, callback)
   end
   -- write the initial state file.
   async.waterfall({
