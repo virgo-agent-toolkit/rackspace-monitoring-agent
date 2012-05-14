@@ -18,7 +18,7 @@ sig_files = $(zip_files:%.zip=%.zip.sig)
 all: out/Makefile
 	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/${BUILDTYPE}/monitoring-agent monitoring-agent
-	$(MAKE) $(sig_files)
+	$(MAKE) $(sig_files) $(zip_files)
 
 out/Release/monitoring-agent: all
 
