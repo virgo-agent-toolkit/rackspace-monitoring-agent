@@ -43,39 +43,47 @@ end
 -- StateScanner is in charge of reading/writing the state file.
 function StateScanner:initialize(stateFile)
   self._stateFile = stateFile
-  self._stream = nil
+  self._stopped = false
   self._header = {}
+end
+
+function StateScanner:stop()
+  self._stopped = true
 end
 
 -- Scans the state file and emits 'check_scheduled' events for checks that need to be run.
 function StateScanner:scanStates()
   local preceeded = {}
-  local stream = fs.createReadStream(self._stateFile)
   local scanAt = os.time()
   local version
   local headerDone = false
   local headerLine = 1
+  local data = ''
+  local stream = fs.createReadStream(self._stateFile)
   stream:on('error', function(err)
      p(error)
   end)
-  stream:on('data', function(chunk, len)
-    local pos = 1
+  stream:on('data', function(chunk)
+    if self._stopped == true then
+      return
+    end
+    data = data .. chunk
+    local line
     while true do
-      local line
-      local index = chunk:find('\n', pos)
+      local index = data:find('\n')
       if index then
-        line = trim(chunk:sub(pos, index))
-        pos = index + 1
+        line = trim(data:sub(0, index))
+        data = data:sub(index + 1)
       else
-        line = chunk:sub(pos)
+        break
       end
       if version == nil then
         version = tonumber(trim(line))
       elseif not headerDone then
         headerDone = self:consumeHeaderLine(version, line, headerLine)
         headerLine = headerLine + 1
-      elseif line:find('#', 1) ~= 1 then
-        table.insert(preceeded, #preceeded + 1, line)
+      elseif #line > 0 and line:find('#', 1) ~= 1 then
+        table.insert(preceeded, line)
       end
       if #preceeded == LINES_PER_STATE then
         -- todo: if state is correct and time is later than now, emit that puppy.
@@ -85,7 +93,6 @@ function StateScanner:scanStates()
         end
         preceeded = {}
       end
-      if not index then break end
     end
   end)
 end
@@ -199,6 +206,14 @@ function Scheduler:initialize(stateFile, checks, callback)
     end
   end)
   self:rebuild(checks, callback)
+end
+
+function Scheduler:stop()
+  if self._scanTimer then
+    timer.clearTimer(self._scanTimer)
+    self._scanTimer = nil
+  end
+  self._scanner:stop()
 end
 
 -- start scanning.

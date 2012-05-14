@@ -27,10 +27,10 @@ local tmp = path.join('tests', 'tmp')
 local exports = {}
 
 local checks = {
-  BaseCheck:new({id='ch0001', state='OK', period=30, path=path.join(tmp, '0001.chk')}),
-  BaseCheck:new({id='ch0002', state='OK', period=35, path=path.join(tmp, '0002.chk')}),
-  BaseCheck:new({id='ch0003', state='OK', period=40, path=path.join(tmp, '0003.chk')}),
-  BaseCheck:new({id='ch0004', state='OK', period=45, path=path.join(tmp, '0004.chk')}),
+  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+  BaseCheck:new({id='ch0003', state='OK', period=1, path=path.join(tmp, '0003.chk')}),
+  BaseCheck:new({id='ch0004', state='OK', period=1, path=path.join(tmp, '0004.chk')}),
 }
 
 exports['test_scheduler_scan'] = function(test, asserts)
@@ -39,6 +39,7 @@ exports['test_scheduler_scan'] = function(test, asserts)
   s:on('check_scheduled', function(details)
     count = count + 1
     if count >= 3 then
+      s:stop()
       test.done()
     end
   end)
@@ -61,6 +62,7 @@ exports['test_scheduler_initialize'] = function(test, asserts)
       s:on('check_scheduled', function(details)
         count = count + 1
         if count >= #checks then
+          s:stop()
           callback()
         end
       end)
@@ -85,11 +87,12 @@ exports['test_scheduler_scans'] = function(test, asserts)
       scheduler:start()
       local timeout = timer.setTimeout(5000, function()
         -- they all should have run.
-        asserts.equals(scheduler._runCount, #checks)
+        asserts.ok(scheduler._runCount > 0)
         callback()
       end)
     end
   }, function(err)
+    scheduler:stop()
     asserts.ok(err == nil)
     test.done()
   end)
@@ -183,6 +186,7 @@ local checks7 = {
       end)
     end,
   }, function(err)
+    scheduler:stop()
     asserts.ok(err == nil)
     test.done()
   end)
