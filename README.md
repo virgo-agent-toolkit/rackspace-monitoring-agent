@@ -14,6 +14,11 @@ Building on a Unix-like Operating System
     ./configure
     make
 
+Running tests
+=============
+
+    make test
+
 Building on Windows
 ====================
 
