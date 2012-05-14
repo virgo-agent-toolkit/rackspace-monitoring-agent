@@ -115,7 +115,7 @@ function StateScanner:dumpChecks(checks, callback)
   end
   local writeCheck = function(check, callback)
     if not check or not check.id or not check.path or not check.state then
-      self._log(logging.ERR, fmt('check data corrupted'))
+      logging.log(logging.ERR, 'check data corrupted')
       p(check)
       callback()
       return
