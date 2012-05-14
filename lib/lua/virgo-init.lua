@@ -405,7 +405,7 @@ function virgo_init.run(name)
   -- Stagents/monitoring/tests/agent-protocol/handshake.hello.response.jsonart the event loop
   native.run()
   -- trigger exit handlers and exit cleanly
-  process.exit(0)
+  process.exit(process.exitCode or 0)
 end
 
 return virgo_init
