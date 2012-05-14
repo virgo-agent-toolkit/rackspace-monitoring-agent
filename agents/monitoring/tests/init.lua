@@ -58,6 +58,10 @@ local function runit(modname, callback)
 end
 
 exports.run = function()
+  -- set the exitCode to error in case we trigger some
+  -- bug that causes us to exit the loop early
+  process.exitCode = 1
+
   fs.mkdir(tmp_dir, "0755", function()
     async.forEachSeries(TESTS_TO_RUN, runit, function(err)
       if err then
@@ -68,6 +72,7 @@ exports.run = function()
         end)
       end
 
+      process.exitCode = 0
       remove_tmp(function()
         process.exit(failed)
       end)
