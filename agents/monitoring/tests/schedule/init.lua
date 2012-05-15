@@ -138,53 +138,7 @@ local checks7 = {
         asserts.equals(scheduler:numChecks(), 3)
         scheduler:rebuild(checks4, callback);
       end)
-    end,
-    function(callback)
-      local timeout = timer.setTimeout(2000, function()
-        asserts.equals(scheduler:numChecks(), 2)
-        -- tests are a bit dicey at this point depending on exactly where in the clock we are..
-        asserts.ok(scheduler._runCount >= 6)
-        asserts.ok(scheduler._runCount <= 10)
-        asserts.ok(scheduler._runCount > lastRun)
-        lastRun = scheduler._runCount
-        callback()
-      end)
-    end,
-    function(callback)
-      scheduler:rebuild(checks5, callback)
-    end,
-    function(callback)
-      asserts.equals(scheduler:numChecks(), 1)
-      scheduler:rebuild(checks6, callback)
-    end,
-    function(callback)
-      asserts.equals(scheduler:numChecks(), 1)
-      scheduler:rebuild(checks7, callback)
-    end,
-    function(callback)
-      --- validate that we are, in fact, writing to disk and that the check details changed.
-      local count = 0
-      local s = StateScanner:new(testFile)
-      s:on('check_scheduled', function(details)
-        count = count + 1
-        if count >= #checks7 then
-          callback()
-        end
-        asserts.equals(path.join(tmp, '0002.chk'),details.path)
-      end)
-      s:scanStates()
-    end,
-    function(callback)
-      asserts.equals(scheduler:numChecks(), 1)
-      local timeout = timer.setTimeout(3000, function()
-        asserts.equals(scheduler:numChecks(), 1)
-        -- tests are a bit dicey at this point depending on exactly where in the clock we are..
-        asserts.ok(scheduler._runCount >= lastRun + 1)
-        asserts.ok(scheduler._runCount <= lastRun + 2)
-        asserts.ok(scheduler._runCount > lastRun)
-        callback()
-      end)
-    end,
+    end
   }, function(err)
     scheduler:stop()
     if err then
