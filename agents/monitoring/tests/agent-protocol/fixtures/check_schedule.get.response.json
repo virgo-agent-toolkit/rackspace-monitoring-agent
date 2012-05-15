@@ -3,13 +3,15 @@
   "id": 2,
   "source": "endpoint",
   "target": "agentA",
-  "method": "check_schedule.get",
-  "checks": {
-    "id": "ch1234",
-    "type": "agent.cpu",
-    "details": { "foo": "foo" },
-    "period": 30,
-    "timeout": 30,
-    "disabled": false
-  }
+  "result": {
+    "checks": {
+      "id": "ch1234",
+      "type": "agent.cpu",
+      "details": { "foo": "foo" },
+      "period": 30,
+      "timeout": 30,
+      "disabled": false
+    }
+  },
+  "error": null
 }

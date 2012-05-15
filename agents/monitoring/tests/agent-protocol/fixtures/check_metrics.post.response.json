@@ -3,5 +3,6 @@
   "id": 4,
   "source": "endpoint",
   "target": "agentA",
-  "method": "check_metrics.post"
+  "result": 0,
+  "error": null,
 }

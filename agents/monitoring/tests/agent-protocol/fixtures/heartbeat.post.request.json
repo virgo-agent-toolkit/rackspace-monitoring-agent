@@ -3,7 +3,7 @@
   "id": 1,
   "source": "agentA",
   "target": "endpoint",
-  "method": "heartbeat.ping",
+  "method": "heartbeat.post",
   "params": {
     "timestamp": 1325645515246
   }
