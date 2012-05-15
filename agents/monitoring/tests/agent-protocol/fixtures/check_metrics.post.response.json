@@ -1,0 +1,7 @@
+{
+  "v": "1",
+  "id": 4,
+  "source": "endpoint",
+  "target": "agentA",
+  "method": "check_metrics.post"
+}
