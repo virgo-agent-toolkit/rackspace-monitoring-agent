@@ -187,6 +187,9 @@ local checks7 = {
     end,
   }, function(err)
     scheduler:stop()
+    if err then
+      p(err)
+    end
     asserts.ok(err == nil)
     test.done()
   end)
