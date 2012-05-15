@@ -3,5 +3,6 @@
   "id": 3,
   "source": "agentA",
   "target": "endpoint",
-  "method": "check_schedule.changed"
+  "result": 0,
+  "error": null
 }

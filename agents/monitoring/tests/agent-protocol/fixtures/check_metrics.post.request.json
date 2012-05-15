@@ -4,13 +4,15 @@
   "source": "agentA",
   "target": "endpoint",
   "method": "check_metrics.post",
-  "check_id": "memory",
-  "metrics": {
-    total: "67108864",
-    free: "16777216",
-    buffer: "16777216",
-    cached: "16777216",
-    swap_total: "16777216",
-    swap_free: "16777216"
+  "params": {
+    "check_id": "memory",
+    "metrics": {
+      total: "67108864",
+      free: "16777216",
+      buffer: "16777216",
+      cached: "16777216",
+      swap_total: "16777216",
+      swap_free: "16777216"
+    }
   }
 }

@@ -3,5 +3,6 @@
   "id": 2,
   "source": "agentA",
   "target": "endpoint",
-  "method": "check_schedule.get"
+  "method": "check_schedule.get",
+  "params": null
 }
