@@ -37,7 +37,6 @@ function BaseCheck:initialize(params, checkType)
   self.state = params.state
   self.id = params.id
   self.period = params.period
-  self.path = params.path
 end
 
 function BaseCheck:run(callback)

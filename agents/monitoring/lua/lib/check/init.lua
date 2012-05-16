@@ -29,8 +29,7 @@ function create(checkData)
   local obj = {
     id = checkData.id,
     period = checkData.period,
-    state = 'OK',
-    path = fmt('/tmp/%s.chk', checkData.id)
+    state = 'OK'
   }
   if _type == 'agent.memory' then
     return MemoryCheck:new(obj)

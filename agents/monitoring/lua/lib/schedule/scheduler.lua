@@ -17,7 +17,7 @@ local fmt = require('string').format
 local StateScanner = Emitter:extend()
 local Scheduler = Emitter:extend()
 local CheckMeta = Emitter:extend()
-local LINES_PER_STATE = 4
+local LINES_PER_STATE = 3
 local STATE_FILE_VERSION = 1
 
 function trim(s)
@@ -35,9 +35,8 @@ end
 -- CheckMeta holds the pieces of a check that will appear in a state file.
 function CheckMeta:initialize(lines)
   self.id = lines[1]
-  self.path = lines[2]
-  self.state = lines[3]
-  self.nextRun = tonumber(lines[4])
+  self.state = lines[2]
+  self.nextRun = tonumber(lines[3])
 end
 
 -- StateScanner is in charge of reading/writing the state file.
@@ -56,6 +55,7 @@ function StateScanner:scanStates()
   local preceeded = {}
   local scanAt = os.time()
   local version
+  local writingChecks = false
   local headerDone = false
   local headerLine = 1
   local data = ''
@@ -87,8 +87,8 @@ function StateScanner:scanStates()
       end
       if #preceeded == LINES_PER_STATE then
         -- todo: if state is correct and time is later than now, emit that puppy.
-        preceeded[4] = tonumber(preceeded[4])
-        if preceeded[4] <= scanAt then
+        preceeded[3] = tonumber(preceeded[3])
+        if preceeded[3] <= scanAt then
           self:emit('check_scheduled', CheckMeta:new(preceeded))
         end
         preceeded = {}
@@ -112,6 +112,10 @@ end
 -- dumps all checks to the state file.  totally clobbers the existing file, so watch out yo.
 function StateScanner:dumpChecks(checks, callback)
   local fd, fp, tmpFile = nil, 0, self._stateFile..'.tmp'
+  if self._stopped == true or self._writingChecks == true then
+    callback()
+    return
+  end
   local writeLineHelper = function(data)
     return function(callback)
       fs.write(fd, fp, data..'\n', function(err, count)
@@ -121,7 +125,7 @@ function StateScanner:dumpChecks(checks, callback)
     end
   end
   local writeCheck = function(check, callback)
-    if not check or not check.id or not check.path or not check.state then
+    if not check or not check.id or not check.state then
       logging.log(logging.ERR, 'check data corrupted')
       p(check)
       callback()
@@ -130,11 +134,11 @@ function StateScanner:dumpChecks(checks, callback)
     async.waterfall({
       writeLineHelper('#'),
       writeLineHelper(check.id),
-      writeLineHelper(check.path),
       writeLineHelper(check.state),
       writeLineHelper(check:getNextRun())
     }, callback)
   end
+  self._writingChecks = true
   -- write the initial state file.
   async.waterfall({
     utils.bind(fs.open, tmpFile, 'w', '0644'),
@@ -148,10 +152,20 @@ function StateScanner:dumpChecks(checks, callback)
       async.forEachSeries(checks, writeCheck, callback)
     end,
     function(callback)
+      fs.fsync(fd, callback)
+    end,
+    function(callback)
       fs.close(fd, callback)
     end,
     utils.bind(fs.rename, tmpFile, self._stateFile)
-  }, callback)
+  }, function(err)
+    if err then
+      callback(err)
+      return
+    end
+    self._writingChecks = false
+    callback()
+  end)
 end
 
 
