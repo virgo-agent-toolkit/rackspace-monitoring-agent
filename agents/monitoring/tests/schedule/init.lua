@@ -38,7 +38,7 @@ exports['test_scheduler_scan'] = function(test, asserts)
   local count = 0
   s:on('check_scheduled', function(details)
     count = count + 1
-    if count >= 2 then
+    if count >= 3 then
       s:stop()
       test.done()
     end
