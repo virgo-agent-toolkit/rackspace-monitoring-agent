@@ -46,6 +46,10 @@ function BaseCheck:run(callback)
   callback(checkResult)
 end
 
+function BaseCheck:getType()
+  return self._type
+end
+
 function BaseCheck:getNextRun()
   if self._lastResults then
     return self._lastResults._nextRun

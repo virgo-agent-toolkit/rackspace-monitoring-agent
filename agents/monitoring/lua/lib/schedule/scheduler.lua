@@ -17,7 +17,7 @@ local fmt = require('string').format
 local StateScanner = Emitter:extend()
 local Scheduler = Emitter:extend()
 local CheckMeta = Emitter:extend()
-local LINES_PER_STATE = 3
+local LINES_PER_STATE = 4
 local STATE_FILE_VERSION = 1
 
 function trim(s)
@@ -87,8 +87,8 @@ function StateScanner:scanStates()
       end
       if #preceeded == LINES_PER_STATE then
         -- todo: if state is correct and time is later than now, emit that puppy.
-        preceeded[3] = tonumber(preceeded[3])
-        if preceeded[3] <= scanAt then
+        preceeded[4] = tonumber(preceeded[4])
+        if preceeded[4] <= scanAt then
           self:emit('check_scheduled', CheckMeta:new(preceeded))
         end
         preceeded = {}
@@ -135,6 +135,7 @@ function StateScanner:dumpChecks(checks, callback)
       writeLineHelper('#'),
       writeLineHelper(check.id),
       writeLineHelper(check.state),
+      writeLineHelper(check:getType()),
       writeLineHelper(check:getNextRun())
     }, callback)
   end

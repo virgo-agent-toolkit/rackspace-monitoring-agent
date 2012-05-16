@@ -7,19 +7,24 @@ this is the third header line. I'm leaving the 4th header line empty to show tha
 # second
 check_000
 OK
+agent.memory
 1330095321
 # third
 check_0002
 OK
+agent.memory
 1330095421
 # fourth
 check_0003
 OK
+agent.memory
 2660190842
 check_0005
 OK
+agent.memory
 2660200842
 # first
 check_0004
 OK
+agent.memory
 1330085321
