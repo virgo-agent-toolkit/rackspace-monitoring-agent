@@ -37,7 +37,6 @@ function BaseCheck:initialize(params, checkType)
   self.state = params.state
   self.id = params.id
   self.period = params.period
-  self.path = params.path
 end
 
 function BaseCheck:run(callback)
@@ -45,6 +44,10 @@ function BaseCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   self._lastResults = checkResult
   callback(checkResult)
+end
+
+function BaseCheck:getType()
+  return self._type
 end
 
 function BaseCheck:getNextRun()

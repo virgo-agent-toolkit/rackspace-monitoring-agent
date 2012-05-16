@@ -35,9 +35,8 @@ end
 -- CheckMeta holds the pieces of a check that will appear in a state file.
 function CheckMeta:initialize(lines)
   self.id = lines[1]
-  self.path = lines[2]
-  self.state = lines[3]
-  self.nextRun = tonumber(lines[4])
+  self.state = lines[2]
+  self.nextRun = tonumber(lines[3])
 end
 
 -- StateScanner is in charge of reading/writing the state file.
@@ -56,6 +55,7 @@ function StateScanner:scanStates()
   local preceeded = {}
   local scanAt = os.time()
   local version
+  local writingChecks = false
   local headerDone = false
   local headerLine = 1
   local data = ''
@@ -112,6 +112,10 @@ end
 -- dumps all checks to the state file.  totally clobbers the existing file, so watch out yo.
 function StateScanner:dumpChecks(checks, callback)
   local fd, fp, tmpFile = nil, 0, self._stateFile..'.tmp'
+  if self._stopped == true or self._writingChecks == true then
+    callback()
+    return
+  end
   local writeLineHelper = function(data)
     return function(callback)
       fs.write(fd, fp, data..'\n', function(err, count)
@@ -121,7 +125,7 @@ function StateScanner:dumpChecks(checks, callback)
     end
   end
   local writeCheck = function(check, callback)
-    if not check or not check.id or not check.path or not check.state then
+    if not check or not check.id or not check.state then
       logging.log(logging.ERR, 'check data corrupted')
       p(check)
       callback()
@@ -130,11 +134,12 @@ function StateScanner:dumpChecks(checks, callback)
     async.waterfall({
       writeLineHelper('#'),
       writeLineHelper(check.id),
-      writeLineHelper(check.path),
       writeLineHelper(check.state),
+      writeLineHelper(check:getType()),
       writeLineHelper(check:getNextRun())
     }, callback)
   end
+  self._writingChecks = true
   -- write the initial state file.
   async.waterfall({
     utils.bind(fs.open, tmpFile, 'w', '0644'),
@@ -148,10 +153,20 @@ function StateScanner:dumpChecks(checks, callback)
       async.forEachSeries(checks, writeCheck, callback)
     end,
     function(callback)
+      fs.fsync(fd, callback)
+    end,
+    function(callback)
       fs.close(fd, callback)
     end,
     utils.bind(fs.rename, tmpFile, self._stateFile)
-  }, callback)
+  }, function(err)
+    if err then
+      callback(err)
+      return
+    end
+    self._writingChecks = false
+    callback()
+  end)
 end
 
 
