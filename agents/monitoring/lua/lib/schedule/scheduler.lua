@@ -9,6 +9,8 @@ local Error = require('core').Error
 local async = require('async')
 local math = require('math')
 
+local JSON = require('json')
+
 local logging = require('logging')
 local loggingUtil = require('../util/logging')
 
@@ -33,10 +35,10 @@ function split(s, transform)
 end
 
 -- CheckMeta holds the pieces of a check that will appear in a state file.
-function CheckMeta:initialize(lines)
-  self.id = lines[1]
-  self.state = lines[2]
-  self.nextRun = tonumber(lines[3])
+function CheckMeta:initialize(check)
+  self.id = check.id
+  self.state = check.state
+  self.nextRun = check.nextrun
 end
 
 -- StateScanner is in charge of reading/writing the state file.
@@ -61,84 +63,57 @@ function StateScanner:scanStates()
   local data = ''
   local stream = fs.createReadStream(self._stateFile)
   stream:on('error', function(err)
-     p(error)
+    logging.log(logging.ERR, fmt('Error reading statefile %s', err))
+  end)
+  stream:on('end', function()
+    local status, obj = pcall(JSON.parse, data)
+    if status then
+      if obj.version ~= STATE_FILE_VERSION then
+        logging.log(logging.INFO, fmt('Statefile version mismatch %s != %s', obj.version, STATE_FILE_VERSION))
+      else
+        for _, check in pairs(obj.checks) do
+          if check.nextrun <= scanAt then
+            self:emit('check_scheduled', CheckMeta:new(check))
+          end
+        end
+      end
+    else
+      logging.log(logging.ERR, fmt('Could not parse state file'))
+    end
   end)
   stream:on('data', function(chunk)
     if self._stopped == true then
       return
     end
     data = data .. chunk
-    local line
-    while true do
-      local index = data:find('\n')
-      if index then
-        line = trim(data:sub(0, index))
-        data = data:sub(index + 1)
-      else
-        break
-      end
-      if version == nil then
-        version = tonumber(trim(line))
-      elseif not headerDone then
-        headerDone = self:consumeHeaderLine(version, line, headerLine)
-        headerLine = headerLine + 1
-      elseif #line > 0 and line:find('#', 1) ~= 1 then
-        table.insert(preceeded, line)
-      end
-      if #preceeded == LINES_PER_STATE then
-        -- todo: if state is correct and time is later than now, emit that puppy.
-        preceeded[4] = tonumber(preceeded[4])
-        if preceeded[4] <= scanAt then
-          self:emit('check_scheduled', CheckMeta:new(preceeded))
-        end
-        preceeded = {}
-      end
-    end
   end)
-end
-
-function StateScanner:consumeHeaderLine(version, line, lineNumber)
-  -- a version 1 header is this: version, \n, line count, \n, <line count> lines...
-  if version == 1 then
-    if lineNumber == 1 then
-      self._header.lineCount = tonumber(line)
-      return false
-    else
-      return self._header.lineCount - lineNumber < 0
-    end
-  end
 end
 
 -- dumps all checks to the state file.  totally clobbers the existing file, so watch out yo.
 function StateScanner:dumpChecks(checks, callback)
+  local serializedObj = {}
   local fd, fp, tmpFile = nil, 0, self._stateFile..'.tmp'
+
+  serializedObj.version = STATE_FILE_VERSION
+  serializedObj.checks = {}
+  for i, check in ipairs(checks) do
+    serializedObj.checks[i] = checks[i]:serialize()
+  end
+
   if self._stopped == true or self._writingChecks == true then
     callback()
     return
   end
+
   local writeLineHelper = function(data)
     return function(callback)
-      fs.write(fd, fp, data..'\n', function(err, count)
+      fs.write(fd, fp, JSON.stringify(data) .. '\n', function(err, count)
         fp = fp + count
         callback(err)
       end)
     end
   end
-  local writeCheck = function(check, callback)
-    if not check or not check.id or not check.state then
-      logging.log(logging.ERR, 'check data corrupted')
-      p(check)
-      callback()
-      return
-    end
-    async.waterfall({
-      writeLineHelper('#'),
-      writeLineHelper(check.id),
-      writeLineHelper(check.state),
-      writeLineHelper(check:getType()),
-      writeLineHelper(check:getNextRun())
-    }, callback)
-  end
+
   self._writingChecks = true
   -- write the initial state file.
   async.waterfall({
@@ -147,11 +122,7 @@ function StateScanner:dumpChecks(checks, callback)
       fd = _fd
       callback()
     end,
-    writeLineHelper(STATE_FILE_VERSION),
-    writeLineHelper(0), -- nothing in the header.
-    function(callback)
-      async.forEachSeries(checks, writeCheck, callback)
-    end,
+    writeLineHelper(serializedObj),
     function(callback)
       fs.fsync(fd, callback)
     end,
