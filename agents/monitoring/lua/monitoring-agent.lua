@@ -30,6 +30,8 @@ local misc = require('./lib/util/misc')
 local States = require('./lib/states')
 local stateFile = require('./lib/state_file')
 
+local table = require('table')
+
 function gc()
   collectgarbage('collect')
 end
@@ -87,6 +89,11 @@ end
 function MonitoringAgent:_loadEndpoints(callback)
   local endpoints
   local query_endpoints
+
+  if not self._config['monitoring_query_endpoints'] then
+    self._config['monitoring_query_endpoints'] = table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
+  end
+
   if self._config['monitoring_query_endpoints'] and
      self._config['monitoring_endpoints'] == nil then
     -- Verify that the endpoint addresses are specified in the correct format
