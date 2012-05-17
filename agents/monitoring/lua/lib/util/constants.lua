@@ -13,4 +13,10 @@ exports.DATACENTER_MAX_DELAY_JITTER = 7000
 
 exports.SRV_RECORD_FAILURE_DELAY = 15 * 1000
 exports.SRV_RECORD_FAILURE_DELAY_JITTER = 15 * 1000
+
+exports.DEFAULT_MONITORING_SRV_QUERIES = {
+  '_monitoring_agent._tcp.lon3.stage.monitoring.api.rackspacecloud.com',
+  '_monitoring_agent._tcp.ord1.stage.monitoring.api.rackspacecloud.com'
+}
+
 return exports
