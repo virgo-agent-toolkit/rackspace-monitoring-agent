@@ -35,8 +35,8 @@ function BaseCheck:initialize(params, checkType)
   self._lastResults = nil
   self._type = checkType or 'UNDEFINED'
   self.state = params.state
-  self.id = params.id
-  self.period = params.period
+  self.id = tostring(params.id)
+  self.period = tonumber(params.period)
 end
 
 function BaseCheck:run(callback)
@@ -60,6 +60,15 @@ end
 
 function BaseCheck:toString()
   return fmt('%s (id=%s, period=%ss)', self._type, self.id, self.period)
+end
+
+function BaseCheck:serialize()
+  return {
+    id = self.id,
+    state = self.state,
+    period = self.period,
+    nextrun = self:getNextRun()
+  }
 end
 
 function CheckResult:initialize(check, options)
