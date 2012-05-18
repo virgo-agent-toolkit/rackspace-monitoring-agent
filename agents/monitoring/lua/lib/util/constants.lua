@@ -2,8 +2,6 @@ local exports = {}
 
 -- All intervals and timeouts are in milliseconds
 
-exports.GC_INTERVAL = 5 * 1000
-
 exports.CONNECT_TIMEOUT = 6000
 exports.SOCKET_TIMEOUT = 10000
 exports.PING_INTERVAL_JITTER = 7000

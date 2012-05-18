@@ -32,16 +32,6 @@ local stateFile = require('./lib/state_file')
 
 local table = require('table')
 
-function gc()
-  collectgarbage('collect')
-end
-
--- Setup GC on USR1
-process:on('SIGUSR1', gc)
-
--- Setup GC
-timer.setInterval(constants.GC_INTERVAL, gc)
-
 local MonitoringAgent = Object:extend()
 
 function MonitoringAgent:_queryForEndpoints(domains, callback)
