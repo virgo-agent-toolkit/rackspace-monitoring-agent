@@ -55,7 +55,7 @@ virgo__log_rotate(virgo_t *v)
     fclose(old);
   }
 
-  virgo_log(v, VIRGO_LOG_INFO, "Log file started...");
+  virgo_log_infof(v, "Log file started (path=%s)", v->log_path);
 
   return VIRGO_SUCCESS;
 }
