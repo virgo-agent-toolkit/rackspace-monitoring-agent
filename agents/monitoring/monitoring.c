@@ -47,6 +47,10 @@ show_help()
          "  -v, --version         print monitoring-agent's version\n"
          "  -c, --config val      Set configuration file path. Default: /etc/rackspace-monitoring-agent.cfg\n"
          "  -e val                Entry module.\n"
+         "  -l, --logfile val     Path and filename of logfile.\n"
+#ifndef _WIN32
+         "  -p, --pidfile val     Path and filename to pidfile.\n"
+#endif
          "  -z, --zip val         Path to Zip Bundle.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
