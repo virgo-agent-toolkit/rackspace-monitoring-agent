@@ -24,7 +24,13 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+
+#ifndef _WIN32
+#include <unistd.h>
+#include <errno.h>
+#endif
 
 virgo_error_t*
 virgo_conf_lua_load_path(virgo_t *v, const char *path)
@@ -37,6 +43,32 @@ virgo_conf_lua_load_path(virgo_t *v, const char *path)
 
   return VIRGO_SUCCESS;
 }
+
+#ifndef _WIN32
+virgo_error_t*
+virgo__write_pid(virgo_t *v, const char *path)
+{
+  char buf[128];
+  FILE *file = fopen(path, "w");
+  if (file == NULL) {
+    char buf[256];
+    int err = errno;
+#ifdef _WIN32
+    strncpy(&buf[0], strerror(err), sizeof(buf));
+#else
+    strerror_r(err, &buf[0], sizeof(buf));
+#endif
+    logCrit(v, "Failed to create pidfile: %s (errno=%d,%s)", path, err, &buf[0]);
+    return virgo_error_createf(VIRGO_EIO,
+                               "Failed to create pidfile: %s (errno=%d,%s)",
+                               path, err, &buf[0]);
+  }
+  snprintf(buf, sizeof(buf), "%d", getpid());
+  fwrite(buf, 1, strlen(buf), file);
+  fclose(file);
+  return VIRGO_SUCCESS;
+}
+#endif
 
 virgo_error_t*
 virgo_conf_args(virgo_t *v, int argc, char** argv)
@@ -54,6 +86,21 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
       return err;
     }
   }
+
+  arg = virgo__argv_get_value(v, "-l", "--logfile");
+  if (arg != NULL) {
+    v->log_path = strdup(arg);
+  }
+
+#ifndef _WIN32
+  arg = virgo__argv_get_value(v, "-p", "--pidfile");
+  if (arg != NULL) {
+    err = virgo__write_pid(v, arg);
+    if (err) {
+      return err;
+    }
+  }
+#endif
 
   return VIRGO_SUCCESS;
 }
@@ -228,7 +275,6 @@ virgo__conf_init(virgo_t *v)
   if (v->config) {
     virgo__conf_destroy(v);
   }
-
 
   /* put config in virgo.config table */
   lua_getglobal(v->L, "virgo");

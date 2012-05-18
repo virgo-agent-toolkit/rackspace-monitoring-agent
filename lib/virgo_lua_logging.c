@@ -18,6 +18,7 @@
 #include "virgo.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
+#include "virgo__logging.h"
 
 #define LOGGINGHANDLE "virgo.logging"
 
@@ -39,6 +40,13 @@ logging_log(lua_State *L) {
   return 0;
 }
 
+static int
+logging_rotate(lua_State *L) {
+  virgo_t *v = virgo__lua_context(L);
+  (void) virgo__log_rotate(v);
+  return 0;
+}
+
 int
 virgo__lua_logging_open(lua_State *L)
 {
@@ -46,6 +54,9 @@ virgo__lua_logging_open(lua_State *L)
 
   lua_pushcfunction(L, logging_log);
   lua_setfield(L, -2, "log");
+
+  lua_pushcfunction(L, logging_rotate);
+  lua_setfield(L, -2, "rotate");
 
   VIRGO_DEFINE_CONSTANT(L, VIRGO_LOG_NOTHING);
   VIRGO_DEFINE_CONSTANT_ALIAS(L, VIRGO_LOG_NOTHING, "NOTHING");

@@ -30,6 +30,7 @@ local env = require('env')
 local constants = require('constants')
 local uv = require('uv')
 local utils = require('utils')
+local logging = require('logging')
 
 setmetatable(process, Emitter.meta)
 
@@ -407,5 +408,29 @@ function virgo_init.run(name)
   -- trigger exit handlers and exit cleanly
   process.exit(process.exitCode or 0)
 end
+
+function gc()
+  collectgarbage('collect')
+end
+
+function onUSR1()
+  gc()
+end
+
+function onHUP()
+  logging.rotate()
+end
+
+-- Setup GC on USR1
+process:on('SIGUSR1', onUSR1)
+
+-- Setup HUP
+process:on('SIGHUP', onHUP)
+
+-- Setup GC
+local GC_INTERVAL = 5 * 1000 -- milliseconds
+timer.setInterval(GC_INTERVAL, gc)
+-- Unref the interval timer. We don't want it to keep the eventloop blocked
+native.unref()
 
 return virgo_init
