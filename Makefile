@@ -45,7 +45,7 @@ install: all
 	install -d ${BINDIR}
 	install -d ${ETCDIR}
 	install -d ${SHAREDIR}
-	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}
+	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/monitoring-rackspace
 	install out/${BUILDTYPE}/monitoring.zip ${SHAREDIR}
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}

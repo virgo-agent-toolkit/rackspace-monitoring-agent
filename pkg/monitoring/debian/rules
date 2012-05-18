@@ -22,15 +22,7 @@ install: build
 	dh_testroot
 	dh_prep
 	dh_installdirs
-	mkdir -p $(BINDIR)
-	cp out/Debug/monitoring-agent $(BINDIR)/rackspace-monitoring-agent
-	mkdir -p $(SHAREDIR)
-	cp out/Debug/monitoring.zip $(SHAREDIR)
-	cp out/Debug/monitoring-test.zip $(SHAREDIR)
-	mkdir -p $(ETCDIR)
-	cp pkg/monitoring/rackspace-monitoring-agent.cfg $(ETCDIR)/
-	mkdir -p $(ETCDIR)/init
-	cp pkg/monitoring/upstart/rackspace-monitoring-agent.conf $(ETCDIR)/init
+	DESTDIR=$(DESTDIR) $(MAKE) install
 
 binary-arch: build install
 	dh_testdir
