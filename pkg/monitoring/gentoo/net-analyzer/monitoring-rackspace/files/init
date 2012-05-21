@@ -12,14 +12,14 @@ depend() {
 
 start() {
     ebegin "Starting monitoring-agent"
-    start-stop-daemon --background --start --exec /usr/bin/monitoring-agent \
+    start-stop-daemon --background --start --exec /usr/bin/monitoring-rackspace \
       --make-pidfile --pidfile $PIDFILE
     eend $?
 }
 
 stop() {
     ebegin "Stopping monitoring-agent"
-    start-stop-daemon --stop --exec /usr/bin/monitoring-agent \
+    start-stop-daemon --stop --exec /usr/bin/monitoring-rackspace \
       --pidfile $PIDFILE
     eend $?
 }
