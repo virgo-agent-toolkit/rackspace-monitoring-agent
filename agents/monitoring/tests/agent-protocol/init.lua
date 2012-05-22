@@ -26,6 +26,15 @@ local fixtures = require('./fixtures')
 
 local exports = {}
 
+exports['test_completion_key'] = function(test, asserts)
+  local data = fixtures['handshake.hello.request']
+  local sock = Emitter:new()
+  local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+  asserts.equals('MYID:1', conn:_completionKey('1'))
+  asserts.equals('hello:1', conn:_completionKey('hello', '1'))
+  test.done()
+end
+
 exports['test_handshake_hello'] = function(test, asserts)
   local hello = { }
   local data = fixtures['handshake.hello.request']
