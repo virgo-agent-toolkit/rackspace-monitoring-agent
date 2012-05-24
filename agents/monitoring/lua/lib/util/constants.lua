@@ -1,3 +1,4 @@
+local os = require('os')
 local exports = {}
 
 -- All intervals and timeouts are in milliseconds
@@ -16,5 +17,11 @@ exports.DEFAULT_MONITORING_SRV_QUERIES = {
   '_monitoring_agent._tcp.lon3.stage.monitoring.api.rackspacecloud.com',
   '_monitoring_agent._tcp.ord1.stage.monitoring.api.rackspacecloud.com'
 }
+
+if os.type() == 'win32' then
+  exports.DEFAULT_PERSISTENT_VARIABLE_PATH = './'
+else
+  exports.DEFAULT_PERSISTENT_VARIABLE_PATH = '/var/lib/rackspace-monitoring-agent'
+end
 
 return exports
