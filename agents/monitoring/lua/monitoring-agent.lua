@@ -115,15 +115,20 @@ function MonitoringAgent:_verifyState(callback)
     -- retrieve persistent variables
     function(callback)
       self:_getPersistentVariable('monitoring_id', function(err, monitoring_id)
-        if err then
+        local getSystemId
+        getSystemId = function()
           monitoring_id = self:_getSystemId()
           if not monitoring_id then
-            logging.log(logging.ERR, "could not retrieve system id... exiting")
-            timer.setTimeout(5000, exit)
+            logging.log(logging.ERR, "could not retrieve system id... retrying")
+            timer.setTimeout(5000, getSystemId)
             return
           end
           self._config['monitoring_id'] = monitoring_id
           self:_savePersistentVariable('monitoring_id', monitoring_id, callback)
+          callback()
+        end
+        if err then
+          getSystemId(callback)
         else
           self._config['monitoring_id'] = monitoring_id
           callback()
