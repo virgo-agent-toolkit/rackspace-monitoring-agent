@@ -123,7 +123,10 @@ function MonitoringAgent:_verifyState(callback)
           self._config['monitoring_id'] = monitoring_id
           self:_savePersistentVariable('monitoring_id', monitoring_id, callback)
         end
-        if err then
+
+        if err and err.code ~= 'ENOENT' then
+          callback(err)
+        elseif err and err.code == 'ENOENT' then
           getSystemId()
         else
           self._config['monitoring_id'] = monitoring_id
