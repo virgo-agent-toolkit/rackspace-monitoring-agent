@@ -91,7 +91,7 @@ function AgentProtocolConnection:_processMessage(msg)
     self:emit('message', msg)
   else
     -- response
-    local key = msg.source .. ':' .. msg.id
+    local key = self:_completionKey(msg.source, msg.id)
     local callback = self._completions[key]
     if callback then
       self._completions[key] = nil
@@ -100,12 +100,36 @@ function AgentProtocolConnection:_processMessage(msg)
   end
 end
 
+--[[
+Generate the completion key for a given message id and source (optional)
+
+arg[1] - source or msgid
+arg[2] - msgid if source provided
+]]--
+function AgentProtocolConnection:_completionKey(...)
+  local args = {...}
+  local msgid = nil
+  local source = nil
+
+  if #args == 1 then
+    source = self._myid
+    msgid = args[1]
+  elseif #args == 2 then
+    source = args[1]
+    msgid = args[2]
+  else
+    return nil
+  end
+
+  return source .. ':' .. msgid
+end
+
 function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
   msg.target = 'endpoint'
   msg.source = self._myid
   local msg_str = JSON.stringify(msg)
   local data = msg_str .. '\n'
-  local key = msg.target .. ':' .. msg.id
+  local key = self:_completionKey(msg.target, msg.id)
 
   self._log(logging.DEBUG, fmt('SEND: %s', msg_str))
 
