@@ -283,6 +283,10 @@ virgo__conf_init(virgo_t *v)
   conf_parse(v, fp);
   lua_settable(v->L, -3);
 
+  lua_pushstring(v->L, "config_path");
+  lua_pushstring(v->L, path);
+  lua_settable(v->L, -3);
+
   fclose(fp);
   free((void*)path);
 
