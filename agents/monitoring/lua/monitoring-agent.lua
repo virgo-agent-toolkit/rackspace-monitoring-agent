@@ -76,12 +76,12 @@ function MonitoringAgent:_getSystemId()
   return nil
 end
 
-function MonitoringAgent:_calculatePersistentFilename(variable)
+function MonitoringAgent:_getPersistentFilename(variable)
   return path.join(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, variable .. '.txt')
 end
 
 function MonitoringAgent:_savePersistentVariable(variable, data, callback)
-  local filename = self:_calculatePersistentFilename(variable)
+  local filename = self:_getPersistentFilename(variable)
   fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0644", function(err)
     if err and err.code ~= 'EEXIST' then
       callback(err)
@@ -92,14 +92,11 @@ function MonitoringAgent:_savePersistentVariable(variable, data, callback)
 end
 
 function MonitoringAgent:_getPersistentVariable(variable, callback)
-  local filename = self:_calculatePersistentFilename(variable)
+  local filename = self:_getPersistentFilename(variable)
   fs.readFile(filename, callback)
 end
 
 function MonitoringAgent:_verifyState(callback)
-  function exit()
-    process.exit(1)
-  end
 
   if self._config == nil then
     logging.log(logging.ERR, "config missing or invalid")
@@ -125,10 +122,9 @@ function MonitoringAgent:_verifyState(callback)
           end
           self._config['monitoring_id'] = monitoring_id
           self:_savePersistentVariable('monitoring_id', monitoring_id, callback)
-          callback()
         end
         if err then
-          getSystemId(callback)
+          getSystemId()
         else
           self._config['monitoring_id'] = monitoring_id
           callback()
