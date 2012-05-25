@@ -23,12 +23,16 @@ local fmt = require('string').format
 local logging = require('logging')
 local timer = require('timer')
 local dns = require('dns')
+local fs = require('fs')
+local path = require('path')
 
 local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
 local constants = require('./lib/util/constants')
 local misc = require('./lib/util/misc')
 local States = require('./lib/states')
 local stateFile = require('./lib/state_file')
+local fsutil = require('./lib/util/fs')
+local UUID = require('./lib/util/uuid')
 
 local table = require('table')
 
@@ -60,20 +64,82 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
   end)
 end
 
+function MonitoringAgent:_getSystemId()
+  local s = sigar:new()
+  local netifs = s:netifs()
+  for i=1, #netifs do
+    local eth = netifs[i]:info()
+    if eth.address ~= '127.0.0.1' then
+      return UUID:new(eth.hwaddr):toString()
+    end
+  end
+  return nil
+end
+
+function MonitoringAgent:_getPersistentFilename(variable)
+  return path.join(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, variable .. '.txt')
+end
+
+function MonitoringAgent:_savePersistentVariable(variable, data, callback)
+  local filename = self:_getPersistentFilename(variable)
+  fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0644", function(err)
+    if err and err.code ~= 'EEXIST' then
+      callback(err)
+      return
+    end
+    fs.writeFile(filename, data, callback)
+  end)
+end
+
+function MonitoringAgent:_getPersistentVariable(variable, callback)
+  local filename = self:_getPersistentFilename(variable)
+  fs.readFile(filename, callback)
+end
+
 function MonitoringAgent:_verifyState(callback)
+
   if self._config == nil then
-    logging.log(logging.ERR, "statefile 'config' missing or invalid")
+    logging.log(logging.ERR, "config missing or invalid")
     process.exit(1)
   end
-  if self._config['monitoring_id'] == nil then
-    logging.log(logging.ERR, "'id' is missing from 'config'")
-    process.exit(1)
-  end
+
   if self._config['monitoring_token'] == nil then
-    logging.log(logging.ERR, "'token' is missing from 'config'")
+    logging.log(logging.ERR, "'monitoring_token' is missing from 'config'")
     process.exit(1)
   end
-  callback()
+
+  async.waterfall({
+    -- retrieve persistent variables
+    function(callback)
+      self:_getPersistentVariable('monitoring_id', function(err, monitoring_id)
+        local getSystemId
+        getSystemId = function()
+          monitoring_id = self:_getSystemId()
+          if not monitoring_id then
+            logging.log(logging.ERR, "could not retrieve system id... retrying")
+            timer.setTimeout(5000, getSystemId)
+            return
+          end
+          self._config['monitoring_id'] = monitoring_id
+          self:_savePersistentVariable('monitoring_id', monitoring_id, callback)
+        end
+
+        if err and err.code ~= 'ENOENT' then
+          callback(err)
+        elseif err and err.code == 'ENOENT' then
+          getSystemId()
+        else
+          self._config['monitoring_id'] = monitoring_id
+          callback()
+        end
+      end)
+    end,
+    -- log
+    function(callback)
+      logging.log(logging.INFO, 'Using id ' .. self._config['monitoring_id'])
+      callback()
+    end
+  }, callback)
 end
 
 function MonitoringAgent:_loadEndpoints(callback)
