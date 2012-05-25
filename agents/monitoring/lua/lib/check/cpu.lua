@@ -19,7 +19,8 @@ function CpuCheck:run(callback)
 
   for i=1, #cpuinfo do
     for key, value in pairs(cpuinfo[i]:data()) do
-      checkResult:addMetric(key, DIMENSION_PREFIX .. i, nil, value)
+      local index = i - 1
+      checkResult:addMetric(key, DIMENSION_PREFIX .. index, nil, value)
     end
   end
 
