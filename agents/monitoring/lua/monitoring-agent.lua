@@ -93,7 +93,13 @@ end
 
 function MonitoringAgent:_getPersistentVariable(variable, callback)
   local filename = self:_getPersistentFilename(variable)
-  fs.readFile(filename, callback)
+  fs.readFile(filename, function(err, data)
+    if err then
+      callback(err)
+      return
+    end
+    callback(misc.trim(data))
+  end)
 end
 
 function MonitoringAgent:_verifyState(callback)
