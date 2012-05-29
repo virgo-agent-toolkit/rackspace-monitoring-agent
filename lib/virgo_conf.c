@@ -44,32 +44,6 @@ virgo_conf_lua_load_path(virgo_t *v, const char *path)
   return VIRGO_SUCCESS;
 }
 
-#ifndef _WIN32
-virgo_error_t*
-virgo__write_pid(virgo_t *v, const char *path)
-{
-  char buf[128];
-  FILE *file = fopen(path, "w");
-  if (file == NULL) {
-    char buf[256];
-    int err = errno;
-#ifdef _WIN32
-    strncpy(&buf[0], strerror(err), sizeof(buf));
-#else
-    strerror_r(err, &buf[0], sizeof(buf));
-#endif
-    logCrit(v, "Failed to create pidfile: %s (errno=%d,%s)", path, err, &buf[0]);
-    return virgo_error_createf(VIRGO_EIO,
-                               "Failed to create pidfile: %s (errno=%d,%s)",
-                               path, err, &buf[0]);
-  }
-  snprintf(buf, sizeof(buf), "%d", getpid());
-  fwrite(buf, 1, strlen(buf), file);
-  fclose(file);
-  return VIRGO_SUCCESS;
-}
-#endif
-
 virgo_error_t*
 virgo_conf_args(virgo_t *v, int argc, char** argv)
 {
