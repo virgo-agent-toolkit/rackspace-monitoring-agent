@@ -146,7 +146,7 @@ function AgentClient:startPingInterval()
       this._log(logging.DEBUG, fmt('Sending ping (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',
                                     timestamp, this._sent_ping_count, this._got_pong_count))
       this._sent_ping_count = this._sent_ping_count + 1
-      this.protocol:sendPing(timestamp, function(err, msg)
+      this.protocol:request('heartbeat.ping', timestamp, function(err, msg)
         if err then
           this._log(logging.DEBUG, 'Got an error while sending ping: ' .. tostring(err))
           return
