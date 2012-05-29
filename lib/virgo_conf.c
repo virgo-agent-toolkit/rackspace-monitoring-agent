@@ -66,16 +66,6 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
     v->log_path = strdup(arg);
   }
 
-#ifndef _WIN32
-  arg = virgo__argv_get_value(v, "-p", "--pidfile");
-  if (arg != NULL) {
-    err = virgo__write_pid(v, arg);
-    if (err) {
-      return err;
-    }
-  }
-#endif
-
   return VIRGO_SUCCESS;
 }
 
