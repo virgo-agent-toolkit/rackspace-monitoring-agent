@@ -39,22 +39,22 @@ local AgentProtocolConnection = Emitter:extend()
 --[[ Request Functions ]]--
 local requests = {}
 
-requests['handshake.hello'] = function(agentId, token, callback)
+requests['handshake.hello'] = function(self, agentId, token, callback)
   local m = msg.HandshakeHello:new(token, agentId)
   self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, 200, callback)
 end
 
-requests['heartbeat.ping'] = function(timestamp, callback)
+requests['heartbeat.ping'] = function(self, timestamp, callback)
   local m = msg.Ping:new(timestamp)
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
-requests['manifest.get'] = function(callback)
+requests['manifest.get'] = function(self, callback)
   local m = msg.Manifest:new()
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
-requests['metrics.set'] = function(check, checkResults, callback)
+requests['metrics.set'] = function(self, check, checkResults, callback)
   local m = msg.MetricsRequest:new(check, checkResults)
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
@@ -62,13 +62,13 @@ end
 --[[ Reponse Functions ]]--
 local responses = {}
 
-responses['check.schedule_changed'] = function(replyTo, callback)
+responses['check.schedule_changed'] = function(self, replyTo, callback)
   local m = msg.ScheduleChangeAck:new(replyTo)
   self:_send(m:serialize(self._msgid), nil, 200)
   callback()
 end
 
-responses['system.info'] = function(request, callback)
+responses['system.info'] = function(self, request, callback)
   local m = msg.SystemInfoResponse:new(request)
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
@@ -89,17 +89,17 @@ function AgentProtocolConnection:initialize(log, myid, token, conn)
   self._target = 'endpoint'
   self._timeoutIds = {}
   self._completions = {}
-  self._requests = {}
-  self._responses = {}
+  self._requests = requests
+  self._responses = responses
   self:setState(STATES.INITIAL)
 end
 
 function AgentProtocolConnection:request(name, ...)
-  return self._requests[name](unpack(arg))
+  return self._requests[name](self, unpack({...}))
 end
 
 function AgentProtocolConnection:respond(name, ...)
-  return self._responses[name](unpack(arg))
+  return self._responses[name](self, unpack({...}))
 end
 
 function AgentProtocolConnection:_popLine()
