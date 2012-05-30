@@ -254,7 +254,7 @@ function AgentProtocolConnection:startHandshake(callback)
 end
 
 function AgentProtocolConnection:getManifest(callback)
-  self:request('manifest.get', (function(err, response)
+  self:request('manifest.get', function(err, response)
     if err then
       callback(err)
     else
