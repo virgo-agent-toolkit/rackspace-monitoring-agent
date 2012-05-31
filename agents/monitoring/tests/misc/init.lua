@@ -17,8 +17,10 @@ limitations under the License.
 exports = {}
 no = {}
 
+local fs = require('fs')
 local Uuid = require('monitoring/lib/util/uuid')
 local splitAddress = require('monitoring/lib/util/misc').splitAddress
+local writePid = require('monitoring/monitoring-agent').writePid
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
@@ -29,6 +31,22 @@ exports['test_uuid_generation'] = function(test, asserts)
   -- last chunk should be the same.
   asserts.equals(uuid1:toString():reverse():sub(1, 10), uuid2:toString():reverse():sub(1, 10))
   test.done()
+end
+
+exports['test_pid'] = function(test, asserts)
+  local path = 'test.pid'
+  writePid(path, function(err)
+    asserts.equals(err, nil)
+    fs.readFile(path, function(err, data)
+      asserts.equals(err, nil)
+      local pid = data
+      asserts.equals(pid, tostring(process.pid))
+      fs.unlink(path, function(err)
+        asserts.equals(err, nil)
+        test.done()
+      end)
+    end)
+  end)
 end
 
 exports['test_splitAddress'] = function(test, asserts)
