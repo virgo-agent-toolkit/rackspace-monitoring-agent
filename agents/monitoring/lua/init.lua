@@ -23,7 +23,8 @@ local argv = require("options")
   :describe("e", "entry module")
   :describe("s", "state directory path")
   :describe("c", "config file path")
-  :argv("he:c:s:")
+  :describe("p", "pid file path")
+  :argv("he:p:c:s:")
 
 function Entry.run()
   local mod = argv.args.e or 'monitoring-agent'
@@ -32,7 +33,7 @@ function Entry.run()
   logging.log(logging.INFO, 'Running Module ' .. mod)
 
   local err, msg = pcall(function()
-    require(mod).run({stateDirectory = argv.args.s, configFile = argv.args.c})
+    require(mod).run({stateDirectory = argv.args.s, configFile = argv.args.c, pidFile = argv.args.p})
   end)
 
   if err == false then
