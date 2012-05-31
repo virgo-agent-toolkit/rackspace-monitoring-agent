@@ -206,7 +206,7 @@ process.env = setmetatable({}, {
 })
 
 --Retrieve Process ID from native Luvit function getpid
-process.pid=native.getpid()
+process.pid = native.getpid()
 
 -- This is called by all the event sources from C
 -- The user can override it to hook into event sources

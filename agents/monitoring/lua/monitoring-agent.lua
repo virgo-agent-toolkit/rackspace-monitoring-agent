@@ -220,7 +220,7 @@ function MonitoringAgent:initialize(stateDirectory, configFile)
   self._config = virgo.config
 end
 
-function MonitoringAgent.WritePid(path, callback)
+function MonitoringAgent.writePid(path, callback)
     fs.writeFile(path, tostring(process.pid), callback)
 end
 
@@ -230,7 +230,7 @@ function MonitoringAgent.run(options)
 
   async.series({
     function(callback)
-      MonitoringAgent.WritePid(options.pidFile, callback)
+      MonitoringAgent.writePid(options.pidFile, callback)
     end,
     function(callback)
       agent:loadStates(callback)

@@ -20,7 +20,7 @@ no = {}
 local fs = require('fs')
 local Uuid = require('monitoring/lib/util/uuid')
 local splitAddress = require('monitoring/lib/util/misc').splitAddress
-local writepid = require('monitoring/monitoring-agent').WritePid
+local writePid = require('monitoring/monitoring-agent').writePid
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
@@ -33,16 +33,16 @@ exports['test_uuid_generation'] = function(test, asserts)
   test.done()
 end
 
-exports['test_pid'] = function(test)
+exports['test_pid'] = function(test, asserts)
   local path = 'test.pid'
-  writepid(path, function(err)
-    assert(err == nil)
+  writePid(path, function(err)
+    asserts.equals(err, nil)
     fs.readFile(path, function(err, data)
-      assert(err == nil)
-      pid = data
-      assert(pid == tostring(process.pid), 'PID File Written Unsuccessfully')
+      asserts.equals(err, nil)
+      local pid = data
+      asserts.equals(pid, tostring(process.pid))
       fs.unlink(path, function(err)
-        assert(err == nil)
+        asserts.equals(err, nil)
         test.done()
       end)
     end)
