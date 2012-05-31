@@ -36,6 +36,44 @@ STATES.RUNNING = 3
 
 local AgentProtocolConnection = Emitter:extend()
 
+--[[ Request Functions ]]--
+local requests = {}
+
+requests['handshake.hello'] = function(self, agentId, token, callback)
+  local m = msg.HandshakeHello:new(token, agentId)
+  self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, 200, callback)
+end
+
+requests['heartbeat.ping'] = function(self, timestamp, callback)
+  local m = msg.Ping:new(timestamp)
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
+end
+
+requests['manifest.get'] = function(self, callback)
+  local m = msg.Manifest:new()
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
+end
+
+requests['metrics.set'] = function(self, check, checkResults, callback)
+  local m = msg.MetricsRequest:new(check, checkResults)
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
+end
+
+--[[ Reponse Functions ]]--
+local responses = {}
+
+responses['check.schedule_changed'] = function(self, replyTo, callback)
+  local m = msg.ScheduleChangeAck:new(replyTo)
+  self:_send(m:serialize(self._msgid), nil, 200)
+  callback()
+end
+
+responses['system.info'] = function(self, request, callback)
+  local m = msg.SystemInfoResponse:new(request)
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
+end
+
+
 function AgentProtocolConnection:initialize(log, myid, token, conn)
   assert(conn ~= nil)
   assert(myid ~= nil)
@@ -51,7 +89,17 @@ function AgentProtocolConnection:initialize(log, myid, token, conn)
   self._target = 'endpoint'
   self._timeoutIds = {}
   self._completions = {}
+  self._requests = requests
+  self._responses = responses
   self:setState(STATES.INITIAL)
+end
+
+function AgentProtocolConnection:request(name, ...)
+  return self._requests[name](self, unpack({...}))
+end
+
+function AgentProtocolConnection:respond(name, ...)
+  return self._responses[name](self, unpack({...}))
 end
 
 function AgentProtocolConnection:_popLine()
@@ -177,39 +225,6 @@ function AgentProtocolConnection:_setCommandTimeoutHandler(key, timeout, callbac
   self._timeoutIds[key] = timeoutId
 end
 
---[[ Protocol Functions ]]--
-
-function AgentProtocolConnection:sendHandshakeHello(agentId, token, callback)
-  local m = msg.HandshakeHello:new(token, agentId)
-  self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, 200, callback)
-end
-
-function AgentProtocolConnection:sendPing(timestamp, callback)
-  local m = msg.Ping:new(timestamp)
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
-end
-
-function AgentProtocolConnection:sendSystemInfo(request, callback)
-  local m = msg.SystemInfoResponse:new(request)
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
-end
-
-function AgentProtocolConnection:sendManifest(callback)
-  local m = msg.Manifest:new()
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
-end
-
-function AgentProtocolConnection:sendMetrics(check, checkResults, callback)
-  local m = msg.MetricsRequest:new(check, checkResults)
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
-end
-
-function AgentProtocolConnection:sendScheduleChangeAck(replyTo, callback)
-  local m = msg.ScheduleChangeAck:new(replyTo)
-  self:_send(m:serialize(self._msgid), nil, 200)
-  callback()
-end
-
 --[[ Public Functions ]] --
 
 function AgentProtocolConnection:setState(state)
@@ -218,7 +233,7 @@ end
 
 function AgentProtocolConnection:startHandshake(callback)
   self:setState(STATES.HANDSHAKE)
-  self:sendHandshakeHello(self._myid, self._token, function(err, msg)
+  self:request('handshake.hello', self._myid, self._token, function(err, msg)
     if err then
       self._log(logging.ERR, fmt('handshake failed (message=%s)', err.message))
       callback(err, msg)
@@ -239,7 +254,7 @@ function AgentProtocolConnection:startHandshake(callback)
 end
 
 function AgentProtocolConnection:getManifest(callback)
-  self:sendManifest(function(err, response)
+  self:request('manifest.get', function(err, response)
     if err then
       callback(err)
     else
@@ -255,7 +270,7 @@ msg - The Incoming Message
 ]]--
 function AgentProtocolConnection:execute(msg)
   if msg.method == 'system.info' then
-    self:sendSystemInfo(msg)
+    self:respond('system.info', msg)
   else
     local err = Error:new(fmt('invalid method [method=%s]', msg.method))
     self:emit('error', err)
