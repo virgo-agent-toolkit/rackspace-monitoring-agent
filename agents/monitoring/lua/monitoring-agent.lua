@@ -117,6 +117,11 @@ function MonitoringAgent:_verifyState(callback)
   async.waterfall({
     -- retrieve persistent variables
     function(callback)
+      if self._config['monitoring_id'] ~= nil then
+        callback()
+        return
+      end
+
       self:_getPersistentVariable('monitoring_id', function(err, monitoring_id)
         local getSystemId
         getSystemId = function()
