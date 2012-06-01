@@ -65,6 +65,10 @@ function ConnectionMessages:onMessage(client, msg)
       client:log(logging.DEBUG, 'fetching manifest')
       self:fetchManifest(client)
     end)
+  elseif msg.method == 'host_info.get' then
+    client:log(logging.DEBUG, 'received host info request')
+    client.protocol:respond(msg.method, msg, function()
+    end)
   end
 end
 
