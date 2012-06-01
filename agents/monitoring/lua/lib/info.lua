@@ -71,9 +71,16 @@ function NetworkInfo:initialize()
   Info.initialize(self)
   local netifs = self._s:netifs()
   for i=1,#netifs do
-    self._params.netifs[i] = {}
-    self._params.netifs[i].info = netifs[i]:info()
-    self._params.netifs[i].usage = netifs[i]:usage()
+    local info = netifs[i]:info()
+    local usage = netifs[i]:usage()
+    local name = info.name
+    self._params[name] = {}
+    for k, v in pairs(info) do
+      self._params[name][k] = v
+    end
+    for k, v in pairs(usage) do
+      self._params[name][k] = v
+    end
   end
 end
 
