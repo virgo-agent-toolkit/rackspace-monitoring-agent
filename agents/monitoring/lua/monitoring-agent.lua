@@ -182,7 +182,6 @@ function MonitoringAgent:_loadEndpoints(callback)
         process.exit(1)
       end
     end
-    logging.log(logging.INFO, "using id " .. self._config['monitoring_id'])
     callback()
   end
 end
@@ -219,24 +218,40 @@ function MonitoringAgent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
-function MonitoringAgent:initialize(stateDirectory, configFile)
+function MonitoringAgent:initialize(stateDirectory)
   if not stateDirectory then stateDirectory = virgo.default_state_unix_directory end
   logging.log(logging.INFO, 'Using state directory ' .. stateDirectory)
   self._states = States:new(stateDirectory)
   self._config = virgo.config
 end
 
-function MonitoringAgent.writePid(path, callback)
-    fs.writeFile(path, tostring(process.pid), callback)
+function MonitoringAgent:writePid(pidFile, callback)
+  if pidFile then
+    logging.log(logging.INFO, 'Writing PID to ' .. pidFile)
+    fs.writeFile(pidFile, tostring(process.pid), function(err)
+      if err then
+        logging.log(logging.ERR, 'Failed writing PID')
+      else
+        logging.log(logging.INFO, 'Successfully wrote ' .. pidFile)
+      end
+      callback(err)
+    end)
+  else
+    callback()
+  end
+end
+
+function MonitoringAgent:getConfig()
+  return self._config
 end
 
 function MonitoringAgent.run(options)
   if not options then options = {} end
-  local agent = MonitoringAgent:new(options.stateDirectory, options.configFile)
+  local agent = MonitoringAgent:new(options.stateDirectory)
 
   async.series({
     function(callback)
-      MonitoringAgent.writePid(options.pidFile, callback)
+      agent:writePid(options.pidFile, callback)
     end,
     function(callback)
       agent:loadStates(callback)
