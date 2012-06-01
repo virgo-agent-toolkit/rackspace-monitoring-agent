@@ -84,6 +84,61 @@ function NetworkInfo:initialize()
   end
 end
 
+--[[ Process Info ]]--
+local ProcessInfo = Info:extend()
+function ProcessInfo:initialize()
+  Info.initialize(self)
+  local procs = self._s:procs()
+
+  for i=1, #procs do
+    local pid = procs[i]
+    local proc = s:proc(pid)
+
+    self._params[pid] = {}
+    self._params[pid].pid = pid
+    self._params[pid].exe = {}
+    self._params[pid].time = {}
+    self._params[pid].state = {}
+    self._params[pid].mem = {}
+
+    local t, msg = proc:exe()
+    if t then
+      for k, v in pairs(t) do
+        self._params[pid].exe[k] = v
+      end
+    else
+      self._params[pid].exe = 'Unavailable'
+    end
+
+    t, msg = proc:time()
+    if t then
+      for k, v in pairs(t) do
+        self._params[pid].time[k] = v
+      end
+    else
+      self._params[pid].time = 'Unavailable'
+    end
+
+    t, msg = proc:state()
+    if t then
+      for k, v in pairs(t) do
+        self._params[pid].state[k] = v
+      end
+    else
+      self._params[pid].state = 'Unavailable'
+    end
+
+    t, msg = proc:mem()
+    if t then
+      for k, v in pairs(t) do
+        self._params[pid].mem[k] = v
+      end
+    else
+      self._params[pid].mem = 'Unavailable'
+    end
+  end
+end
+
 --[[ Factory ]]--
 function create(infoType)
   if infoType == 'CPU' then
@@ -94,6 +149,8 @@ function create(infoType)
     return NetworkInfo:new()
   elseif infoType == 'DISK' then
     return DiskInfo:new()
+  elseif infoType == 'PROCS' then
+    return ProcessInfo:new()
   end
   return NilInfo:new()
 end
