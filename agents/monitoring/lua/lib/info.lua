@@ -99,7 +99,7 @@ function ProcessInfo:initialize()
     self._params[pid].exe = {}
     self._params[pid].time = {}
     self._params[pid].state = {}
-    self._params[pid].mem = {}
+    self._params[pid].memory = {}
 
     local t, msg = proc:exe()
     if t then
@@ -131,10 +131,10 @@ function ProcessInfo:initialize()
     t, msg = proc:mem()
     if t then
       for k, v in pairs(t) do
-        self._params[pid].mem[k] = v
+        self._params[pid].memory[k] = v
       end
     else
-      self._params[pid].mem = 'Unavailable'
+      self._params[pid].memory = 'Unavailable'
     end
   end
 end
