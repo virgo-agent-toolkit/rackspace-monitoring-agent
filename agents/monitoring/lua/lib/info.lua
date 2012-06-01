@@ -92,7 +92,7 @@ function ProcessInfo:initialize()
 
   for i=1, #procs do
     local pid = procs[i]
-    local proc = s:proc(pid)
+    local proc = self._s:proc(pid)
 
     self._params[pid] = {}
     self._params[pid].pid = pid
