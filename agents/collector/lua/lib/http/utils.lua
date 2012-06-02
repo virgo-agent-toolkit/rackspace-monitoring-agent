@@ -14,15 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local JSON = require('json')
+
 local exports = {}
 
-function returnResponse(res, data, headers)
+function returnResponse(res, code, headers, data)
+  data = data or ''
+  headers = headers or {}
+
+  if data then
+    headers['Content-Length'] = #data
+  end
+
+  res.writeHead(code, headers)
+  res:finish(data)
 end
 
 function returnError(res, code, msg)
+  local code = code or 500
+  local data = {}
+
+  data['error'] = msg
+
+  returnJson(res, code, data)
 end
 
 function returnJson(res, code, data)
+  local headers = {}
+  headers['Content-Type'] = 'application/json'
+  data = JSON.stringify(data)
+  returnResponse(res, code, headers, data)
 end
 
 exports.returnResponse = returnResponse

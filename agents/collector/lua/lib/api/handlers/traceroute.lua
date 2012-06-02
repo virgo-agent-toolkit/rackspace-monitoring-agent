@@ -16,7 +16,9 @@ limitations under the License.
 
 local table = require('table')
 
-local Traceroute = require('traceroute').Traceroute;
+local Traceroute = require('traceroute').Traceroute
+
+local httpUtil = require('../../http/utils')
 
 local exports = {}
 
@@ -24,7 +26,10 @@ function traceroute(req, res)
   local result = {}
   local tr = Traceroute:new(target)
 
+  tr:traceroute()
+
   tr:on('error', function(err)
+    httpUtil.returnError(500, err.message)
   end)
 
   tr:on('hop', function(hop)
@@ -32,12 +37,8 @@ function traceroute(req, res)
   end)
 
   tr:on('end', function()
+    httpUtil.returnJson(res, 200, result)
   end)
-
-   res:writeHead(200, {
-    ['Content-Type'] = 'application/json',
-  })
-  res:finish('ponies')
 end
 
 exports.traceroute = traceroute
