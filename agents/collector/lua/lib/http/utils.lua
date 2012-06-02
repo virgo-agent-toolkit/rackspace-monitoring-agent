@@ -14,31 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local table = require('table')
-
-local Traceroute = require('traceroute').Traceroute;
-
 local exports = {}
 
-function traceroute(req, res)
-  local result = {}
-  local tr = Traceroute:new(target)
-
-  tr:on('error', function(err)
-  end)
-
-  tr:on('hop', function(hop)
-    table.insert(result, hop)
-  end)
-
-  tr:on('end', function()
-  end)
-
-   res:writeHead(200, {
-    ['Content-Type'] = 'application/json',
-  })
-  res:finish('ponies')
+function returnResponse(res, data, headers)
 end
 
-exports.traceroute = traceroute
+function returnError(res, code, msg)
+end
+
+function returnJson(res, code, data)
+end
+
+exports.returnResponse = returnResponse
+exports.returnError = returnError
+exports.returnJson = returnJson
 return exports
