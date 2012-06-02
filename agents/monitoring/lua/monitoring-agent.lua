@@ -69,7 +69,7 @@ function MonitoringAgent:_getSystemId()
   local netifs = s:netifs()
   for i=1, #netifs do
     local eth = netifs[i]:info()
-    if eth.address ~= '127.0.0.1' then
+    if eth['type'] ~= 'Local Loopback' then
       return UUID:new(eth.hwaddr):toString()
     end
   end
