@@ -8,6 +8,7 @@
       'lua_modules/bourbon',
       'lua_modules/options',
       'agents/monitoring/lua',
+      'agents/shared/lua',
     ],
     'lua_modules_sources': [
       '<!@(python tools/bundle.py -l <(lua_modules))',

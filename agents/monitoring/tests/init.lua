@@ -36,46 +36,39 @@ local function remove_tmp(callback)
     fs.rmdir(tmp_dir, callback)
   end)
 end
- 
-local TESTS_TO_RUN = {'./tls', './agent-protocol', './crypto', './misc', './check', './fs', './schedule'}
 
-local function runit(modname, callback)
-  local status, mod = pcall(require, modname)
-  if status ~= true then
-    process.stdout:write(fmt('Error loading test module [%s]: %s\n\n', modname, mod))
-    callback(mod)
-  end
-  process.stdout:write(fmt('Executing test module [%s]\n\n', modname))
-  bourbon.run(nil, mod, function(err, stats)
-    process.stdout:write('\n')
-
-    if stats then
-      failed = failed + stats.failed
-    end
-
-    callback(err)
-  end)
-end
+local TESTS_TO_RUN = {
+  path.join(__dirname, './tls'),
+  path.join(__dirname, './agent-protocol'),
+  path.join(__dirname, './crypto'),
+  path.join(__dirname, './check'),
+  path.join(__dirname, './schedule')
+}
 
 exports.run = function()
   -- set the exitCode to error in case we trigger some
   -- bug that causes us to exit the loop early
   process.exitCode = 1
 
-  fs.mkdir(tmp_dir, "0755", function()
-    async.forEachSeries(TESTS_TO_RUN, runit, function(err)
+  async.waterfall({
+    function(callback)
+      fs.mkdir(tmp_dir, '0755', function(err)
+        callback(err)
+      end)
+    end,
+
+    function(callback)
+      bourbon.runner.runTestFiles(TESTS_TO_RUN, {}, callback)
+    end
+  },
+
+  function(err, failed)
+    remove_tmp(function()
       if err then
-        p(err)
-        debugm.traceback(err)
-        remove_tmp(function()
-          process.exit(1)
-        end)
+        process.exit(1)
       end
 
-      process.exitCode = 0
-      remove_tmp(function()
-        process.exit(failed)
-      end)
+      process.exit(failed)
     end)
   end)
 end

@@ -28,11 +28,11 @@ local path = require('path')
 
 local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
 local constants = require('./lib/util/constants')
-local misc = require('./lib/util/misc')
+local misc = require('shared/lib/util/misc')
+local fsutil = require('shared/lib/util/fs')
+local UUID = require('shared/lib/util/uuid')
 local States = require('./lib/states')
 local stateFile = require('./lib/state_file')
-local fsutil = require('./lib/util/fs')
-local UUID = require('./lib/util/uuid')
 
 local table = require('table')
 

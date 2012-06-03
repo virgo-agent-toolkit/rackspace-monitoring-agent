@@ -21,12 +21,12 @@ local fmt = require('string').format
 
 local async = require('async')
 
+local misc = require('shared/lib/util/misc')
 local Scheduler = require('../schedule').Scheduler
 local AgentClient = require('./client').AgentClient
 local ConnectionMessages = require('./connection_messages').ConnectionMessages
 local logging = require('logging')
 local consts = require('../util/constants')
-local misc = require('../util/misc')
 
 local fmt = require('string').format
 
