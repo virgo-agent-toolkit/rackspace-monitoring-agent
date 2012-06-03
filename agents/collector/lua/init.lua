@@ -13,3 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+
+local logging = require('logging')
+
+local Entry = {}
+
+local argv = require('options')
+  :usage('Usage: ')
+  :describe('h', 'host to bind to')
+  :describe('p', 'port to bind to')
+  :argv("h:p:")
+
+function Entry.run()
+  local mod = './collector'
+  local options = {host = argv.args.h, port = argv.args.p}
+
+  logging.log(logging.INFO, 'Running Module ' .. mod)
+
+  local err, msg = pcall(function()
+    require(mod).run(options)
+  end)
+end
+
+return Entry
