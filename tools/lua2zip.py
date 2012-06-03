@@ -14,6 +14,7 @@ options_lua = os.path.join('lua_modules', 'options')
 luvit_lua = os.path.join('deps', 'luvit', 'lib', 'luvit')
 monitoring_lua = os.path.join('agents', 'monitoring', 'lua')
 monitoring_tests = os.path.join('agents', 'monitoring', 'tests')
+shared_lua = os.path.join('agents', 'shared', 'lua')
 
 modules = {
   async_lua:
@@ -30,6 +31,8 @@ modules = {
     generate_bundle_map('modules/monitoring', 'agents/monitoring/lua'),
   monitoring_tests:
     generate_bundle_map('modules/monitoring/tests', 'agents/monitoring/tests'),
+  shared_lua:
+    generate_bundle_map('modules/shared', 'agents/shared/lua'),
 }
 
 target = sys.argv[1]
