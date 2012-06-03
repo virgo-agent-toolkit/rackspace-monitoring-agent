@@ -21,8 +21,9 @@ local Emitter = require('core').Emitter
 local fmt = require('string').format
 local table = require('table')
 
-local toString = require('../util/misc').toString
-local tableContains = require('../util/misc').tableContains
+local misc = require('shared/lib/util/misc')
+local toString = misc.toString
+local tableContains = misc.tableContains
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()

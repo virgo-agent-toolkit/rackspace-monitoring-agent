@@ -23,8 +23,8 @@ local utils = require('utils')
 local Object = require('core').Object
 local logging = require('logging')
 
-local uuid = require('./util/uuid')
-local fsUtil = require('./util/fs')
+local uuid = require('shared/lib/util/uuid')
+local fsUtil = require('shared/lib/util/fs')
 
 local stateFile = require('./state_file')
 

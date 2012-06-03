@@ -18,8 +18,8 @@ exports = {}
 no = {}
 
 local fs = require('fs')
-local Uuid = require('shared/util/uuid')
-local splitAddress = require('shared/util/misc').splitAddress
+local Uuid = require('shared/lib/util/uuid')
+local splitAddress = require('shared/lib/util/misc').splitAddress
 local writePid = require('monitoring/monitoring-agent').writePid
 
 exports['test_uuid_generation'] = function(test, asserts)
