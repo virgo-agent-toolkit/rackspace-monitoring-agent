@@ -3,7 +3,7 @@ language: erlang
 before_install:
   - git submodule update --init
   - ./configure
-  - ./make -C out
+  - make -C out
 
 script:
   - python tools/build.py test
