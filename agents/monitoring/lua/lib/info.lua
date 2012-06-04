@@ -273,14 +273,6 @@ function debugInfo(fileName, callback)
   fs.writeFile(fileName, data, callback)
 end
 
-debugInfo('os.txt', function(err)
-  if err then
-    p(err)
-    return
-  end
-  p('successfully wrote debugInfo')
-end)
-
 --[[ Exports ]]--
 local info = {}
 info.CPUInfo = CPUInfo
