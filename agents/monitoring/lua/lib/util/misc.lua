@@ -18,6 +18,8 @@ local math = require('math')
 local timer = require('timer')
 local table = require('table')
 local string = require('string')
+local fs = require('fs')
+local logging = require('logging')
 
 --[[
 Split an address.
@@ -50,6 +52,22 @@ function split(str, pattern)
   setmetatable(parts, nil)
   parts.__index = nil
   return parts
+end
+
+function writePid(pidFile, callback)
+  if pidFile then
+    logging.log(logging.INFO, 'Writing PID to ' .. pidFile)
+    fs.writeFile(pidFile, tostring(process.pid), function(err)
+      if err then
+        logging.log(logging.ERR, 'Failed writing PID')
+      else
+        logging.log(logging.INFO, 'Successfully wrote ' .. pidFile)
+      end
+      callback(err)
+    end)
+  else
+    callback()
+  end
 end
 
 function tablePrint(tt, indent, done)
@@ -138,4 +156,5 @@ exports.split = split
 exports.toString = toString
 exports.tableContains = tableContains
 exports.trim = trim
+exports.writePid = writePid
 return exports
