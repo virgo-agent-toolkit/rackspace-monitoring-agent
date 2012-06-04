@@ -20,7 +20,7 @@ no = {}
 local fs = require('fs')
 local Uuid = require('monitoring/lib/util/uuid')
 local splitAddress = require('monitoring/lib/util/misc').splitAddress
-local writePid = require('monitoring/monitoring-agent').writePid
+local writePid = require('monitoring/lib/util/misc').writePid
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')

@@ -69,7 +69,7 @@ function MonitoringAgent:_getSystemId()
   local netifs = s:netifs()
   for i=1, #netifs do
     local eth = netifs[i]:info()
-    if eth.address ~= '127.0.0.1' then
+    if eth['type'] ~= 'Local Loopback' then
       return UUID:new(eth.hwaddr):toString()
     end
   end
@@ -117,6 +117,11 @@ function MonitoringAgent:_verifyState(callback)
   async.waterfall({
     -- retrieve persistent variables
     function(callback)
+      if self._config['monitoring_id'] ~= nil then
+        callback()
+        return
+      end
+
       self:_getPersistentVariable('monitoring_id', function(err, monitoring_id)
         local getSystemId
         getSystemId = function()
@@ -225,22 +230,6 @@ function MonitoringAgent:initialize(stateDirectory)
   self._config = virgo.config
 end
 
-function MonitoringAgent:writePid(pidFile, callback)
-  if pidFile then
-    logging.log(logging.INFO, 'Writing PID to ' .. pidFile)
-    fs.writeFile(pidFile, tostring(process.pid), function(err)
-      if err then
-        logging.log(logging.ERR, 'Failed writing PID')
-      else
-        logging.log(logging.INFO, 'Successfully wrote ' .. pidFile)
-      end
-      callback(err)
-    end)
-  else
-    callback()
-  end
-end
-
 function MonitoringAgent:getConfig()
   return self._config
 end
@@ -251,7 +240,7 @@ function MonitoringAgent.run(options)
 
   async.series({
     function(callback)
-      agent:writePid(options.pidFile, callback)
+      misc.writePid(options.pidFile, callback)
     end,
     function(callback)
       agent:loadStates(callback)

@@ -1,0 +1,13 @@
+language: erlang
+
+before_install:
+  - git submodule update --init
+  - ./configure
+  - make -C out
+
+script:
+  - python tools/build.py test
+
+notifications:
+  email:
+    - tomaz+travisci@tomaz.me

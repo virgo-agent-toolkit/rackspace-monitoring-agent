@@ -24,7 +24,7 @@ SLEEP_SECONDS = 60 * 60
 
 COMMAND = '%s ' + \
           '--separator=, -N -t ' + \
-          'virgo-memory --no-align -r -S --flush-output %s'
+          'virgo-memory --no-align -r -S --flush-output %s %s'
 
 def get_revision(options):
     version_run = "%s --version" % options.executable
@@ -58,7 +58,7 @@ def main(options):
     props = {}
     benchmark = 'virgo peak memory usage'
     syrupy = os.path.join('.', os.path.dirname(sys.argv[0]), 'syrupy.py')
-    command = COMMAND % (syrupy, options.executable)
+    command = COMMAND % (syrupy, options.executable, options.options)
     revision = get_revision(options)
 
     try:
@@ -117,6 +117,8 @@ if __name__ == '__main__':
                       help='Name of the builder')
     parser.add_option('--executable', dest='executable', default='monitoring-rackspace',
                       help='Executable name (e.g. monitoring-rackspace)')
+    parser.add_option('--options', dest='options', default='',
+                      help='Options to pass to the executable')
     parser.add_option('--sleep', dest='sleep', default=SLEEP_SECONDS,
                       help='sleep in seconds')
     parser.add_option('--environment', dest='environment', default=ENVIRONMENT,
