@@ -260,15 +260,26 @@ function create(infoType)
   return NilInfo:new()
 end
 
-local data = ''
-for k, v in pairs({'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS'}) do
-  local info = create(v)
-  local obj = JSON.parse(info:serialize().jsonPayload)
-  data = data .. '-- ' .. v .. '.' .. os.type() .. ' --\n\n'
-  data = data .. misc.toString(obj)
-  data = data .. '\n'
+-- Dump all the info objects to a file
+function debugInfo(fileName, callback)
+  local data = ''
+  for k, v in pairs({'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS'}) do
+    local info = create(v)
+    local obj = JSON.parse(info:serialize().jsonPayload)
+    data = data .. '-- ' .. v .. '.' .. os.type() .. ' --\n\n'
+    data = data .. misc.toString(obj)
+    data = data .. '\n'
+  end
+  fs.writeFile(fileName, data, callback)
 end
-fs.writeFile('os.txt', data, function() p('wrote file') end)
+
+debugInfo('os.txt', function(err)
+  if err then
+    p(err)
+    return
+  end
+  p('successfully wrote debugInfo')
+end)
 
 --[[ Exports ]]--
 local info = {}
@@ -277,4 +288,5 @@ info.DiskInfo = DiskInfo
 info.MemoryInfo = MemoryInfo
 info.NetworkInfo = NetworkInfo
 info.create = create
+info.debugInfo = debugInfo
 return info
