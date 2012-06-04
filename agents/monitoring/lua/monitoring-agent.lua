@@ -34,6 +34,8 @@ local stateFile = require('./lib/state_file')
 local fsutil = require('./lib/util/fs')
 local UUID = require('./lib/util/uuid')
 
+local info = require('./lib/info')
+
 local table = require('table')
 
 local MonitoringAgent = Object:extend()

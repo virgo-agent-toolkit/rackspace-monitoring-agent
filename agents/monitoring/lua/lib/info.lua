@@ -1,6 +1,10 @@
 local Object = require('core').Object
 local JSON = require('json')
 
+local fs = require('fs')
+local misc = require('./util/misc')
+local os = require('os')
+
 --[[ Info ]]--
 local Info = Object:extend()
 function Info:initialize()
@@ -154,6 +158,16 @@ function create(infoType)
   end
   return NilInfo:new()
 end
+
+local data = ''
+for k, v in pairs({'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS'}) do
+  local info = create(v)
+  local obj = JSON.parse(info:serialize().jsonPayload)
+  data = data .. '-- ' .. v .. '.' .. os.type() .. ' --\n\n'
+  data = data .. misc.toString(obj)
+  data = data .. '\n'
+end
+fs.writeFile('os.txt', data, function() p('wrote file') end)
 
 --[[ Exports ]]--
 local info = {}
