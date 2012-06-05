@@ -4,6 +4,7 @@ local JSON = require('json')
 local fs = require('fs')
 local misc = require('./util/misc')
 local os = require('os')
+local table = require('table')
 
 --[[ Info ]]--
 local Info = Object:extend()
@@ -18,6 +19,7 @@ function Info:serialize()
   }
 end
 
+--[[ NilInfo ]]--
 local NilInfo = Info:extend()
 
 --[[ CPUInfo ]]--
@@ -26,9 +28,10 @@ function CPUInfo:initialize()
   Info.initialize(self)
   local cpus = self._s:cpus()
   for i=1, #cpus do
+    local obj = {}
     local info = cpus[i]:info()
     local data = cpus[i]:data()
-    local bucket = 'cpu.' .. i - 1
+    local name = 'cpu.' .. i - 1
     local data_fields = {
       'idle',
       'irq',
@@ -50,14 +53,15 @@ function CPUInfo:initialize()
       'vendor'
     }
 
-    self._params[bucket] = {}
+    for _, v in pairs(data_fields) do
+      obj[v] = data[v]
+    end
+    for _, v in pairs(info_fields) do
+      obj[v] = info[v]
+    end
 
-    for k, v in pairs(data_fields) do
-      self._params[bucket][v] = data[v]
-    end
-    for k, v in pairs(info_fields) do
-      self._params[bucket][v] = info[v]
-    end
+    obj['name'] = name
+    table.insert(self._params, obj)
   end
 end
 
@@ -66,7 +70,6 @@ local DiskInfo = Info:extend()
 function DiskInfo:initialize()
   Info.initialize(self)
   local disks = self._s:disks()
-  local name, usage
   local usage_fields = {
     'queue',
     'read_bytes',
@@ -80,13 +83,15 @@ function DiskInfo:initialize()
     'wtime'
   }
   for i=1, #disks do
-    name = disks[i]:name()
-    usage = disks[i]:usage()
+    local name = disks[i]:name()
+    local usage = disks[i]:usage()
     if name and usage then
-      self._params[name] = {}
-      for k, v in pairs(usage_fields) do
-        self._params[name][v] = usage[v]
+      local obj = {}
+      for _, v in pairs(usage_fields) do
+        obj[v] = usage[v]
       end
+      obj['name'] = name
+      table.insert(self._params, obj)
     end
   end
 end
@@ -122,6 +127,8 @@ function NetworkInfo:initialize()
     local info = netifs[i]:info()
     local usage = netifs[i]:usage()
     local name = info.name
+    local obj = {}
+
     local info_fields = {
       'address',
       'broadcast',
@@ -151,13 +158,14 @@ function NetworkInfo:initialize()
       'speed'
     }
 
-    self._params[name] = {}
-    for k, v in pairs(info_fields) do
-      self._params[name][v] = info[v]
+    for _, v in pairs(info_fields) do
+      obj[v] = info[v]
     end
-    for k, v in pairs(usage_fields) do
-      self._params[name][v] = usage[v]
+    for _, v in pairs(usage_fields) do
+      obj[v] = usage[v]
     end
+    obj['name'] = name
+    table.insert(self._params, obj)
   end
 end
 
@@ -171,12 +179,12 @@ function ProcessInfo:initialize()
     local pid = procs[i]
     local proc = self._s:proc(pid)
 
-    self._params[pid] = {}
-    self._params[pid].pid = pid
-    self._params[pid].exe = {}
-    self._params[pid].time = {}
-    self._params[pid].state = {}
-    self._params[pid].memory = {}
+    local obj = {}
+    obj.pid = pid
+    obj.exe = {}
+    obj.time = {}
+    obj.state = {}
+    obj.memory = {}
 
     local t, msg = proc:exe()
     if t then
@@ -185,11 +193,11 @@ function ProcessInfo:initialize()
         'cwd',
         'root'
       }
-      for k, v in pairs(exe_fields) do
-        self._params[pid].exe[v] = t[v]
+      for _, v in pairs(exe_fields) do
+        obj.exe[v] = t[v]
       end
     else
-      self._params[pid].exe = 'Unavailable'
+      obj.exe = 'Unavailable'
     end
 
     t, msg = proc:time()
@@ -200,11 +208,11 @@ function ProcessInfo:initialize()
         'sys',
         'total'
       }
-      for k, v in pairs(time_fields) do
-        self._params[pid].time[v] = t[v]
+      for _, v in pairs(time_fields) do
+        obj.time[v] = t[v]
       end
     else
-      self._params[pid].time = 'Unavailable'
+      obj.time = 'Unavailable'
     end
 
     t, msg = proc:state()
@@ -218,11 +226,11 @@ function ProcessInfo:initialize()
         'processor',
         'threads'
       }
-      for k, v in pairs(proc_fields) do
-        self._params[pid].state[v] = t[v]
+      for _, v in pairs(proc_fields) do
+        obj.state[v] = t[v]
       end
     else
-      self._params[pid].state = 'Unavailable'
+      obj.state = 'Unavailable'
     end
 
     t, msg = proc:mem()
@@ -235,12 +243,14 @@ function ProcessInfo:initialize()
         'minor_faults',
         'page_faults'
       }
-      for k, v in pairs(memory_fields) do
-        self._params[pid].memory[v] = t[v]
+      for _, v in pairs(memory_fields) do
+        obj.memory[v] = t[v]
       end
     else
-      self._params[pid].memory = 'Unavailable'
+      obj.memory = 'Unavailable'
     end
+
+    table.insert(self._params, obj)
   end
 end
 
