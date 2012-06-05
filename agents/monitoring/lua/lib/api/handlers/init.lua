@@ -19,7 +19,7 @@ local exports = {}
 local handlers = {'traceroute'}
 
 for i,v in ipairs(handlers) do
-  exports[v] = require('./' + v)
+  exports[v] = require('./' .. v)
 end
 
 return exports
