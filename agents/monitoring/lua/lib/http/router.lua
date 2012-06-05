@@ -15,7 +15,10 @@ limitations under the License.
 --]]
 
 local string = require('string')
+local fmt = require('string').format
 local url = require('url')
+
+local httpUtil = require('./utils')
 
 local exports = {}
 
@@ -32,9 +35,11 @@ function getRouter(urls)
       if item.method == req.method and string.find(pathname, item.path_regex) then
         handler = item.handler
         handler(req, res)
-        break
+        return
       end
     end
+
+    httpUtil.returnError(res, 404, fmt('Path "%s" not found', pathname))
   end
 
   return route

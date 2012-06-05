@@ -26,7 +26,7 @@ function returnResponse(res, code, headers, data)
     headers['Content-Length'] = #data
   end
 
-  res.writeHead(code, headers)
+  res:writeHead(code, headers)
   res:finish(data)
 end
 
