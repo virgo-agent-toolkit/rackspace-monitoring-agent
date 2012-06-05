@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local url = require('url')
+local querystring = require('querystring')
 local table = require('table')
 
 local Traceroute = require('traceroute').Traceroute
@@ -24,12 +26,22 @@ local exports = {}
 
 function traceroute(req, res)
   local result = {}
+  -- TODO: Update to use url.parse when merged into luvit
+  local parsed = url.parse(req.url)
+  local qs = querystring.parse(parsed.query)
+  local target = qs['target']
+
+  if not target then
+    httpUtil.returnError(res, 400, 'Missing a required "target" argument')
+    return
+  end
+
   local tr = Traceroute:new(target)
 
   tr:traceroute()
 
   tr:on('error', function(err)
-    httpUtil.returnError(500, err.message)
+    httpUtil.returnError(res, 500, err.message)
   end)
 
   tr:on('hop', function(hop)
