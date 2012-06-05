@@ -21,3 +21,4 @@ monitoring.zip
 monitoring-test.zip
 *.sig
 scheduler.state
+._*
