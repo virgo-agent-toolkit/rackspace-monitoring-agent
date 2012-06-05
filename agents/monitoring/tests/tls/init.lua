@@ -16,6 +16,8 @@ limitations under the License.
 
 local tlsbinding = require('_tls')
 local fs = require('fs')
+local tls = require('tls')
+
 
 exports = {}
 no = {}
@@ -141,6 +143,36 @@ exports['test_add_trusted_cert'] = function(test, asserts)
   sc:close()
   test.done()
 end
+ 
+exports['test_ticketing'] = function(test, asserts)
+  --Server Side Inits
+  local Server = tls.createServer()
+  Server:initialize()
+  Server.cert = certpem
+  --Client Side Inits
+  local options = {}
+  local result = {}
+  options.port = 4000
+  options.host = '127.0.0.1'
+  --Server Listens, Client Connects, Disconnects, and Reconnects
+  Server:listen(4000, '127.0.0.1' , function()
+    result.x = tls.connect(options)
+    asserts.ok(result.x)
+    options = result.x.options
+    options.sessionIdContext = nil
+    Server:close(function()
+      Server:listen(4000, '127.0.0.1', function()
+        result.y = tls.connect(options)
+        asserts.ok(result.y)
+        asserts.ok(result.x.options.sessionIdContext)
+        asserts.ok(result.y.options.sessionIdContext)
+        asserts.equals(result.x.options.sessionIdContext, result.y.options.sessionIdContext)
+        Server:close()
+      end)
+    end)
+  end)
+  test.done()
+end
 
 return exports
-
+  
