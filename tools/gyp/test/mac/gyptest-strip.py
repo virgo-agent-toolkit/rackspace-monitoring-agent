@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,14 +10,13 @@ Verifies that stripping works.
 
 import TestGyp
 
-import os
 import re
 import subprocess
 import sys
 import time
 
 if sys.platform == 'darwin':
-  test = TestGyp.TestGyp(formats=['make', 'xcode'])
+  test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
 
   test.run_gyp('test.gyp', chdir='strip')
 
@@ -32,7 +31,7 @@ if sys.platform == 'darwin':
     proc = subprocess.Popen(['otool', '-l', p], stdout=subprocess.PIPE)
     o = proc.communicate()[0]
     assert not proc.returncode
-    m = r.search(o, re.MULTILINE)
+    m = r.search(o)
     n = int(m.group(1))
     if n != n_expected:
       print 'Stripping: Expected %d symbols, got %d' % (n_expected, n)
@@ -49,5 +48,6 @@ if sys.platform == 'darwin':
   CheckNsyms(test.built_file_path(
       'strip_all_bundle.framework/Versions/A/strip_all_bundle', chdir='strip'),
       0)
+  CheckNsyms(OutPath('strip_save'), 3)
 
   test.pass_test()

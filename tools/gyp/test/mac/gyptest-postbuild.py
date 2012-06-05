@@ -13,7 +13,7 @@ import TestGyp
 import sys
 
 if sys.platform == 'darwin':
-  test = TestGyp.TestGyp(formats=['make', 'xcode'])
+  test = TestGyp.TestGyp(formats=['ninja', 'make', 'xcode'])
 
   test.run_gyp('test.gyp', chdir='postbuilds')
 
@@ -47,5 +47,7 @@ if sys.platform == 'darwin':
   test.built_file_must_exist('dyna_standalone.dylib_gyp_touch',
                              type=test.SHARED_LIB,
                              chdir='postbuilds')
+  test.built_file_must_exist('copied_file.txt', chdir='postbuilds')
+  test.built_file_must_exist('copied_file_2.txt', chdir=chdir)
 
   test.pass_test()
