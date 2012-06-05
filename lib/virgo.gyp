@@ -11,7 +11,6 @@
       ],
       'dependencies': [
         '../deps/luvit/deps/zlib/zlib.gyp:zlib',
-        '../deps/minizip.gyp:libminizip',
         '../deps/luvit/luvit.gyp:libluvit',
         '../deps/sigar.gyp:sigar',
         '../deps/sigar.gyp:lua_sigar',
