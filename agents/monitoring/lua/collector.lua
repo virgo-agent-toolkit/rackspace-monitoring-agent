@@ -16,6 +16,7 @@ limitations under the License.
 
 local Object = require('core').Object
 local http = require('http')
+local fmt = require('string').format
 
 local async = require('async')
 local logging = require('logging')
@@ -35,29 +36,37 @@ end
 
 function Collector:_startApiServer(callback)
   self._apiServer = http.createServer(function(req, res)
-    self._handleRequest(req, res)
+    self:_handleRequest(req, res)
   end)
 
-  self._apiServer:listen(self._port)
-  callback()
+  self._apiServer:listen(self._port, self._host, function(err)
+    if err then
+      callback(err)
+      return
+    end
+
+    logging.log(logging.INFO, fmt('HTTP server listening on %s:%s',
+                                  self._host, self._port))
+    callback()
+  end)
 end
 
 function Collector:_handleRequest(req, res)
-  self.router:route(req, res)
+  self._router(req, res)
 end
 
-function Collector:run(options)
+function Collector:start(callback)
   async.series({
-    function()
+    function(callback)
       self:_startApiServer(callback)
     end
-  }, calllback)
+  }, callback)
 end
 
 function Collector.run(options)
   local collector = Collector:new(options)
 
-  collector:run(function(err)
+  collector:start(function(err)
     if err then
       logging.log(logging.ERR, err.message)
     end
