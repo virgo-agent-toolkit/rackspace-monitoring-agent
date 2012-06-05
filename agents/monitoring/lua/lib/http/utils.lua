@@ -42,7 +42,7 @@ end
 function returnJson(res, code, data)
   local headers = {}
   headers['Content-Type'] = 'application/json'
-  data = JSON.stringify(data)
+  data = JSON.stringify(data, {beautify = true, indent_string = '    '})
   returnResponse(res, code, headers, data)
 end
 
