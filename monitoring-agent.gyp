@@ -7,6 +7,7 @@
       'lua_modules/async',
       'lua_modules/bourbon',
       'lua_modules/options',
+      'lua_modules/traceroute',
       'agents/monitoring/lua',
     ],
     'lua_modules_sources': [
@@ -33,6 +34,7 @@
         'lib/virgo.gyp:virgolib',
         'monitoring.zip#host',
         'monitoring-test.zip#host',
+        'collector.zip#host',
       ],
 
       'include_dirs': [
@@ -160,7 +162,35 @@
         },
       ],
     }, # end monitoring-test.zip
+    {
+      'target_name': 'collector.zip',
+      'type': 'none',
+      'toolsets': ['host'],
+      'variables': {
+      },
 
+      'actions': [
+        {
+          'action_name': 'virgo_luazip',
+
+          'inputs': [
+            '<@(test_modules_sources)',
+            'tools/lua2zip.py',
+          ],
+
+          'outputs': [
+            '<(PRODUCT_DIR)/collector.zip',
+          ],
+
+          'action': [
+            'python',
+            'tools/lua2zip.py',
+            '<@(_outputs)',
+            '<@(test_modules)',
+          ],
+        },
+      ],
+    }
   ] # end targets
 }
 
