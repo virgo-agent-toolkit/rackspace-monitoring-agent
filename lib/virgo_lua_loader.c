@@ -166,9 +166,7 @@ static const lua_CFunction loaders[] =
 static void
 replace_loaders(lua_State *L, const char *loaders_name) {
   size_t i;
-  int top;
 
-  top = lua_gettop(L);
   lua_getglobal(L, "package");
 
   if (lua_type(L, -1) != LUA_TTABLE) {
