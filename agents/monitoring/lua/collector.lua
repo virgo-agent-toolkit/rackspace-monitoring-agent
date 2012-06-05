@@ -23,6 +23,8 @@ local logging = require('logging')
 local router = require('./lib/http/router')
 local urls = require('./lib/api/urls').urls
 
+local Collector = Object:extend()
+
 function Collector:initialize(options)
   self._host = options.host or '127.0.0.1'
   self._port = options.port or 8080
