@@ -31,7 +31,7 @@ function traceroute(req, res)
   local qs = querystring.parse(parsed.query)
   local target = qs['target']
 
-  if not target then
+  if not target or #target == 0 then
     httpUtil.returnError(res, 400, 'Missing a required "target" argument')
     return
   end
