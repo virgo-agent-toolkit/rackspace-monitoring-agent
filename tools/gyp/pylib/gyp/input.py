@@ -2161,7 +2161,10 @@ def ValidateSourcesInTarget(target, target_dict, build_file):
     if len(files) > 1:
       error += '  %s: %s\n' % (basename, ' '.join(files))
 
-  if error:
+  # Disabled because this only affects MSVC, but the conflicting file is only
+  # present in the libuv Linux build.
+  if 0:
+  #error:
     print ('static library %s has several files with the same basename:\n' %
            target + error + 'Some build systems, e.g. MSVC08, '
            'cannot handle that.')
