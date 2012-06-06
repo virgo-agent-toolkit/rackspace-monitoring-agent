@@ -18,9 +18,9 @@ exports = {}
 no = {}
 
 local fs = require('fs')
-local Uuid = require('monitoring/lib/util/uuid')
-local splitAddress = require('monitoring/lib/util/misc').splitAddress
-local writePid = require('monitoring/lib/util/misc').writePid
+local Uuid = require('monitoring/default/lib/util/uuid')
+local splitAddress = require('monitoring/default/lib/util/misc').splitAddress
+local writePid = require('monitoring/default/lib/util/misc').writePid
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
