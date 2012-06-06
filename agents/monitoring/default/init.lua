@@ -26,13 +26,13 @@ local dns = require('dns')
 local fs = require('fs')
 local path = require('path')
 
-local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
-local constants = require('./lib/util/constants')
-local misc = require('./lib/util/misc')
-local States = require('./lib/states')
-local stateFile = require('./lib/state_file')
-local fsutil = require('./lib/util/fs')
-local UUID = require('./lib/util/uuid')
+local ConnectionStream = require('./client/connection_stream').ConnectionStream
+local constants = require('./util/constants')
+local misc = require('./util/misc')
+local States = require('./states')
+local stateFile = require('./state_file')
+local fsutil = require('./util/fs')
+local UUID = require('./util/uuid')
 
 local table = require('table')
 

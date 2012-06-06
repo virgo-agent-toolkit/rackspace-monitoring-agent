@@ -21,8 +21,8 @@ local os = require('os')
 
 local exports = {}
 
-local misc = require('monitoring/lib/util/misc')
-local fsUtil = require('monitoring/lib/util/fs')
+local misc = require('monitoring/default/util/misc')
+local fsUtil = require('monitoring/default/util/fs')
 
 exports['test_mkdirp'] = function(test, asserts)
   local separator, component, components, fulPath
