@@ -62,7 +62,7 @@ function request(url, method, headers, payload, options, callback)
   local client = http.request({
     host = parsed.hostname,
     port = parsed.port,
-    path = parsed.pathname,
+    path = parsed.pathname .. parsed.search,
     headers = headers
   },
 
