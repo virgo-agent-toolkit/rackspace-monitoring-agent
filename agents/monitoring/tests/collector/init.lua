@@ -66,7 +66,7 @@ exports['test_traceroute'] = function(test, asserts)
   },
 
   function()
-    collector:stop(function() end)
+    collector:stop()
     test.done()
   end)
 end

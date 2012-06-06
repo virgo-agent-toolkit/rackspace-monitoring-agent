@@ -64,6 +64,7 @@ function Collector:start(callback)
 end
 
 function Collector:stop(callback)
+  callback = callback and callback or function() end
   logging.log(logging.DEBUG, 'Stopping collector...')
   self._apiServer:close()
   callback()
