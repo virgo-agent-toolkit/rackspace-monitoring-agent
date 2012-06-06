@@ -21,8 +21,8 @@ local fmt = require('string').format
 local async = require('async')
 local logging = require('logging')
 
-local router = require('./lib/http/router')
-local urls = require('./lib/api/urls').urls
+local router = require('./http/router')
+local urls = require('./api/urls').urls
 
 local Collector = Object:extend()
 

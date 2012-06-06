@@ -17,7 +17,7 @@ limitations under the License.
 local async = require('async')
 
 local run = require('monitoring/collector').run
-local request = require('monitoring/lib/http/utils').request
+local request = require('monitoring/collector/http/utils').request
 local setTimeout = require('timer').setTimeout
 
 local exports = {}
