@@ -49,6 +49,19 @@ exports['test_traceroute'] = function(test, asserts)
         asserts.dequals(res.body, {error = 'Missing a required "target" argument'})
         callback()
       end)
+    end,
+
+    function(callback)
+      -- Test traceroute
+      request('http://127.0.0.1:7889/v1.0/traceroute?target=127.0.0.1', 'GET', nil, nil, {parseResponse = true}, function(err, res)
+        asserts.ok(not err)
+        asserts.equals(res.status_code, 200)
+        asserts.dequals(#res.body, 1)
+        asserts.dequals(res.body[1]['number'], 1)
+        asserts.dequals(res.body[1]['ip'], '127.0.0.1')
+        asserts.dequals(#res.body[1]['rtts'], 3)
+        callback()
+      end)
     end
   },
 
