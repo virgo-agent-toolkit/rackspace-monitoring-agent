@@ -27,7 +27,7 @@ modules = {
   luvit_lua:
     generate_bundle_map('', 'deps/luvit/lib/luvit', True),
   monitoring_lua:
-    generate_bundle_map('modules/monitoring', 'agents/monitoring/default'),
+    generate_bundle_map('modules/monitoring/default', 'agents/monitoring/default'),
   monitoring_tests:
     generate_bundle_map('modules/monitoring/tests', 'agents/monitoring/tests'),
 }
