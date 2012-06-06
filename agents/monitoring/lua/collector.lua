@@ -27,8 +27,8 @@ local urls = require('./lib/api/urls').urls
 local Collector = Object:extend()
 
 function Collector:initialize(options)
-  self._host = options.host or '127.0.0.1'
-  self._port = options.port or 8080
+  self._host = options.host and options.host or '127.0.0.1'
+  self._port = options.port and options.port or 8080
 
   self._apiServer = nil
   self._router = router.getRouter(urls)
@@ -63,6 +63,12 @@ function Collector:start(callback)
   }, callback)
 end
 
+function Collector:stop(callback)
+  logging.log(logging.DEBUG, 'Stopping collector...')
+  self._apiServer:close()
+  callback()
+end
+
 function Collector.run(options)
   local collector = Collector:new(options)
 
@@ -71,6 +77,8 @@ function Collector.run(options)
       logging.log(logging.ERR, err.message)
     end
   end)
+
+  return collector
 end
 
 return Collector
