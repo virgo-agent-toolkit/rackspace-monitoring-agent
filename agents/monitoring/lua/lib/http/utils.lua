@@ -33,7 +33,7 @@ function returnResponse(res, code, headers, data)
 end
 
 function returnError(res, code, msg)
-  local code = code or 500
+  local code = code and code or 500
   local data = {}
 
   data['error'] = msg
