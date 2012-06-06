@@ -37,7 +37,8 @@ local function remove_tmp(callback)
   end)
 end
  
-local TESTS_TO_RUN = {'./tls', './agent-protocol', './crypto', './misc', './check', './fs', './schedule'}
+local TESTS_TO_RUN = {'./tls', './agent-protocol', './crypto', './misc', './check', './fs', './schedule', './collector'}
+
 
 local function runit(modname, callback)
   local status, mod = pcall(require, modname)
