@@ -15,7 +15,6 @@ limitations under the License.
 --]]
 
 local url = require('url')
-local querystring = require('querystring')
 local table = require('table')
 
 local Traceroute = require('traceroute').Traceroute
@@ -26,9 +25,8 @@ local exports = {}
 
 function traceroute(req, res)
   local result = {}
-  -- TODO: Update to use url.parse when merged into luvit
-  local parsed = url.parse(req.url)
-  local qs = querystring.parse(parsed.query)
+  local parsed = url.parse(req.url, true)
+  local qs = parsed.query
   local target = qs['target']
 
   if not target or #target == 0 then
