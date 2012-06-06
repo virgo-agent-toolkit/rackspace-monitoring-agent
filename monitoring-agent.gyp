@@ -1,21 +1,34 @@
 {
   'variables': {
     'target_arch': 'ia32',
-    'lua_modules': [
+    'lua_modules_agent': [
+      'lib/lua',
+      'deps/luvit/lib/luvit',
+      'lua_modules/async',
+      'lua_modules/bourbon',
+      'lua_modules/options',
+      'agents/monitoring/default',
+      'agents/monitoring/init.lua',
+    ],
+    'lua_modules_collector': [
       'lib/lua',
       'deps/luvit/lib/luvit',
       'lua_modules/async',
       'lua_modules/bourbon',
       'lua_modules/options',
       'lua_modules/traceroute',
-      'agents/monitoring/default',
+      'agents/monitoring/collector',
       'agents/monitoring/init.lua',
     ],
-    'lua_modules_sources': [
-      '<!@(python tools/bundle.py -l <(lua_modules))',
+    'lua_modules_sources_agent': [
+      '<!@(python tools/bundle.py -l <(lua_modules_agent))',
+    ],
+    'lua_modules_sources_collector': [
+      '<!@(python tools/bundle.py -l <(lua_modules_collector))',
     ],
     'test_modules': [
-      '<@(lua_modules)',
+      '<@(lua_modules_agent)',
+      '<@(lua_modules_collector)',
       'agents/monitoring/tests',
       'agents/monitoring/tests/tls',
       'agents/monitoring/tests/crypto',
@@ -45,7 +58,7 @@
       'sources': [
         'agents/monitoring/monitoring.c',
         # lib files to make for an even more pleasant IDE experience
-        '<@(lua_modules_sources)',
+        '<@(lua_modules_sources_agent)',
         'common.gypi',
       ],
 
@@ -117,7 +130,7 @@
           'action_name': 'virgo_luazip',
 
           'inputs': [
-            '<@(lua_modules_sources)',
+            '<@(lua_modules_sources_agent)',
             'tools/lua2zip.py',
           ],
 
@@ -129,7 +142,7 @@
             'python',
             'tools/lua2zip.py',
             '<@(_outputs)',
-            '<@(lua_modules)',
+            '<@(lua_modules_agent)',
           ],
         },
       ],
@@ -175,7 +188,7 @@
           'action_name': 'virgo_luazip',
 
           'inputs': [
-            '<@(test_modules_sources)',
+            '<@(lua_modules_sources_collector)',
             'tools/lua2zip.py',
           ],
 
@@ -187,7 +200,7 @@
             'python',
             'tools/lua2zip.py',
             '<@(_outputs)',
-            '<@(test_modules)',
+            '<@(lua_modules_collector)',
           ],
         },
       ],
