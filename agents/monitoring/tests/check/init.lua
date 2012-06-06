@@ -16,8 +16,8 @@ limitations under the License.
 
 local JSON = require('json')
 
-local Check = require('monitoring/default/lib/check')
-local Metric = require('monitoring/default/lib/check/base').Metric
+local Check = require('monitoring/default/check')
+local Metric = require('monitoring/default/check/base').Metric
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
 

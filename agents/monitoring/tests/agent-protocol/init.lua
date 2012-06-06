@@ -18,9 +18,9 @@ local fs = require('fs')
 local JSON = require('json')
 local Emitter = require('core').Emitter
 
-local AgentProtocol = require('monitoring/default/lib/protocol/protocol').AgentProtocol
-local AgentProtocolConnection = require('monitoring/default/lib/protocol/connection')
-local loggingUtil = require ('monitoring/default/lib/util/logging')
+local AgentProtocol = require('monitoring/default/protocol/protocol').AgentProtocol
+local AgentProtocolConnection = require('monitoring/default/protocol/connection')
+local loggingUtil = require ('monitoring/default/util/logging')
 
 local fixtures = require('./fixtures')
 

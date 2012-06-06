@@ -19,9 +19,9 @@ local async = require('async')
 local utils = require('utils')
 local timer = require('timer')
 
-local StateScanner = require('monitoring/default/lib/schedule').StateScanner
-local Scheduler = require('monitoring/default/lib/schedule').Scheduler
-local BaseCheck = require('monitoring/default/lib/check/base').BaseCheck
+local StateScanner = require('monitoring/default/schedule').StateScanner
+local Scheduler = require('monitoring/default/schedule').Scheduler
+local BaseCheck = require('monitoring/default/check/base').BaseCheck
 local tmp = path.join('tests', 'tmp')
 
 local exports = {}
