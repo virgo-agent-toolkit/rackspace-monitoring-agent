@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
   virgo_error_t *err;
   int fd;
 
-  err = virgo_create(&v, "monitoring");
+  err = virgo_create(&v, "./init");
 
   if (err) {
     handle_error("Error in startup", err);
@@ -130,5 +130,3 @@ int main(int argc, char* argv[])
 
   return 0;
 }
-
-

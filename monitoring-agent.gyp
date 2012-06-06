@@ -8,7 +8,8 @@
       'lua_modules/bourbon',
       'lua_modules/options',
       'lua_modules/traceroute',
-      'agents/monitoring/lua',
+      'agents/monitoring/default',
+      'agents/monitoring/init.lua',
     ],
     'lua_modules_sources': [
       '<!@(python tools/bundle.py -l <(lua_modules))',
