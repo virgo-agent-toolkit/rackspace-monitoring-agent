@@ -1,6 +1,6 @@
 CWD=`pwd`
 
 test:
-	bourbon ${CWD}/tests
+	bourbon -p ${CWD}/tests
 
 .PHONY: test

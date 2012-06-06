@@ -42,9 +42,11 @@ end
 local Traceroute = Emitter:extend()
 
 function Traceroute:initialize(target, options)
+  options = options and options or {}
   self._target = target
-  self._options = options or {}
-  self._resolveIps = self._options['resolveIps'] or false
+  self._options = options
+  self._packetLen = options['packetLen'] and options['packetLen'] or 60
+  self._maxTtl = options['maxTtl'] and options['maxTtl'] or 30
 end
 
 -- Return an EventEmitter instance which emits 'hop' events for every hop
@@ -72,11 +74,14 @@ function Traceroute:_spawn(cmd, args)
 end
 
 function Traceroute:_run(target)
-  local args = {target}
+  local args = {}
 
-  if not self._resolveIps then
-    table.insert(args, '-n')
-  end
+  table.insert(args, '-4')
+  table.insert(args, '-n')
+  table.insert(args, '-m')
+  table.insert(args, self._maxTtl)
+  table.insert(args, target)
+  table.insert(args, self._packetLen)
 
   local child = self:_spawn('traceroute', args)
   local lineEmitter = LineEmitter:new()
@@ -84,9 +89,15 @@ function Traceroute:_run(target)
   local stderrBuffer = ''
 
   lineEmitter:on('line', function(line)
-    local hop = self:_parseLine(line)
+    local hops = self:_parseLine(line)
+    local hop
 
-    if hop then
+    if not hops then
+      return
+    end
+
+    for i=1, #hops do
+      hop = hops[i]
       emitter:emit('hop', hop)
     end
   end)
@@ -114,38 +125,49 @@ function Traceroute:_run(target)
 end
 
 function Traceroute:_parseLine(line)
-  local result = {}, host, ip, hopsIndex
+  local result = {}, host, ip, hopNumber, dotCount, lastIndex
+  local item = {}
+  local hopsStart = 2
 
   -- Skip first line
   if line:find('traceroute to') then
     return
   end
 
-  local split = split(line, '[^%s]+')
+  -- for now just ignore those
+  line = line:gsub('[!XHNP]', '')
 
-  if self._resolveIps then
-    hopsIndex = 4
-    result['host'] = split[2]
-    result['ip'] = split[3]:gsub('%(', ''):gsub('%)', '')
-  else
-    hopsIndex = 3
-    result['ip'] = split[2]:gsub('%(', ''):gsub('%)', '')
-  end
+  local splitLine = split(line, '[^%s]+')
 
-  result['rtts'] = {}
+  hopNumber = tonumber(splitLine[1])
 
-  for i=hopsIndex, #split, 1 do
-    value = split[i]
-    if not value:find('ms') then
-      if value == '*' then
-        value = nil
-      else
-        value = tonumber(value)
+  local util = require('utils')
+
+  i = hopsStart -- hops start at index 2
+  while i < #splitLine do
+    value = splitLine[i]
+    dotCount = #split(value, '[^%.]+')
+    nextValue = value[i + 2]
+
+    if dotCount == 4 or (value == '*' and i == hopsStart) then
+      if i > hopsStart then
+        -- Insert old item
+        table.insert(result, item)
       end
 
-      table.insert(result['rtts'], value)
+      item = {}
+      item['ip'] = value
+      item['number'] = hopNumber
+      item['rtts'] = {}
+    elseif value ~= 'ms' then
+      value = tonumber(value)
+      table.insert(item['rtts'], value)
     end
+
+    i = i + 1
   end
+
+  table.insert(result, item)
 
   return result
 end
