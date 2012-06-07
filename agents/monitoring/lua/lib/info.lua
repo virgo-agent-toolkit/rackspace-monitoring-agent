@@ -15,7 +15,7 @@ end
 
 function Info:serialize()
   return {
-    jsonPayload = JSON.stringify(self._params)
+    metrics = self._params
   }
 end
 
