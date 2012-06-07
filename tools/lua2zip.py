@@ -11,8 +11,10 @@ lib_lua = os.path.join('lib', 'lua')
 async_lua = os.path.join('lua_modules', 'async')
 bourbon_lua = os.path.join('lua_modules', 'bourbon')
 options_lua = os.path.join('lua_modules', 'options')
+traceroute_lua = os.path.join('lua_modules', 'traceroute')
 luvit_lua = os.path.join('deps', 'luvit', 'lib', 'luvit')
 monitoring_lua = os.path.join('agents', 'monitoring', 'default')
+collector_lua = os.path.join('agents', 'monitoring', 'collector')
 monitoring_tests = os.path.join('agents', 'monitoring', 'tests')
 
 modules = {
@@ -22,12 +24,16 @@ modules = {
     generate_bundle_map('modules/bourbon', 'lua_modules/bourbon'),
   options_lua:
     generate_bundle_map('modules/options', 'lua_modules/options'),
+  traceroute_lua:
+    generate_bundle_map('modules/traceroute', 'lua_modules/traceroute'),
   lib_lua:
     generate_bundle_map('', 'lib/lua', True),
   luvit_lua:
     generate_bundle_map('', 'deps/luvit/lib/luvit', True),
   monitoring_lua:
     generate_bundle_map('modules/monitoring/default', 'agents/monitoring/default'),
+  collector_lua:
+    generate_bundle_map('modules/monitoring/collector', 'agents/monitoring/collector'),
   monitoring_tests:
     generate_bundle_map('modules/monitoring/tests', 'agents/monitoring/tests'),
 }

@@ -27,7 +27,7 @@ local argv = require("options")
   :argv("he:p:c:s:")
 
 function Entry.run()
-  local mod = argv.args.e or 'default'
+  local mod = argv.args.e and argv.args.e or 'default'
   mod = './modules/monitoring/' .. mod
 
   logging.log(logging.INFO, 'Running Module ' .. mod)
