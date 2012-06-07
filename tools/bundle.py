@@ -7,6 +7,10 @@ import getopt
 
 def file_list(path):
   files = []
+
+  if os.path.isfile(path):
+    return [path]
+
   for f in os.listdir(path):
     new_dir = os.path.join(path, f)
     if os.path.isdir(new_dir) and not os.path.islink(new_dir):
