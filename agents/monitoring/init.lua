@@ -19,7 +19,7 @@ local logging = require('logging')
 local Entry = {}
 
 local argv = require("options")
-  :usage("Usage: ")
+  :usage('Usage: ')
   :describe("e", "entry module")
   :describe("s", "state directory path")
   :describe("c", "config file path")
@@ -33,7 +33,7 @@ function Entry.run()
   logging.log(logging.INFO, 'Running Module ' .. mod)
 
   local err, msg = pcall(function()
-    require(mod).run({stateDirectory = argv.args.s, configFile = argv.args.c, pidFile = argv.args.p})
+    require(mod).run(argv.args)
   end)
 
   if err == false then

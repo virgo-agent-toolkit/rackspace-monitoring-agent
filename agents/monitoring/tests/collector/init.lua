@@ -27,7 +27,7 @@ exports['test_traceroute'] = function(test, asserts)
 
   async.series({
     function(callback)
-      collector = run({port = 7889, host = '127.0.0.1'})
+      collector = run({p = 7889, h = '127.0.0.1'})
       setTimeout(500, callback)
     end,
 
