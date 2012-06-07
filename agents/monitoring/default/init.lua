@@ -234,8 +234,22 @@ function MonitoringAgent:getConfig()
   return self._config
 end
 
-function MonitoringAgent.run(options)
-  if not options then options = {} end
+function MonitoringAgent.run(argv)
+  argv = argv and argv or {}
+  local options = {}
+
+  if argv.s then
+    options.stateDirectory = argv.s
+  end
+
+  if argv.c then
+    options.configFile = argv.c
+  end
+
+  if argv.p then
+    options.pidFile = argv.p
+  end
+
   local agent = MonitoringAgent:new(options.stateDirectory)
 
   async.series({

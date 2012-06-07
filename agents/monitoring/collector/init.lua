@@ -70,7 +70,18 @@ function Collector:stop(callback)
   callback()
 end
 
-function Collector.run(options)
+function Collector.run(argv)
+  argv = argv and argv or {}
+  local options = {}
+
+  if argv.p then
+    options.port = argv.p
+  end
+
+  if argv.h then
+    options.host = argv.h
+  end
+
   local collector = Collector:new(options)
 
   collector:start(function(err)
