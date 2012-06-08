@@ -25,7 +25,7 @@ local logging = require('logging')
 local msg = require ('./messages')
 local table = require('table')
 local utils = require('utils')
-local info = require('../info')
+local hostInfo = require('../host_info')
 
 -- Response timeouts in ms
 local HANDSHAKE_TIMEOUT = 30000
@@ -75,7 +75,7 @@ responses['system.info'] = function(self, request, callback)
 end
 
 responses['host_info.get'] = function(self, request, callback)
-  local info = info.create(request.params.type)
+  local info = hostInfo.create(request.params.type)
   local m = msg.HostAgentInfoResponse:new(request, info:serialize())
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
