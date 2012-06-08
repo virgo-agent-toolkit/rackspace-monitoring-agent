@@ -23,6 +23,8 @@
 #include <fcntl.h>
 #ifndef _WIN32
 #include <unistd.h>
+#else
+#include <io.h>
 #endif
 
 static void
