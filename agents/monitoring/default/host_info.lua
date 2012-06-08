@@ -6,10 +6,11 @@ local misc = require('./util/misc')
 local os = require('os')
 local table = require('table')
 
+local sigarCtx = sigar:new()
+
 --[[ HostInfo ]]--
 local HostInfo = Object:extend()
 function HostInfo:initialize()
-  self._s = sigar:new()
   self._params = {}
 end
 
@@ -26,7 +27,7 @@ local NilInfo = HostInfo:extend()
 local CPUInfo = HostInfo:extend()
 function CPUInfo:initialize()
   HostInfo.initialize(self)
-  local cpus = self._s:cpus()
+  local cpus = sigarCtx:cpus()
   for i=1, #cpus do
     local obj = {}
     local info = cpus[i]:info()
@@ -69,7 +70,7 @@ end
 local DiskInfo = HostInfo:extend()
 function DiskInfo:initialize()
   HostInfo.initialize(self)
-  local disks = self._s:disks()
+  local disks = sigarCtx:disks()
   local usage_fields = {
     'queue',
     'read_bytes',
@@ -100,7 +101,7 @@ end
 local MemoryInfo = HostInfo:extend()
 function MemoryInfo:initialize()
   HostInfo.initialize(self)
-  local data = self._s:mem()
+  local data = sigarCtx:mem()
   local data_fields = {
     'actual_free',
     'actual_used',
@@ -122,7 +123,7 @@ end
 local NetworkInfo = HostInfo:extend()
 function NetworkInfo:initialize()
   HostInfo.initialize(self)
-  local netifs = self._s:netifs()
+  local netifs = sigarCtx:netifs()
   for i=1,#netifs do
     local info = netifs[i]:info()
     local usage = netifs[i]:usage()
@@ -173,11 +174,11 @@ end
 local ProcessInfo = HostInfo:extend()
 function ProcessInfo:initialize()
   HostInfo.initialize(self)
-  local procs = self._s:procs()
+  local procs = sigarCtx:procs()
 
   for i=1, #procs do
     local pid = procs[i]
-    local proc = self._s:proc(pid)
+    local proc = sigarCtx:proc(pid)
 
     local obj = {}
     obj.pid = pid
