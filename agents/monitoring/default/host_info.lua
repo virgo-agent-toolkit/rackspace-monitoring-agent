@@ -97,7 +97,7 @@ function DiskInfo:initialize()
 end
 
 --[[ MemoryInfo ]]--
-local MemoryInfo = Info:extend()
+local MemoryInfo = HostInfo:extend()
 function MemoryInfo:initialize()
   HostInfo.initialize(self)
   local data = self._s:mem()
@@ -119,7 +119,7 @@ function MemoryInfo:initialize()
 end
 
 --[[ NetworkInfo ]]--
-local NetworkInfo = Info:extend()
+local NetworkInfo = HostInfo:extend()
 function NetworkInfo:initialize()
   HostInfo.initialize(self)
   local netifs = self._s:netifs()
@@ -170,7 +170,7 @@ function NetworkInfo:initialize()
 end
 
 --[[ Process Info ]]--
-local ProcessInfo = Info:extend()
+local ProcessInfo = HostInfo:extend()
 function ProcessInfo:initialize()
   HostInfo.initialize(self)
   local procs = self._s:procs()
