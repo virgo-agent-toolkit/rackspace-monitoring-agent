@@ -62,7 +62,7 @@ end
 --[[ Reponse Functions ]]--
 local responses = {}
 
-responses['check.schedule_changed'] = function(self, replyTo, callback)
+responses['check_schedule.changed'] = function(self, replyTo, callback)
   local m = msg.ScheduleChangeAck:new(replyTo)
   self:_send(m:serialize(self._msgid), nil, 200)
   callback()
