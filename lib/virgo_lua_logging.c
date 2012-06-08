@@ -25,7 +25,7 @@
 static int
 logging_log(lua_State *L) {
   const char *msg;
-  unsigned int loglevel = 0;
+  int loglevel = 0;
   virgo_t *v = virgo__lua_context(L);
   loglevel = luaL_checknumber(L, 1);
 
