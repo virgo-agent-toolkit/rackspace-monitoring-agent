@@ -76,14 +76,8 @@ local HandshakeHello = Request:extend()
 function HandshakeHello:initialize(token, agentId)
   Request.initialize(self)
   self.method = 'handshake.hello'
-  self.token = token
-  self.agentId = agentId
-end
-
-function HandshakeHello:serialize(msgId)
-  self.params.token = self.token
-  self.params.agent_id = self.agentId
-  return Request.serialize(self, msgId)
+  self.params.token = token
+  self.params.agent_id = agentId
 end
 
 --[[ Ping ]]--
