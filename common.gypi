@@ -1,6 +1,7 @@
 {
   'variables': {
-    'without_ssl': 'false'
+    'without_ssl': 'false',
+    'luvit_skinny': 'true',
   },
   'make_global_settings': [
     # chrome normally links using the C++ compiler, but all of our code
@@ -36,7 +37,8 @@
         },
       },
       'Release': {
-        'cflags': [ '-g', '-Os', '-fdata-sections', '-ffunction-sections' ],
+        'cflags': [ '-g', '-Os', '-fdata-sections', '-ffunction-sections', ],
+        'ldflags': [ '-Wl,--gc-section', ],
         'msvs_settings': {
           'VCCLCompilerTool': {
             'target_conditions': [

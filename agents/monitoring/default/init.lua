@@ -26,13 +26,13 @@ local dns = require('dns')
 local fs = require('fs')
 local path = require('path')
 
-local ConnectionStream = require('./lib/client/connection_stream').ConnectionStream
-local constants = require('./lib/util/constants')
-local misc = require('./lib/util/misc')
-local States = require('./lib/states')
-local stateFile = require('./lib/state_file')
-local fsutil = require('./lib/util/fs')
-local UUID = require('./lib/util/uuid')
+local ConnectionStream = require('./client/connection_stream').ConnectionStream
+local constants = require('./util/constants')
+local misc = require('./util/misc')
+local States = require('./states')
+local stateFile = require('./state_file')
+local fsutil = require('./util/fs')
+local UUID = require('./util/uuid')
 
 local table = require('table')
 
@@ -234,8 +234,22 @@ function MonitoringAgent:getConfig()
   return self._config
 end
 
-function MonitoringAgent.run(options)
-  if not options then options = {} end
+function MonitoringAgent.run(argv)
+  argv = argv and argv or {}
+  local options = {}
+
+  if argv.s then
+    options.stateDirectory = argv.s
+  end
+
+  if argv.c then
+    options.configFile = argv.c
+  end
+
+  if argv.p then
+    options.pidFile = argv.p
+  end
+
   local agent = MonitoringAgent:new(options.stateDirectory)
 
   async.series({
