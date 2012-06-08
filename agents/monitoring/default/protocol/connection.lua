@@ -49,7 +49,7 @@ requests['heartbeat.ping'] = function(self, timestamp, callback)
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
-requests['manifest.get'] = function(self, callback)
+requests['check_schedule.get'] = function(self, callback)
   local m = msg.Manifest:new()
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
@@ -254,7 +254,7 @@ function AgentProtocolConnection:startHandshake(callback)
 end
 
 function AgentProtocolConnection:getManifest(callback)
-  self:request('manifest.get', function(err, response)
+  self:request('check_schedule.get', function(err, response)
     if err then
       callback(err)
     else

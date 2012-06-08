@@ -97,7 +97,7 @@ end
 local Manifest = Request:extend()
 function Manifest:initialize()
   Request.initialize(self)
-  self.method = 'manifest.get'
+  self.method = 'check_schedule.get'
 end
 
 function Manifest:serialize(msgId)
