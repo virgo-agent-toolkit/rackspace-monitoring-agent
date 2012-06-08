@@ -18,7 +18,6 @@ local tlsbinding = require('_tls')
 local fs = require('fs')
 local tls = require('tls')
 
-
 exports = {}
 no = {}
 
@@ -145,34 +144,50 @@ exports['test_add_trusted_cert'] = function(test, asserts)
 end
  
 exports['test_ticketing'] = function(test, asserts)
+  
   --Server Side Inits
-  local Server = tls.createServer()
-  Server:initialize()
-  Server.cert = certpem
+  local options = {
+    cert = certPem,
+    key = keyPem
+  }
+
+  local found = {}
+  local Server = tls.createServer(options, function(listener)
+    listener:on('data', function(data)
+      local received = tostring(data)
+      if received:find('Zaphod') then
+      	found.x = true
+      elseif received:find('Beeblebrox') then
+        found.y = true
+      end
+    end)  
+  end)
+  
   --Client Side Inits
-  local options = {}
-  local result = {}
-  options.port = 4000
-  options.host = '127.0.0.1'
+  connections = {}
+  
   --Server Listens, Client Connects, Disconnects, and Reconnects
-  Server:listen(4000, '127.0.0.1' , function()
-    result.x = tls.connect(options)
-    asserts.ok(result.x)
-    options = result.x.options
-    options.sessionIdContext = nil
-    Server:close(function()
-      Server:listen(4000, '127.0.0.1', function()
-        result.y = tls.connect(options)
-        asserts.ok(result.y)
-        asserts.ok(result.x.options.sessionIdContext)
-        asserts.ok(result.y.options.sessionIdContext)
-        asserts.equals(result.x.options.sessionIdContext, result.y.options.sessionIdContext)
-        Server:close()
+  Server:listen(4000, function()
+    connections.x = tls.connect({port = 4000, host = '127.0.0.1'}, {}, function()
+      connections.x:write('Zaphod')
+      connections.x.transmit = true
+      connections.x:destroy()
+    end)
+    connections.y = tls.connect({port = 4000, host = '127.0.0.1'},{}, function()
+      connections.y:write('Beeblebrox')
+      connections.y.transmit = true
+      connections.y:destroy()
+      Server:close(function()
+        asserts.ok(found.x)
+        asserts.ok(found.y)
+        asserts.ok(connections.x.transmit)
+        asserts.ok(connections.y.transmit)
+        asserts.equals(connections.x.sessionId, connections.y.sessionId)
+        test.done()
       end)
     end)
   end)
-  test.done()
 end
 
 return exports
-  
+
