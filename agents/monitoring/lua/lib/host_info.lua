@@ -6,26 +6,26 @@ local misc = require('./util/misc')
 local os = require('os')
 local table = require('table')
 
---[[ Info ]]--
-local Info = Object:extend()
-function Info:initialize()
+--[[ HostInfo ]]--
+local HostInfo = Object:extend()
+function HostInfo:initialize()
   self._s = sigar:new()
   self._params = {}
 end
 
-function Info:serialize()
+function HostInfo:serialize()
   return {
     metrics = self._params
   }
 end
 
 --[[ NilInfo ]]--
-local NilInfo = Info:extend()
+local NilInfo = HostInfo:extend()
 
 --[[ CPUInfo ]]--
-local CPUInfo = Info:extend()
+local CPUInfo = HostInfo:extend()
 function CPUInfo:initialize()
-  Info.initialize(self)
+  HostInfo.initialize(self)
   local cpus = self._s:cpus()
   for i=1, #cpus do
     local obj = {}
@@ -66,9 +66,9 @@ function CPUInfo:initialize()
 end
 
 --[[ DiskInfo ]]--
-local DiskInfo = Info:extend()
+local DiskInfo = HostInfo:extend()
 function DiskInfo:initialize()
-  Info.initialize(self)
+  HostInfo.initialize(self)
   local disks = self._s:disks()
   local usage_fields = {
     'queue',
@@ -99,7 +99,7 @@ end
 --[[ MemoryInfo ]]--
 local MemoryInfo = Info:extend()
 function MemoryInfo:initialize()
-  Info.initialize(self)
+  HostInfo.initialize(self)
   local data = self._s:mem()
   local data_fields = {
     'actual_free',
@@ -121,7 +121,7 @@ end
 --[[ NetworkInfo ]]--
 local NetworkInfo = Info:extend()
 function NetworkInfo:initialize()
-  Info.initialize(self)
+  HostInfo.initialize(self)
   local netifs = self._s:netifs()
   for i=1,#netifs do
     local info = netifs[i]:info()
@@ -172,7 +172,7 @@ end
 --[[ Process Info ]]--
 local ProcessInfo = Info:extend()
 function ProcessInfo:initialize()
-  Info.initialize(self)
+  HostInfo.initialize(self)
   local procs = self._s:procs()
 
   for i=1, #procs do
