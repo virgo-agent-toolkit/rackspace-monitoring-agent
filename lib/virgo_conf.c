@@ -179,10 +179,10 @@ virgo__conf_destroy(virgo_t *v)
   v->config = NULL;
 }
 
-#ifdef _WIN32
-static const char *
-virgo__conf_get_path(virgo_t *v)
+static virgo_error_t*
+virgo__conf_get_path(virgo_t *v, const char **p_path)
 {
+#ifdef _WIN32
   char *programfiles;
   char *path;
 
@@ -191,41 +191,52 @@ virgo__conf_get_path(virgo_t *v)
   if (path == NULL) {
     char gen_path[512];
     programfiles = getenv("ProgramFiles");
+
     if (programfiles == NULL) {
       return virgo_error_create(VIRGO_EINVAL, "Unable to get environment variable: \"ProgramFiles\"\n");
     }
+
     sprintf(gen_path, "%s\\%s\\etc\\",
             programfiles,
             VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY,
             VIRGO_DEFAULT_CONFIG_FILENAME);
 
-    return strdup(gen_path);
+    *p_path = strdup(gen_path);
+
+    return VIRGO_SUCCESS;
   }
 
-  return strdup(path);
-}
-#else
-static const char *
-virgo__conf_get_path(virgo_t *v)
-{
+  *p_path = strdup(path);
+
+  return VIRGO_SUCCESS;
+#else /* !_WIN32 */
   const char *path;
 
   path = virgo__argv_get_value(v, "-c", "--config");
 
   if (path == NULL) {
-    return strdup(VIRGO_DEFAULT_CONFIG_UNIX_PATH);
+    *p_path = strdup(VIRGO_DEFAULT_CONFIG_UNIX_PATH);
+    return VIRGO_SUCCESS;
   }
-  return strdup(path);
-}
+
+  *p_path = strdup(path);
+  return VIRGO_SUCCESS;
 #endif
+}
+
 
 virgo_error_t*
 virgo__conf_init(virgo_t *v)
 {
+  virgo_error_t* err;
   FILE *fp;
   const char *path;
 
-  path = virgo__conf_get_path(v);
+  err = virgo__conf_get_path(v, &path);
+
+  if (err) {
+    return err;
+  }
 
   fp = fopen(path, "r");
   if (fp == NULL) {
