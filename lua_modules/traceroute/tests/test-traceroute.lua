@@ -50,7 +50,7 @@ exports['test_traceroute_route_1'] = function(test, asserts)
   local splitHops = {}
   local hopNumber = 0
 
-  local tr = Traceroute:new('www.arnes.si', {})
+  local tr = Traceroute:new('193.2.1.87', {})
   Traceroute._spawn = exports.getEmitter('./tests/fixtures/output_without_hostnames.txt')
   tr:traceroute()
 
