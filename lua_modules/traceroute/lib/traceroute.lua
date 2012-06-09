@@ -2,42 +2,13 @@ local Emitter = require('core').Emitter
 local Error = require('core').Error
 local table = require('table')
 local childprocess = require('childprocess')
+local dns = require('dns')
+
+local LineEmitter = require('line-emitter').LineEmitter
 
 local split = require('./utils').split
 
 local exports = {}
-
--- TODO: Move LineEmitter and split into utils or smth
-
-local LineEmitter = Emitter:extend()
-
-function LineEmitter:initialize(initialBuffer)
-  self._buffer = initialBuffer or ''
-end
-
-function LineEmitter:feed(chunk)
-  local line
-
-  self._buffer = self._buffer .. chunk
-
-  line = self:_popLine()
-  while line do
-    self:emit('line', line)
-    line = self:_popLine()
-  end
-end
-
-function LineEmitter:_popLine()
-  local line = false
-  local index = self._buffer:find('\n')
-
-  if index then
-    line = self._buffer:sub(0, index - 1)
-    self._buffer = self._buffer:sub(index + 1)
-  end
-
-  return line
-end
 
 local Traceroute = Emitter:extend()
 
@@ -48,10 +19,10 @@ function Traceroute:initialize(target, options)
   self._packetLen = options['packetLen'] and options['packetLen'] or 60
   self._maxTtl = options['maxTtl'] and options['maxTtl'] or 30
 
-  if target:find(':') then
-    self._addressType = 'ipv6'
-  else
+  if dns.isIpV4(target) == 4 then
     self._addressType = 'ipv4'
+  elseif dns.isIpV6(target) == 6 then
+    self._addressType = 'ipv6'
   end
 end
 
@@ -125,10 +96,15 @@ function Traceroute:_run(target)
     local err
 
     if code == 0 then
-      emitter:emit('end')
+      process.nextTick(function()
+        emitter:emit('end')
+      end)
     else
       err = Error:new('Error: ' .. stderrBuffer)
-      emitter:emit('error', err)
+
+      process.nextTick(function()
+        emitter:emit('error', err)
+      end)
     end
   end)
 
@@ -184,7 +160,7 @@ function Traceroute:_parseLine(line)
 end
 
 function Traceroute:_isAddress(value, family)
-  local dotCount, result
+  local dotCount
 
   if family == 'ipv4' then
     dotCount = #split(value, '[^%.]+')
