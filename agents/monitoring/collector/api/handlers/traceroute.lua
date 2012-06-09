@@ -54,7 +54,7 @@ function traceroute(req, res)
         res:writeHead(200, {['Content-Type'] = 'application/json'})
       end
 
-      payload = JSON.stringify(hop, {beautify = true, indent_string = '    '})
+      payload = JSON.stringify(hop, {beautify = false, indent_string = '    '})
       res:write(payload .. '\n')
     else
       table.insert(result, hop)
