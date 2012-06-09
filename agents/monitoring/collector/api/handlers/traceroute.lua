@@ -65,9 +65,7 @@ function traceroute(req, res)
 
   tr:on('end', function()
     if streaming then
-      setTimeout(400, function()
-        res:finish('')
-      end)
+      res:finish('')
     else
       httpUtil.returnJson(res, 200, result)
     end
