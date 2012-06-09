@@ -2,42 +2,13 @@ local Emitter = require('core').Emitter
 local Error = require('core').Error
 local table = require('table')
 local childprocess = require('childprocess')
+local dns = require('dns')
+
+local LineEmitter = require('line-emitter').LineEmitter
 
 local split = require('./utils').split
 
 local exports = {}
-
--- TODO: Move LineEmitter and split into utils or smth
-
-local LineEmitter = Emitter:extend()
-
-function LineEmitter:initialize(initialBuffer)
-  self._buffer = initialBuffer or ''
-end
-
-function LineEmitter:feed(chunk)
-  local line
-
-  self._buffer = self._buffer .. chunk
-
-  line = self:_popLine()
-  while line do
-    self:emit('line', line)
-    line = self:_popLine()
-  end
-end
-
-function LineEmitter:_popLine()
-  local line = false
-  local index = self._buffer:find('\n')
-
-  if index then
-    line = self._buffer:sub(0, index - 1)
-    self._buffer = self._buffer:sub(index + 1)
-  end
-
-  return line
-end
 
 local Traceroute = Emitter:extend()
 
@@ -47,6 +18,12 @@ function Traceroute:initialize(target, options)
   self._options = options
   self._packetLen = options['packetLen'] and options['packetLen'] or 60
   self._maxTtl = options['maxTtl'] and options['maxTtl'] or 30
+
+  if dns.isIpV4(target) == 4 then
+    self._addressType = 'ipv4'
+  elseif dns.isIpV6(target) == 6 then
+    self._addressType = 'ipv6'
+  end
 end
 
 -- Return an EventEmitter instance which emits 'hop' events for every hop
@@ -76,7 +53,12 @@ end
 function Traceroute:_run(target)
   local args = {}
 
-  table.insert(args, '-4')
+  if self._addressType == 'ipv4' then
+    table.insert(args, '-4')
+  else
+    table.insert(args, '-6')
+  end
+
   table.insert(args, '-n')
   table.insert(args, '-m')
   table.insert(args, self._maxTtl)
@@ -114,10 +96,15 @@ function Traceroute:_run(target)
     local err
 
     if code == 0 then
-      emitter:emit('end')
+      process.nextTick(function()
+        emitter:emit('end')
+      end)
     else
       err = Error:new('Error: ' .. stderrBuffer)
-      emitter:emit('error', err)
+
+      process.nextTick(function()
+        emitter:emit('error', err)
+      end)
     end
   end)
 
@@ -149,7 +136,7 @@ function Traceroute:_parseLine(line)
     dotCount = #split(value, '[^%.]+')
     nextValue = value[i + 2]
 
-    if dotCount == 4 or (value == '*' and i == hopsStart) then
+    if (self:_isAddress(value, self._addressType)) or (value == '*' and i == hopsStart) then
       if i > hopsStart then
         -- Insert old item
         table.insert(result, item)
@@ -170,6 +157,17 @@ function Traceroute:_parseLine(line)
   table.insert(result, item)
 
   return result
+end
+
+function Traceroute:_isAddress(value, family)
+  local dotCount
+
+  if family == 'ipv4' then
+    dotCount = #split(value, '[^%.]+')
+    return dotCount == 4
+  else
+    return value:find(':')
+  end
 end
 
 exports.Traceroute = Traceroute

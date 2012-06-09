@@ -17,6 +17,7 @@
       'lua_modules/bourbon',
       'lua_modules/options',
       'lua_modules/traceroute',
+      'lua_modules/line-emitter',
       'agents/monitoring/collector',
       'agents/monitoring/init.lua',
     ],
