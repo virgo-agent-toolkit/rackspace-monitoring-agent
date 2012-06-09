@@ -16,6 +16,8 @@ limitations under the License.
 
 local url = require('url')
 local table = require('table')
+local JSON = require('json')
+local setTimeout = require('timer').setTimeout
 
 local Traceroute = require('traceroute').Traceroute
 
@@ -28,6 +30,8 @@ function traceroute(req, res)
   local parsed = url.parse(req.url, true)
   local qs = parsed.query
   local target = qs['target']
+  local streaming = qs['streaming'] == '1'
+  local hopCount = 0
 
   if not target or #target == 0 then
     httpUtil.returnError(res, 400, 'Missing a required "target" argument')
@@ -43,11 +47,30 @@ function traceroute(req, res)
   end)
 
   tr:on('hop', function(hop)
-    table.insert(result, hop)
+    local payload
+
+    if streaming then
+      if hopCount == 0 then
+        res:writeHead(200, {['Content-Type'] = 'application/json'})
+      end
+
+      payload = JSON.stringify(hop, {beautify = true, indent_string = '    '})
+      res:write(payload .. '\n')
+    else
+      table.insert(result, hop)
+    end
+
+    hopCount = hopCount + 1
   end)
 
   tr:on('end', function()
-    httpUtil.returnJson(res, 200, result)
+    if streaming then
+      setTimeout(400, function()
+        res:finish('')
+      end)
+    else
+      httpUtil.returnJson(res, 200, result)
+    end
   end)
 end
 
