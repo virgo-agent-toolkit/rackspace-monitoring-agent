@@ -47,6 +47,12 @@ function Traceroute:initialize(target, options)
   self._options = options
   self._packetLen = options['packetLen'] and options['packetLen'] or 60
   self._maxTtl = options['maxTtl'] and options['maxTtl'] or 30
+
+  if target:find(':') then
+    self._addressType = 'ipv6'
+  else
+    self._addressType = 'ipv4'
+  end
 end
 
 -- Return an EventEmitter instance which emits 'hop' events for every hop
@@ -76,7 +82,12 @@ end
 function Traceroute:_run(target)
   local args = {}
 
-  table.insert(args, '-4')
+  if self._addressType == 'ipv4' then
+    table.insert(args, '-4')
+  else
+    table.insert(args, '-6')
+  end
+
   table.insert(args, '-n')
   table.insert(args, '-m')
   table.insert(args, self._maxTtl)
@@ -149,7 +160,7 @@ function Traceroute:_parseLine(line)
     dotCount = #split(value, '[^%.]+')
     nextValue = value[i + 2]
 
-    if dotCount == 4 or (value == '*' and i == hopsStart) then
+    if (self:_isAddress(value, self._addressType)) or (value == '*' and i == hopsStart) then
       if i > hopsStart then
         -- Insert old item
         table.insert(result, item)
@@ -170,6 +181,17 @@ function Traceroute:_parseLine(line)
   table.insert(result, item)
 
   return result
+end
+
+function Traceroute:_isAddress(value, family)
+  local dotCount, result
+
+  if family == 'ipv4' then
+    dotCount = #split(value, '[^%.]+')
+    return dotCount == 4
+  else
+    return value:find(':')
+  end
 end
 
 exports.Traceroute = Traceroute
