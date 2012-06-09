@@ -12,6 +12,7 @@ async_lua = os.path.join('lua_modules', 'async')
 bourbon_lua = os.path.join('lua_modules', 'bourbon')
 options_lua = os.path.join('lua_modules', 'options')
 traceroute_lua = os.path.join('lua_modules', 'traceroute')
+line_emitter_lua = os.path.join('lua_modules', 'line-emitter')
 luvit_lua = os.path.join('deps', 'luvit', 'lib', 'luvit')
 monitoring_lua = os.path.join('agents', 'monitoring', 'default')
 collector_lua = os.path.join('agents', 'monitoring', 'collector')
@@ -26,6 +27,8 @@ modules = {
     generate_bundle_map('modules/options', 'lua_modules/options'),
   traceroute_lua:
     generate_bundle_map('modules/traceroute', 'lua_modules/traceroute'),
+  line_emitter_lua:
+    generate_bundle_map('modules/line-emitter', 'lua_modules/line-emitter'),
   lib_lua:
     generate_bundle_map('', 'lib/lua', True),
   luvit_lua:
