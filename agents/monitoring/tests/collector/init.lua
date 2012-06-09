@@ -14,7 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local http = require('http')
+local JSON = require('json')
+
 local async = require('async')
+local LineEmitter = require('line-emitter').LineEmitter
 
 local run = require('monitoring/collector').run
 local request = require('monitoring/collector/http/utils').request
@@ -61,6 +65,42 @@ exports['test_traceroute'] = function(test, asserts)
         asserts.dequals(res.body[1]['ip'], '127.0.0.1')
         asserts.dequals(#res.body[1]['rtts'], 3)
         callback()
+      end)
+    end,
+
+    function(callback)
+      -- Test streaming response
+      local le = LineEmitter:new()
+      local emittedLines = 0
+
+      le:on('line', function(line)
+        local parsed
+        emittedLines = emittedLines + 1
+
+        if emittedLines == 1 then
+          parsed = JSON.parse(line)
+          asserts.dequals(parsed['number'], 1)
+          asserts.dequals(parsed['ip'], '127.0.0.1')
+          asserts.dequals(#parsed['rtts'], 3)
+        end
+      end)
+
+      http.request({
+        host = '127.0.0.1',
+        port = 7889,
+        path = '/v1.0/traceroute?target=127.0.0.1&streaming=1'
+      },
+
+      function (res)
+        res:on('data', function (chunk)
+          chunk = chunk and chunk or ''
+          le:feed(chunk)
+        end)
+        res:on('end', function()
+          asserts.equals(emittedLines, 1)
+          res:destroy()
+          callback()
+        end)
       end)
     end
   },
