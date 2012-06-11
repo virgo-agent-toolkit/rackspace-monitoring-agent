@@ -144,7 +144,7 @@ function MetricsRequest:initialize(check, checkResults)
   Request.initialize(self)
   self.check = check
   self.checkResults = checkResults
-  self.method = 'metrics.set'
+  self.method = 'check_metrics.post'
 end
 
 function MetricsRequest:serialize(msgId)

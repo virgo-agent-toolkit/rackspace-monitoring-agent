@@ -54,7 +54,7 @@ requests['check_schedule.get'] = function(self, callback)
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
-requests['metrics.set'] = function(self, check, checkResults, callback)
+requests['check_metrics.post'] = function(self, check, checkResults, callback)
   local m = msg.MetricsRequest:new(check, checkResults)
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end

@@ -77,7 +77,7 @@ end
 function ConnectionStream:_sendMetrics(check, checkResults)
   local client = self:getClient()
   if client then
-    client.protocol:request('metrics.set', check, checkResults)
+    client.protocol:request('check_metrics.post', check, checkResults)
   end
 end
 
