@@ -36,7 +36,7 @@ exports['test_traceroute'] = function(test, asserts)
     end,
 
     function(callback)
-      -- Test invalid route
+      -- Test invalid route #1
       request('http://127.0.0.1:7889/inexistent', 'GET', nil, nil, {parseResponse = true}, function(err, res)
         asserts.ok(not err)
         asserts.equals(res.status_code, 404)
@@ -44,6 +44,17 @@ exports['test_traceroute'] = function(test, asserts)
         callback()
       end)
     end,
+
+    function(callback)
+      -- Test invalid route #2
+      request('http://127.0.0.1:7889/v1.0/traceroute11111', 'GET', nil, nil, {parseResponse = true}, function(err, res)
+        asserts.ok(not err)
+        asserts.equals(res.status_code, 404)
+        asserts.dequals(res.body, {error = 'Path "/v1.0/traceroute11111" not found'})
+        callback()
+      end)
+    end,
+
 
     function(callback)
       -- Test missing target argument

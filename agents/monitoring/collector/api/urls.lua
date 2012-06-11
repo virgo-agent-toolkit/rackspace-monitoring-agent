@@ -19,7 +19,7 @@ local exports = {}
 local handlers = require('./handlers')
 
 local urls = {
-  {method = 'GET', path_regex = '/v1.0/traceroute', handler = handlers.traceroute.traceroute}
+  {method = 'GET', path_regex = '^/v1.0/traceroute$', handler = handlers.traceroute.traceroute}
 }
 
 exports.urls = urls
