@@ -1,0 +1,10 @@
+{
+  "v": "1",
+  "id": 1,
+  "source": "agentA",
+  "target": "endpoint",
+  "method": "heartbeat.post",
+  "params": {
+    "timestamp": 1325645515246
+  }
+}

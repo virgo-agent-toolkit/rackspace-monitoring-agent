@@ -1,9 +1,0 @@
-{
-    "v": "1",
-    "id": 1,
-    "target": "agentA",
-    "source": "endpoint",
-    "result": {
-        "timestamp": 1325645515246
-    }
-}

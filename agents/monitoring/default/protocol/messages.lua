@@ -76,25 +76,19 @@ local HandshakeHello = Request:extend()
 function HandshakeHello:initialize(token, agentId)
   Request.initialize(self)
   self.method = 'handshake.hello'
-  self.token = token
-  self.agentId = agentId
+  self.params.token = token
+  self.params.agent_id = agentId
 end
 
-function HandshakeHello:serialize(msgId)
-  self.params.token = self.token
-  self.params.agent_id = self.agentId
-  return Request.serialize(self, msgId)
-end
-
---[[ Ping ]]--
-local Ping = Request:extend()
-function Ping:initialize(timestamp)
+--[[ Heartbeat ]]--
+local Heartbeat = Request:extend()
+function Heartbeat:initialize(timestamp)
   Request.initialize(self)
-  self.method = 'heartbeat.ping'
+  self.method = 'heartbeat.post'
   self.timestamp = timestamp
 end
 
-function Ping:serialize(msgId)
+function Heartbeat:serialize(msgId)
   self.params.timestamp = self.timestamp
   return Request.serialize(self, msgId)
 end
@@ -103,7 +97,7 @@ end
 local Manifest = Request:extend()
 function Manifest:initialize()
   Request.initialize(self)
-  self.method = 'manifest.get'
+  self.method = 'check_schedule.get'
 end
 
 function Manifest:serialize(msgId)
@@ -150,7 +144,7 @@ function MetricsRequest:initialize(check, checkResults)
   Request.initialize(self)
   self.check = check
   self.checkResults = checkResults
-  self.method = 'metrics.set'
+  self.method = 'check_metrics.post'
 end
 
 function MetricsRequest:serialize(msgId)
@@ -188,7 +182,7 @@ local exports = {}
 exports.Request = Request
 exports.Response = Response
 exports.HandshakeHello = HandshakeHello
-exports.Ping = Ping
+exports.Heartbeat = Heartbeat
 exports.Manifest = Manifest
 exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse

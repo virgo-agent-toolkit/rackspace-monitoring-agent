@@ -77,7 +77,7 @@ end
 function ConnectionStream:_sendMetrics(check, checkResults)
   local client = self:getClient()
   if client then
-    client.protocol:request('metrics.set', check, checkResults)
+    client.protocol:request('check_metrics.post', check, checkResults)
   end
 end
 
@@ -188,7 +188,7 @@ function ConnectionStream:createConnection(options, callback)
   client:on('handshake_success', function()
     self:_promoteClient(client)
     self._delays[options.datacenter] = 0
-    client:startPingInterval()
+    client:startHeartbeatInterval()
     self._messages:emit('handshake_success', client)
   end)
 
