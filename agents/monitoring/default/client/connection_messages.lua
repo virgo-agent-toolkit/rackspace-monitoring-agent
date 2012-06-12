@@ -58,7 +58,7 @@ end
 
 function ConnectionMessages:onMessage(client, msg)
   client:log(logging.DEBUG, '(onMessage)')
-  if msg.method == 'check.schedule_changed' then
+  if msg.method == 'check_schedule.changed' then
     self._lastFetchTime = 0
     client:log(logging.DEBUG, 'received schedule change')
     client.protocol:respond(msg.method, msg, function ()

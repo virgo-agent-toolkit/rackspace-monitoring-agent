@@ -32,7 +32,7 @@ local fmt = require('string').format
 
 local AgentClient = Emitter:extend()
 
-local PING_INTERVAL = 5 * 60 * 1000 -- ms
+local HEARTBEAT_INTERVAL = 5 * 60 * 1000 -- ms
 
 function AgentClient:initialize(options, scheduler)
 
@@ -47,8 +47,8 @@ function AgentClient:initialize(options, scheduler)
 
   self._scheduler = scheduler
 
-  self._ping_interval = nil
-  self._sent_ping_count = 0
+  self._heartbeat_interval = nil
+  self._sent_heartbeat_count = 0
   self._got_pong_count = 0
   self._latency = nil
 
@@ -86,7 +86,7 @@ function AgentClient:log(priority, ...)
 end
 
 function AgentClient:_socketTimeout()
-  return misc.calcJitter(PING_INTERVAL, consts.SOCKET_TIMEOUT)
+  return misc.calcJitter(HEARTBEAT_INTERVAL, consts.SOCKET_TIMEOUT)
 end
 
 function AgentClient:connect()
@@ -112,7 +112,7 @@ function AgentClient:connect()
       if err then
         self:emit('error', err)
       else
-        self._ping_interval = msg.result.ping_interval
+        self._heartbeat_interval = msg.result.heartbeat_interval
         self:emit('handshake_success')
       end
     end)
@@ -134,28 +134,28 @@ function AgentClient:getLatency()
   return self._latency
 end
 
-function AgentClient:startPingInterval()
+function AgentClient:startHeartbeatInterval()
   function startInterval(this)
-    local timeout = misc.calcJitter(self._ping_interval, consts.PING_INTERVAL_JITTER)
+    local timeout = misc.calcJitter(self._heartbeat_interval, consts.HEARTBEAT_INTERVAL_JITTER)
 
-    this._log(logging.DEBUG, fmt('Starting ping interval, interval=%dms', this._ping_interval))
+    this._log(logging.DEBUG, fmt('Starting heartbeat interval, interval=%dms', this._heartbeat_interval))
 
-    this._pingTimeout = timer.setTimeout(timeout, function()
+    this._heartbeatTimeout = timer.setTimeout(timeout, function()
       local timestamp = os.time()
 
-      this._log(logging.DEBUG, fmt('Sending ping (timestamp=%d,sent_ping_count=%d,got_pong_count=%d)',
-                                    timestamp, this._sent_ping_count, this._got_pong_count))
-      this._sent_ping_count = this._sent_ping_count + 1
-      this.protocol:request('heartbeat.ping', timestamp, function(err, msg)
+      this._log(logging.DEBUG, fmt('Sending heartbeat (timestamp=%d,sent_heartbeat_count=%d,got_pong_count=%d)',
+                                    timestamp, this._sent_heartbeat_count, this._got_pong_count))
+      this._sent_heartbeat_count = this._sent_heartbeat_count + 1
+      this.protocol:request('heartbeat.post', timestamp, function(err, msg)
         if err then
-          this._log(logging.DEBUG, 'Got an error while sending ping: ' .. tostring(err))
+          this._log(logging.DEBUG, 'Got an error while sending heartbeat: ' .. tostring(err))
           return
         end
 
         if msg.result.timestamp then
           this._got_pong_count = this._got_pong_count + 1
-          this._log(logging.DEBUG, fmt('Got pong (sent_ping_count=%d,got_pong_count=%d)',
-                                       this._sent_ping_count, this._got_pong_count))
+          this._log(logging.DEBUG, fmt('Got pong (sent_heartbeat_count=%d,got_pong_count=%d)',
+                                       this._sent_heartbeat_count, this._got_pong_count))
         else
           this._log(logging.DEBUG, 'Got invalid pong response')
         end
@@ -170,16 +170,16 @@ function AgentClient:startPingInterval()
    startInterval(self)
 end
 
-function AgentClient:clearPingInterval()
-  if self._pingTimeout then
-    self._log(logging.DEBUG, 'Clearing ping interval')
-    timer.clearTimer(self._pingTimeout)
-    self._pingTimeout = nil
+function AgentClient:clearHeartbeatInterval()
+  if self._heartbeatTimeout then
+    self._log(logging.DEBUG, 'Clearing heartbeat interval')
+    timer.clearTimer(self._heartbeatTimeout)
+    self._heartbeatTimeout = nil
   end
 end
 
 function AgentClient:destroy()
-  self:clearPingInterval()
+  self:clearHeartbeatInterval()
 
   if self._sock then
     self._log(logging.DEBUG, 'Closing socket')

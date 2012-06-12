@@ -1,9 +1,9 @@
 {
   "v": "1",
-  "id": 0,
+  "id": 1,
   "source": "endpoint",
   "target": "agentA",
   "result": {
-    "heartbeat_interval": 1000
+    "timestamp": 1325645515246
   }
 }
