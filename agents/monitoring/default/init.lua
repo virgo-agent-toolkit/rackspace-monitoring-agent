@@ -25,6 +25,7 @@ local timer = require('timer')
 local dns = require('dns')
 local fs = require('fs')
 local path = require('path')
+local sigarCtx = require('./sigar').ctx
 
 local ConnectionStream = require('./client/connection_stream').ConnectionStream
 local constants = require('./util/constants')
@@ -65,8 +66,7 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
 end
 
 function MonitoringAgent:_getSystemId()
-  local s = sigar:new()
-  local netifs = s:netifs()
+  local netifs = sigarCtx:netifs()
   for i=1, #netifs do
     local eth = netifs[i]:info()
     if eth['type'] ~= 'Local Loopback' then
