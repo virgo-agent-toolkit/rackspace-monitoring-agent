@@ -80,15 +80,15 @@ function HandshakeHello:initialize(token, agentId)
   self.params.agent_id = agentId
 end
 
---[[ Ping ]]--
-local Ping = Request:extend()
-function Ping:initialize(timestamp)
+--[[ Heartbeat ]]--
+local Heartbeat = Request:extend()
+function Heartbeat:initialize(timestamp)
   Request.initialize(self)
-  self.method = 'heartbeat.ping'
+  self.method = 'heartbeat.post'
   self.timestamp = timestamp
 end
 
-function Ping:serialize(msgId)
+function Heartbeat:serialize(msgId)
   self.params.timestamp = self.timestamp
   return Request.serialize(self, msgId)
 end
@@ -170,7 +170,7 @@ local exports = {}
 exports.Request = Request
 exports.Response = Response
 exports.HandshakeHello = HandshakeHello
-exports.Ping = Ping
+exports.Heartbeat = Heartbeat
 exports.Manifest = Manifest
 exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse

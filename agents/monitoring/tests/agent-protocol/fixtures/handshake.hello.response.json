@@ -4,6 +4,6 @@
   "source": "endpoint",
   "target": "agentA",
   "result": {
-    "ping_interval": 1000
+    "heartbeat_interval": 1000
   }
 }

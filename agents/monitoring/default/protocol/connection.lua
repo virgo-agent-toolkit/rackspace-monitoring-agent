@@ -44,8 +44,8 @@ requests['handshake.hello'] = function(self, agentId, token, callback)
   self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, 200, callback)
 end
 
-requests['heartbeat.ping'] = function(self, timestamp, callback)
-  local m = msg.Ping:new(timestamp)
+requests['heartbeat.post'] = function(self, timestamp, callback)
+  local m = msg.Heartbeat:new(timestamp)
   self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
@@ -248,7 +248,7 @@ function AgentProtocolConnection:startHandshake(callback)
     end
 
     self:setState(STATES.RUNNING)
-    self._log(logging.INFO, fmt('handshake successful (ping_interval=%dms)', msg.result.ping_interval))
+    self._log(logging.INFO, fmt('handshake successful (heartbeat_interval=%dms)', msg.result.heartbeat_interval))
     callback(nil, msg)
   end)
 end

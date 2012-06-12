@@ -188,7 +188,7 @@ function ConnectionStream:createConnection(options, callback)
   client:on('handshake_success', function()
     self:_promoteClient(client)
     self._delays[options.datacenter] = 0
-    client:startPingInterval()
+    client:startHeartbeatInterval()
     self._messages:emit('handshake_success', client)
   end)
 
