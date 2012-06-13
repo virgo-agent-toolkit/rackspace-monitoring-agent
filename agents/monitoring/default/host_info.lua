@@ -291,7 +291,7 @@ function debugInfo(fileName, callback)
   local data = ''
   for k, v in pairs({'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS'}) do
     local info = create(v)
-    local obj = JSON.parse(info:serialize().jsonPayload)
+    local obj = info:serialize().metrics
     data = data .. '-- ' .. v .. '.' .. os.type() .. ' --\n\n'
     data = data .. misc.toString(obj)
     data = data .. '\n'
