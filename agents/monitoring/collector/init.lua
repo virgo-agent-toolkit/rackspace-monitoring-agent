@@ -45,7 +45,7 @@ function Collector:_startApiServer(callback)
       return
     end
 
-    logging.log(logging.INFO, fmt('HTTP server listening on %s:%s',
+    logging.info(fmt('HTTP server listening on %s:%s',
                                   self._host, self._port))
     callback()
   end)
@@ -65,7 +65,7 @@ end
 
 function Collector:stop(callback)
   callback = callback and callback or function() end
-  logging.log(logging.DEBUG, 'Stopping collector...')
+  logging.debug('Stopping collector...')
   self._apiServer:close()
   callback()
 end
@@ -86,7 +86,7 @@ function Collector.run(argv)
 
   collector:start(function(err)
     if err then
-      logging.log(logging.ERR, err.message)
+      logging.error(err.message)
     end
   end)
 

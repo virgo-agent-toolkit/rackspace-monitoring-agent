@@ -36,14 +36,14 @@ function Entry.run()
   else
     logging.set_level(logging.INFO)
   end
-  logging.log(logging.DEBUG, 'Running Module ' .. mod)
+  logging.debug('Running Module ' .. mod)
 
   local err, msg = pcall(function()
     require(mod).run(argv.args)
   end)
 
   if err == false then
-    logging.log(logging.ERR, msg)
+    logging.error(msg)
   end
 end
 
