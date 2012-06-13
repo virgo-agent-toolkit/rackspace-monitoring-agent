@@ -197,10 +197,6 @@ function ProcessInfo:initialize()
 
     local obj = {}
     obj.pid = pid
-    obj.exe = {}
-    obj.time = {}
-    obj.state = {}
-    obj.memory = {}
 
     local t, msg = proc:exe()
     if t then
@@ -210,10 +206,8 @@ function ProcessInfo:initialize()
         'root'
       }
       for _, v in pairs(exe_fields) do
-        obj.exe[v] = t[v]
+        obj['exe_' .. v] = t[v]
       end
-    else
-      obj.exe = 'Unavailable'
     end
 
     t, msg = proc:time()
@@ -225,10 +219,8 @@ function ProcessInfo:initialize()
         'total'
       }
       for _, v in pairs(time_fields) do
-        obj.time[v] = t[v]
+        obj['time_' .. v] = t[v]
       end
-    else
-      obj.time = 'Unavailable'
     end
 
     t, msg = proc:state()
@@ -243,10 +235,8 @@ function ProcessInfo:initialize()
         'threads'
       }
       for _, v in pairs(proc_fields) do
-        obj.state[v] = t[v]
+        obj['state_' .. v] = t[v]
       end
-    else
-      obj.state = 'Unavailable'
     end
 
     t, msg = proc:mem()
@@ -260,10 +250,8 @@ function ProcessInfo:initialize()
         'page_faults'
       }
       for _, v in pairs(memory_fields) do
-        obj.memory[v] = t[v]
+        obj['memory_' .. v] = t[v]
       end
-    else
-      obj.memory = 'Unavailable'
     end
 
     table.insert(self._params, obj)
