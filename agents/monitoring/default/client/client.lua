@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local native = require('uv_native')
+local Timer = require('uv').Timer
 local consts = require('../util/constants')
 local tls = require('tls')
 local timer = require('timer')
@@ -141,7 +141,7 @@ function AgentClient:startHeartbeatInterval()
     this._log(logging.DEBUG, fmt('Starting heartbeat interval, interval=%dms', this._heartbeat_interval))
 
     this._heartbeatTimeout = timer.setTimeout(timeout, function()
-      local send_timestamp = native.now()
+      local send_timestamp = Timer.now()
 
       this._log(logging.DEBUG, fmt('Sending heartbeat (timestamp=%d,sent_heartbeat_count=%d,got_pong_count=%d)',
                                     send_timestamp, this._sent_heartbeat_count, this._got_pong_count))
@@ -152,7 +152,7 @@ function AgentClient:startHeartbeatInterval()
           return
         end
 
-        this._latency = native.now() - send_timestamp
+        this._latency = Timer.now() - send_timestamp
 
         if msg.result.timestamp then
           this._got_pong_count = this._got_pong_count + 1
