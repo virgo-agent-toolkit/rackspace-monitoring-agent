@@ -35,14 +35,14 @@ function getRouter(urls)
     for i=1, #urls do
       item = urls[i]
       if item.method == req.method and string.find(pathname, item.path_regex) then
-        logging.debug(fmt('Calling handler for path "%s"', pathname))
+        logging.debugf('Calling handler for path "%s"', pathname)
         handler = item.handler
         handler(req, res)
         return
       end
     end
 
-    logging.debug(fmt('No handler found for path "%s"', pathname))
+    logging.debugf('No handler found for path "%s"', pathname)
     httpUtil.returnError(res, 404, fmt('Path "%s" not found', pathname))
   end
 
