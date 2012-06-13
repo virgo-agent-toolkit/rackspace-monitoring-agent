@@ -62,7 +62,7 @@ end
 function AgentClient:scheduleManifest(manifest)
   local checks = self:_createChecks(manifest)
   self._scheduler:rebuild(checks, function()
-    self._log(logging.INFO, 'Reloaded manifest')
+    self._log(logging.DEBUG, 'Reloaded manifest')
     self._scheduler:start()
   end)
 end
@@ -91,7 +91,7 @@ end
 
 function AgentClient:connect()
   -- Create connection timeout
-  self._log(logging.INFO, 'Connecting...')
+  self._log(logging.DEBUG, 'Connecting...')
   self._sock = tls.connect(self._port, self._host, {}, function(err, cleartext)
     -- Log
     self._log(logging.INFO, 'Connected')
@@ -117,7 +117,7 @@ function AgentClient:connect()
       end
     end)
   end)
-  self._log(logging.DBG, fmt('Using timeout %sms', self:_socketTimeout()))
+  self._log(logging.DEBUG, fmt('Using timeout %sms', self:_socketTimeout()))
   self._sock.socket:setTimeout(self:_socketTimeout(), function()
     self:emit('timeout')
   end)

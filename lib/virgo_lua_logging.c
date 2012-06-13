@@ -47,6 +47,30 @@ logging_rotate(lua_State *L) {
   return 0;
 }
 
+static int
+logging_set_level(lua_State *L) {
+  int loglevel = 0;
+  virgo_t *v = virgo__lua_context(L);
+  loglevel = luaL_checknumber(L, 1);
+
+  if (loglevel < VIRGO_LOG_NOTHING || loglevel > VIRGO_LOG_EVERYTHING) {
+    return luaL_error(L, "invalid log level: %d (min:%d max:%d)",
+                      loglevel, VIRGO_LOG_NOTHING, VIRGO_LOG_EVERYTHING);
+  }
+
+  virgo_log_level_set(v, loglevel);
+
+  return 0;
+}
+
+static int
+logging_get_level(lua_State *L) {
+  virgo_t *v = virgo__lua_context(L);
+  virgo_log_level_e ll = virgo_log_level_get(v);
+  lua_pushnumber(L, ll);
+  return 1;
+}
+
 int
 virgo__lua_logging_open(lua_State *L)
 {
@@ -57,6 +81,13 @@ virgo__lua_logging_open(lua_State *L)
 
   lua_pushcfunction(L, logging_rotate);
   lua_setfield(L, -2, "rotate");
+
+  lua_pushcfunction(L, logging_set_level);
+  lua_setfield(L, -2, "set_level");
+
+  lua_pushcfunction(L, logging_get_level);
+  lua_setfield(L, -2, "get_level");
+
 
   VIRGO_DEFINE_CONSTANT(L, VIRGO_LOG_NOTHING);
   VIRGO_DEFINE_CONSTANT_ALIAS(L, VIRGO_LOG_NOTHING, "NOTHING");

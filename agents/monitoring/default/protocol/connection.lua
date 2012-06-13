@@ -254,7 +254,7 @@ function AgentProtocolConnection:startHandshake(callback)
     end
 
     self:setState(STATES.RUNNING)
-    self._log(logging.INFO, fmt('handshake successful (heartbeat_interval=%dms)', msg.result.heartbeat_interval))
+    self._log(logging.DEBUG, fmt('handshake successful (heartbeat_interval=%dms)', msg.result.heartbeat_interval))
     callback(nil, msg)
   end)
 end
