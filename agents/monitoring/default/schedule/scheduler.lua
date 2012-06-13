@@ -69,7 +69,7 @@ function StateScanner:scanStates()
     local status, obj = pcall(JSON.parse, data)
     if status then
       if obj.version ~= STATE_FILE_VERSION then
-        logging.log(logging.INFO, fmt('Statefile version mismatch %s != %s', obj.version, STATE_FILE_VERSION))
+        logging.log(logging.ERR, fmt('Statefile version mismatch %s != %s', obj.version, STATE_FILE_VERSION))
       else
         for _, check in pairs(obj.checks) do
           if check.nextrun <= scanAt then
@@ -163,7 +163,7 @@ function Scheduler:initialize(stateFile, checks, callback)
       check:run(function(checkResult)
         self._runCount = self._runCount + 1
         self._scanner:dumpChecks(self._checks, function()
-          self._log(logging.INFO, 'checks dumped at '..os.time())
+          self._log(logging.DEBUG, 'checks dumped at '..os.time())
         end)
         -- emit check
         self:emit('check', check, checkResult)

@@ -24,13 +24,19 @@ local argv = require("options")
   :describe("s", "state directory path")
   :describe("c", "config file path")
   :describe("p", "pid file path")
-  :argv("he:p:c:s:")
+  :describe("d", "enable debug logging")
+  :argv("dhe:p:c:s:")
 
 function Entry.run()
   local mod = argv.args.e and argv.args.e or 'default'
   mod = './modules/monitoring/' .. mod
 
-  logging.log(logging.INFO, 'Running Module ' .. mod)
+  if argv.args.d then
+    logging.set_level(logging.EVERYTHING)
+  else
+    logging.set_level(logging.INFO)
+  end
+  logging.log(logging.DEBUG, 'Running Module ' .. mod)
 
   local err, msg = pcall(function()
     require(mod).run(argv.args)
