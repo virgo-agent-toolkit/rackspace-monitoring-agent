@@ -2,7 +2,7 @@ local Emitter = require('core').Emitter
 local Error = require('core').Error
 local table = require('table')
 local childprocess = require('childprocess')
-local dns = require('dns')
+local net = require('net')
 
 local LineEmitter = require('line-emitter').LineEmitter
 
@@ -19,9 +19,9 @@ function Traceroute:initialize(target, options)
   self._packetLen = options['packetLen'] and options['packetLen'] or 60
   self._maxTtl = options['maxTtl'] and options['maxTtl'] or 30
 
-  if dns.isIpV4(target) == 4 then
+  if net.isIPv4(target) == 4 then
     self._addressType = 'ipv4'
-  elseif dns.isIpV6(target) == 6 then
+  elseif net.isIPv6(target) == 6 then
     self._addressType = 'ipv6'
   end
 end
