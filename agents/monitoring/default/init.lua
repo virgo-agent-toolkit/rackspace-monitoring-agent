@@ -147,7 +147,7 @@ function MonitoringAgent:_verifyState(callback)
     end,
     -- log
     function(callback)
-      logging.log(logging.DBG, 'Using monitoring_id ' .. self._config['monitoring_id'])
+      logging.log(logging.DEBUG, 'Using monitoring_id ' .. self._config['monitoring_id'])
       callback()
     end
   }, callback)
@@ -165,7 +165,7 @@ function MonitoringAgent:_loadEndpoints(callback)
      self._config['monitoring_endpoints'] == nil then
     -- Verify that the endpoint addresses are specified in the correct format
     query_endpoints = misc.split(self._config['monitoring_query_endpoints'], '[^,]+')
-    logging.log(logging.DBG, "querying for endpoints: ".. self._config['monitoring_query_endpoints'])
+    logging.log(logging.DEBUG, "querying for endpoints: ".. self._config['monitoring_query_endpoints'])
     self:_queryForEndpoints(query_endpoints, function(err, endpoints)
       if err then
         callback(err)
