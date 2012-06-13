@@ -28,8 +28,6 @@ local logging = require('logging')
 local consts = require('../util/constants')
 local misc = require('../util/misc')
 
-local fmt = require('string').format
-
 local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token)
   self._id = id
@@ -111,7 +109,7 @@ function ConnectionStream:reconnect(options, callback)
   local datacenter = options.datacenter
   local delay = self:_setDelay(datacenter)
 
-  logging.info(fmt('%s:%d -> Retrying connection in %dms', options.host, options.port, delay))
+  logging.infof('%s:%d -> Retrying connection in %dms', options.host, options.port, delay)
   timer.setTimeout(delay, function()
     self:createConnection(options, callback)
   end)
@@ -173,14 +171,14 @@ function ConnectionStream:createConnection(options, callback)
   end)
 
   client:on('timeout', function()
-    logging.debug(fmt('%s:%d -> Client Timeout', opts.host, opts.port))
+    logging.debugf('%s:%d -> Client Timeout', opts.host, opts.port)
     client:destroy()
     self:reconnect(opts, callback)
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
-    logging.debug(fmt('%s:%d -> Remote endpoint closed the connection', opts.host, opts.port))
+    logging.debugf('%s:%d -> Remote endpoint closed the connection', opts.host, opts.port)
     client:destroy()
     self:reconnect(opts, callback)
   end)
