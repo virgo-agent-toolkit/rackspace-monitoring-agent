@@ -24,13 +24,6 @@ local run = require('monitoring/collector').run
 local request = require('monitoring/collector/http/utils').request
 local setTimeout = require('timer').setTimeout
 
-local os = require('os')
-
-if os.type() == 'win32' then
-  print('Collector test disabled on windows')
-  return
-end
-
 local exports = {}
 
 exports['test_traceroute'] = function(test, asserts)
