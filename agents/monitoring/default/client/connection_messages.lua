@@ -66,7 +66,7 @@ function ConnectionMessages:onMessage(client, msg)
       self:fetchManifest(client)
     end)
   elseif msg.method == 'host_info.get' then
-    client:log(logging.DEBUG, 'received host info request')
+    client:log(logging.DEBUG, 'received host info request ' .. msg.params.type or 'UNDEFINED')
     client.protocol:respond(msg.method, msg, function()
     end)
   end
