@@ -45,8 +45,7 @@ function Collector:_startApiServer(callback)
       return
     end
 
-    logging.info(fmt('HTTP server listening on %s:%s',
-                                  self._host, self._port))
+    logging.infof('HTTP server listening on %s:%s', self._host, self._port)
     callback()
   end)
 end
