@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local os = require('os')
+local native = require('uv_native')
 local consts = require('../util/constants')
 local tls = require('tls')
 local timer = require('timer')
@@ -141,26 +141,26 @@ function AgentClient:startHeartbeatInterval()
     this._log(logging.DEBUG, fmt('Starting heartbeat interval, interval=%dms', this._heartbeat_interval))
 
     this._heartbeatTimeout = timer.setTimeout(timeout, function()
-      local timestamp = os.time()
+      local send_timestamp = native.now()
 
       this._log(logging.DEBUG, fmt('Sending heartbeat (timestamp=%d,sent_heartbeat_count=%d,got_pong_count=%d)',
-                                    timestamp, this._sent_heartbeat_count, this._got_pong_count))
+                                    send_timestamp, this._sent_heartbeat_count, this._got_pong_count))
       this._sent_heartbeat_count = this._sent_heartbeat_count + 1
-      this.protocol:request('heartbeat.post', timestamp, function(err, msg)
+      this.protocol:request('heartbeat.post', send_timestamp, function(err, msg)
         if err then
           this._log(logging.DEBUG, 'Got an error while sending heartbeat: ' .. tostring(err))
           return
         end
 
+        this._latency = native.now() - send_timestamp
+
         if msg.result.timestamp then
           this._got_pong_count = this._got_pong_count + 1
-          this._log(logging.DEBUG, fmt('Got pong (sent_heartbeat_count=%d,got_pong_count=%d)',
-                                       this._sent_heartbeat_count, this._got_pong_count))
+          this._log(logging.DEBUG, fmt('Got pong (latency=%f,sent_heartbeat_count=%d,got_pong_count=%d)',
+                                       this._latency, this._sent_heartbeat_count, this._got_pong_count))
         else
           this._log(logging.DEBUG, 'Got invalid pong response')
         end
-
-        this._latency = os.time() - timestamp
 
         startInterval(this)
       end)
