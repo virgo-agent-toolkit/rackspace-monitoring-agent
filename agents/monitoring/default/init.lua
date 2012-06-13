@@ -44,7 +44,7 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
   function iter(domain, callback)
     dns.resolve(domain, 'SRV', function(err, results)
       if err then
-        logging.log(logging.ERR, 'Could not lookup SRV record from ' .. domain)
+        logging.error('Could not lookup SRV record from ' .. domain)
         callback()
         return
       end
@@ -56,7 +56,7 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
     for i, v in pairs(results) do
       serverPort = results[i][1].name .. ':' .. results[i][1].port
       endpoints = endpoints .. serverPort
-      logging.log(logging.INFO, 'found endpoint: ' .. serverPort)
+      logging.info('found endpoint: ' .. serverPort)
       if i ~= #results then
         endpoints = endpoints .. ','
       end
@@ -105,12 +105,12 @@ end
 function MonitoringAgent:_verifyState(callback)
 
   if self._config == nil then
-    logging.log(logging.ERR, "config missing or invalid")
+    logging.error("config missing or invalid")
     process.exit(1)
   end
 
   if self._config['monitoring_token'] == nil then
-    logging.log(logging.ERR, "'monitoring_token' is missing from 'config'")
+    logging.error("'monitoring_token' is missing from 'config'")
     process.exit(1)
   end
 
@@ -127,7 +127,7 @@ function MonitoringAgent:_verifyState(callback)
         getSystemId = function()
           monitoring_id = self:_getSystemId()
           if not monitoring_id then
-            logging.log(logging.ERR, "could not retrieve system id... retrying")
+            logging.error("could not retrieve system id... retrying")
             timer.setTimeout(5000, getSystemId)
             return
           end
@@ -147,7 +147,7 @@ function MonitoringAgent:_verifyState(callback)
     end,
     -- log
     function(callback)
-      logging.log(logging.DEBUG, 'Using monitoring_id ' .. self._config['monitoring_id'])
+      logging.debug('Using monitoring_id ' .. self._config['monitoring_id'])
       callback()
     end
   }, callback)
@@ -165,7 +165,7 @@ function MonitoringAgent:_loadEndpoints(callback)
      self._config['monitoring_endpoints'] == nil then
     -- Verify that the endpoint addresses are specified in the correct format
     query_endpoints = misc.split(self._config['monitoring_query_endpoints'], '[^,]+')
-    logging.log(logging.DEBUG, "querying for endpoints: ".. self._config['monitoring_query_endpoints'])
+    logging.debug("querying for endpoints: ".. self._config['monitoring_query_endpoints'])
     self:_queryForEndpoints(query_endpoints, function(err, endpoints)
       if err then
         callback(err)
@@ -178,12 +178,12 @@ function MonitoringAgent:_loadEndpoints(callback)
     -- Verify that the endpoint addresses are specified in the correct format
     endpoints = misc.split(self._config['monitoring_endpoints'], '[^,]+')
     if #endpoints == 0 then
-      logging.log(logging.ERR, "at least one endpoint needs to be specified")
+      logging.error("at least one endpoint needs to be specified")
       process.exit(1)
     end
     for i, address in ipairs(endpoints) do
       if misc.splitAddress(address) == nil then
-        logging.log(logging.ERR, "endpoint needs to be specified in the following format ip:port")
+        logging.error("endpoint needs to be specified in the following format ip:port")
         process.exit(1)
       end
     end
@@ -210,7 +210,7 @@ end
 function MonitoringAgent:connect(callback)
   local endpoints = misc.split(self._config['monitoring_endpoints'], '[^,]+')
   if #endpoints <= 0 then
-    logging.log(logging.ERR, 'no endpoints')
+    logging.error('no endpoints')
     timer.setTimeout(misc.calcJitter(constants.SRV_RECORD_FAILURE_DELAY, constants.SRV_RECORD_FAILURE_DELAY_JITTER), function()
       process.exit(1)
     end)
@@ -218,14 +218,14 @@ function MonitoringAgent:connect(callback)
   end
   self._streams = ConnectionStream:new(self._config['monitoring_id'], self._config['monitoring_token'])
   self._streams:on('error', function(err)
-    logging.log(logging.ERR, JSON.stringify(err))
+    logging.error(JSON.stringify(err))
   end)
   self._streams:createConnections(endpoints, callback)
 end
 
 function MonitoringAgent:initialize(stateDirectory)
   if not stateDirectory then stateDirectory = virgo.default_state_unix_directory end
-  logging.log(logging.DEBUG, 'Using state directory ' .. stateDirectory)
+  logging.debug('Using state directory ' .. stateDirectory)
   self._states = States:new(stateDirectory)
   self._config = virgo.config
 end
@@ -265,7 +265,7 @@ function MonitoringAgent.run(argv)
   },
   function(err)
     if err then
-      logging.log(logging.ERR, err.message)
+      logging.error(err.message)
     end
   end)
 end
