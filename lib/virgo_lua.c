@@ -60,10 +60,6 @@ virgo__lua_luvit_init(virgo_t *v)
   lua_pushcfunction(L, virgo__lua_logging_open);
   lua_setfield(L, -2, "logging");
 
-  /* Register yajl */
-  lua_pushcfunction(L, luaopen_crypto);
-  lua_setfield(L, -2, "crypto");
-
   lua_pop(L, 1);
 }
 
