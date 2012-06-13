@@ -197,14 +197,13 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
     self._completions[key] = function(err, msg)
       local result = nil
 
-      if msg and msg.result then result = msg.result end
-
       if self._timeoutIds[key] ~= nil then
         timer.clearTimer(self._timeoutIds[key])
       end
 
-      if not err and msg and result and result.code and result.code ~= expectedCode then
-        err = Error:new(fmt('Unexpected status code returned: code=%s, message=%s', result.code, result.message))
+      if not err and msg and msg['error'] then
+        local msgerr = msg['error']
+        err = Error:new(fmt('Error returned: code=%s, message=%s', msgerr.code, msgerr.message))
       end
 
       callback(err, msg)
@@ -242,13 +241,6 @@ function AgentProtocolConnection:startHandshake(callback)
   self:request('handshake.hello', self._myid, self._token, function(err, msg)
     if err then
       self._log(logging.ERR, fmt('handshake failed (message=%s)', err.message))
-      callback(err, msg)
-      return
-    end
-
-    if msg.result.code and msg.result.code ~= 200 then
-      err = Error:new(fmt('handshake failed [message=%s,code=%s]', msg.result.message, msg.result.code))
-      self._log(logging.ERR, err.message)
       callback(err, msg)
       return
     end
