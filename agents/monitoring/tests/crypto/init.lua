@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local crypto = require('crypto')
+local crypto = require('_crypto')
 
 exports = {}
 no = {}
