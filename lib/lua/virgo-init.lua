@@ -31,8 +31,37 @@ local constants = require('constants')
 local uv = require('uv')
 local utils = require('utils')
 local logging = require('logging')
+local fmt = require('string').format
 
 setmetatable(process, Emitter.meta)
+
+function logf(level, ...)
+  if logging.get_level() < level then
+    return
+  end
+  logging.log(level, fmt(...))
+end
+
+
+logging.critf = function(...)
+  logf(logging.CRITICAL, ...)
+end
+
+logging.errorf = function(...)
+  logf(logging.ERROR, ...)
+end
+
+logging.warnf = function(...)
+  logf(logging.WARN, ...)
+end
+
+logging.infof = function(...)
+  logf(logging.INFO, ...)
+end
+
+logging.debugf = function(...)
+  logf(logging.DEBUG, ...)
+end
 
 -- Load the tty as a pair of pipes
 -- But don't hold the event loop open for them
