@@ -22,22 +22,52 @@
 
 #define LOGGINGHANDLE "virgo.logging"
 
+
 static int
-logging_log(lua_State *L) {
+logging_log_internal(lua_State *L, int loglevel, int stroff) {
   const char *msg;
-  int loglevel = 0;
   virgo_t *v = virgo__lua_context(L);
-  loglevel = luaL_checknumber(L, 1);
 
   if (virgo_log_level_get(v) < loglevel) {
     return 0;
   }
 
-  msg = luaL_checkstring(L, 2);
+  msg = luaL_checkstring(L, stroff);
 
   virgo_log(v, loglevel, msg);
 
   return 0;
+}
+
+static int
+logging_log(lua_State *L) {
+  int loglevel = luaL_checknumber(L, 1);
+  return logging_log_internal(L, loglevel, 2);
+}
+
+static int
+logging_log_debug(lua_State *L) {
+  return logging_log_internal(L, VIRGO_LOG_DEBUG, 1);
+}
+
+static int
+logging_log_info(lua_State *L) {
+  return logging_log_internal(L, VIRGO_LOG_INFO, 1);
+}
+
+static int
+logging_log_warn(lua_State *L) {
+  return logging_log_internal(L, VIRGO_LOG_WARNINGS, 1);
+}
+
+static int
+logging_log_error(lua_State *L) {
+  return logging_log_internal(L, VIRGO_LOG_ERRORS, 1);
+}
+
+static int
+logging_log_crit(lua_State *L) {
+  return logging_log_internal(L, VIRGO_LOG_CRITICAL, 1);
 }
 
 static int
@@ -88,6 +118,17 @@ virgo__lua_logging_open(lua_State *L)
   lua_pushcfunction(L, logging_get_level);
   lua_setfield(L, -2, "get_level");
 
+
+  lua_pushcfunction(L, logging_log_debug);
+  lua_setfield(L, -2, "debug");
+  lua_pushcfunction(L, logging_log_info);
+  lua_setfield(L, -2, "info");
+  lua_pushcfunction(L, logging_log_warn);
+  lua_setfield(L, -2, "warn");
+  lua_pushcfunction(L, logging_log_error);
+  lua_setfield(L, -2, "error");
+  lua_pushcfunction(L, logging_log_crit);
+  lua_setfield(L, -2, "crit");
 
   VIRGO_DEFINE_CONSTANT(L, VIRGO_LOG_NOTHING);
   VIRGO_DEFINE_CONSTANT_ALIAS(L, VIRGO_LOG_NOTHING, "NOTHING");

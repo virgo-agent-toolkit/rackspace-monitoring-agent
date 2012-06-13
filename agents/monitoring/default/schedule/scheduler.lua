@@ -63,13 +63,13 @@ function StateScanner:scanStates()
   local data = ''
   local stream = fs.createReadStream(self._stateFile)
   stream:on('error', function(err)
-    logging.log(logging.ERR, fmt('Error reading statefile %s', err))
+    logging.error(fmt('Error reading statefile %s', err))
   end)
   stream:on('end', function()
     local status, obj = pcall(JSON.parse, data)
     if status then
       if obj.version ~= STATE_FILE_VERSION then
-        logging.log(logging.ERR, fmt('Statefile version mismatch %s != %s', obj.version, STATE_FILE_VERSION))
+        logging.error(fmt('Statefile version mismatch %s != %s', obj.version, STATE_FILE_VERSION))
       else
         for _, check in pairs(obj.checks) do
           if check.nextrun <= scanAt then
@@ -78,7 +78,7 @@ function StateScanner:scanStates()
         end
       end
     else
-      logging.log(logging.ERR, fmt('Could not parse state file'))
+      logging.error(fmt('Could not parse state file'))
     end
   end)
   stream:on('data', function(chunk)

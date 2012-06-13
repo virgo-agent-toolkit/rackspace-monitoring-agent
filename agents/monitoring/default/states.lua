@@ -68,10 +68,10 @@ function States:load(callback)
         end
 
         if not exists then
-          logging.log(logging.DEBUG, fmt('State directory (%s) doesn\'t exist, creating it...', self._parentDir))
+          logging.debug(fmt('State directory (%s) doesn\'t exist, creating it...', self._parentDir))
           fsUtil.mkdirp(self._parentDir, 0600, function(err)
             if err then
-              logging.log(logging.ERROR, 'Failed to create state directory: ' .. err.message)
+              logging.error('Failed to create state directory: ' .. err.message)
             end
             callback(err)
           end)
