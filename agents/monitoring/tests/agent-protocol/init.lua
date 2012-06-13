@@ -22,7 +22,7 @@ local AgentProtocol = require('monitoring/default/protocol/protocol').AgentProto
 local AgentProtocolConnection = require('monitoring/default/protocol/connection')
 local loggingUtil = require ('monitoring/default/util/logging')
 
-local fixtures = require('./fixtures')
+local fixtures = require('../fixtures/protocol')
 
 local exports = {}
 
