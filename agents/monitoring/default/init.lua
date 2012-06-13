@@ -147,7 +147,7 @@ function MonitoringAgent:_verifyState(callback)
     end,
     -- log
     function(callback)
-      logging.log(logging.INFO, 'Using id ' .. self._config['monitoring_id'])
+      logging.log(logging.DBG, 'Using monitoring_id ' .. self._config['monitoring_id'])
       callback()
     end
   }, callback)
@@ -165,7 +165,7 @@ function MonitoringAgent:_loadEndpoints(callback)
      self._config['monitoring_endpoints'] == nil then
     -- Verify that the endpoint addresses are specified in the correct format
     query_endpoints = misc.split(self._config['monitoring_query_endpoints'], '[^,]+')
-    logging.log(logging.INFO, "querying for endpoints")
+    logging.log(logging.DBG, "querying for endpoints: ".. self._config['monitoring_query_endpoints'])
     self:_queryForEndpoints(query_endpoints, function(err, endpoints)
       if err then
         callback(err)
@@ -225,7 +225,7 @@ end
 
 function MonitoringAgent:initialize(stateDirectory)
   if not stateDirectory then stateDirectory = virgo.default_state_unix_directory end
-  logging.log(logging.INFO, 'Using state directory ' .. stateDirectory)
+  logging.log(logging.DEBUG, 'Using state directory ' .. stateDirectory)
   self._states = States:new(stateDirectory)
   self._config = virgo.config
 end
