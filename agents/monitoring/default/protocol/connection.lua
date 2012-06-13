@@ -245,13 +245,6 @@ function AgentProtocolConnection:startHandshake(callback)
       return
     end
 
-    if msg.result.code and msg.result.code ~= 200 then
-      err = Error:new(fmt('handshake failed [message=%s,code=%s]', msg.result.message, msg.result.code))
-      self._log(logging.ERR, err.message)
-      callback(err, msg)
-      return
-    end
-
     self:setState(STATES.RUNNING)
     self._log(logging.DEBUG, fmt('handshake successful (heartbeat_interval=%dms)', msg.result.heartbeat_interval))
     callback(nil, msg)
