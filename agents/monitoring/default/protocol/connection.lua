@@ -197,14 +197,13 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
     self._completions[key] = function(err, msg)
       local result = nil
 
-      if msg and msg.result then result = msg.result end
-
       if self._timeoutIds[key] ~= nil then
         timer.clearTimer(self._timeoutIds[key])
       end
 
-      if not err and msg and result and result.code and result.code ~= expectedCode then
-        err = Error:new(fmt('Unexpected status code returned: code=%s, message=%s', result.code, result.message))
+      if not err and msg and msg['error'] then
+        local msgerr = msg['error']
+        err = Error:new(fmt('Error returned: code=%s, message=%s', msgerr.code, msgerr.message))
       end
 
       callback(err, msg)
