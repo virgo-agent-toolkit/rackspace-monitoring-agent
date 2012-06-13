@@ -174,11 +174,15 @@ function NetworkInfo:initialize()
       'speed'
     }
 
-    for _, v in pairs(info_fields) do
-      obj[v] = info[v]
+    if info then
+      for _, v in pairs(info_fields) do
+        obj[v] = info[v]
+      end
     end
-    for _, v in pairs(usage_fields) do
-      obj[v] = usage[v]
+    if usage then
+      for _, v in pairs(usage_fields) do
+        obj[v] = usage[v]
+      end
     end
     obj['name'] = name
     table.insert(self._params, obj)
