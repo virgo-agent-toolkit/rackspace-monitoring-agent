@@ -16,7 +16,6 @@ limitations under the License.
 
 local os = require('os')
 local timer = require('timer')
-local AgentProtocol = require('./protocol')
 local Emitter = require('core').Emitter
 local Error = require('core').Error
 local JSON = require('json')

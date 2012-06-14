@@ -18,7 +18,6 @@ local fs = require('fs')
 local JSON = require('json')
 local Emitter = require('core').Emitter
 
-local AgentProtocol = require('monitoring/default/protocol/protocol').AgentProtocol
 local AgentProtocolConnection = require('monitoring/default/protocol/connection')
 local loggingUtil = require ('monitoring/default/util/logging')
 
@@ -27,31 +26,10 @@ local fixtures = require('../fixtures/protocol')
 local exports = {}
 
 exports['test_completion_key'] = function(test, asserts)
-  local data = fixtures['handshake.hello.request']
   local sock = Emitter:new()
   local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
   asserts.equals('MYID:1', conn:_completionKey('1'))
   asserts.equals('hello:1', conn:_completionKey('hello', '1'))
-  test.done()
-end
-
-exports['test_handshake_hello'] = function(test, asserts)
-  local hello = { }
-  local data = fixtures['handshake.hello.request']
-  hello.data = JSON.parse(data)
-  hello.write = function(_, res)
-    hello.res = res
-  end
-  local agent = AgentProtocol:new(hello.data, hello)
-  agent:request(hello.data)
-  response = JSON.parse(hello.res)
-
-  -- TODO: asserts.object_equals in bourbon
-  asserts.equals(response.v, 1)
-  asserts.equals(response.id, 1)
-  asserts.equals(response.source, "endpoint")
-  asserts.equals(response.target, "agentA")
-  asserts.equals(response.result, nil)
   test.done()
 end
 
