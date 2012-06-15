@@ -33,6 +33,24 @@ exports['test_completion_key'] = function(test, asserts)
   test.done()
 end
 
+exports['test_bad_version_hello_gives_err'] = function(test, asserts)
+  local sock = Emitter:new(), conn
+  local data = fixtures['invalid-version']['handshake.hello.response']
+
+  sock.write = function()
+    sock:emit('data', data .. "\n")
+  end
+
+  conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+
+  -- Ensure error is set
+  conn:startHandshake(function(err, msg)
+    asserts.ok(err)
+    asserts.equals(msg.v, "2147483647")
+    test.done()
+  end)
+end
+
 exports['test_fragmented_message'] = function(test, asserts)
   local sock = Emitter:new(), conn
   local data = fixtures['handshake.hello.request']
