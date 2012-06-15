@@ -200,13 +200,18 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
         timer.clearTimer(self._timeoutIds[key])
       end
 
-      -- Enforce response messages to match version of request
-      if resp.v ~= msg.v then
-        err = Error:new(fmt('Version mismatch in response: version=%s', resp.v))
-      -- Emit error if error field is set
-      elseif not err and resp and resp['error'] then
+      if not err and resp then
         local resp_err = resp['error']
-        err = Error:new(fmt('Error returned: code=%s, message=%s', resp_err.code, resp_err.message))
+
+        -- response version must match request version
+        if resp.v ~= msg.v then
+          err = Error:new(fmt('Version mismatch in response: version=%s',
+            resp.v or 'unknown'))
+        -- emit error if error field is set
+        elseif resp_err then
+          err = Error:new(fmt('Error returned: code=%s, message=%s',
+            resp_err.code or "unknown", resp_err.message or "no message"))
+        end
       end
 
       callback(err, resp)
