@@ -16,7 +16,6 @@ limitations under the License.
 
 local os = require('os')
 local timer = require('timer')
-local AgentProtocol = require('./protocol')
 local Emitter = require('core').Emitter
 local Error = require('core').Error
 local JSON = require('json')
@@ -194,19 +193,28 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
   end
 
   if callback then
-    self._completions[key] = function(err, msg)
+    self._completions[key] = function(err, resp)
       local result = nil
 
       if self._timeoutIds[key] ~= nil then
         timer.clearTimer(self._timeoutIds[key])
       end
 
-      if not err and msg and msg['error'] then
-        local msgerr = msg['error']
-        err = Error:new(fmt('Error returned: code=%s, message=%s', msgerr.code, msgerr.message))
+      if not err and resp then
+        local resp_err = resp['error']
+
+        -- response version must match request version
+        if resp.v ~= msg.v then
+          err = Error:new(fmt('Version mismatch in response: version=%s',
+            resp.v or 'unknown'))
+        -- emit error if error field is set
+        elseif resp_err then
+          err = Error:new(fmt('Error returned: code=%s, message=%s',
+            resp_err.code or "unknown", resp_err.message or "no message"))
+        end
       end
 
-      callback(err, msg)
+      callback(err, resp)
     end
   end
 
