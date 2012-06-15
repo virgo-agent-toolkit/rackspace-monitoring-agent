@@ -261,6 +261,48 @@ function ProcessInfo:initialize()
     table.insert(self._params, obj)
   end
 end
+--
+--[[ Filesystem Info ]]--
+local FilesystemInfo = HostInfo:extend()
+function FilesystemInfo:initialize()
+  HostInfo.initialize(self)
+  local fses = sigarCtx:filesystems()
+  for i=1, #fses do
+    local obj = {}
+    local fs = fses[i]
+    local info = fs:info()
+    local usage = fs:usage()
+    if info then
+      local info_fields = {
+        'dir_name',
+        'dev_name',
+        'type_name',
+        'sys_type_name',
+        'options',
+      }
+      for _, v in pairs(info_fields) do
+        obj[v] = info[v]
+      end
+    end
+
+    if usage then
+      local usage_fields = {
+        'total',
+        'free',
+        'used',
+        'avail',
+        'files',
+        'free_files',
+      }
+      for _, v in pairs(usage_fields) do
+        obj[v] = usage[v]
+      end
+    end
+
+    table.insert(self._params, obj)
+  end
+end
+
 
 --[[ Factory ]]--
 function create(infoType)
@@ -274,6 +316,8 @@ function create(infoType)
     return DiskInfo:new()
   elseif infoType == 'PROCS' then
     return ProcessInfo:new()
+  elseif infoType == 'FILESYSTEM' then
+    return FilesystemInfo:new()
   end
   return NilInfo:new()
 end
@@ -281,7 +325,7 @@ end
 -- Dump all the info objects to a file
 function debugInfo(fileName, callback)
   local data = ''
-  for k, v in pairs({'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS'}) do
+  for k, v in pairs({'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS', 'FILESYSTEM'}) do
     local info = create(v)
     local obj = info:serialize().metrics
     data = data .. '-- ' .. v .. '.' .. os.type() .. ' --\n\n'
