@@ -16,6 +16,7 @@ limitations under the License.
 
 local http = require('http')
 local JSON = require('json')
+local os = require('os')
 
 local async = require('async')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -28,6 +29,12 @@ local exports = {}
 
 exports['test_traceroute'] = function(test, asserts)
   local collector
+
+  if os.type() ~= "Linux" then
+    -- TODO: add test.skip() to bourbon
+    test.done()
+    return
+  end
 
   async.series({
     function(callback)
