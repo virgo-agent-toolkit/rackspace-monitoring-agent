@@ -4,6 +4,8 @@
   "source": "agentA",
   "target": "endpoint",
   "method": "check_metrics.post",
+  "state": "available",
+  "status": "",
   "params": {
     "check_id": "memory",
     "metrics": {
