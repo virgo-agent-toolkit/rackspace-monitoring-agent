@@ -241,7 +241,7 @@ Save a Config File containing the options passed in 'config'
 function MonitoringAgent:_saveConfig(configFile, config, callback)
   local data = ''
   for k, v in pairs(config) do
-    data = k .. ' ' .. v .. '\n'
+    data = data .. k .. ' ' .. v .. '\n'
   end
   fs.writeFile(configFile, data, callback)
 end
