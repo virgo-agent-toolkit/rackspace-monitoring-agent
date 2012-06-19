@@ -158,10 +158,12 @@ function ConnectionStream:createConnection(options, callback)
   }, options)
 
   local client = AgentClient:new(opts, self._scheduler)
-  client:on('error', function(err)
+  client:on('error', function(errorMessage)
+    local err = {}
     err.host = opts.host
     err.port = opts.port
     err.datacenter = opts.datacenter
+    err.message = errorMessage
 
     client:destroy()
     self:reconnect(opts, callback)

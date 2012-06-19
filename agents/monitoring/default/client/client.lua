@@ -17,6 +17,7 @@ limitations under the License.
 local Timer = require('uv').Timer
 local consts = require('../util/constants')
 local tls = require('tls')
+local JSON = require('json')
 local timer = require('timer')
 local Error = require('core').Error
 local Object = require('core').Object
@@ -27,6 +28,7 @@ local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
 local AgentProtocolConnection = require('../protocol/connection')
 local table = require('table')
+local caCerts = require('../certs').caCerts
 
 local fmt = require('string').format
 
@@ -90,9 +92,14 @@ function AgentClient:_socketTimeout()
 end
 
 function AgentClient:connect()
+  local options = {
+    ca = caCerts,
+    rejectUnauthorized = true
+  }
+
   -- Create connection timeout
   self._log(logging.DEBUG, 'Connecting...')
-  self._sock = tls.connect(self._port, self._host, {}, function(err, cleartext)
+  self._sock = tls.connect(self._port, self._host, options, function(err, cleartext)
     -- Log
     self._log(logging.INFO, 'Connected')
 
@@ -122,7 +129,7 @@ function AgentClient:connect()
     self:emit('timeout')
   end)
   self._sock:on('error', function(err)
-    self._log(logging.ERROR, fmt('Failed to connect: %s', err.message))
+    self._log(logging.ERROR, fmt('Failed to connect: %s', JSON.stringify(err)))
     self:emit('error', err)
   end)
   self._sock:on('end', function()
