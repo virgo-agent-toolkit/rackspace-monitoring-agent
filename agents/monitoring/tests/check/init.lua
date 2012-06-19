@@ -29,7 +29,7 @@ local NetworkCheck = Check.NetworkCheck
 exports = {}
 
 exports['test_base_check'] = function(test, asserts)
-  local check = BaseCheck:new({id='foo', state='OK', period=30})
+  local check = BaseCheck:new({id='foo', period=30})
   asserts.ok(check._lastResults == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)
@@ -40,7 +40,7 @@ exports['test_base_check'] = function(test, asserts)
 end
 
 exports['test_memory_check'] = function(test, asserts)
-  local check = MemoryCheck:new({id='foo', state='OK', period=30})
+  local check = MemoryCheck:new({id='foo', period=30})
   asserts.ok(check._lastResults == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)
@@ -52,7 +52,7 @@ exports['test_memory_check'] = function(test, asserts)
 end
 
 exports['test_cpu_check'] = function(test, asserts)
-  local check = CpuCheck:new({id='foo', state='OK', period=30})
+  local check = CpuCheck:new({id='foo', period=30})
   asserts.ok(check._lastResults == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)
@@ -64,7 +64,7 @@ exports['test_cpu_check'] = function(test, asserts)
 end
 
 exports['test_network_check'] = function(test, asserts)
-  local check = NetworkCheck:new({id='foo', state='OK', period=30})
+  local check = NetworkCheck:new({id='foo', period=30})
   asserts.ok(check._lastResults == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)
@@ -76,7 +76,7 @@ exports['test_network_check'] = function(test, asserts)
 end
 
 exports['test_disks_check'] = function(test, asserts)
-  local check = DiskCheck:new({id='foo', state='ok', period=30})
+  local check = DiskCheck:new({id='foo', period=30})
   asserts.ok(check._lastResults == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)
@@ -121,7 +121,7 @@ end
 exports['test_checkresult_serialization'] = function(test, asserts)
   local cr, serialized
 
-  cr = CheckResult:new({id='foo', state='ok', period=30})
+  cr = CheckResult:new({id='foo', period=30})
   cr:addMetric('m1', nil, nil, 1.23456)
   cr:addMetric('m2', 'eth0', nil, 'test')
 
