@@ -56,7 +56,7 @@ virgo__log_rotate(virgo_t *v)
   }
 
   if (v->log_path) {
-    virgo_log_infof(v, "Log file started (path=%s)", v->log_path ? v->log_path : "stdout/stderr");
+    virgo_log_infof(v, "Log file started (path=%s)", v->log_path);
   }
   else {
     virgo_log_infof(v, "Log file started");
