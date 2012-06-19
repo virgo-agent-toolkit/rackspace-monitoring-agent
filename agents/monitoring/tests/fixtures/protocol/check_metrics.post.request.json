@@ -1,20 +1,52 @@
 {
-  "v": "1",
-  "id": 4,
-  "source": "agentA",
-  "target": "endpoint",
-  "method": "check_metrics.post",
-  "state": "available",
-  "status": "",
-  "params": {
-    "check_id": "memory",
-    "metrics": {
-      total: "67108864",
-      free: "16777216",
-      buffer: "16777216",
-      cached: "16777216",
-      swap_total: "16777216",
-      swap_free: "16777216"
+    "v": "1",
+    "id": 4,
+    "source": "agentA",
+    "target": "endpoint",
+    "method": "check_metrics.post",
+    "params": {
+        "check_id": "chAAAAA",
+        "check_type": "agent.memory",
+        "state": "available",
+        "status": "",
+        "metrics": [
+            [
+                null,
+                {
+                    "used_percent": {
+                        "t": "double",
+                        "v": "50.09241047559"
+                    },
+                    "actual_used": {
+                        "t": "int64",
+                        "v": "8369401856"
+                    },
+                    "total": {
+                        "t": "int64",
+                        "v": "16707923968"
+                    },
+                    "free": {
+                        "t": "int64",
+                        "v": "955637760"
+                    },
+                    "ram": {
+                        "t": "int64",
+                        "v": "15936"
+                    },
+                    "free_percent": {
+                        "t": "double",
+                        "v": "49.90758952441"
+                    },
+                    "actual_free": {
+                        "t": "int64",
+                        "v": "8338522112"
+                    },
+                    "used": {
+                        "t": "int64",
+                        "v": "15752286208"
+                    }
+                }
+            ]
+        ]
     }
-  }
 }
