@@ -26,6 +26,7 @@ local dns = require('dns')
 local fs = require('fs')
 local path = require('path')
 local sigarCtx = require('./sigar').ctx
+local errors = require('./errors')
 
 local ConnectionStream = require('./client/connection_stream').ConnectionStream
 local constants = require('./util/constants')
@@ -234,6 +235,48 @@ function MonitoringAgent:getConfig()
   return self._config
 end
 
+--[[
+Save a Config File containing the options passed in 'config'
+]]--
+function MonitoringAgent:_saveConfig(configFile, config, callback)
+  local data = ''
+  for k, v in pairs(config) do
+    data = data .. k .. ' ' .. v .. '\n'
+  end
+  fs.writeFile(configFile, data, callback)
+end
+
+function MonitoringAgent:setup(configFile, token, additionalOptions)
+  local config = {
+    monitoring_token = token
+  }
+
+  async.series({
+    -- Save token
+    function(callback)
+      if not token or type(token) ~= 'string' then
+        callback(errors.SetupError:new('Token is invalid or missing'))
+        return
+      end
+      self:_saveConfig(configFile, config, callback)
+    end,
+    -- Save monitoring_id
+    function(callback)
+      if additionalOptions and #additionalOptions == 1 then
+        self:_savePersistentVariable('monitoring_id', additionalOptions[1], callback)
+      else
+        callback()
+      end
+    end
+  }, function(err)
+    if err then
+      logging.error('Error in setup: ' .. JSON.stringify(err))
+      return
+    end
+    logging.info('Successful setup')
+  end)
+end
+
 function MonitoringAgent.run(argv)
   argv = argv and argv or {}
   local options = {}
@@ -251,6 +294,11 @@ function MonitoringAgent.run(argv)
   end
 
   local agent = MonitoringAgent:new(options.stateDirectory)
+
+  if argv.setup then
+    agent:setup(options.configFile, argv.setup, argv._)
+    return
+  end
 
   async.series({
     function(callback)
