@@ -148,6 +148,8 @@ function MetricsRequest:initialize(check, checkResults)
 end
 
 function MetricsRequest:serialize(msgId)
+  self.params.state = self.checkResults.getState()
+  self.params.status = self.checkResults.getStatus()
   self.params.metrics = self.checkResults:serialize()
   self.params.check_id = self.check.id
   self.params.check_type = self.check._type

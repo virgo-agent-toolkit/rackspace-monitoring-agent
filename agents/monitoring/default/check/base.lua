@@ -29,12 +29,12 @@ local CheckResult = Object:extend()
 local Metric = Object:extend()
 
 local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
+local VALID_STATES = {'available', 'unavailable'}
 
 
 function BaseCheck:initialize(params, checkType)
   self._lastResults = nil
   self._type = checkType or 'UNDEFINED'
-  self.state = params.state
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
 end
@@ -65,7 +65,6 @@ end
 function BaseCheck:serialize()
   return {
     id = self.id,
-    state = self.state,
     period = self.period,
     nextrun = self:getNextRun()
   }
@@ -74,7 +73,29 @@ end
 function CheckResult:initialize(check, options)
   self._options = options or {}
   self._metrics = {}
+  self._state = 'available'
+  self._status = ''
   self._nextRun = os.time() + check.period
+end
+
+function CheckResult:setAvailable()
+  self._state = 'available'
+end
+
+function CheckResult:setUnavailable()
+  self._state = 'unavailable'
+end
+
+function CheckResult:getState()
+  return self._state
+end
+
+function CheckResult:getStatus()
+  return self._status
+end
+
+function CheckResult:setStatus(status)
+  self._status = status
 end
 
 function CheckResult:addMetric(name, dimension, type, value)

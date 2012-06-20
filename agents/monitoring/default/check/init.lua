@@ -28,8 +28,7 @@ function create(checkData)
   local _type = checkData.type
   local obj = {
     id = checkData.id,
-    period = checkData.period,
-    state = 'OK'
+    period = checkData.period
   }
   if _type == 'agent.memory' then
     return MemoryCheck:new(obj)
