@@ -43,10 +43,6 @@ end
 local os = require('os')
 local TESTS_TO_RUN = {'./tls', './agent-protocol', './crypto', './misc', './check', './fs', './schedule'}
 
-if os.type() ~= 'win32' then
-  table.insert(TESTS_TO_RUN, './collector')
-end
-
 if process.env['TEST_FILES'] then
   TESTS_TO_RUN = split(process.env['TEST_FILES'])
 end

@@ -31,8 +31,7 @@ exports['test_traceroute'] = function(test, asserts)
   local collector
 
   if os.type() ~= "Linux" then
-    -- TODO: add test.skip() to bourbon
-    test.done()
+    test.skip("Unsupported Platform for Traceroute")
     return
   end
 
