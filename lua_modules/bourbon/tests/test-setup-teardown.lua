@@ -44,4 +44,12 @@ exports['test_setup_teardown'] = function(test, asserts)
   end)
 end
 
+exports['test_skipit'] = function(test, asserts)
+  test.skip()
+end
+
+exports['test_skipit_with_reason'] = function(test, asserts)
+  test.skip("Is there a reason?")
+end
+
 return exports
