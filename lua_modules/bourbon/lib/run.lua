@@ -61,6 +61,11 @@ function TestBaton.new(runner, stats, callback)
     stats:add_stats(runner.context)
     callback()
   end
+  tb.skip = function(reason)
+    runner.context.skipped = runner.context.skipped + 1
+    stats:add_stats(runner.context)
+    callback(nil, true, reason)
+  end
   setmetatable(tb, {__index=TestBaton.prototype})
   return tb
 end
@@ -68,8 +73,16 @@ end
 
 local run_test = function(runner, stats, callback)
   process.stdout:write(fmt("  Running %s", runner.name))
-  local test_baton = TestBaton.new(runner, stats, function(err)
-    process.stdout:write(" DONE\n")
+  local test_baton = TestBaton.new(runner, stats, function(err, skipped, skipReason)
+    if skipped then
+      if skipReason ~= nil then
+        process.stdout:write(" SKIPPED (" .. skipReason .. ")\n")
+      else
+        process.stdout:write(" SKIPPED\n")
+      end
+    else
+      process.stdout:write(" DONE\n")
+    end
 
     runner.context:dump_errors(function(line)
       process.stdout:write(line)
