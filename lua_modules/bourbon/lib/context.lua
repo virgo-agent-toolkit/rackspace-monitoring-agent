@@ -67,10 +67,11 @@ function Context:add_stats(c)
   self.checked = self.checked + c.checked
   self.failed = self.failed + c.failed
   self.passed = self.passed + c.passed
+  self.skipped = self.skipped + c.skipped
 end
 
 function Context:print_summary()
-  print("checked: " .. self.checked .. " failed: " .. self.failed .. " passed: " .. self.passed)
+  print("checked: " .. self.checked .. " failed: " .. self.failed .. " skipped: " .. self.skipped .. " passed: " .. self.passed)
   self:print_errors()
 end
 
@@ -95,6 +96,7 @@ end
 function Context:initialize()
   self.checked = 0
   self.failed = 0
+  self.skipped = 0
   self.passed = 0
   self.errors = {}
 end
