@@ -1,4 +1,6 @@
 local os = require('os')
+local path = require('path')
+
 local exports = {}
 
 -- All intervals and timeouts are in milliseconds
@@ -23,5 +25,7 @@ if os.type() == 'win32' then
 else
   exports.DEFAULT_PERSISTENT_VARIABLE_PATH = '/var/lib/rackspace-monitoring-agent'
 end
+
+exports.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(exports.DEFAULT_PERSISTENT_VARIABLE_PATH, 'plugins')
 
 return exports

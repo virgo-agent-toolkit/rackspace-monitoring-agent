@@ -21,6 +21,7 @@ local CpuCheck = require('./cpu').CpuCheck
 local DiskCheck = require('./disk').DiskCheck
 local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
+local PluginCheck = require('./plugin').PluginCheck
 
 local fmt = require('string').format
 
@@ -52,6 +53,7 @@ exports.CpuCheck = CpuCheck
 exports.DiskCheck = DiskCheck
 exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
+exports.PluginCheck = PluginCheck
 
 exports.create = create
 return exports
