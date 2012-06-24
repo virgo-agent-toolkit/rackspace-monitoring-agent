@@ -108,6 +108,10 @@ function CheckResult:addMetric(name, dimension, type, value)
   self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value}
 end
 
+function CheckResult:getMetrics()
+  return self._metrics
+end
+
 function CheckResult:toString()
   return toString(self)
 end

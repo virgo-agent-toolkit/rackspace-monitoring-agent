@@ -93,6 +93,7 @@ function PluginCheck:run(callback)
   end)
 
   lineEmitter:on('line', function(line)
+    self:_handleLine(checkResult, line)
   end)
 
   child.stdout:on('data', function(chunk)
@@ -110,14 +111,18 @@ function PluginCheck:run(callback)
       return
     end
 
-    if code ~= 0 then
-      checkResult:setUnavailable()
-      checkResult:setStatus(fmt('Plugin exited with non-zero status code (code=%s)', (code)))
-    end
+    process.nextTick(function()
+      -- Callback is called on the next tick so any pending line processing can
+      -- happen before calling a callback.
+      if code ~= 0 then
+        checkResult:setUnavailable()
+        checkResult:setStatus(fmt('Plugin exited with non-zero status code (code=%s)', (code)))
+      end
 
-    self._lastResults = checkResult
-    callbackCalled = true
-    callback(checkResult)
+      self._lastResults = checkResult
+      callbackCalled = true
+      callback(checkResult)
+    end)
   end)
 end
 
@@ -137,9 +142,11 @@ function PluginCheck:_handleLine(checkResult, line)
       -- state which is ignored by the new agent.
       table.remove(splitString, 1)
       status = table.concat(splitString, ' ')
+    else
+      status = value
     end
 
-    log.debugf('Setting check status string (status=%s)', status)
+    logging.debugf('Setting check status string (status=%s)', status)
     checkResult:setStatus(status)
     return
   end
@@ -148,11 +155,16 @@ function PluginCheck:_handleLine(checkResult, line)
 
   if endIndex then
     value = line:sub(endIndex + 2)
-    splitString = split(valie, '[^%s]+')
+    splitString = split(value, '[^%s]+')
 
     metricName = splitString[1]
     metricType = splitString[2]
-    metricValue = splitString[3]
+
+    -- Everything after name and typed is treated as a metric value
+    table.remove(splitString, 1)
+    table.remove(splitString, 1)
+
+    metricValue = table.concat(splitString, ' ')
 
     dotIndex = lastIndexOf(metricName, '%.')
 
@@ -171,14 +183,16 @@ function PluginCheck:_handleLine(checkResult, line)
     end
 
     local status, err = pcall(function()
-      checkResult:addMetric(metricName, metricDimension, internalMetricType, metricValue)
+      checkResult:addMetric(metricName, metricDimension, internalMetricType,
+                            metricValue)
     end)
 
     if err then
-      log.debugf('Failed to add metric, skipping it... (err=%s)', toString(err))
+      logging.debugf('Failed to add metric, skipping it... (err=%s)',
+                     tostring(err))
     else
-      log.debugf('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
-                 toString(metricName), metricName, metricType, metricValue)
+      logging.debugf('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
+                 tostring(metricName), metricName, metricType, metricValue)
     end
 
     return

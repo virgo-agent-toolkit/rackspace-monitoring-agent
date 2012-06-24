@@ -187,4 +187,51 @@ exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
   end)
 end
 
+exports['test_custom_plugin_cmd_arguments'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, timeout=5000,
+                                 name='custom_arguments',
+                                 file='plugin_custom_arguments.sh',
+                                 args={'foo_bar', 'a', 'b', 'c'}})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()['none']
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'arguments test')
+    asserts.equals(result:getState(), 'available')
+
+    asserts.dequals(metrics['foo_bar'], {t='string', v = '0'})
+    asserts.dequals(metrics['a'], {t='string', v = '1'})
+    asserts.dequals(metrics['b'], {t='string', v = '2'})
+    asserts.dequals(metrics['c'], {t='string', v = '3'})
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_all_types'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='plugin_1',
+                                 file='plugin_1.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()['none']
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Everything is OK')
+    asserts.equals(result:getState(), 'available')
+
+    asserts.dequals(metrics['logged_users'], {t='int64', v = '7'})
+    asserts.dequals(metrics['active_processes'], {t='int64', v = '200'})
+    asserts.dequals(metrics['avg_wait_time'], {t='double', v = '100.7'})
+    asserts.dequals(metrics['something'], {t='string', v = 'foo bar foo'})
+    test.done()
+  end)
+end
+
+
 return exports
