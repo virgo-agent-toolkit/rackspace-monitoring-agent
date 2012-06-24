@@ -229,6 +229,7 @@ exports['test_custom_plugin_all_types'] = function(test, asserts)
     asserts.dequals(metrics['active_processes'], {t='int64', v = '200'})
     asserts.dequals(metrics['avg_wait_time'], {t='double', v = '100.7'})
     asserts.dequals(metrics['something'], {t='string', v = 'foo bar foo'})
+    asserts.dequals(metrics['packet_count'], {t='gauge', v = '150000'})
     test.done()
   end)
 end
