@@ -108,6 +108,7 @@ function PluginCheck:run(callback)
     timer.clearTimer(pluginTimeout)
 
     if callbackCalled then
+      -- Plugin timed out and callback has already been called
       return
     end
 
@@ -126,6 +127,8 @@ function PluginCheck:run(callback)
   end)
 end
 
+-- Parse a line output by a plugin and mutate CheckResult object (set status
+-- or add a metric).
 function PluginCheck:_handleLine(checkResult, line)
   local endIndex, splitString, value, state
   local metricName, metricType, metricValue, dotIndex, internalMetricType
