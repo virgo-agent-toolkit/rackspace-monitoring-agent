@@ -147,6 +147,29 @@ function trim(s)
   return s:find'^%s*$' and '' or s:match'^%s*(.*%S)'
 end
 
+-- Return start index of last occurance of a pattern in a string
+function lastIndexOf(str, pat)
+  local startIndex, endIndex
+  local lastIndex = -1
+  local found = false
+
+  while 1 do
+    startIndex, endIndex = string.find(str, pat, lastIndex + 1)
+    if not startIndex then
+      break
+    else
+      lastIndex = startIndex
+    end
+  end
+
+  if lastIndex == -1 then
+    return nil
+  end
+
+  return lastIndex
+end
+
+
 --[[ Exports ]]--
 local exports = {}
 exports.calcJitter = calcJitter
@@ -157,4 +180,5 @@ exports.toString = toString
 exports.tableContains = tableContains
 exports.trim = trim
 exports.writePid = writePid
+exports.lastIndexOf = lastIndexOf
 return exports
