@@ -15,9 +15,11 @@ limitations under the License.
 --]]
 
 local JSON = require('json')
+local path = require('path')
 
 local Check = require('monitoring/default/check')
 local Metric = require('monitoring/default/check/base').Metric
+local constants = require('monitoring/default/util/constants')
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
 
@@ -25,6 +27,7 @@ local CpuCheck = Check.CpuCheck
 local DiskCheck = Check.DiskCheck
 local MemoryCheck = Check.MemoryCheck
 local NetworkCheck = Check.NetworkCheck
+local PluginCheck = Check.PluginCheck
 
 exports = {}
 
@@ -137,6 +140,51 @@ exports['test_checkresult_serialization'] = function(test, asserts)
   asserts.equals(serialized[2][2]['m2']['v'], 'test')
 
   test.done()
+end
+
+exports['test_custom_plugin_timeout'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, timeout=500,
+                                 name='timeout', file='timeout.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Plugin didn\'t finish in 0.5 seconds')
+    asserts.equals(result:getState(), 'unavailable')
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, timeout=5000,
+                                 name='not_executable', file='not_executable.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=127)')
+    asserts.equals(result:getState(), 'unavailable')
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, timeout=5000,
+                                 name='doesnt_exist', file='doesnt_exist.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=127)')
+    asserts.equals(result:getState(), 'unavailable')
+    test.done()
+  end)
 end
 
 return exports
