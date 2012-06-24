@@ -164,10 +164,10 @@ function getMetricType(value)
   end
 end
 
-
 -- todo: serialize/deserialize methods.
 
 local exports = {}
+exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
 exports.Metric = Metric
