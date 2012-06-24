@@ -83,11 +83,11 @@ function PluginCheck:run(callback)
   local pluginTimeout = timer.setTimeout(self._timeout, function()
     local timeoutSeconds = (self._timeout / 1000)
 
-    logging.debugf('Plugin didn\t finish in %s seconds, killing it...', timeoutSeconds)
-    --childprocess:kill(9)
+    logging.debugf('Plugin didn\'t finish in %s seconds, killing it...', timeoutSeconds)
+    child:kill(9)
 
     checkResult:setUnavailable()
-    checkResult:setStatus(fmt('Plugin didn\t finish in %s seconds', timeoutSeconds))
+    checkResult:setStatus(fmt('Plugin didn\'t finish in %s seconds', timeoutSeconds))
     callbackCalled = true
     callback(checkResult)
   end)
