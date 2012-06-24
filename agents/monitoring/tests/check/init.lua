@@ -233,5 +233,26 @@ exports['test_custom_plugin_all_types'] = function(test, asserts)
   end)
 end
 
+exports['test_custom_plugin_dimensions'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='dimensions',
+                                 file='plugin_dimensions.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Total logged users: 66')
+    asserts.equals(result:getState(), 'available')
+
+    asserts.dequals(metrics['host1']['logged_users'], {t='int64', v = '10'})
+    asserts.dequals(metrics['host2']['logged_users'], {t='int64', v = '17'})
+    asserts.dequals(metrics['host3']['logged_users'], {t='int64', v = '10'})
+    asserts.dequals(metrics['host4']['logged_users'], {t='int64', v = '22'})
+    test.done()
+  end)
+end
 
 return exports
