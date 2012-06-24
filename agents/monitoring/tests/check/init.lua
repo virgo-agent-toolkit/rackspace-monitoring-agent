@@ -276,4 +276,27 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility'] = fu
   end)
 end
 
+exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='plugin_2',
+                                 file='partial_output_with_sleep.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()['none']
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Everything is OK')
+    asserts.equals(result:getState(), 'available')
+
+    asserts.dequals(metrics['logged_users'], {t = 'int64', v = '7'})
+    asserts.dequals(metrics['active_processes'], {t = 'int64', v = '200'})
+    asserts.dequals(metrics['avg_wait_time'], {t = 'double', v = '100.7'})
+    asserts.dequals(metrics['something'], {t = 'string', v = 'foo bar foo'})
+    asserts.dequals(metrics['packet_count'], {t = 'gauge', v = '150000'})
+    test.done()
+  end)
+end
+
 return exports
