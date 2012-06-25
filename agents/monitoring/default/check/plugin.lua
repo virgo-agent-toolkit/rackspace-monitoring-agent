@@ -75,6 +75,9 @@ function PluginCheck:initialize(params)
                                params.file)
   self._pluginArgs = params.args and params.args or {}
   self._timeout = params.timeout and params.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+
+  self._gotStatusLine = false
+  self._metricCount = 0
 end
 
 function PluginCheck:run(callback)
@@ -142,6 +145,11 @@ function PluginCheck:_handleLine(checkResult, line)
   _, metricEndIndex = line:find('^metric')
 
   if statusEndIndex then
+    if self._gotStatusLine then
+      logging.debug('Duplicated status line, ignoring it...')
+      return
+    end
+
     value = line:sub(statusEndIndex + 2)
     splitString = split(value, '[^%s]+')
     state = splitString[1]
@@ -157,6 +165,7 @@ function PluginCheck:_handleLine(checkResult, line)
     end
 
     logging.debugf('Setting check status string (status=%s)', status)
+    self._gotStatusLine = true
     checkResult:setStatus(status)
   elseif metricEndIndex then
     value = line:sub(metricEndIndex + 2)
@@ -209,6 +218,7 @@ function PluginCheck:_handleLine(checkResult, line)
       logging.debugf('Failed to add metric, skipping it... (err=%s)',
                      tostring(err))
     else
+      self._metricCount = self._metricCount + 1
       logging.debugf('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
                  tostring(metricDimension), metricName, metricType, metricValue)
     end

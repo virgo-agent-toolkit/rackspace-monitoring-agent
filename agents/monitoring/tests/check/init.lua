@@ -256,18 +256,58 @@ exports['test_custom_plugin_dimensions'] = function(test, asserts)
   end)
 end
 
-exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility'] = function(test, asserts)
+exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
   local check = PluginCheck:new({id='foo', period=30, name='plugin_1',
-                                 file='cloudkick_agent_custom_plugin.sh'})
+                                 file='cloudkick_agent_custom_plugin_1.sh'})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
     asserts.ok(result ~= nil)
     asserts.equals(result:getStatus(), 'Service is not responding')
+    asserts.equals(result:getState(), 'available')
+
+    asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
+    asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='plugin_2',
+                                 file='cloudkick_agent_custom_plugin_2.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), '')
+    asserts.equals(result:getState(), 'available')
+
+    asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
+    asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
+                                 file='repeated_status_line.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'First status line')
     asserts.equals(result:getState(), 'available')
 
     asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})

@@ -74,7 +74,7 @@ function CheckResult:initialize(check, options)
   self._options = options or {}
   self._metrics = {}
   self._state = 'available'
-  self._status = ''
+  self._status = nil
   self._nextRun = os.time() + check.period
 end
 
@@ -91,7 +91,8 @@ function CheckResult:getState()
 end
 
 function CheckResult:getStatus()
-  return self._status
+  status = self._status and self._status or ''
+  return status
 end
 
 function CheckResult:setStatus(status)
