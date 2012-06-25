@@ -58,21 +58,31 @@ local constants = require('../util/constants')
 
 local PluginCheck = BaseCheck:extend()
 
+--[[
+
+Constructor.
+
+params - Table with the following keys:
+
+- file (string) - Name of the plugin file.
+- args (table) - Command-line arguments which get passed to the plugin file.
+- timeout (number) - Plugin execution timeout in ms.
+--]]
 function PluginCheck:initialize(params)
   BaseCheck.initialize(self, params, 'agent.plugin.' .. params.name)
 
   self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH,
                                params.file)
+  self._pluginArgs = params.args and params.args or {}
   self._timeout = params.timeout and params.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
-  self._args = params.args and params.args or {}
 end
 
 function PluginCheck:run(callback)
   local stderrBuffer = ''
-  local callbackCalled = false
+  local killed = false
   local checkResult = CheckResult:new(self, {})
 
-  local child = childprocess.spawn(self._pluginPath, self._args)
+  local child = childprocess.spawn(self._pluginPath, self._pluginArgs)
   local lineEmitter = LineEmitter:new()
 
   local pluginTimeout = timer.setTimeout(self._timeout, function()
@@ -80,10 +90,11 @@ function PluginCheck:run(callback)
 
     logging.debugf('Plugin didn\'t finish in %s seconds, killing it...', timeoutSeconds)
     child:kill(9)
+    killed = true
 
     checkResult:setUnavailable()
     checkResult:setStatus(fmt('Plugin didn\'t finish in %s seconds', timeoutSeconds))
-    callbackCalled = true
+    self._lastResults = checkResult
     callback(checkResult)
   end)
 
@@ -102,7 +113,7 @@ function PluginCheck:run(callback)
   child:on('exit', function(code)
     timer.clearTimer(pluginTimeout)
 
-    if callbackCalled then
+    if killed then
       -- Plugin timed out and callback has already been called
       return
     end
@@ -116,7 +127,6 @@ function PluginCheck:run(callback)
       end
 
       self._lastResults = checkResult
-      callbackCalled = true
       callback(checkResult)
     end)
   end)
@@ -125,19 +135,21 @@ end
 -- Parse a line output by a plugin and mutate CheckResult object (set status
 -- or add a metric).
 function PluginCheck:_handleLine(checkResult, line)
-  local endIndex, splitString, value, state
+  local statusEndIndex, metricEndIndex, splitString, value, state
   local metricName, metricType, metricValue, dotIndex, internalMetricType, partsCount
 
-  _, endIndex = line:find('^status')
+  _, statusEndIndex = line:find('^status')
+  _, metricEndIndex = line:find('^metric')
 
-  if endIndex then
-    value = line:sub(endIndex + 2)
+  if statusEndIndex then
+    value = line:sub(statusEndIndex + 2)
     splitString = split(value, '[^%s]+')
     state = splitString[1]
 
     if state == 'ok' or state == 'warn' or state == 'err' then
       -- Assume this is an old Cloudkick agent plugin which also outputs plugin
-      -- state which is ignored by the new agent.
+      -- state which is ignored by the new agent. In Cloud monitoring alarm
+      -- criteria is used to determine check state.
       table.remove(splitString, 1)
       status = table.concat(splitString, ' ')
     else
@@ -146,25 +158,20 @@ function PluginCheck:_handleLine(checkResult, line)
 
     logging.debugf('Setting check status string (status=%s)', status)
     checkResult:setStatus(status)
-    return
-  end
-
-  _, endIndex = line:find('^metric')
-
-  if endIndex then
-    value = line:sub(endIndex + 2)
+  elseif metricEndIndex then
+    value = line:sub(metricEndIndex + 2)
     splitString = split(value, '[^%s]+')
     partsCount = #splitString
 
     if partsCount < 3 then
-      logging.debugf('Corrupted metric line, skipping it...')
+      logging.debugf('Invalid metric line (line=%s), skipping it...', line)
       return
     end
 
     metricName = splitString[1]
     metricType = splitString[2]
 
-    -- Everything after name and typed is treated as a metric value
+    -- Everything after name and type is treated as a metric value
     table.remove(splitString, 1)
     table.remove(splitString, 1)
 
@@ -173,6 +180,7 @@ function PluginCheck:_handleLine(checkResult, line)
     dotIndex = lastIndexOf(metricName, '%.')
 
     if dotIndex then
+      -- Metric name contains a dimension key
       metricDimension = metricName:sub(0, dotIndex - 1)
       metricName = metricName:sub(dotIndex + 1)
     else
@@ -188,7 +196,7 @@ function PluginCheck:_handleLine(checkResult, line)
 
     if metricType ~= 'string' and partsCount ~= 3 then
       -- Only values for string metrics can contain spaces
-      logging.debugf('Corrupted metric line, skipping it...')
+      logging.debugf('Invalid metric line (line=%s), skipping it...', line)
       return
     end
 
@@ -202,13 +210,11 @@ function PluginCheck:_handleLine(checkResult, line)
                      tostring(err))
     else
       logging.debugf('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
-                 tostring(metricName), metricName, metricType, metricValue)
+                 tostring(metricDimension), metricName, metricType, metricValue)
     end
-
-    return
+  else
+    log.debugf('Got unrecognized line (line=%s), skipping it...', line)
   end
-
-  log.debugf('Got unrecognized line (%s), skipping it...', line)
 end
 
 local exports = {}
