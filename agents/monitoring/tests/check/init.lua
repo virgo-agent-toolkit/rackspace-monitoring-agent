@@ -299,4 +299,23 @@ exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
   end)
 end
 
+exports['test_custom_plugin_invalid_metric_lines'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
+                                 file='invalid_metric_lines.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()['none']
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Invalid metric lines')
+    asserts.equals(result:getState(), 'available')
+
+    asserts.dequals(metrics, { metric7 = {t = 'string', v = 'test bar'}})
+    test.done()
+  end)
+end
+
 return exports

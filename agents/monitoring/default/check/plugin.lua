@@ -29,8 +29,8 @@ metric <name 2> <type> <value>
 metric <name 3> <type> <value>
 
 * <status string> - A status string which includes a summary of the results.
-* <name> Name of the metric. If a name contains a dot, string before a dot is
-  considered to be a metric dimension.
+* <name> Name of the metric. No spaces are allowed. If a name contains a dot,
+  string before a dot is considered to be a metric dimension.
 * type - Metric type which can be one of:
   * string
   * gauge
@@ -59,6 +59,7 @@ local constants = require('../util/constants')
 -- Default plugin timeout in seconds
 local DEFAULT_PLUGIN_TIMEOUT = 30 * 1000
 
+-- Map external plugin type to internal ones
 local PLUGIN_TYPE_MAP = {string = 'string', int = 'int64', float = 'double', gauge = 'gauge'}
 
 local PluginCheck = BaseCheck:extend()
@@ -131,7 +132,7 @@ end
 -- or add a metric).
 function PluginCheck:_handleLine(checkResult, line)
   local endIndex, splitString, value, state
-  local metricName, metricType, metricValue, dotIndex, internalMetricType
+  local metricName, metricType, metricValue, dotIndex, internalMetricType, partsCount
 
   _, endIndex = line:find('^status')
 
@@ -159,6 +160,12 @@ function PluginCheck:_handleLine(checkResult, line)
   if endIndex then
     value = line:sub(endIndex + 2)
     splitString = split(value, '[^%s]+')
+    partsCount = #splitString
+
+    if partsCount < 3 then
+      logging.debugf('Corrupted metric line, skipping it...')
+      return
+    end
 
     metricName = splitString[1]
     metricType = splitString[2]
@@ -182,6 +189,12 @@ function PluginCheck:_handleLine(checkResult, line)
 
     if not internalMetricType then
       logging.debugf('Invalid metric type (%s), skipping metric...', metricType)
+      return
+    end
+
+    if metricType ~= 'string' and partsCount ~= 3 then
+      -- Only values for string metrics can contain spaces
+      logging.debugf('Corrupted metric line, skipping it...')
       return
     end
 
