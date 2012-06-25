@@ -26,6 +26,10 @@ else
   exports.DEFAULT_PERSISTENT_VARIABLE_PATH = '/var/lib/rackspace-monitoring-agent'
 end
 
+-- Custom plugins related settings
+
 exports.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(exports.DEFAULT_PERSISTENT_VARIABLE_PATH, 'plugins')
+exports.DEFAULT_PLUGIN_TIMEOUT = 30 * 1000
+exports.PLUGIN_TYPE_MAP = {string = 'string', int = 'int64', float = 'double', gauge = 'gauge'}
 
 return exports

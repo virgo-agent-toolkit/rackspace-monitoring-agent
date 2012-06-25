@@ -56,12 +56,6 @@ local tableContains = require('../util/misc').tableContains
 local lastIndexOf = require('../util/misc').lastIndexOf
 local constants = require('../util/constants')
 
--- Default plugin timeout in seconds
-local DEFAULT_PLUGIN_TIMEOUT = 30 * 1000
-
--- Map external plugin type to internal ones
-local PLUGIN_TYPE_MAP = {string = 'string', int = 'int64', float = 'double', gauge = 'gauge'}
-
 local PluginCheck = BaseCheck:extend()
 
 function PluginCheck:initialize(params)
@@ -69,7 +63,7 @@ function PluginCheck:initialize(params)
 
   self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH,
                                params.file)
-  self._timeout = params.timeout and params.timeout or DEFAULT_PLUGIN_TIMEOUT
+  self._timeout = params.timeout and params.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
   self._args = params.args and params.args or {}
 end
 
@@ -185,7 +179,7 @@ function PluginCheck:_handleLine(checkResult, line)
       metricDimension = nil
     end
 
-    internalMetricType = PLUGIN_TYPE_MAP[metricType]
+    internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
 
     if not internalMetricType then
       logging.debugf('Invalid metric type (%s), skipping metric...', metricType)
