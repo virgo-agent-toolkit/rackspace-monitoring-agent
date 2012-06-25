@@ -55,6 +55,7 @@ local split = require('../util/misc').split
 local tableContains = require('../util/misc').tableContains
 local lastIndexOf = require('../util/misc').lastIndexOf
 local constants = require('../util/constants')
+local loggingUtil = require('../util/logging')
 
 local PluginCheck = BaseCheck:extend()
 
@@ -76,6 +77,9 @@ function PluginCheck:initialize(params)
   self._pluginArgs = params.args and params.args or {}
   self._timeout = params.timeout and params.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
 
+  self._log = loggingUtil.makeLogger(fmt('(plugin=%s, file=%s)', params.name,
+                                         params.file))
+
   self._gotStatusLine = false
   self._metricCount = 0
 end
@@ -91,7 +95,7 @@ function PluginCheck:run(callback)
   local pluginTimeout = timer.setTimeout(self._timeout, function()
     local timeoutSeconds = (self._timeout / 1000)
 
-    logging.debugf('Plugin didn\'t finish in %s seconds, killing it...', timeoutSeconds)
+    self._log(logging.DEBUG, fmt('Plugin didn\'t finish in %s seconds, killing it...', timeoutSeconds))
     child:kill(9)
     killed = true
 
@@ -146,7 +150,7 @@ function PluginCheck:_handleLine(checkResult, line)
 
   if statusEndIndex then
     if self._gotStatusLine then
-      logging.debug('Duplicated status line, ignoring it...')
+      self._log(logging.WARNING, 'Duplicated status line, ignoring it...')
       return
     end
 
@@ -164,7 +168,7 @@ function PluginCheck:_handleLine(checkResult, line)
       status = value
     end
 
-    logging.debugf('Setting check status string (status=%s)', status)
+    self._log(logging.DEBUG, fmt('Setting check status string (status=%s)', status))
     self._gotStatusLine = true
     checkResult:setStatus(status)
   elseif metricEndIndex then
@@ -173,7 +177,7 @@ function PluginCheck:_handleLine(checkResult, line)
     partsCount = #splitString
 
     if partsCount < 3 then
-      logging.debugf('Invalid metric line (line=%s), skipping it...', line)
+      self._log(logging.WARNING, fmt('Invalid metric line (line=%s), skipping it...', line))
       return
     end
 
@@ -199,13 +203,13 @@ function PluginCheck:_handleLine(checkResult, line)
     internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
 
     if not internalMetricType then
-      logging.debugf('Invalid metric type (%s), skipping metric...', metricType)
+      self._log(logging.WARNING, fmt('Invalid metric type (type=%s), skipping it...', metricType))
       return
     end
 
     if metricType ~= 'string' and partsCount ~= 3 then
       -- Only values for string metrics can contain spaces
-      logging.debugf('Invalid metric line (line=%s), skipping it...', line)
+      self._log(logging.WARNING, fmt('Invalid metric line (line=%s), skipping it...', line))
       return
     end
 
@@ -215,15 +219,15 @@ function PluginCheck:_handleLine(checkResult, line)
     end)
 
     if err then
-      logging.debugf('Failed to add metric, skipping it... (err=%s)',
-                     tostring(err))
+      self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
+                                     tostring(err)))
     else
       self._metricCount = self._metricCount + 1
-      logging.debugf('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
-                 tostring(metricDimension), metricName, metricType, metricValue)
+      self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
+                 tostring(metricDimension), metricName, metricType, metricValue))
     end
   else
-    log.debugf('Got unrecognized line (line=%s), skipping it...', line)
+    self._log(logging.DEBUG, fmt('Unrecognized line (line=%s)', line))
   end
 end
 
