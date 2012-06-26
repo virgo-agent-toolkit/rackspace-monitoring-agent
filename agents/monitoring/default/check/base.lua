@@ -92,7 +92,7 @@ function CheckResult:getState()
 end
 
 function CheckResult:getStatus()
-  status = self._status and self._status or ''
+  local status = self._status and self._status or ''
   return status
 end
 
