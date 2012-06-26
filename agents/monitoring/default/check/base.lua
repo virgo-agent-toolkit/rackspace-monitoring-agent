@@ -33,10 +33,11 @@ local VALID_STATES = {'available', 'unavailable'}
 
 
 function BaseCheck:initialize(params, checkType)
-  self._lastResult = nil
-  self._type = checkType or 'UNDEFINED'
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
+
+  self._lastResult = nil
+  self._type = checkType or 'UNDEFINED'
 end
 
 function BaseCheck:run(callback)
@@ -163,9 +164,6 @@ function getMetricType(value)
     end
   end
 end
-
-
--- todo: serialize/deserialize methods.
 
 local exports = {}
 exports.BaseCheck = BaseCheck
