@@ -21,6 +21,7 @@ local CpuCheck = require('./cpu').CpuCheck
 local DiskCheck = require('./disk').DiskCheck
 local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
+local PluginCheck = require('./plugin').PluginCheck
 
 local fmt = require('string').format
 
@@ -42,8 +43,11 @@ function create(checkData)
     return NetworkCheck:new(obj)
   elseif checkType == 'agent.cpu' then
     return CpuCheck:new(obj)
+  elseif checkType == 'agent.plugin' then
+    return PluginCheck:new(obj)
+  else
+    return nil
   end
-  return nil
 end
 
 local exports = {}
@@ -54,6 +58,7 @@ exports.CpuCheck = CpuCheck
 exports.DiskCheck = DiskCheck
 exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
+exports.PluginCheck = PluginCheck
 
 exports.create = create
 return exports

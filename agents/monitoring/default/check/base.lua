@@ -75,7 +75,7 @@ function CheckResult:initialize(check, options)
   self._options = options or {}
   self._metrics = {}
   self._state = 'available'
-  self._status = ''
+  self._status = nil
   self._nextRun = os.time() + check.period
 end
 
@@ -92,11 +92,17 @@ function CheckResult:getState()
 end
 
 function CheckResult:getStatus()
-  return self._status
+  status = self._status and self._status or ''
+  return status
 end
 
 function CheckResult:setStatus(status)
   self._status = status
+end
+
+function CheckResult:setError(message)
+  self:setUnavailable()
+  self:setStatus(message)
 end
 
 function CheckResult:addMetric(name, dimension, type, value)
@@ -107,6 +113,10 @@ function CheckResult:addMetric(name, dimension, type, value)
   end
 
   self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value}
+end
+
+function CheckResult:getMetrics()
+  return self._metrics
 end
 
 function CheckResult:toString()
@@ -166,6 +176,7 @@ function getMetricType(value)
 end
 
 local exports = {}
+exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
 exports.Metric = Metric
