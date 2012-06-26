@@ -99,6 +99,11 @@ function CheckResult:setStatus(status)
   self._status = status
 end
 
+function CheckResult:setError(message)
+  self:setUnavailable()
+  self:setStatus(message)
+end
+
 function CheckResult:addMetric(name, dimension, type, value)
   local metric = Metric:new(name, dimension, type, value)
 

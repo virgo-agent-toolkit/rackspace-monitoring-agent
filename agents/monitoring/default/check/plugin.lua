@@ -99,8 +99,7 @@ function PluginCheck:run(callback)
     child:kill(9)
     killed = true
 
-    checkResult:setUnavailable()
-    checkResult:setStatus(fmt('Plugin didn\'t finish in %s seconds', timeoutSeconds))
+    checkResult:setError(fmt('Plugin didn\'t finish in %s seconds', timeoutSeconds))
     self._lastResults = checkResult
     callback(checkResult)
   end)
@@ -129,8 +128,7 @@ function PluginCheck:run(callback)
       -- Callback is called on the next tick so any pending line processing can
       -- happen before calling a callback.
       if code ~= 0 then
-        checkResult:setUnavailable()
-        checkResult:setStatus(fmt('Plugin exited with non-zero status code (code=%s)', (code)))
+        checkResult:setError(fmt('Plugin exited with non-zero status code (code=%s)', (code)))
       end
 
       self._lastResults = checkResult
