@@ -62,23 +62,25 @@ local PluginCheck = BaseCheck:extend()
 
 Constructor.
 
-params - Table with the following keys:
+params.details - Table with the following keys:
 
 - file (string) - Name of the plugin file.
 - args (table) - Command-line arguments which get passed to the plugin.
 - timeout (number) - Plugin execution timeout in milliseconds.
 --]]
 function PluginCheck:initialize(params)
-  BaseCheck.initialize(self, params, 'agent.plugin')
+  local file = path.basename(params.details.file)
+  local args = params.details.args and params.details.args or {}
+  local timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
 
-  self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH,
-                               path.basename(params.file))
-  self._pluginArgs = params.args and params.args or {}
-  self._timeout = params.timeout and params.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+  BaseCheck.initialize(self, 'agent.plugin', params)
+
+  self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH, file)
+  self._pluginArgs = args
+  self._timeout = timeout
 
   self._checkResult = CheckResult:new(self, {})
-  self._log = loggingUtil.makeLogger(fmt('(plugin=%s, file=%s)', params.name,
-                                         params.file))
+  self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', file))
 
   self._gotStatusLine = false
   self._hasError = false
