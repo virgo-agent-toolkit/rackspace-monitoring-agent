@@ -73,7 +73,7 @@ function PluginCheck:initialize(params)
   BaseCheck.initialize(self, params, 'agent.plugin.' .. params.name)
 
   self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH,
-                               params.file)
+                               path.basename(params.file))
   self._pluginArgs = params.args and params.args or {}
   self._timeout = params.timeout and params.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
 
