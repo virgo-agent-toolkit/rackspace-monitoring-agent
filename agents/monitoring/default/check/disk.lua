@@ -6,7 +6,7 @@ local DiskCheck = BaseCheck:extend()
 local DIMENSION_PREFIX = 'mount.'
 
 function DiskCheck:initialize(params)
-  BaseCheck.initialize(self, params, 'agent.disk')
+  BaseCheck.initialize(self, 'agent.disk', params)
 end
 
 -- Dimension key is the mount point name, e.g. /, /home

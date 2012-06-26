@@ -32,12 +32,12 @@ local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint
 local VALID_STATES = {'available', 'unavailable'}
 
 
-function BaseCheck:initialize(params, checkType)
+function BaseCheck:initialize(checkType, params)
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
+  self._type = checkType
 
   self._lastResult = nil
-  self._type = checkType or 'UNDEFINED'
 end
 
 function BaseCheck:run(callback)

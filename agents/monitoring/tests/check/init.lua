@@ -29,7 +29,7 @@ local NetworkCheck = Check.NetworkCheck
 exports = {}
 
 exports['test_base_check'] = function(test, asserts)
-  local check = BaseCheck:new({id='foo', period=30})
+  local check = BaseCheck:new('test', {id='foo', period=30})
   asserts.ok(check._lastResult == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)
