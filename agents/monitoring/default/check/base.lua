@@ -32,17 +32,18 @@ local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint
 local VALID_STATES = {'available', 'unavailable'}
 
 
-function BaseCheck:initialize(params, checkType)
-  self._lastResults = nil
-  self._type = checkType or 'UNDEFINED'
+function BaseCheck:initialize(checkType, params)
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
+  self._type = checkType
+
+  self._lastResult = nil
 end
 
 function BaseCheck:run(callback)
   -- do something, produce a CheckResult
   local checkResult = CheckResult:new(self, {})
-  self._lastResults = checkResult
+  self._lastResult = checkResult
   callback(checkResult)
 end
 
@@ -51,8 +52,8 @@ function BaseCheck:getType()
 end
 
 function BaseCheck:getNextRun()
-  if self._lastResults then
-    return self._lastResults._nextRun
+  if self._lastResult then
+    return self._lastResult._nextRun
   else
     return os.time()
   end
@@ -173,8 +174,6 @@ function getMetricType(value)
     end
   end
 end
-
--- todo: serialize/deserialize methods.
 
 local exports = {}
 exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES

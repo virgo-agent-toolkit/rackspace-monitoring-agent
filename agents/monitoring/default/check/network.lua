@@ -6,7 +6,7 @@ local NetworkCheck = BaseCheck:extend()
 local DIMENSION_PREFIX = 'interface.'
 
 function NetworkCheck:initialize(params)
-  BaseCheck.initialize(self, params, 'agent.network')
+  BaseCheck.initialize(self, 'agent.network', params)
 end
 
 -- Dimension is is the interface name, e.g. eth0, lo0, etc
@@ -30,7 +30,7 @@ function NetworkCheck:run(callback)
   end
 
   -- Return Result
-  self._lastResults = checkResult
+  self._lastResult = checkResult
   callback(checkResult)
 end
 

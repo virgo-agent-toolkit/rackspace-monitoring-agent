@@ -7,7 +7,7 @@ local CpuCheck = BaseCheck:extend()
 local DIMENSION_PREFIX = 'cpu.'
 
 function CpuCheck:initialize(params)
-  BaseCheck.initialize(self, params, 'agent.cpu')
+  BaseCheck.initialize(self, 'agent.cpu', params)
 end
 
 function CpuCheck:run(callback)
@@ -25,7 +25,7 @@ function CpuCheck:run(callback)
   end
 
   -- Return Result
-  self._lastResults = checkResult
+  self._lastResult = checkResult
   callback(checkResult)
 end
 

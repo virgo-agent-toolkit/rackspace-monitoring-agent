@@ -4,7 +4,7 @@ local CheckResult = require('./base').CheckResult
 local MemoryCheck = BaseCheck:extend()
 
 function MemoryCheck:initialize(params)
-  BaseCheck.initialize(self, params, 'agent.memory')
+  BaseCheck.initialize(self, 'agent.memory', params)
 end
 
 function MemoryCheck:run(callback)
@@ -18,7 +18,7 @@ function MemoryCheck:run(callback)
   end
 
   -- Return Result
-  self._lastResults = checkResult
+  self._lastResult = checkResult
   callback(checkResult)
 end
 

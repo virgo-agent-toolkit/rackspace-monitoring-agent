@@ -27,10 +27,10 @@ local tmp = path.join('tests', 'tmp')
 local exports = {}
 
 local checks = {
-  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
-  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
-  BaseCheck:new({id='ch0003', state='OK', period=1, path=path.join(tmp, '0003.chk')}),
-  BaseCheck:new({id='ch0004', state='OK', period=1, path=path.join(tmp, '0004.chk')}),
+  BaseCheck:new('test', {id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+  BaseCheck:new('test', {id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+  BaseCheck:new('test', {id='ch0003', state='OK', period=1, path=path.join(tmp, '0003.chk')}),
+  BaseCheck:new('test', {id='ch0004', state='OK', period=1, path=path.join(tmp, '0004.chk')}),
 }
 
 exports['test_scheduler_scan'] = function(test, asserts)
@@ -103,23 +103,23 @@ exports['test_scheduler_adds'] = function(test, asserts)
   local testFile = path.join(tmp, 'test_scheduler_adds.state')
   local scheduler
 local checks2 = {
-  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+  BaseCheck:new('test', {id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
 }
 local checks3 = {
-  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
-  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+  BaseCheck:new('test', {id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+  BaseCheck:new('test', {id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
 }
 local checks4 = {
-  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+  BaseCheck:new('test', {id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
 }
 local checks5 = {
-  BaseCheck:new({id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
+  BaseCheck:new('test', {id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
 }
 local checks6 = {
-  BaseCheck:new({id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
+  BaseCheck:new('test', {id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
 }
 local checks7 = {
-  BaseCheck:new({id='ch0001', state='OK', period=2, path=path.join(tmp, '0002.chk')}),
+  BaseCheck:new('test', {id='ch0001', state='OK', period=2, path=path.join(tmp, '0002.chk')}),
 }
   local lastRun = 0
   async.waterfall({

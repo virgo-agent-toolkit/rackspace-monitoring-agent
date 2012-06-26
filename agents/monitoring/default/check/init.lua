@@ -26,20 +26,22 @@ local PluginCheck = require('./plugin').PluginCheck
 local fmt = require('string').format
 
 function create(checkData)
-  local _type = checkData.type
+  local checkType = checkData.type
   local obj = {
     id = checkData.id,
-    period = checkData.period
+    period = checkData.period,
+    details = checkData.details
   }
-  if _type == 'agent.memory' then
+
+  if checkType == 'agent.memory' then
     return MemoryCheck:new(obj)
-  elseif _type == 'agent.disk' then
+  elseif checkType == 'agent.disk' then
     return DiskCheck:new(obj)
-  elseif _type == 'agent.memory' then
+  elseif checkType == 'agent.memory' then
     return MemoryCheck:new(obj)
-  elseif _type == 'agent.network' then
+  elseif checkType == 'agent.network' then
     return NetworkCheck:new(obj)
-  elseif _type == 'agent.cpu' then
+  elseif checkType == 'agent.cpu' then
     return CpuCheck:new(obj)
   end
   return nil
