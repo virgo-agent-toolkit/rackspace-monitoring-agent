@@ -81,6 +81,7 @@ function PluginCheck:initialize(params)
                                          params.file))
 
   self._gotStatusLine = false
+  self._hasError = false
   self._metricCount = 0
 end
 
@@ -137,11 +138,20 @@ function PluginCheck:run(callback)
   end)
 end
 
+--[[
 -- Parse a line output by a plugin and mutate CheckResult object (set status
 -- or add a metric).
+--]]
 function PluginCheck:_handleLine(checkResult, line)
   local statusEndIndex, metricEndIndex, splitString, value, state
   local metricName, metricType, metricValue, dotIndex, internalMetricType, partsCount
+  local msg
+
+  if self._hasError then
+    -- If a CheckResult already has an error set, all the lines which come after
+    -- the error are ignored.
+    return
+  end
 
   _, statusEndIndex = line:find('^status')
   _, metricEndIndex = line:find('^metric')
@@ -175,7 +185,9 @@ function PluginCheck:_handleLine(checkResult, line)
     partsCount = #splitString
 
     if partsCount < 3 then
-      self._log(logging.WARNING, fmt('Invalid metric line (line=%s), skipping it...', line))
+      msg = 'Metric line not in the following format: metric <name> <type> <value>'
+      self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
+      self:_setError(checkResult, msg)
       return
     end
 
@@ -201,13 +213,17 @@ function PluginCheck:_handleLine(checkResult, line)
     internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
 
     if not internalMetricType then
-      self._log(logging.WARNING, fmt('Invalid metric type (type=%s), skipping it...', metricType))
+      msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
+      self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
+      self:_setError(checkResult, msg)
       return
     end
 
     if metricType ~= 'string' and partsCount ~= 3 then
       -- Only values for string metrics can contain spaces
-      self._log(logging.WARNING, fmt('Invalid metric line (line=%s), skipping it...', line))
+      local msg = fmt('Invalid value "%s" for a non-string metric', metricValue)
+      self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
+      self:_setError(checkResult, msg)
       return
     end
 
@@ -225,8 +241,23 @@ function PluginCheck:_handleLine(checkResult, line)
                  tostring(metricDimension), metricName, metricType, metricValue))
     end
   else
-    self._log(logging.DEBUG, fmt('Unrecognized line (line=%s)', line))
+    msg = fmt('Unrecognized line "%s"', line)
+    self._log(logging.WARNING, msg)
+    self:_setError(checkResult, msg)
   end
+end
+
+--[[
+-- Set an error on the CheckResult object if and only if the error hasn't been
+-- set yet.
+--]]
+function PluginCheck:_setError(checkResult, message)
+  if self._hasError then
+    return
+  end
+
+  self._hasError = true
+  checkResult:setError(message)
 end
 
 local exports = {}
