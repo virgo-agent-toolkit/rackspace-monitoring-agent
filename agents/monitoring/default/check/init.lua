@@ -43,8 +43,11 @@ function create(checkData)
     return NetworkCheck:new(obj)
   elseif checkType == 'agent.cpu' then
     return CpuCheck:new(obj)
+  elseif checkType == 'agent.plugin' then
+    return PluginCheck:new(obj)
+  else
+    return nil
   end
-  return nil
 end
 
 local exports = {}
