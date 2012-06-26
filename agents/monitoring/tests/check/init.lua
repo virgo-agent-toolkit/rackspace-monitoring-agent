@@ -146,8 +146,8 @@ exports['test_custom_plugin_timeout'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, timeout=500,
-                                 name='timeout', file='timeout.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                details={timeout=500, file='timeout.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
@@ -161,8 +161,8 @@ exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, timeout=5000,
-                                 name='not_executable', file='not_executable.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='not_executable.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
@@ -176,8 +176,8 @@ exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, timeout=5000,
-                                 name='doesnt_exist', file='doesnt_exist.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='doesnt_exist.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
@@ -191,10 +191,9 @@ exports['test_custom_plugin_cmd_arguments'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, timeout=5000,
-                                 name='custom_arguments',
-                                 file='plugin_custom_arguments.sh',
-                                 args={'foo_bar', 'a', 'b', 'c'}})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='plugin_custom_arguments.sh',
+                                 args={'foo_bar', 'a', 'b', 'c'}}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()['none']
@@ -215,8 +214,8 @@ exports['test_custom_plugin_all_types'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_1',
-                                 file='plugin_1.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                details={file='plugin_1.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()['none']
@@ -238,8 +237,8 @@ exports['test_custom_plugin_dimensions'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='dimensions',
-                                 file='plugin_dimensions.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='plugin_dimensions.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
@@ -260,8 +259,8 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = 
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_1',
-                                 file='cloudkick_agent_custom_plugin_1.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='cloudkick_agent_custom_plugin_1.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
@@ -280,8 +279,8 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = 
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_2',
-                                 file='cloudkick_agent_custom_plugin_2.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='cloudkick_agent_custom_plugin_2.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
@@ -300,8 +299,8 @@ exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
-                                 file='repeated_status_line.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='repeated_status_line.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
@@ -320,8 +319,8 @@ exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_2',
-                                 file='partial_output_with_sleep.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='partial_output_with_sleep.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()['none']
@@ -343,8 +342,8 @@ exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = function
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
-                                 file='invalid_metric_lines_1.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='invalid_metric_lines_1.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
@@ -362,8 +361,8 @@ exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
-                                 file='invalid_metric_lines_2.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='invalid_metric_lines_2.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
@@ -381,8 +380,8 @@ exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_met
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
-                                 file='invalid_metric_lines_3.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='invalid_metric_lines_3.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
@@ -400,8 +399,8 @@ exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(t
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
-                                 file='invalid_metric_lines_4.sh'})
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='invalid_metric_lines_4.sh'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
