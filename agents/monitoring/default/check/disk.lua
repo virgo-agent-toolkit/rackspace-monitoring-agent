@@ -30,7 +30,7 @@ function DiskCheck:run(callback)
   end
 
   -- Return Result
-  self._lastResults = checkResult
+  self._lastResult = checkResult
   callback(checkResult)
 end
 

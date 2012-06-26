@@ -33,7 +33,7 @@ local VALID_STATES = {'available', 'unavailable'}
 
 
 function BaseCheck:initialize(params, checkType)
-  self._lastResults = nil
+  self._lastResult = nil
   self._type = checkType or 'UNDEFINED'
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
@@ -42,7 +42,7 @@ end
 function BaseCheck:run(callback)
   -- do something, produce a CheckResult
   local checkResult = CheckResult:new(self, {})
-  self._lastResults = checkResult
+  self._lastResult = checkResult
   callback(checkResult)
 end
 
@@ -51,8 +51,8 @@ function BaseCheck:getType()
 end
 
 function BaseCheck:getNextRun()
-  if self._lastResults then
-    return self._lastResults._nextRun
+  if self._lastResult then
+    return self._lastResult._nextRun
   else
     return os.time()
   end
