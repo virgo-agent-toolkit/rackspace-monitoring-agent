@@ -339,21 +339,78 @@ exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
   end)
 end
 
-exports['test_custom_plugin_invalid_metric_lines'] = function(test, asserts)
+exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
   local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
-                                 file='invalid_metric_lines.sh'})
+                                 file='invalid_metric_lines_1.sh'})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
-    local metrics = result:getMetrics()['none']
+    local metrics = result:getMetrics()
 
     asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Invalid metric lines')
-    asserts.equals(result:getState(), 'available')
+    asserts.equals(result:getStatus(), 'Invalid type "intfoo" for metric "metric1"')
+    asserts.equals(result:getState(), 'unavailable')
 
-    asserts.dequals(metrics, { metric7 = {t = 'string', v = 'test bar'}})
+    asserts.dequals(metrics, {})
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
+                                 file='invalid_metric_lines_2.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Metric line not in the following format: metric <name> <type> <value>')
+    asserts.equals(result:getState(), 'unavailable')
+
+    asserts.dequals(metrics, {})
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_metric'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
+                                 file='invalid_metric_lines_3.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Invalid value "100 200" for a non-string metric')
+    asserts.equals(result:getState(), 'unavailable')
+
+    asserts.dequals(metrics, {})
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30, name='plugin_3',
+                                 file='invalid_metric_lines_4.sh'})
+  asserts.ok(check._lastResults == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Unrecognized line "some unknown line"')
+    asserts.equals(result:getState(), 'unavailable')
+
+    asserts.dequals(metrics, {})
     test.done()
   end)
 end
