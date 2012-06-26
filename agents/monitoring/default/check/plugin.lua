@@ -15,13 +15,12 @@ limitations under the License.
 --]]
 
 --[[
-
 Module for running custom agent plugins written in an arbitrary programing
-/ scripting language. This module also contains code for backward compatibility
-with Cloudkick agent plugins (https://support.cloudkick.com/Creating_a_plugin).
+/ scripting language. This module is backward compatibile with Cloudkick agent
+plugins (https://support.cloudkick.com/Creating_a_plugin).
 
 All the plugins must output information to the standard output in the
-format defined bellow.
+format defined bellow:
 
 status <status string>
 metric <name 1> <type> <value>
@@ -30,8 +29,8 @@ metric <name 3> <type> <value>
 
 * <status string> - A status string which includes a summary of the results.
 * <name> Name of the metric. No spaces are allowed. If a name contains a dot,
-  string before a dot is considered to be a metric dimension.
-* type - Metric type which can be one of:
+  string before the dot is considered to be a metric dimension.
+* <type> - Metric type which can be one of:
   * string
   * gauge
   * float
@@ -66,17 +65,18 @@ Constructor.
 params - Table with the following keys:
 
 - file (string) - Name of the plugin file.
-- args (table) - Command-line arguments which get passed to the plugin file.
-- timeout (number) - Plugin execution timeout in ms.
+- args (table) - Command-line arguments which get passed to the plugin.
+- timeout (number) - Plugin execution timeout in milliseconds.
 --]]
 function PluginCheck:initialize(params)
-  BaseCheck.initialize(self, params, 'agent.plugin.' .. params.name)
+  BaseCheck.initialize(self, params, 'agent.plugin')
 
   self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH,
                                path.basename(params.file))
   self._pluginArgs = params.args and params.args or {}
   self._timeout = params.timeout and params.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
 
+  self._checkResult = CheckResult:new(self, {})
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s, file=%s)', params.name,
                                          params.file))
 
@@ -121,7 +121,7 @@ function PluginCheck:run(callback)
     timer.clearTimer(pluginTimeout)
 
     if killed then
-      -- Plugin timed out and callback has already been called
+      -- Plugin timed out and callback has already been called.
       return
     end
 
@@ -139,8 +139,8 @@ function PluginCheck:run(callback)
 end
 
 --[[
--- Parse a line output by a plugin and mutate CheckResult object (set status
--- or add a metric).
+Parse a line output by a plugin and mutate CheckResult object (set status
+or add a metric).
 --]]
 function PluginCheck:_handleLine(checkResult, line)
   local statusEndIndex, metricEndIndex, splitString, value, state
@@ -248,8 +248,8 @@ function PluginCheck:_handleLine(checkResult, line)
 end
 
 --[[
--- Set an error on the CheckResult object if and only if the error hasn't been
--- set yet.
+Set an error on the CheckResult object if and only if the error hasn't been
+set yet.
 --]]
 function PluginCheck:_setError(checkResult, message)
   if self._hasError then
