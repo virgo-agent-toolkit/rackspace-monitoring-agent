@@ -21,6 +21,7 @@ local fs = require('fs')
 local Uuid = require('monitoring/default/util/uuid')
 local splitAddress = require('monitoring/default/util/misc').splitAddress
 local writePid = require('monitoring/default/util/misc').writePid
+local lastIndexOf = require('monitoring/default/util/misc').lastIndexOf
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
@@ -57,6 +58,13 @@ exports['test_splitAddress'] = function(test, asserts)
   asserts.equals(splitAddress(valid)[1], result[1])
   asserts.equals(splitAddress(valid)[2], result[2])
   asserts.equals(splitAddress(invalid), null)
+  test.done()
+end
+
+exports['test_lastIndexOf'] = function(test, asserts)
+  asserts.equals(lastIndexOf('foo', 'bar'), nil)
+  asserts.equals(lastIndexOf('foo', 'foo'), 1)
+  asserts.equals(lastIndexOf('.test.foo.bar', '%.'), 10)
   test.done()
 end
 

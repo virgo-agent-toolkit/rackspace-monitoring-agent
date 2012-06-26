@@ -1,4 +1,6 @@
 local os = require('os')
+local path = require('path')
+
 local exports = {}
 
 -- All intervals and timeouts are in milliseconds
@@ -23,5 +25,11 @@ if os.type() == 'win32' then
 else
   exports.DEFAULT_PERSISTENT_VARIABLE_PATH = '/var/lib/rackspace-monitoring-agent'
 end
+
+-- Custom plugins related settings
+
+exports.DEFAULT_CUSTOM_PLUGINS_PATH = '/usr/lib/rackspace-monitoring-agent/plugins'
+exports.DEFAULT_PLUGIN_TIMEOUT = 30 * 1000
+exports.PLUGIN_TYPE_MAP = {string = 'string', int = 'int64', float = 'double', gauge = 'gauge'}
 
 return exports
