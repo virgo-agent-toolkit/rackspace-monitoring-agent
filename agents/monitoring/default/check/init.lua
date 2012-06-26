@@ -28,8 +28,10 @@ function create(checkData)
   local checkType = checkData.type
   local obj = {
     id = checkData.id,
-    period = checkData.period
+    period = checkData.period,
+    details = checkData.details
   }
+
   if checkType == 'agent.memory' then
     return MemoryCheck:new(obj)
   elseif checkType == 'agent.disk' then
