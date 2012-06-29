@@ -7,6 +7,7 @@
       'lua_modules/async',
       'lua_modules/bourbon',
       'lua_modules/options',
+      'lua_modules/line-emitter',
       'agents/monitoring/default',
       'agents/monitoring/init.lua',
     ],
