@@ -22,7 +22,7 @@ local fs = require('fs')
 local timer = require('timer')
 
 local async = require('async')
-local ask = require('./ask').ask
+local ask = require('./util/prompt').ask
 local errors = require('./errors')
 local constants = require('./util/constants')
 

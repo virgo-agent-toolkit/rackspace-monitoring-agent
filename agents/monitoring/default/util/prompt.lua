@@ -1,4 +1,4 @@
-local trim = require('./util/misc').trim
+local trim = require('./misc').trim
 
 --[[
 Constructor.
