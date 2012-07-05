@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 local Error = require('core').Error
 
+--[[ HttpResponseError --]]
 local HttpResponseError = Error:extend()
 function HttpResponseError:initialize(statusCode, method, path, data)
   Error.initialize(self)
@@ -24,17 +25,21 @@ function HttpResponseError:initialize(statusCode, method, path, data)
   self.data = data
 end
 
+--[[ UserResponseError --]]
 local UserResponseError = Error:extend()
 function UserResponseError:initialize(message)
   Error.initialize(self)
   self.message = message
 end
 
+--[[ AuthTimeoutError --]]
 local AuthTimeoutError = Error:extend()
 function AuthTimeoutError:initialize(message)
   Error.initialize(self)
   self.message = message
 end
+
+--[[ Exports ]]--
 
 local exports = {}
 exports.HttpResponseError = HttpResponseError
