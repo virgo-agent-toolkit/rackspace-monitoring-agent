@@ -121,7 +121,7 @@ function Setup:run(callback)
           end
           process.stdout:write('\n')
           local validatedIndex = tonumber(index) -- validate response
-          if validatedIndex then
+          if validatedIndex >= 1 and validatedIndex <= #tokens.values then
             self._agent:setConfig({ ['monitoring_token'] = tokens.values[validatedIndex].id })
             self:save(tokens.values[validatedIndex].id, hostname, callback)
           else
