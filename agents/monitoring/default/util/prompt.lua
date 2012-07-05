@@ -1,8 +1,6 @@
 local trim = require('./misc').trim
 
 --[[
-Constructor.
-
 Ask a question and provide the reponse within the callback.
 
 params -
