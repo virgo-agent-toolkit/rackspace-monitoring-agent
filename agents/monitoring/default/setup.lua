@@ -45,7 +45,7 @@ function Setup:save(token, hostname, callback)
     data = data .. fmt('monitoring_id %s\n', hostname)
     fs.writeFile(self._configFile, data, function(err)
       if err then
-        process.stdout:write('failed\n')
+        process.stdout:write('failed writing config filen\n')
         callback(err)
         return
       end
@@ -182,6 +182,8 @@ function Setup:run(callback)
     if err then
       if type(err) == 'string' then
         process.stdout:write(fmt('Error: %s\n', err))
+      elseif err.message then
+        process.stdout:write(fmt('Error: %s\n', err.message))
       else
         process.stdout:write(fmt('Error: %s\n', err[1]))
       end
