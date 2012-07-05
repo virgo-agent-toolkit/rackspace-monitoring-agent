@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 local JSON = require('json')
 local Object = require('core').Object
+local Error = require('core').Error
 local https = require('https')
 local table = require('table')
 local fmt = require('string').format
@@ -105,7 +106,7 @@ function Client:_updateToken(callback)
         newToken = payload.access.token.id
         newExpires = payload.access.token.expires
       else
-        callback('Invalid response from auth server')
+        callback(Error:new('Invalid response from auth server'))
         return
       end
 

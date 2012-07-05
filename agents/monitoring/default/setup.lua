@@ -20,6 +20,7 @@ local Object = require('core').Object
 local fmt = require('string').format
 local fs = require('fs')
 local timer = require('timer')
+local JSON = require('json')
 
 local async = require('async')
 local ask = require('./util/prompt').ask
@@ -177,7 +178,7 @@ function Setup:run(callback)
       elseif err.message then
         process.stdout:write(fmt('Error: %s\n', err.message))
       else
-        process.stdout:write(fmt('Error: %s\n', err[1]))
+        process.stdout:write(fmt('Error: %s\n', JSON.stringify(err)))
       end
     end
     if callback then
