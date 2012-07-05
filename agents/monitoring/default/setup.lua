@@ -57,7 +57,7 @@ end
 
 function Setup:run(callback)
   local username, token, hostname
-  local agentToken
+  local agentToken, client
 
   hostname = os.hostname()
   process.stdout:write(fmt('Using hostname \'%s\'\n', hostname))
@@ -72,18 +72,10 @@ function Setup:run(callback)
         token = _token
         callback(err, username, token)
       end)
-    end
-  })
-
-  -- blocking for user input
-  native.run()
-
-  -- fall through and we continue
-  local client = maas.Client:new(username, token)
-
-  async.waterfall({
+    end,
     -- fetch all tokens
-    function(callback)
+    function(username, token, callback)
+      client = maas.Client:new(username, token)
       client.agent_tokens.get(callback)
     end,
     -- is there a token for the host
@@ -102,7 +94,7 @@ function Setup:run(callback)
         process.stdout:write('Found agent token for host\n')
         self._agent:setConfig({ ['monitoring_token'] = agentToken })
         self:save(agentToken, hostname, callback)
-      -- display a list of tokens
+        -- display a list of tokens
       elseif #tokens.values > 0 then
         process.stdout:write('\n')
         process.stdout:write('Tokens:\n')
@@ -128,7 +120,7 @@ function Setup:run(callback)
             callback(errors.UserResponseError:new('User input is not valid. Expected integer.'))
           end
         end)
-      -- create a token and save it
+        -- create a token and save it
       else
         client.agent_tokens.create({ ['label'] = hostname }, function(err, token)
           if err then
@@ -192,6 +184,7 @@ function Setup:run(callback)
       callback(err)
     end
   end)
+
 end
 
 local exports = {}
