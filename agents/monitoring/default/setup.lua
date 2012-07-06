@@ -167,7 +167,7 @@ function Setup:run(callback)
           process.stdout:write('\n\nSuccessfully tested Agent connection\n')
           process.stdout:write('\nYour agent is ready to go, now run:\n')
           process.stdout:write('\n    service rackspace-monitoring-agent start\n\n')
-          process.exit(0)
+          callback()
         end
       }, callback)
     end
@@ -181,9 +181,7 @@ function Setup:run(callback)
         process.stdout:write(fmt('Error: %s\n', JSON.stringify(err)))
       end
     end
-    if callback then
-      callback(err)
-    end
+    process.exit(0)
   end)
 
 end
