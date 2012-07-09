@@ -63,6 +63,17 @@ function Setup:run(callback)
   hostname = os.hostname()
   process.stdout:write(fmt('Using hostname \'%s\'\n', hostname))
 
+  function createToken(callback)
+    client.agent_tokens.create({ ['label'] = hostname }, function(err, token)
+      if err then
+        callback(err)
+        return
+      end
+      self._agent:setConfig({ ['monitoring_token'] = token })
+      self:save(token, hostname, callback)
+    end)
+  end
+
   async.waterfall({
     function(callback)
       ask('What is your Rackspace cloud username:', callback)
@@ -106,6 +117,7 @@ function Setup:run(callback)
             process.stdout:write(fmt('  %i. %s\n', i, v.id))
           end
         end
+        process.stdout:write(fmt('  %i. Create Token', #tokens.values + 1))
         process.stdout:write('\n')
         ask('  Select Token:', function(err, index)
           if err then
@@ -117,20 +129,15 @@ function Setup:run(callback)
           if validatedIndex >= 1 and validatedIndex <= #tokens.values then
             self._agent:setConfig({ ['monitoring_token'] = tokens.values[validatedIndex].id })
             self:save(tokens.values[validatedIndex].id, hostname, callback)
+          elseif validatedIndex == (#tokens.values + 1) then
+            createToken(callback)
           else
             callback(errors.UserResponseError:new('User input is not valid. Expected integer.'))
           end
         end)
         -- create a token and save it
       else
-        client.agent_tokens.create({ ['label'] = hostname }, function(err, token)
-          if err then
-            callback(err)
-            return
-          end
-          self._agent:setConfig({ ['monitoring_token'] = token })
-          self:save(token, hostname, callback)
-        end)
+        createToken(callback)
       end
     end,
     -- test connectivity
