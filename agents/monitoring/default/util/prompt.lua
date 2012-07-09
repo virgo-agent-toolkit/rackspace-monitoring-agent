@@ -10,12 +10,13 @@ params -
 ]]--
 function ask(question, callback)
   local response = ''
-  process.stdin:readStart()
+  process.stdin:resume()
   process.stdout:write(question .. ' ')
-  process.stdin:once('data', function(data)
+  process.stdin:on('data', function(data)
     response = response .. data
     if response:find('\n') then
-      process.stdin:readStop()
+      process.stdin:pause()
+      process.stdin:removeListener('data')
       callback(nil, trim(response))
     end
   end)
