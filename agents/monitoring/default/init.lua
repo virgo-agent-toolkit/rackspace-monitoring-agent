@@ -25,6 +25,8 @@ local timer = require('timer')
 local dns = require('dns')
 local fs = require('fs')
 local path = require('path')
+local Emitter = require('core').Emitter
+
 local sigarCtx = require('./sigar').ctx
 
 local ConnectionStream = require('./client/connection_stream').ConnectionStream
@@ -34,10 +36,11 @@ local States = require('./states')
 local stateFile = require('./state_file')
 local fsutil = require('./util/fs')
 local UUID = require('./util/uuid')
+local Setup = require('./setup').Setup
 
 local table = require('table')
 
-local MonitoringAgent = Object:extend()
+local MonitoringAgent = Emitter:extend()
 
 function MonitoringAgent:_queryForEndpoints(domains, callback)
   local endpoints = ''
@@ -102,12 +105,11 @@ function MonitoringAgent:_getPersistentVariable(variable, callback)
   end)
 end
 
-function MonitoringAgent:_verifyState(callback)
+function MonitoringAgent:setConfig(config)
+  self._config = config
+end
 
-  if self._config == nil then
-    logging.error("config missing or invalid")
-    process.exit(1)
-  end
+function MonitoringAgent:_verifyState(callback)
 
   if self._config['monitoring_token'] == nil then
     logging.error("'monitoring_token' is missing from 'config'")
@@ -203,7 +205,7 @@ function MonitoringAgent:loadStates(callback)
     end,
     function(callback)
       self:_loadEndpoints(callback)
-    end    
+    end
   }, callback)
 end
 
@@ -220,7 +222,14 @@ function MonitoringAgent:connect(callback)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)
+  self._streams:on('promote', function()
+    self:emit('promote')
+  end)
   self._streams:createConnections(endpoints, callback)
+end
+
+function MonitoringAgent:getStreams()
+  return self._streams
 end
 
 function MonitoringAgent:initialize(stateDirectory)
@@ -252,15 +261,31 @@ function MonitoringAgent.run(argv)
 
   local agent = MonitoringAgent:new(options.stateDirectory)
 
+  -- setup will exit and not fall through
+  if argv.u then
+    options.configFile = options.configFile or constants.DEFAULT_CONFIG_PATH
+    local setup = Setup:new(options.configFile, agent)
+    setup:run()
+  else
+    agent:start(options)
+  end
+end
+
+function MonitoringAgent:start(options)
+  if self:getConfig() == nil then
+    logging.error("config missing or invalid")
+    process.exit(1)
+  end
+
   async.series({
     function(callback)
       misc.writePid(options.pidFile, callback)
     end,
     function(callback)
-      agent:loadStates(callback)
+      self:loadStates(callback)
     end,
     function(callback)
-      agent:connect(callback)
+      self:connect(callback)
     end
   },
   function(err)

@@ -19,13 +19,15 @@ local logging = require('logging')
 local Entry = {}
 
 local argv = require("options")
-  :usage('Usage: ')
-  :describe("e", "entry module")
-  :describe("s", "state directory path")
-  :describe("c", "config file path")
-  :describe("p", "pid file path")
-  :describe("d", "enable debug logging")
-  :argv("dhe:p:c:s:")
+  .usage('Usage: ')
+  .describe("e", "entry module")
+  .describe("s", "state directory path")
+  .describe("c", "config file path")
+  .describe("p", "pid file path")
+  .describe("d", "enable debug logging")
+  .describe("u", "setup")
+  .alias({['u'] = 'setup'})
+  .argv("dhe:p:c:s:u")
 
 function Entry.run()
   local mod = argv.args.e and argv.args.e or 'default'
