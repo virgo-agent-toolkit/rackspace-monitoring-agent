@@ -261,29 +261,34 @@ function MonitoringAgent.run(argv)
 
   local agent = MonitoringAgent:new(options.stateDirectory)
 
-  -- setup
+  -- setup will exit and not fall through
   if argv.u then
     options.configFile = options.configFile or virgo.default_config_filename
     local setup = Setup:new(options.configFile, agent)
     setup:run()
-  else
-    async.series({
-      function(callback)
-        misc.writePid(options.pidFile, callback)
-      end,
-      function(callback)
-        agent:loadStates(callback)
-      end,
-      function(callback)
-        agent:connect(callback)
-      end
-    },
-    function(err)
-      if err then
-        logging.error(err.message)
-      end
-    end)
   end
+
+  if agent:getConfig() == nil then
+    logging.error("config missing or invalid")
+    process.exit(1)
+  end
+
+  async.series({
+    function(callback)
+      misc.writePid(options.pidFile, callback)
+    end,
+    function(callback)
+      agent:loadStates(callback)
+    end,
+    function(callback)
+      agent:connect(callback)
+    end
+  },
+  function(err)
+    if err then
+      logging.error(err.message)
+    end
+  end)
 end
 
 return MonitoringAgent
