@@ -39,6 +39,19 @@ function Setup:initialize(configFile, agent)
   end)
 end
 
+function Setup:saveTest(callback)
+  if self._configFile then
+    fs.open(self._configFile, 'a', "0644", function(err)
+      if err then
+        process.stdout:write(fmt('Error: cannot open config file: %s\n', self._configFile))
+        callback(err)
+        return
+      end
+      callback()
+    end)
+  end
+end
+
 function Setup:save(token, hostname, callback)
   if self._configFile then
     process.stdout:write(fmt('Writing token to %s: ', self._configFile))
@@ -75,6 +88,9 @@ function Setup:run(callback)
   end
 
   async.waterfall({
+    function(callback)
+      self:saveTest(callback)
+    end,
     function(callback)
       ask('What is your Rackspace cloud username:', callback)
     end,
