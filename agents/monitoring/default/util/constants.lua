@@ -29,6 +29,12 @@ else
   exports.DEFAULT_PERSISTENT_VARIABLE_PATH = '/var/lib/rackspace-monitoring-agent'
 end
 
+if os.type() == 'win32' then
+  exports.DEFAULT_CONFIG_PATH = path.join('.', virgo.default_config_filename)
+else
+  exports.DEFAULT_CONFIG_PATH = virgo.default_config_unix_path
+end
+
 -- Custom plugins related settings
 
 exports.DEFAULT_CUSTOM_PLUGINS_PATH = '/usr/lib/rackspace-monitoring-agent/plugins'

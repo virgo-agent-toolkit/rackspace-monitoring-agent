@@ -263,7 +263,7 @@ function MonitoringAgent.run(argv)
 
   -- setup will exit and not fall through
   if argv.u then
-    options.configFile = options.configFile or virgo.default_config_filename
+    options.configFile = options.configFile or constants.DEFAULT_CONFIG_PATH
     local setup = Setup:new(options.configFile, agent)
     setup:run()
   else
