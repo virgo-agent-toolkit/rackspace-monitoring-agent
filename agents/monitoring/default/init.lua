@@ -266,9 +266,13 @@ function MonitoringAgent.run(argv)
     options.configFile = options.configFile or virgo.default_config_filename
     local setup = Setup:new(options.configFile, agent)
     setup:run()
+  else
+    agent:start(options)
   end
+end
 
-  if agent:getConfig() == nil then
+function MonitoringAgent:start(options)
+  if self:getConfig() == nil then
     logging.error("config missing or invalid")
     process.exit(1)
   end
@@ -278,10 +282,10 @@ function MonitoringAgent.run(argv)
       misc.writePid(options.pidFile, callback)
     end,
     function(callback)
-      agent:loadStates(callback)
+      self:loadStates(callback)
     end,
     function(callback)
-      agent:connect(callback)
+      self:connect(callback)
     end
   },
   function(err)
