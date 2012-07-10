@@ -169,7 +169,7 @@ function Setup:run(callback)
         end,
         function(callback)
           function timeout()
-            callback(errors.AuthTimeoutError:new('Failed to authenticate. Please contact support'))
+            callback(errors.AuthTimeoutError:new('Failed to authenticate.'))
           end
 
           local authTimer = timer.setTimeout(constants.SETUP_AUTH_TIMEOUT, timeout)
