@@ -176,7 +176,7 @@ function Setup:run(callback)
               callback()
             else
               authTimer = timer.setTimeout(constants.SETUP_AUTH_TIMEOUT, timeout)
-              timer.setTimeout(constants.SETUP_CHECK_AUTH_INTERVAL, testAuth)
+              timer.setTimeout(constants.SETUP_AUTH_CHECK_INTERVAL, testAuth)
             end
           end
 
