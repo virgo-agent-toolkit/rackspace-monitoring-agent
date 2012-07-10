@@ -40,33 +40,29 @@ function Setup:initialize(configFile, agent)
 end
 
 function Setup:saveTest(callback)
-  if self._configFile then
-    fs.open(self._configFile, 'a', "0644", function(err)
-      if err then
-        process.stdout:write(fmt('Error: cannot open config file: %s\n', self._configFile))
-        callback(err)
-        return
-      end
-      callback()
-    end)
-  end
+  fs.open(self._configFile, 'a', "0644", function(err)
+    if err then
+      process.stdout:write(fmt('Error: cannot open config file: %s\n', self._configFile))
+      callback(err)
+      return
+    end
+    callback()
+  end)
 end
 
 function Setup:save(token, hostname, callback)
-  if self._configFile then
-    process.stdout:write(fmt('Writing token to %s: ', self._configFile))
-    local data = fmt('monitoring_token %s\n', token)
-    data = data .. fmt('monitoring_id %s\n', hostname)
-    fs.writeFile(self._configFile, data, function(err)
-      if err then
-        process.stdout:write('failed writing config filen\n')
-        callback(err)
-        return
-      end
-      process.stdout:write('done\n')
-      callback()
-    end)
-  end
+  process.stdout:write(fmt('Writing token to %s: ', self._configFile))
+  local data = fmt('monitoring_token %s\n', token)
+  data = data .. fmt('monitoring_id %s\n', hostname)
+  fs.writeFile(self._configFile, data, function(err)
+    if err then
+      process.stdout:write('failed writing config filen\n')
+      callback(err)
+      return
+    end
+    process.stdout:write('done\n')
+    callback()
+  end)
 end
 
 function Setup:run(callback)
