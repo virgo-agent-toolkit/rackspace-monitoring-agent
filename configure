@@ -120,8 +120,9 @@ json.dump(output, f, indent=2, skipkeys=True)
 f.write("\n")
 f.close()
 
-print "Updating git submodules...."
-os.system(' '.join(['git', 'submodule', 'update', '--init', '--recursive']))
+if os.path.isdir(os.path.join('.', '.git')):
+    print "Updating git submodules...."
+    os.system(' '.join(['git', 'submodule', 'update', '--init', '--recursive']))
 
 print "Generating build system with GYP..."
 
