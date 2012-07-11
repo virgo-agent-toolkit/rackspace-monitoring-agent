@@ -142,6 +142,10 @@ exports['test_checkresult_serialization'] = function(test, asserts)
   test.done()
 end
 
+-- Disable custom plugin checks on windows for now
+local os = require('os')
+if os.type() ~= 'win32' then
+
 exports['test_custom_plugin_timeout'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
@@ -412,6 +416,8 @@ exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(t
     asserts.dequals(metrics, {})
     test.done()
   end)
+end
+
 end
 
 return exports
