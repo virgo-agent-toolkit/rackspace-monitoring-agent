@@ -2,12 +2,13 @@
   'variables': {
     'without_ssl': 'false',
     'luvit_skinny': 'true',
+    'linux_breakpad': 1,
   },
   'make_global_settings': [
     # chrome normally links using the C++ compiler, but all of our code
     # is pure C, and we don't want to link in libstdc++.
-    ['LINK', '$(CC)'],
-    ['LINK.host', '$(CC)'],
+    # ['LINK', '$(CC)'],
+    # ['LINK.host', '$(CC)'],
   ],
 
   'target_defaults': {

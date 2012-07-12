@@ -14,6 +14,7 @@
         '../deps/luvit/luvit.gyp:libluvit',
         '../deps/sigar.gyp:sigar',
         '../deps/sigar.gyp:lua_sigar',
+        '../deps/breakpad/breakpad.gyp:*'
       ],
 
       'defines': [
@@ -32,11 +33,13 @@
         'virgo_logging.c',
         'virgo_portable.c',
         'virgo_util.c',
+        'virgo_crash_reporter.cc',
       ],
       'include_dirs': [
         '.',
         '../include/private',
         '../include',
+        '../deps/breakpad/src'
       ],
       'direct_dependent_settings': {
         'include_dirs': [
