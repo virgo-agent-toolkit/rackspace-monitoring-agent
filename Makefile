@@ -50,8 +50,16 @@ install: all
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
-dist:
-	git archive --format=tar --prefix=$(TARNAME)/ HEAD | tar xf -
+dist_build:
+	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' < monitoring-agent.gyp > monitoring-agent.gyp.dist
+
+dist: dist_build
+	./tools/git-archive-all/git-archive-all --prefix=virgo-$(VERSION)/ virgo-$(VERSION).tar.gz
+	tar xzf virgo-$(VERSION).tar.gz
+	make -C deps/luvit dist_build
+	mv monitoring-agent.gyp.dist $(TARNAME)/monitoring-agent.gyp
+	mv deps/luvit/luvit.gyp.dist $(TARNAME)/deps/luvit/luvit.gyp
+	mv deps/luvit/Makefile.dist $(TARNAME)/deps/luvit/Makefile
 	tar -cf $(TARNAME).tar $(TARNAME)
 	rm -rf $(TARNAME)
 	gzip -f -9 $(TARNAME).tar
