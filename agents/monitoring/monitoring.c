@@ -43,7 +43,7 @@ static void
 show_help()
 {
   /* TODO: improve for windows */
-  printf("Usage: monitoring-agent [options] \n"
+  printf("Usage: monitoring-agent [options] [--setup] \n"
          "\n"
          "Options:\n"
          "  -v, --version         print monitoring-agent's version\n"
@@ -54,6 +54,7 @@ show_help()
          "  -p, --pidfile val     Path and filename to pidfile.\n"
 #endif
          "  -z, --zip val         Path to Zip Bundle.\n"
+         "  --setup               Initial setup wizard.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);
