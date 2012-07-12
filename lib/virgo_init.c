@@ -41,6 +41,9 @@ static int global_virgo_init = 0;
 
 static void
 virgo__global_init() {
+
+  virgo__crash_reporter_init();
+
 #if !defined(OPENSSL_NO_COMP)
   STACK_OF(SSL_COMP)* comp_methods;
 #endif
@@ -73,7 +76,10 @@ static void
 virgo__global_terminate(void)
 {
     global_virgo_init--;
-    /* TODO: cleanup */
+    /* TODO: cleanup more */
+    if (global_virgo_init == 0) {
+      virgo__crash_reporter_destroy();
+    }
 }
 
 virgo_error_t*
@@ -89,6 +95,12 @@ virgo_create(virgo_t **p_v, const char *default_module)
   *p_v = v;
 
   return VIRGO_SUCCESS;
+}
+
+static void crash()
+{
+  volatile int* a = (int*)(NULL);
+  *a = 1;
 }
 
 virgo_error_t*
@@ -121,6 +133,8 @@ virgo_run(virgo_t *v)
   if (err) {
     return err;
   }
+
+  crash();
 
   /* TOOD: restart support */
   err = virgo__lua_run(v);
