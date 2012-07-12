@@ -238,31 +238,26 @@ virgo__conf_init(virgo_t *v)
     return err;
   }
 
-  fp = fopen(path, "r");
-  if (fp == NULL) {
-    virgo_error_t *err;
-    err = virgo_error_createf(VIRGO_EINVAL, "Unable to read configuration file: %s\n", path);
-    free((void*)path);
-    return err;
-  }
-
   /* destroy config if already read */
   if (v->config) {
     virgo__conf_destroy(v);
   }
 
   /* put config in virgo.config table */
-  lua_getglobal(v->L, "virgo");
-  lua_pushstring(v->L, "config");
-  lua_newtable(v->L);
-  conf_parse(v, fp);
-  lua_settable(v->L, -3);
+  fp = fopen(path, "r");
+  if (fp) {
+    lua_getglobal(v->L, "virgo");
+    lua_pushstring(v->L, "config");
+    lua_newtable(v->L);
+    conf_parse(v, fp);
+    lua_settable(v->L, -3);
+    fclose(fp);
+  }
 
   lua_pushstring(v->L, "config_path");
   lua_pushstring(v->L, path);
   lua_settable(v->L, -3);
 
-  fclose(fp);
   free((void*)path);
 
   return VIRGO_SUCCESS;

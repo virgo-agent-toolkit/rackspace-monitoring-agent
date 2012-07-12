@@ -13,6 +13,8 @@ bourbon_lua = os.path.join('lua_modules', 'bourbon')
 options_lua = os.path.join('lua_modules', 'options')
 traceroute_lua = os.path.join('lua_modules', 'traceroute')
 line_emitter_lua = os.path.join('lua_modules', 'line-emitter')
+rackspace_monitoring_client_lua = os.path.join('lua_modules', 'luvit-rackspace-monitoring-client')
+luvit_keystone_client_lua = os.path.join('lua_modules', 'luvit-keystone-client')
 luvit_lua = os.path.join('deps', 'luvit', 'lib', 'luvit')
 monitoring_lua = os.path.join('agents', 'monitoring', 'default')
 collector_lua = os.path.join('agents', 'monitoring', 'collector')
@@ -29,6 +31,10 @@ modules = {
     generate_bundle_map('modules/traceroute', 'lua_modules/traceroute'),
   line_emitter_lua:
     generate_bundle_map('modules/line-emitter', 'lua_modules/line-emitter'),
+  luvit_keystone_client_lua:
+    generate_bundle_map('modules/keystone', 'lua_modules/luvit-keystone-client'),
+  rackspace_monitoring_client_lua:
+    generate_bundle_map('modules/rackspace-monitoring', 'lua_modules/luvit-rackspace-monitoring-client'),
   lib_lua:
     generate_bundle_map('', 'lib/lua', True),
   luvit_lua:
