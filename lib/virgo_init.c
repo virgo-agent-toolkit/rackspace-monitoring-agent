@@ -97,12 +97,6 @@ virgo_create(virgo_t **p_v, const char *default_module)
   return VIRGO_SUCCESS;
 }
 
-static void crash()
-{
-  volatile int* a = (int*)(NULL);
-  *a = 1;
-}
-
 virgo_error_t*
 virgo_run(virgo_t *v)
 {
@@ -133,8 +127,6 @@ virgo_run(virgo_t *v)
   if (err) {
     return err;
   }
-
-  crash();
 
   /* TOOD: restart support */
   err = virgo__lua_run(v);
