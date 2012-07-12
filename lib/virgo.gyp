@@ -43,7 +43,6 @@
         'virgo_logging.c',
         'virgo_portable.c',
         'virgo_util.c',
-        'virgo_crash_reporter.cc',
       ],
       'include_dirs': [
         '.',
