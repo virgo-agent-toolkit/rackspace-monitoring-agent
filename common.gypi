@@ -7,6 +7,7 @@
   'make_global_settings': [
     # chrome normally links using the C++ compiler, but all of our code
     # is pure C, and we don't want to link in libstdc++.
+    #### commented out while we are using Breakpad -- it depends on using C++.
     # ['LINK', '$(CC)'],
     # ['LINK.host', '$(CC)'],
   ],
