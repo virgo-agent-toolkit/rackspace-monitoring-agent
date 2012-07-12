@@ -126,7 +126,6 @@ function ClientBase:request(method, path, payload, expectedStatusCode, callback)
     res:on('end', function()
       self._lastRes = res
       if res.statusCode ~= expectedStatusCode then
-        data = self:_parseData(data)
         callback(errors.HttpResponseError:new(res.statusCode, method, path, data))
       else
         if res.statusCode == 200 then
