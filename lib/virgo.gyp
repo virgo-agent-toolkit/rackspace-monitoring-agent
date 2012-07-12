@@ -8,6 +8,17 @@
           'cflags': [ '--std=c89' ],
           'defines': [ '_GNU_SOURCE' ]
         }],
+        ['OS=="linux"', {
+          'dependencies': [
+            '../deps/breakpad/breakpad.gyp:*'
+          ],
+          'sources': [
+            'virgo_crash_reporter.cc',
+          ],
+          'include_dirs': [
+            '../deps/breakpad/src',
+          ],
+        }],
       ],
       'dependencies': [
         '../deps/luvit/deps/zlib/zlib.gyp:zlib',
