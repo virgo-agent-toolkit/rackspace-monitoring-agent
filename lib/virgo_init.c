@@ -39,6 +39,20 @@
 
 static int global_virgo_init = 0;
 
+#ifndef __linux__
+
+void virgo__crash_reporter_init()
+{
+  
+}
+
+void virgo__crash_reporter_destroy()
+{
+  
+}
+
+#endif
+
 static void
 virgo__global_init() {
 
