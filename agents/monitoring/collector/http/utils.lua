@@ -83,6 +83,9 @@ function request(url, method, headers, payload, options, callback)
     end)
   end)
 
+  client:write(payload)
+  client:done()
+
   client:on('error', callback)
 end
 

@@ -38,9 +38,11 @@ function Options.showUsage (options)
 			line = line..string.rep (" ", w)
 			-- TODO align columns
 			line = line .."   "..v
-			for i, j in pairs (Options._demand) do
-				if k == j then
-					line = line.."  *required*"
+			if Options._demand then
+				for i, j in pairs (Options._demand) do
+					if k == j then
+						line = line.."  *required*"
+					end
 				end
 			end
 			print (line)
@@ -61,8 +63,8 @@ end
 --   -cdaone ==> opts["c"]==true opts["d"]==true opts["a"]=="one"
 -- note POSIX demands the parser ends at the first non option
 --      this behavior isn't implemented.
-function Options.parse (self, arg, options)
-	if #arg == 0 and Options._usage then
+function Options.parse (arg, options)
+	if Options._demand and #arg == 0 and Options._usage then
 		Options.showUsage (options)
 		process.exit (1)
 	end
@@ -124,6 +126,10 @@ function Options.parse (self, arg, options)
 				else
 					tab[jopt] = true
 				end
+				tab[jopt] = tonumber(tab[jopt]) or tab[jopt]
+				if(Options._alias[jopt]) then
+					tab[Options._alias[jopt]] = tab[jopt]
+				end
 				y = y + 1
 			end
 		else
@@ -146,8 +152,8 @@ function Options.parse (self, arg, options)
 	return Options
 end
 
-function Options.argv (self, opt)
-	return self:parse (process.argv, opt)
+function Options.argv (opt)
+	return Options.parse (process.argv, opt)
 end
 
 function Options.demand (dem)

@@ -31,7 +31,7 @@ clean:
 distclean:
 	rm -rf out
 
-VERSION=$(shell git describe)
+VERSION=$(shell git describe --tags || git rev-parse --short HEAD)
 TARNAME=virgo-$(VERSION)
 
 test: tests

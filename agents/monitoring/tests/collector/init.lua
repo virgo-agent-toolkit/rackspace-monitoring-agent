@@ -102,7 +102,7 @@ exports['test_traceroute'] = function(test, asserts)
         end
       end)
 
-      http.request({
+      local client = http.request({
         host = '127.0.0.1',
         port = 7889,
         path = '/v1.0/traceroute?target=127.0.0.1&streaming=1'
@@ -119,6 +119,8 @@ exports['test_traceroute'] = function(test, asserts)
           callback()
         end)
       end)
+
+      client:done()
     end
   },
 
