@@ -73,6 +73,12 @@ virgo__set_virgo_key(lua_State *L, const char *key, const char *value)
   lua_settable(L, -3);
 }
 
+static int
+virgo__lua_force_crash(lua_State *L) {
+  volatile int* a = (int*)(NULL);
+  *a = 1;
+}
+
 virgo_error_t*
 virgo__lua_init(virgo_t *v)
 {
@@ -86,6 +92,10 @@ virgo__lua_init(virgo_t *v)
   /* Create global config object called virgo */
   lua_newtable(L);
   lua_setglobal(L, "virgo");
+
+  lua_getglobal(L, "virgo");
+  lua_pushcfunction(L, virgo__lua_force_crash);
+  lua_setfield(L, -2, "force_crash");
 
   virgo__set_virgo_key(L, "os", VIRGO_OS);
   virgo__set_virgo_key(L, "default_name", VIRGO_DEFAULT_NAME);
