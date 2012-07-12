@@ -8,13 +8,23 @@
           'cflags': [ '--std=c89' ],
           'defines': [ '_GNU_SOURCE' ]
         }],
+        ['OS=="linux"', {
+          'dependencies': [
+            '../deps/breakpad/breakpad.gyp:*'
+          ],
+          'sources': [
+            'virgo_crash_reporter.cc',
+          ],
+          'include_dirs': [
+            '../deps/breakpad/src',
+          ],
+        }],
       ],
       'dependencies': [
         '../deps/luvit/deps/zlib/zlib.gyp:zlib',
         '../deps/luvit/luvit.gyp:libluvit',
         '../deps/sigar.gyp:sigar',
         '../deps/sigar.gyp:lua_sigar',
-        '../deps/breakpad/breakpad.gyp:*'
       ],
 
       'defines': [
@@ -39,7 +49,6 @@
         '.',
         '../include/private',
         '../include',
-        '../deps/breakpad/src'
       ],
       'direct_dependent_settings': {
         'include_dirs': [
