@@ -39,8 +39,25 @@
 
 static int global_virgo_init = 0;
 
+#ifndef __linux__
+
+void virgo__crash_reporter_init()
+{
+  
+}
+
+void virgo__crash_reporter_destroy()
+{
+  
+}
+
+#endif
+
 static void
 virgo__global_init() {
+
+  virgo__crash_reporter_init();
+
 #if !defined(OPENSSL_NO_COMP)
   STACK_OF(SSL_COMP)* comp_methods;
 #endif
@@ -73,7 +90,10 @@ static void
 virgo__global_terminate(void)
 {
     global_virgo_init--;
-    /* TODO: cleanup */
+    /* TODO: cleanup more */
+    if (global_virgo_init == 0) {
+      virgo__crash_reporter_destroy();
+    }
 }
 
 virgo_error_t*
