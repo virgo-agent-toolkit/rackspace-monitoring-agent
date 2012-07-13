@@ -1,0 +1,54 @@
+Name:		rackspace-monitoring-agent
+Version:	@@VERSION@@
+Release:	@@RELEASE@@%{?dist}
+Summary:	Rackspace Cloud Monitoring Agent
+
+Group:		System Environment/Daemons
+License:	Apache 2.0
+URL:		http://www.rackspace.com/cloud/cloud_hosting_products/monitoring/
+Source0:	https://github.com/racker/virgo/tarball/@@TARNAME@@.tar.gz
+BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+
+BuildRequires:	python traceroute
+Requires:	glibc
+
+%description
+rackspace-monitoring-agent is a daemon that is installed on a host to gather
+statistics and run checks and report data back to the cloud monitoring service.
+See: http://www.rackspace.com/cloud/cloud_hosting_products/monitoring/
+
+
+%prep
+%setup -q -n @@TARNAME@@
+
+
+%build
+./configure
+make %{?_smp_mflags}
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+
+
+%check
+
+make test
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%files
+%defattr(-,root,root,-)
+%doc README.md LICENSE.txt
+%{_bindir}/monitoring-rackspace
+%{_sysconfdir}/rackspace-monitoring-agent.cfg
+%{_datadir}/rackspace-monitoring-agent/*
+
+
+
+%changelog
+
