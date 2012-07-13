@@ -82,7 +82,7 @@ rpm: dist
 	mkdir -p rpmbuild/SPECS rpmbuild/SOURCES rpmbuild/RPMS rpmbuild/BUILD rpmbuild/SRPMS
 	cp $(spec_file) rpmbuild/SPECS/
 	cp $(TARNAME).tar.gz rpmbuild/SOURCES/
-	rpmbuild -ba --buildroot rpmbuild $(spec_file)
+	rpmbuild --define '_topdir $(PWD)/rpmbuild' -ba $(spec_file)
 
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
