@@ -246,7 +246,8 @@ void ExceptionHandler::UpdateNextID() {
     next_minidump_id_c_ = next_minidump_id_.c_str();
 
     char minidump_path[PATH_MAX];
-    snprintf(minidump_path, sizeof(minidump_path), "%s/%s.dmp",
+    /* TODO: Make configurable */
+    snprintf(minidump_path, sizeof(minidump_path), "%s/monitoring-agent-crash-report-%s.dmp",
              dump_path_c_,
              guid_str);
 
