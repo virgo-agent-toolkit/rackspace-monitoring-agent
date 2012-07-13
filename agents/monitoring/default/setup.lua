@@ -30,10 +30,12 @@ local constants = require('./util/constants')
 local maas = require('rackspace-monitoring')
 
 local Setup = Object:extend()
-function Setup:initialize(configFile, agent)
+function Setup:initialize(argv, configFile, agent)
   self._configFile = configFile
   self._agent = agent
   self._receivedPromotion = false
+  self._username = argv.n
+  self._apikey = argv.k
   self._agent:on('promote', function()
     self._receivedPromotion = true
   end)
@@ -88,14 +90,29 @@ function Setup:run(callback)
       self:saveTest(callback)
     end,
     function(callback)
-      ask('What is your Rackspace cloud username:', callback)
+      if (self._username == nil and self._apikey ~= nil)
+         or (self._username ~= nil and self._apikey == nil) then
+        callback(errors.UserResponseError:new('Username and password/apikey must be provided together.'))
+      end
+      callback()
+    end,
+    function(callback)
+      if self._username == nil then
+        ask('What is your Rackspace cloud username:', callback)
+      else
+        callback(nil, self._username)
+      end
     end,
     function(_username, callback)
-      ask('What is your Rackspace API key or Password:', function(err, _token)
-        username = _username
-        token = _token
-        callback(err, username, token)
-      end)
+      if self._apikey == nil then
+        ask('What is your Rackspace API key or Password:', function(err, _token)
+          username = _username
+          token = _token
+          callback(err, username, token)
+        end)
+      else
+        callback(nil, self._username, self._apikey)
+      end
     end,
     -- fetch all tokens
     function(username, token, callback)
@@ -119,6 +136,8 @@ function Setup:run(callback)
         self._agent:setConfig({ ['monitoring_token'] = agentToken })
         self:save(agentToken, hostname, callback)
         -- display a list of tokens
+      elseif self._username and self._apikey then
+         createToken(callback)
       elseif #tokens.values > 0 then
         process.stdout:write('\n')
         process.stdout:write('Tokens:\n')
