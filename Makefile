@@ -88,4 +88,4 @@ update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
 
-.PHONY: clean dist distclean all test tests endpoint-tests rpm
+.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file)
