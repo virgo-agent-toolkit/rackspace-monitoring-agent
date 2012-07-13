@@ -78,7 +78,14 @@ dist: dist_build $(spec_file)
 	rm -rf $(TARNAME)
 	gzip -f -9 $(TARNAME).tar
 
+rpm: dist
+	mkdir -p rpmbuild/SPECS rpmbuild/SOURCES rpmbuild/RPMS rpmbuild/BUILD rpmbuild/SRPMS
+	cp $(spec_file) rpmbuild/SPECS/
+	cp $(TARNAME).tar.gz rpmbuild/SOURCES/
+	rpmbuild -ba --buildroot rpmbuild $(spec_file)
+
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
-.PHONY: clean dist distclean all test tests endpoint-tests
+
+.PHONY: clean dist distclean all test tests endpoint-tests rpm
