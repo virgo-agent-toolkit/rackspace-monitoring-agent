@@ -27,7 +27,11 @@ local argv = require("options")
   .describe("d", "enable debug logging")
   .describe("u", "setup")
   .alias({['u'] = 'setup'})
-  .argv("dhe:p:c:s:u")
+  .describe("n", "username")
+  .alias({['n'] = 'username'})
+  .describe("k", "apikey")
+  .alias({['k'] = 'apikey'})
+  .argv("dhe:p:c:s:n:k:u")
 
 function Entry.run()
   local mod = argv.args.e and argv.args.e or 'default'

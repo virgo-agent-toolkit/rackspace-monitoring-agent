@@ -55,6 +55,8 @@ show_help()
 #endif
          "  -z, --zip val         Path to Zip Bundle.\n"
          "  --setup               Initial setup wizard.\n"
+         "    --username          Rackspace Cloud username for setup.\n"
+         "    --apikey            Rackspace Cloud API Key or Password for setup.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);
