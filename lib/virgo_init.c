@@ -55,12 +55,11 @@ void virgo__crash_reporter_destroy()
 
 static void
 virgo__global_init() {
-
-  virgo__crash_reporter_init();
-
 #if !defined(OPENSSL_NO_COMP)
   STACK_OF(SSL_COMP)* comp_methods;
 #endif
+
+  virgo__crash_reporter_init();
 
   if (global_virgo_init++) {
     return;
