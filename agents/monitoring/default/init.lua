@@ -16,6 +16,7 @@ limitations under the License.
 
 
 local async = require('async')
+local string = require('string')
 local utils = require('utils')
 local JSON = require('json')
 local Object = require('core').Object
@@ -30,6 +31,7 @@ local Emitter = require('core').Emitter
 local sigarCtx = require('./sigar').ctx
 
 local ConnectionStream = require('./client/connection_stream').ConnectionStream
+local CrashReportSubmitter = require('./crashreport').CrashReportSubmitter
 local constants = require('./util/constants')
 local misc = require('./util/misc')
 local States = require('./states')
@@ -271,6 +273,36 @@ function MonitoringAgent.run(argv)
   end
 end
 
+function MonitoringAgent:_sendCrashReports(callback)
+  local crashReports = {}
+
+  local function submitCrashReport(filename, callback)
+    local crs = CrashReportSubmitter:new(filename, constants.CRASH_REPORT_URL)
+    crs:run(callback)
+  end
+
+  async.series({
+    function(callback)
+      fs.readdir("/tmp", function (err, files)
+        if err then
+          callback(err)
+        end
+
+        for index,value in ipairs(files) do
+          if string.find(value, "monitoring%-agent%-crash%-report-.+.dmp") ~= nil then
+            logging.info('Found previous crash report /tmp/' .. value)
+            table.insert(crashReports, value)
+          end
+        end
+        callback()
+      end)
+    end,
+    function(callback)
+      async.forEachSeries(crashReports, submitCrashReport, callback)
+    end
+  }, callback)
+end
+
 function MonitoringAgent:start(options)
   if self:getConfig() == nil then
     logging.error("config missing or invalid")
@@ -278,6 +310,9 @@ function MonitoringAgent:start(options)
   end
 
   async.series({
+    function(callback)
+      self:_sendCrashReports(callback)
+    end,
     function(callback)
       misc.writePid(options.pidFile, callback)
     end,
