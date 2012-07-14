@@ -120,7 +120,9 @@ function AgentClient:connect()
         self:emit('error', err)
       else
         self._heartbeat_interval = msg.result.heartbeat_interval
-        self:emit('handshake_success')
+        self._entity_id = msg.result.entity_id
+
+        self:emit('handshake_success', msg.result)
       end
     end)
   end)
