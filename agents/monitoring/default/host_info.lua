@@ -261,7 +261,7 @@ function ProcessInfo:initialize()
     table.insert(self._params, obj)
   end
 end
---
+
 --[[ Filesystem Info ]]--
 local FilesystemInfo = HostInfo:extend()
 function FilesystemInfo:initialize()
@@ -303,6 +303,24 @@ function FilesystemInfo:initialize()
   end
 end
 
+--[[ Filesystem Info ]]--
+local SystemInfo = HostInfo:extend()
+function SystemInfo:initialize()
+  HostInfo.initialize(self)
+  local sysinfo = sigarCtx:sysinfo()
+  local obj = {name = sysinfo.name, arch = sysinfo.arch,
+               version = sysinfo.version, vendor = sysinfo.vendor,
+               vendor_version = sysinfo.vendor_version,
+               description = sysinfo.description}
+
+  if sysinfo.vendor_code_name ~= nil then
+    obj.vendor_code_name = sysinfo.vendor_code_name
+  end
+
+  table.insert(self._params, obj)
+end
+
+
 
 --[[ Factory ]]--
 function create(infoType)
@@ -318,7 +336,10 @@ function create(infoType)
     return ProcessInfo:new()
   elseif infoType == 'FILESYSTEM' then
     return FilesystemInfo:new()
+  elseif infoType == 'SYSTEM' then
+    return SystemInfo:new()
   end
+
   return NilInfo:new()
 end
 
