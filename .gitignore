@@ -22,3 +22,4 @@ monitoring-test.zip
 *.sig
 scheduler.state
 ._*
+rpmbuild/*

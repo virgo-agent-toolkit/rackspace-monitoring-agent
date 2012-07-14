@@ -266,7 +266,7 @@ function MonitoringAgent.run(argv)
   -- setup will exit and not fall through
   if argv.u then
     options.configFile = options.configFile or constants.DEFAULT_CONFIG_PATH
-    local setup = Setup:new(options.configFile, agent)
+    local setup = Setup:new(argv, options.configFile, agent)
     setup:run()
   else
     agent:start(options)
