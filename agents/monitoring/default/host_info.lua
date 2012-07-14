@@ -303,7 +303,7 @@ function FilesystemInfo:initialize()
   end
 end
 
---[[ Filesystem Info ]]--
+--[[ System Info ]]--
 local SystemInfo = HostInfo:extend()
 function SystemInfo:initialize()
   HostInfo.initialize(self)
