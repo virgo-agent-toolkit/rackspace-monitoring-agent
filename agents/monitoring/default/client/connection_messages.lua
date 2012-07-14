@@ -29,8 +29,11 @@ function ConnectionMessages:onClientEnd(client)
   client:log(logging.INFO, 'Detected client disconnect')
 end
 
-function ConnectionMessages:onHandshake(client)
-  self:fetchManifest(client);
+function ConnectionMessages:onHandshake(client, data)
+  -- Only retrieve manifest if agent is bound to an entity
+  if data.entity_id then
+    self:fetchManifest(client)
+  end
 end
 
 function ConnectionMessages:fetchManifest(client)
