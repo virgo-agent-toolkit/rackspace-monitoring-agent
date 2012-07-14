@@ -127,6 +127,10 @@ conf_parse(virgo_t *v, FILE *fp)
 
     while (isspace(p[0])) { p++;};
 
+    if (strlen(p) == 0) {
+      continue;
+    }
+
     /* Insert into list */
     node = calloc(1, sizeof(*node));
     node->next = v->config;
