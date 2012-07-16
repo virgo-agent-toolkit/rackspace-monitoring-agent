@@ -278,7 +278,7 @@ function MonitoringAgent:_sendCrashReports(callback)
   local productName = virgo.default_name:gsub('%-', '%%%-')
 
   local function submitCrashReport(filename, callback)
-    local crs = CrashReportSubmitter:new(filename, constants.CRASH_REPORT_URL)
+    local crs = CrashReportSubmitter:new("/tmp/" .. filename, constants.CRASH_REPORT_URL)
     crs:run(callback)
   end
 
