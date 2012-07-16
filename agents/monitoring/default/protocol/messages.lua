@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 local Object = require('core').Object
+local version = require('../util/version')
 
 --[[ Message ]]--
 
@@ -78,6 +79,8 @@ function HandshakeHello:initialize(token, agentId)
   self.method = 'handshake.hello'
   self.params.token = token
   self.params.agent_id = agentId
+  self.params.process_version = version.process
+  self.params.bundle_version = version.bundle
 end
 
 --[[ Heartbeat ]]--
