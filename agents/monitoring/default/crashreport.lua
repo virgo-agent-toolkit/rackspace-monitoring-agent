@@ -86,7 +86,7 @@ function CrashReportSubmitter:run(callback)
 
   stream:on('close', function()
     client:done()
-    callback(err)
+    callback()
   end)
 end
 
