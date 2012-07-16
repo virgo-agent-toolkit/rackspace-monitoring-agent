@@ -58,10 +58,12 @@ function CrashReportSubmitter:run(callback)
 
   client = https.request(options, function(res)
     local data = ''
+    logging.info('Crash Upload Status Code: '.. res.status_code)
     res:on('data', function(chunk)
       data = data .. chunk
     end)
     res:on('end', function()
+      logging.info('Crash Upload Response: '.. data)
       callback()
     end)
   end)
