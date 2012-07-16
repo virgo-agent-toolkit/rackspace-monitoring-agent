@@ -123,12 +123,40 @@
       },
     },
     {
+      'target_name': 'versions',
+      'type': 'none',
+      'toolsets': ['host'],
+      'variables': {
+        'BUNDLE_VERSION': '<!(git --git-dir .git describe --tags)'
+      },
+      'actions': [
+        {
+          'action_name': 'generate_version',
+          'inputs': [
+            'agents/monitoring/default/util/version.lua.in'
+          ],
+          'outputs': [
+            'agents/monitoring/default/util/version.lua'
+          ],
+          'action': [
+            'python',
+            'tools/lame_sed.py',
+            '<@(_inputs)',
+            '<@(_outputs)',
+            '{AGENT_BUNDLE_VERSION}:<(BUNDLE_VERSION)'
+          ]
+        }
+      ]
+    },
+    {
       'target_name': 'monitoring.zip',
       'type': 'none',
       'toolsets': ['host'],
       'variables': {
       },
-
+      'dependencies': [
+        'versions#host'
+      ],
       'actions': [
         {
           'action_name': 'virgo_luazip',

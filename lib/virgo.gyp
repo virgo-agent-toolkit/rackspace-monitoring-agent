@@ -29,6 +29,7 @@
 
       'defines': [
         'VIRGO_OS="<(OS)"',
+        'VIRGO_VERSION="<!(git --git-dir .git rev-parse HEAD)"',
       ],
 
       'sources': [
