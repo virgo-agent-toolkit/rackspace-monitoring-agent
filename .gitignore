@@ -23,3 +23,4 @@ monitoring-test.zip
 scheduler.state
 ._*
 rpmbuild/*
+agents/monitoring/default/util/version.lua
