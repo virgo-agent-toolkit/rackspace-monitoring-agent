@@ -294,6 +294,7 @@ function MonitoringAgent:_sendCrashReports(callback)
       fs.readdir("/tmp", function (err, files)
         if err then
           callback(err)
+          return
         end
 
         for index,value in ipairs(files) do
