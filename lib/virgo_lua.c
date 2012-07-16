@@ -98,6 +98,7 @@ virgo__lua_init(virgo_t *v)
   lua_setfield(L, -2, "force_crash");
 
   virgo__set_virgo_key(L, "os", VIRGO_OS);
+  virgo__set_virgo_key(L, "version", VIRGO_VERSION);
   virgo__set_virgo_key(L, "default_name", VIRGO_DEFAULT_NAME);
   virgo__set_virgo_key(L, "default_config_windows_directory", VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY);
   virgo__set_virgo_key(L, "default_config_filename", VIRGO_DEFAULT_CONFIG_FILENAME);
