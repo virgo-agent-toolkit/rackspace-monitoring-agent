@@ -27,9 +27,21 @@ function CrashReportSubmitter:initialize(filename, url)
   self._url = url
 end
 
+function once(callback)
+  local called = false
+  return function(err)
+    if called == false then
+      called = true
+      callback(err)
+    end
+  end
+end
+
 function CrashReportSubmitter:run(callback)
   local headers = {}
   local parsed = url.parse(self._url)
+
+  callback = once(callback)
 
   logging.infof('Uploading %s to %s', self._path, self._url)
 
@@ -56,7 +68,6 @@ function CrashReportSubmitter:run(callback)
 
   client:on('error', function(err)
     logging.info('Failed to upload crash report: %s', err)
-    p(err)
     callback(err)
   end)
 
