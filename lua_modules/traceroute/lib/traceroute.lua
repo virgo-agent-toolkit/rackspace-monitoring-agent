@@ -70,7 +70,7 @@ function Traceroute:_run(target)
   local emitter = Emitter:new()
   local stderrBuffer = ''
 
-  lineEmitter:on('line', function(line)
+  lineEmitter:on('data', function(line)
     local hops = self:_parseLine(line)
     local hop
 
@@ -85,7 +85,7 @@ function Traceroute:_run(target)
   end)
 
   child.stdout:on('data', function(chunk)
-    lineEmitter:feed(chunk)
+    lineEmitter:write(chunk)
   end)
 
   child.stderr:on('data', function(chunk)
