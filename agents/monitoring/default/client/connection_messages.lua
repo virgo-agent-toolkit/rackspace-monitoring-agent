@@ -29,13 +29,21 @@ function ConnectionMessages:onClientEnd(client)
   client:log(logging.INFO, 'Detected client disconnect')
 end
 
-function ConnectionMessages:onHandshake(client)
-  self:fetchManifest(client);
+function ConnectionMessages:onHandshake(client, data)
+  -- Only retrieve manifest if agent is bound to an entity
+  if data.entity_id then
+    self:fetchManifest(client)
+  else
+    client:log(logging.DEBUG, 'Not retrieving check manifest, because ' ..
+                              'agent is not bound to an entity')
+  end
 end
 
 function ConnectionMessages:fetchManifest(client)
   function run()
     if client then
+      client:log(logging.DEBUG, 'Retrieving check manifest...')
+
       client.protocol:getManifest(function(err, manifest)
         if err then
           -- TODO Abort connection?
