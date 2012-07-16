@@ -17,6 +17,7 @@
 
 extern "C" {
   #include "virgo__util.h"
+  #include "virgo_brand.h"
 };
 
 #include "../deps/breakpad/src/client/linux/handler/exception_handler.h"
@@ -28,7 +29,7 @@ static bool dumpCallback(const char* dump_path,
                          void* context,
                          bool succeeded)
 {
-  printf("FATAL ERROR: Crash Dump written to: %s/monitoring-agent-crash-report-%s.dmp\n", dump_path, minidump_id);
+  printf("FATAL ERROR: Crash Dump written to: %s/%s-crash-report-%s.dmp\n", VIRGO_DEFAULT_NAME, dump_path, minidump_id);
   return succeeded;
 }
 
