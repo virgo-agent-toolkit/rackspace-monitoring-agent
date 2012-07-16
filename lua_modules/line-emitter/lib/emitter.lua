@@ -1,21 +1,21 @@
-local Emitter = require('core').Emitter
+local iStream = require('core').iStream
 
 local exports = {}
 
-local LineEmitter = Emitter:extend()
+local LineEmitter = iStream:extend()
 
 function LineEmitter:initialize(initialBuffer)
   self._buffer = initialBuffer and initialBuffer or ''
 end
 
-function LineEmitter:feed(chunk)
+function LineEmitter:write(chunk)
   local line
 
   self._buffer = self._buffer .. chunk
 
   line = self:_popLine()
   while line do
-    self:emit('line', line)
+    self:emit('data', line)
     line = self:_popLine()
   end
 end

@@ -107,12 +107,12 @@ function PluginCheck:run(callback)
     callback(checkResult)
   end)
 
-  lineEmitter:on('line', function(line)
+  lineEmitter:on('data', function(line)
     self:_handleLine(checkResult, line)
   end)
 
   child.stdout:on('data', function(chunk)
-    lineEmitter:feed(chunk)
+    lineEmitter:write(chunk)
   end)
 
   child.stderr:on('data', function(chunk)
