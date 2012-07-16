@@ -275,6 +275,7 @@ end
 
 function MonitoringAgent:_sendCrashReports(callback)
   local crashReports = {}
+  local productName = virgo.default_name:gsub('%-', '%%%-')
 
   local function submitCrashReport(filename, callback)
     local crs = CrashReportSubmitter:new(filename, constants.CRASH_REPORT_URL)
@@ -289,7 +290,7 @@ function MonitoringAgent:_sendCrashReports(callback)
         end
 
         for index,value in ipairs(files) do
-          if string.find(value, "monitoring%-agent%-crash%-report-.+.dmp") ~= nil then
+          if string.find(value, productName .. "%-crash%-report-.+.dmp") ~= nil then
             logging.info('Found previous crash report /tmp/' .. value)
             table.insert(crashReports, value)
           end
