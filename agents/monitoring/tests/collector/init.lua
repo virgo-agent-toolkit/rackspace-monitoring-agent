@@ -90,7 +90,7 @@ exports['test_traceroute'] = function(test, asserts)
       local le = LineEmitter:new()
       local emittedLines = 0
 
-      le:on('line', function(line)
+      le:on('data', function(line)
         local parsed
         emittedLines = emittedLines + 1
 
@@ -111,7 +111,7 @@ exports['test_traceroute'] = function(test, asserts)
       function (res)
         res:on('data', function (chunk)
           chunk = chunk and chunk or ''
-          le:feed(chunk)
+          le:write(chunk)
         end)
         res:on('end', function()
           asserts.equals(emittedLines, 1)
