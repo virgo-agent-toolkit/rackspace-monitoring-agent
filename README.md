@@ -28,6 +28,16 @@ Running tests
 
     make test
 
+Running monitoring agent fixtures server
+========================================
+
+The monitoring agent comes with an example fixture server. This will
+send the fixtures found in `agents/monitoring/tests/fixtures/` back and
+forth between a running agent. You can run a server and agent like this:
+
+     python agents/monitoring/runner server_fixture
+     python agents/monitoring/runner agent_fixture
+
 Building on Windows
 ====================
 
