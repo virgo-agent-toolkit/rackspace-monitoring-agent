@@ -7,6 +7,8 @@ local timer = require('timer')
 
 local lineEmitter = LineEmitter:new()
 local port = 50041
+local send_schedule_changed_initial = 2000
+local send_schedule_changed_interval = 60000
 
 local keyPem = [[
 -----BEGIN RSA PRIVATE KEY-----
@@ -96,10 +98,10 @@ tls.createServer(options, function (client)
     respond(client, payload)
   end)
 
-  local send_schedule_changed_timer = timer.setTimeout(2000, function()
+  timer.setTimeout(send_schedule_changed_initial, function()
     send_schedule_changed(client)
   end)
-  local send_schedule_changed_timer = timer.setInterval(60000, function()
+  timer.setInterval(send_schedule_changed_interval, function()
     send_schedule_changed(client)
   end)
 end):listen(port)
