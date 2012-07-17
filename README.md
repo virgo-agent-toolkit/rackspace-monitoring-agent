@@ -58,7 +58,7 @@ Now you can open `monitoring-agent.sln` from Visual Studio.
 
 If you wish to compile from the command line, run:
 
-    python tools/build.py
+    python tools/build.py build
 
 See also: http://www.chromium.org/developers/how-tos/build-instructions-windows
 
@@ -70,6 +70,6 @@ Hacking
 The entry point to the agent defaults to
 `modules/monitoring/monitoring-agent.lua`. To change this entry use the flag -e:
 
-    ./monitoring-agent -e test
+    ./monitoring-agent -z monitoring-test.zip -e tests
 
-This example would run `agents/monitoring/lua/test.lua`.
+This example would run `agents/monitoring/tests/init.lua`.
