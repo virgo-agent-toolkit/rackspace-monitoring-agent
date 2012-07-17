@@ -20,7 +20,7 @@
  */
 
 #ifndef _virgo_brand_h_
-#define _vrigo_brand_h_
+#define _virgo_brand_h_
 
 #define VIRGO_DEFAULT_NAME "rackspace-monitoring-agent"
 #define VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY \
