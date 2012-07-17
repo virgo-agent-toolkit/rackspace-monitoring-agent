@@ -1,6 +1,13 @@
 Virgo
-====================
-A project.
+=====
+
+Virgo is a project for building an on-host agents. The goal is to
+provide shared infrastructure for various types of agents.
+
+The first agent to use this infrastructure is the Rackspace Cloud
+Monitoring agent.
+
+Join in and build your agent with us.
 
 License
 ====================
