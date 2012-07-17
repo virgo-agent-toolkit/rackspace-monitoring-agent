@@ -220,7 +220,7 @@ function MonitoringAgent:connect(callback)
     end)
     return
   end
-  self._streams = ConnectionStream:new(self._config['monitoring_id'], self._config['monitoring_token'])
+  self._streams = ConnectionStream:new(self._config['monitoring_id'], self._config['monitoring_token'], self._options)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)
@@ -234,11 +234,12 @@ function MonitoringAgent:getStreams()
   return self._streams
 end
 
-function MonitoringAgent:initialize(stateDirectory)
-  if not stateDirectory then stateDirectory = virgo.default_state_unix_directory end
-  logging.debug('Using state directory ' .. stateDirectory)
-  self._states = States:new(stateDirectory)
+function MonitoringAgent:initialize(options)
+  if not options.stateDirectory then options.stateDirectory = virgo.default_state_unix_directory end
+  logging.debug('Using state directory ' .. options.stateDirectory)
+  self._states = States:new(options.stateDirectory)
   self._config = virgo.config
+  self._options = options
 end
 
 function MonitoringAgent:getConfig()
@@ -261,7 +262,15 @@ function MonitoringAgent.run(argv)
     options.pidFile = argv.p
   end
 
-  local agent = MonitoringAgent:new(options.stateDirectory)
+  if argv.i then
+    local caCertsDebug = require('./certs').caCertsDebug
+    options.tls = {
+      rejectUnauthorized = true,
+      ca = caCertsDebug
+    }
+  end
+
+  local agent = MonitoringAgent:new(options)
 
   -- setup will exit and not fall through
   if argv.u then

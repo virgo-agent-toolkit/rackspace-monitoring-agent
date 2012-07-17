@@ -20,6 +20,8 @@ local Entry = {}
 
 local argv = require("options")
   .usage('Usage: ')
+  .describe("i", "use insecure tls cert")
+  .describe("i", "insecure")
   .describe("e", "entry module")
   .describe("s", "state directory path")
   .describe("c", "config file path")
@@ -31,7 +33,7 @@ local argv = require("options")
   .alias({['n'] = 'username'})
   .describe("k", "apikey")
   .alias({['k'] = 'apikey'})
-  .argv("dhe:p:c:s:n:k:u")
+  .argv("idhe:p:c:s:n:k:u")
 
 function Entry.run()
   local mod = argv.args.e and argv.args.e or 'default'

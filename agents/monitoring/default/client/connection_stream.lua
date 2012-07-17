@@ -29,13 +29,14 @@ local consts = require('../util/constants')
 local misc = require('../util/misc')
 
 local ConnectionStream = Emitter:extend()
-function ConnectionStream:initialize(id, token)
+function ConnectionStream:initialize(id, token, options)
   self._id = id
   self._token = token
   self._clients = {}
   self._unauthedClients = {}
   self._delays = {}
   self._messages = ConnectionMessages:new(self)
+  self._options = options or {}
 end
 
 --[[
@@ -62,10 +63,11 @@ function ConnectionStream:createConnections(addresses, callback)
       async.forEach(addresses, function(address, callback)
         local split, client, options
         split = misc.splitAddress(address)
-        options = {}
-        options.host = split[1]
-        options.port = split[2]
-        options.datacenter = address
+        options = misc.merge({
+          host = split[1],
+          port = split[2],
+          datacenter = address
+        }, self._options)
         self:createConnection(options, callback)
       end)
     end

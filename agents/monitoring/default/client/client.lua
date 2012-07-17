@@ -47,6 +47,11 @@ function AgentClient:initialize(options, scheduler)
   self._port = options.port
   self._timeout = options.timeout or 5000
 
+  self._tls_options = options.tls or {
+    rejectUnauthorized = true,
+    ca = caCerts
+  }
+
   self._scheduler = scheduler
 
   self._heartbeat_interval = nil
@@ -92,14 +97,9 @@ function AgentClient:_socketTimeout()
 end
 
 function AgentClient:connect()
-  local options = {
-    ca = caCerts,
-    rejectUnauthorized = true
-  }
-
   -- Create connection timeout
   self._log(logging.DEBUG, 'Connecting...')
-  self._sock = tls.connect(self._port, self._host, options, function(err, cleartext)
+  self._sock = tls.connect(self._port, self._host, self._tls_options, function(err, cleartext)
     -- Log
     self._log(logging.INFO, 'Connected')
 
