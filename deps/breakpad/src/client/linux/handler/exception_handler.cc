@@ -63,6 +63,10 @@
 // alternative malloc. Each function should have comment above it detailing the
 // context which it runs in.
 
+extern "C" {
+  #include "../../include/virgo_brand.h"
+};
+
 #include "client/linux/handler/exception_handler.h"
 
 #include <errno.h>
@@ -246,7 +250,9 @@ void ExceptionHandler::UpdateNextID() {
     next_minidump_id_c_ = next_minidump_id_.c_str();
 
     char minidump_path[PATH_MAX];
-    snprintf(minidump_path, sizeof(minidump_path), "%s/%s.dmp",
+    /* TODO: Make configurable */
+    snprintf(minidump_path, sizeof(minidump_path), "%s/%s-crash-report-%s.dmp",
+             VIRGO_DEFAULT_NAME,
              dump_path_c_,
              guid_str);
 
