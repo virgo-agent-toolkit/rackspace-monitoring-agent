@@ -18,7 +18,7 @@ virgo is distributed under the [Apache License 2.0][apache].
 
 
 Building on a Unix-like Operating System
-====================
+========================================
 
     ./configure
     make
