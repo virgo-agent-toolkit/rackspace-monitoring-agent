@@ -57,6 +57,7 @@ show_help()
          "  --setup               Initial setup wizard.\n"
          "    --username          Rackspace Cloud username for setup.\n"
          "    --apikey            Rackspace Cloud API Key or Password for setup.\n"
+         "  -i, --insecure        Use insecure SSL CA cert (for testing/debugging).\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);
