@@ -27,7 +27,8 @@ def test_cmd(additional=""):
     agent = os.path.join(root, 'Debug', 'monitoring-agent.exe')
 
   state_config = os.path.join(root, 'contrib')
-  monitoring_config = os.path.join(root, 'pkg', 'monitoring', 'rackspace-monitoring-agent.cfg')
+  monitoring_config = os.path.join(root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
+
   return '%s -c %s -s %s %s' % (agent, monitoring_config, state_config, additional)
 
 def test(stdout=None):
@@ -45,13 +46,6 @@ def test(stdout=None):
     rc = subprocess.call(cmd, shell=True, stdout=stdout)
   sys.exit(rc)
 
-def test_endpoint(stdout=None):
-  cmd = test_cmd()
-  print cmd
-  rc = 0
-  rc = subprocess.call(cmd, shell=True, stdout=stdout)
-  sys.exit(rc)
-
 def test_std():
   test()
 
@@ -65,7 +59,6 @@ def test_file():
 commands = {
   'build': build,
   'test': test_std,
-  'test_endpoint': test_endpoint,
   'test_pipe': test_pipe,
   'test_file': test_file,
 }
