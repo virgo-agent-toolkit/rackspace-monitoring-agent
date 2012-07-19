@@ -1,15 +1,24 @@
 Virgo
-====================
-A project.
+=====
+
+Virgo is a project for building an on-host agents. The goal is to
+provide shared infrastructure for various types of agents.
+
+The first agent to use this infrastructure is the Rackspace Cloud
+Monitoring agent.
+
+Join in and build your agent with us.
 
 License
-====================
+=======
 
-virgo is distributed under the [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+virgo is distributed under the [Apache License 2.0][apache].
+
+[apache]: http://www.apache.org/licenses/LICENSE-2.0.html
 
 
 Building on a Unix-like Operating System
-====================
+========================================
 
     ./configure
     make
@@ -18,6 +27,16 @@ Running tests
 =============
 
     make test
+
+Running monitoring agent fixtures server
+========================================
+
+The monitoring agent comes with an example fixture server. This will
+send the fixtures found in `agents/monitoring/tests/fixtures/` back and
+forth between a running agent. You can run a server and agent like this:
+
+     python agents/monitoring/runner server_fixture
+     python agents/monitoring/runner agent_fixture
 
 Building on Windows
 ====================
@@ -39,7 +58,7 @@ Now you can open `monitoring-agent.sln` from Visual Studio.
 
 If you wish to compile from the command line, run:
 
-    python tools/build.py
+    python tools/build.py build
 
 See also: http://www.chromium.org/developers/how-tos/build-instructions-windows
 
@@ -51,6 +70,6 @@ Hacking
 The entry point to the agent defaults to
 `modules/monitoring/monitoring-agent.lua`. To change this entry use the flag -e:
 
-    ./monitoring-agent -e test
+    ./monitoring-agent -z monitoring-test.zip -e tests
 
-This example would run `agents/monitoring/lua/test.lua`.
+This example would run `agents/monitoring/tests/init.lua`.
