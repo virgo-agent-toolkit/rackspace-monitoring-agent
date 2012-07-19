@@ -77,7 +77,35 @@ static int
 virgo__lua_force_crash(lua_State *L) {
   volatile int* a = (int*)(NULL);
   *a = 1;
+  return 0;
 }
+
+
+#ifdef _WIN32
+
+#include "Shlwapi.h"
+
+static int
+virgo__lua_win32_get_associated_exe(lua_State *L) {
+  DWORD exePathLen = MAX_PATH;
+  HRESULT hr;
+  TCHAR exePath[ MAX_PATH ] = { 0 };
+  virgo_t* v = virgo__lua_context(L);
+  const char *extension = luaL_checkstring(L, 1);
+
+  hr = AssocQueryString(0, ASSOCSTR_EXECUTABLE,
+                        extension, "open",
+                        exePath, &exePathLen);
+  if (hr < 0) {
+    lua_pushnil(L);
+    lua_pushfstring(L, "could not find file association: '%d'", hr);
+    return 2;
+  }
+
+  lua_pushlstring(L, exePath, exePathLen - 1);
+  return 1;
+}
+#endif
 
 virgo_error_t*
 virgo__lua_init(virgo_t *v)
@@ -96,6 +124,12 @@ virgo__lua_init(virgo_t *v)
   lua_getglobal(L, "virgo");
   lua_pushcfunction(L, virgo__lua_force_crash);
   lua_setfield(L, -2, "force_crash");
+
+#ifdef _WIN32
+  lua_getglobal(L, "virgo");
+  lua_pushcfunction(L, virgo__lua_win32_get_associated_exe);
+  lua_setfield(L, -2, "win32_get_associated_exe");
+#endif
 
   virgo__set_virgo_key(L, "os", VIRGO_OS);
   virgo__set_virgo_key(L, "version", VIRGO_VERSION);
