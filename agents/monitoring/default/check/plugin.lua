@@ -91,9 +91,26 @@ function PluginCheck:run(callback)
   local stderrBuffer = ''
   local killed = false
   local checkResult = CheckResult:new(self, {})
-
-  local child = childprocess.spawn(self._pluginPath, self._pluginArgs)
+  local child = nil
+  local exePath = self._pluginPath
+  local exeArgs = self._pluginArgs
+  local ext = path.extname(exePath)
   local lineEmitter = LineEmitter:new()
+
+  if virgo.win32_get_associated_exe ~= nil and ext ~= "" then
+    -- If we are on windows, we want to suport custom plugins like "foo.py",
+    -- but this means we need to map the .py file ending to the Python Executable,
+    -- and mutate our run path to be like: C:/Python27/python.exe custom_plugins_path/foo.py
+    local assocExe, err = virgo.win32_get_associated_exe(ext)
+    if assocExe ~= nil then
+        table.insert(exeArgs, 1, self._pluginPath)
+        exePath = assocExe
+    else
+        self._log(logging.WARNING, fmt('error getting associated executable for "%s": %s', ext, err))
+    end
+  end
+
+  child = childprocess.spawn(exePath, exeArgs)
 
   local pluginTimeout = timer.setTimeout(self._timeout, function()
     local timeoutSeconds = (self._timeout / 1000)
