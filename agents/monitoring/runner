@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+
+import os
+import subprocess
+import sys
+
+root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+build_dir = os.path.join(root, 'out')
+
+def test_cmd(additional=""):
+  if sys.platform != "win32":
+    agent = os.path.join(root, 'out', 'Debug', 'monitoring-agent')
+  else:
+    agent = os.path.join(root, 'Debug', 'monitoring-agent.exe')
+
+  state_config = os.path.join(root, 'contrib')
+  monitoring_config = os.path.join(root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
+  zip_file = "monitoring.zip"
+
+  return '%s -z %s -c %s -s %s %s' % (agent, zip_file, monitoring_config, state_config, additional)
+
+def test_server_fixture(stdout=None):
+  if sys.platform != "win32":
+    luvit = os.path.join(root, 'out', 'Debug', 'luvit')
+  else:
+    luvit = os.path.join(root, 'Debug', 'luvit')
+
+  server = os.path.join('agents', 'monitoring', 'tests', 'fixtures', 'protocol', 'server.lua')
+
+  cmd = "%s %s" % (luvit, server)
+  print cmd
+  rc = 0
+  if stdout == None:
+    rc = subprocess.call(cmd, shell=True)
+  else:
+    rc = subprocess.call(cmd, shell=True, stdout=stdout)
+  sys.exit(rc)
+
+def test_endpoint(stdout=None):
+  cmd = test_cmd()
+  print cmd
+  rc = 0
+  rc = subprocess.call(cmd, shell=True, stdout=stdout)
+  sys.exit(rc)
+
+def test_endpoint_fixture(stdout=None):
+  cmd = test_cmd("-i")
+  print cmd
+  rc = 0
+  rc = subprocess.call(cmd, shell=True, stdout=stdout)
+  sys.exit(rc)
+
+commands = {
+  'agent': test_endpoint,
+  'agent_fixture': test_endpoint_fixture,
+  'server_fixture': test_server_fixture,
+}
+
+def usage():
+  print('Usage: runner [%s]' % ', '.join(commands.keys()))
+  sys.exit(1)
+
+if len(sys.argv) != 2:
+  usage()
+
+ins = sys.argv[1]
+if not commands.has_key(ins):
+  print('Invalid command: %s' % ins)
+  sys.exit(1)
+
+print('Running %s' % ins)
+cmd = commands.get(ins)
+cmd()
