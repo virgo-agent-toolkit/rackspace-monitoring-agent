@@ -102,7 +102,7 @@ function PluginCheck:run(callback)
     -- but this means we need to map the .py file ending to the Python Executable,
     -- and mutate our run path to be like: C:/Python27/python.exe custom_plugins_path/foo.py
     local assocExe, err = virgo.win32_get_associated_exe(ext)
-    if ext ~= nil then
+    if assocExe ~= nil then
         table.insert(exeArgs, 1, self._pluginPath)
         exePath = assocExe
     end
