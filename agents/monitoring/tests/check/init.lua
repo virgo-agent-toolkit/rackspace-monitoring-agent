@@ -16,6 +16,7 @@ limitations under the License.
 
 local JSON = require('json')
 local path = require('path')
+local os = require('os')
 
 local Check = require('monitoring/default/check')
 local Metric = require('monitoring/default/check/base').Metric
@@ -142,11 +143,12 @@ exports['test_checkresult_serialization'] = function(test, asserts)
   test.done()
 end
 
--- Disable custom plugin checks on windows for now
-local os = require('os')
-if os.type() ~= 'win32' then
-
 exports['test_custom_plugin_timeout'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -162,6 +164,11 @@ exports['test_custom_plugin_timeout'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -177,6 +184,11 @@ exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -192,6 +204,11 @@ exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_cmd_arguments'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -215,6 +232,11 @@ exports['test_custom_plugin_cmd_arguments'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_all_types'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -238,6 +260,11 @@ exports['test_custom_plugin_all_types'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_dimensions'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -260,6 +287,11 @@ exports['test_custom_plugin_dimensions'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -280,6 +312,11 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = 
 end
 
 exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -300,6 +337,11 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = 
 end
 
 exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -320,6 +362,11 @@ exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -343,6 +390,11 @@ exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -362,6 +414,11 @@ exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = function
 end
 
 exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -381,6 +438,11 @@ exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(
 end
 
 exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_metric'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -400,6 +462,11 @@ exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_met
 end
 
 exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Unsupported Platform for custom plugins")
+    return
+  end
+
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
@@ -416,8 +483,6 @@ exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(t
     asserts.dequals(metrics, {})
     test.done()
   end)
-end
-
 end
 
 return exports
