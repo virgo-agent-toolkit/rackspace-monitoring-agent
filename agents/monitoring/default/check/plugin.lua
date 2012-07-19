@@ -105,6 +105,8 @@ function PluginCheck:run(callback)
     if assocExe ~= nil then
         table.insert(exeArgs, 1, self._pluginPath)
         exePath = assocExe
+    else
+        self._log(logging.WARNING, fmt('error getting associated executable for "%s": %s', ext, err))
     end
   end
 
