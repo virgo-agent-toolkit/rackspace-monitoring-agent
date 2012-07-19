@@ -94,14 +94,13 @@ function PluginCheck:run(callback)
   local child = nil
   local exePath = self._pluginPath
   local exeArgs = self._pluginArgs
+  local ext = path.extname(exePath)
   local lineEmitter = LineEmitter:new()
 
-  if virgo.win32_get_associated_exe ~= nil then
+  if virgo.win32_get_associated_exe ~= nil and ext ~= "" then
     -- If we are on windows, we want to suport custom plugins like "foo.py",
     -- but this means we need to map the .py file ending to the Python Executable,
     -- and mutate our run path to be like: C:/Python27/python.exe custom_plugins_path/foo.py
-    local ext = path.extname(exePath)
-
     local assocExe, err = virgo.win32_get_associated_exe(ext)
     if ext ~= nil then
         table.insert(exeArgs, 1, self._pluginPath)
