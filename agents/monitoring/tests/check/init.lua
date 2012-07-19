@@ -144,16 +144,11 @@ exports['test_checkresult_serialization'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_timeout'] = function(test, asserts)
-  if os.type() == "win32" then
-    test.skip("Unsupported Platform for custom plugins")
-    return
-  end
-
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
   local check = PluginCheck:new({id='foo', period=30,
-                                details={timeout=500, file='timeout.sh'}})
+                                details={timeout=500, file='timeout.py'}})
   asserts.ok(check._lastResults == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
