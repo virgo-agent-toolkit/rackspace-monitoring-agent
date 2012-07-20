@@ -123,6 +123,16 @@ virgo_run(virgo_t *v)
     return virgo_error_create(VIRGO_EVERSIONREQ, "--version was passed");;
   }
 
+#ifdef _WIN32
+  if (virgo__argv_has_flag(v, NULL, "--service-install") == 1) {
+    return virgo__service_install(v);
+  }
+
+  if (virgo__argv_has_flag(v, NULL, "--service-delete") == 1) {
+    return virgo__service_delete(v);
+  }
+#endif
+
   err = virgo__log_rotate(v);
 
   if (err) {
@@ -141,8 +151,12 @@ virgo_run(virgo_t *v)
     return err;
   }
 
+#ifdef _WIN32
+  err = virgo__service_handler(v);
+#else
   /* TOOD: restart support */
   err = virgo__lua_run(v);
+#endif
 
   if (err) {
     return err;
