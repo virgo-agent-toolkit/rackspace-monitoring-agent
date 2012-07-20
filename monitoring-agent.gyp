@@ -80,7 +80,7 @@
             'defines': [
               'FD_SETSIZE=1024'
             ],
-            'libraries': [ '-lpsapi.lib', '-lversion.lib', '-lnetapi32.lib' ]
+            'libraries': [ '-lpsapi.lib', '-lversion.lib', '-lnetapi32.lib', '-lShlwapi.lib']
           },
           { # POSIX
             'defines': [ '__POSIX__' ]
