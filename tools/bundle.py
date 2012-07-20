@@ -12,7 +12,7 @@ def file_list(path):
     return [path]
 
   for f in os.listdir(path):
-    new_dir = os.path.join(path, f)
+    new_dir = path + '/' + f
     if os.path.isdir(new_dir) and not os.path.islink(new_dir):
       files.extend(file_list(new_dir))
     else:
