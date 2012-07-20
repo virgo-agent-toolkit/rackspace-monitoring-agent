@@ -30,4 +30,13 @@ const char* virgo__argv_get_value(virgo_t *v,
 int virgo__argv_has_flag(virgo_t *v,
                          const char *short_opt,
                          const char *long_opt);
+
+#ifdef _WIN32
+
+virgo_error_t* virgo__service_install(virgo_t *v);
+virgo_error_t* virgo__service_delete(virgo_t *v);
+virgo_error_t* virgo__service_handler(virgo_t *v);
+
+#endif
+
 #endif
