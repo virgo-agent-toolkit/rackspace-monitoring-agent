@@ -8,13 +8,13 @@ from bundle import generate_bundle_map
 from zipfile import ZipFile, ZIP_DEFLATED
 
 lib_lua = os.path.join('lib', 'lua')
-async_lua = os.path.join('lua_modules', 'async')
-bourbon_lua = os.path.join('lua_modules', 'bourbon')
-options_lua = os.path.join('lua_modules', 'options')
-traceroute_lua = os.path.join('lua_modules', 'traceroute')
-line_emitter_lua = os.path.join('lua_modules', 'line-emitter')
-rackspace_monitoring_client_lua = os.path.join('lua_modules', 'luvit-rackspace-monitoring-client')
-luvit_keystone_client_lua = os.path.join('lua_modules', 'luvit-keystone-client')
+async_lua = os.path.join('modules', 'async')
+bourbon_lua = os.path.join('modules', 'bourbon')
+options_lua = os.path.join('modules', 'options')
+traceroute_lua = os.path.join('modules', 'traceroute')
+line_emitter_lua = os.path.join('modules', 'line-emitter')
+rackspace_monitoring_client_lua = os.path.join('modules', 'luvit-rackspace-monitoring-client')
+luvit_keystone_client_lua = os.path.join('modules', 'luvit-keystone-client')
 luvit_lua = os.path.join('deps', 'luvit', 'lib', 'luvit')
 monitoring_lua = os.path.join('agents', 'monitoring', 'default')
 collector_lua = os.path.join('agents', 'monitoring', 'collector')
@@ -22,19 +22,19 @@ monitoring_tests = os.path.join('agents', 'monitoring', 'tests')
 
 modules = {
   async_lua:
-    generate_bundle_map('modules/async', 'lua_modules/async'),
+    generate_bundle_map('modules/async', 'modules/async'),
   bourbon_lua:
-    generate_bundle_map('modules/bourbon', 'lua_modules/bourbon'),
+    generate_bundle_map('modules/bourbon', 'modules/bourbon'),
   options_lua:
-    generate_bundle_map('modules/options', 'lua_modules/options'),
+    generate_bundle_map('modules/options', 'modules/options'),
   traceroute_lua:
-    generate_bundle_map('modules/traceroute', 'lua_modules/traceroute'),
+    generate_bundle_map('modules/traceroute', 'modules/traceroute'),
   line_emitter_lua:
-    generate_bundle_map('modules/line-emitter', 'lua_modules/line-emitter'),
+    generate_bundle_map('modules/line-emitter', 'modules/line-emitter'),
   luvit_keystone_client_lua:
-    generate_bundle_map('modules/keystone', 'lua_modules/luvit-keystone-client'),
+    generate_bundle_map('modules/keystone', 'modules/luvit-keystone-client'),
   rackspace_monitoring_client_lua:
-    generate_bundle_map('modules/rackspace-monitoring', 'lua_modules/luvit-rackspace-monitoring-client'),
+    generate_bundle_map('modules/rackspace-monitoring', 'modules/luvit-rackspace-monitoring-client'),
   lib_lua:
     generate_bundle_map('', 'lib/lua', True),
   luvit_lua:
