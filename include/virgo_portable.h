@@ -53,7 +53,6 @@ char* virgo_basename(char *name);
 #define VIRGO_ATTR_FMT_FUNC(x,y)
 #endif
 
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

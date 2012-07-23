@@ -25,6 +25,7 @@ local logging = require('logging')
 local timer = require('timer')
 local dns = require('dns')
 local fs = require('fs')
+local os = require('os')
 local path = require('path')
 local Emitter = require('core').Emitter
 
@@ -235,7 +236,9 @@ function MonitoringAgent:getStreams()
 end
 
 function MonitoringAgent:initialize(options)
-  if not options.stateDirectory then options.stateDirectory = virgo.default_state_unix_directory end
+  if not options.stateDirectory then
+    options.stateDirectory = virgo.default_state_directory
+  end
   logging.debug('Using state directory ' .. options.stateDirectory)
   self._states = States:new(options.stateDirectory)
   self._config = virgo.config
@@ -285,6 +288,12 @@ end
 function MonitoringAgent:_sendCrashReports(callback)
   local crashReports = {}
   local productName = virgo.default_name:gsub('%-', '%%%-')
+
+  -- TODO: crash report support on !Linux platforms.
+  if os.type() ~= 'Linux' then
+    callback()
+    return
+  end
 
   local function submitCrashReport(filename, callback)
     filename = "/tmp/" .. filename
