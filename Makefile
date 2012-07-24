@@ -91,7 +91,7 @@ rpmbuild_dirs = $(rpmbuild_dir)/SPECS \
 $(rpmbuild_dirs):
 	mkdir -p $@
 
-rpm: dist $(rpmbuild_dirs)
+rpm: all dist $(rpmbuild_dirs)
 	cp $(spec_file_built) $(rpmbuild_dir)/SPECS/
 	cp $(TARNAME).tar.gz $(rpmbuild_dir)/SOURCES/
 	rpmbuild --define '_topdir $(PWD)/$(rpmbuild_dir)' -ba $(spec_file_built)
