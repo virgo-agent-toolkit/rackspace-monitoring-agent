@@ -67,16 +67,22 @@ $(spec_file_built): $(spec_file_in)
 	    -e 's/@@TARNAME@@/$(TARNAME)/g' < $< > $@
 
 dist_build:
-	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' < monitoring-agent.gyp > monitoring-agent.gyp.dist
+	sed -e "s/'BUNDLE_VERSION':.*/'BUNDLE_VERSION': '${VERSION}',/" \
+	      < monitoring-agent.gyp > monitoring-agent.gyp.dist
+	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' \
+	      < lib/virgo.gyp > lib/virgo.gyp.dist
+	sed -e 's/^VERSION=.*/VERSION=${VERSION}/' < Makefile > Makefile.dist
 
 dist: dist_build $(spec_file_built)
 	./tools/git-archive-all/git-archive-all --prefix=virgo-$(VERSION)/ virgo-$(VERSION).tar.gz
 	tar xzf virgo-$(VERSION).tar.gz
 	make -C deps/luvit dist_build
 	cp $(spec_file_built) $(TARNAME)/$(spec_file_dir)
+	mv lib/virgo.gyp.dist $(TARNAME)/lib/virgo.gyp
 	mv monitoring-agent.gyp.dist $(TARNAME)/monitoring-agent.gyp
 	mv deps/luvit/luvit.gyp.dist $(TARNAME)/deps/luvit/luvit.gyp
 	mv deps/luvit/Makefile.dist $(TARNAME)/deps/luvit/Makefile
+	mv Makefile.dist $(TARNAME)/Makefile
 	tar -cf $(TARNAME).tar $(TARNAME)
 	rm -rf $(TARNAME)
 	gzip -f -9 $(TARNAME).tar
