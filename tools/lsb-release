@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+import platform
+
+# It turns out pretty much zero distros actually create a proper
+# lsb-release by default. Instead just emulate the output of
+# /etc/lsb-release files roughly with python
+
+names = ['DISTRIB_ID', 'DISTRIB_RELEASE', 'DISTRIB_CODENAME']
+
+dist = platform.dist()
+
+for field in range(0, len(dist)):
+    if dist[field] != '':
+        print "%s=%s" % (names[field], dist[field])
