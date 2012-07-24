@@ -119,8 +119,12 @@ deb: all dist $(debbuild_dir)
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${PKG_RELEASE} build ${PKG_VERSION} '${VERSION}'
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
 
+pkg:
+	@type=$(shell ./tools/pkgtype)
+	@make $(type)
+
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
 
-.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built) deb
+.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built) deb pkg
