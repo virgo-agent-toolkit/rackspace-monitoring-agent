@@ -147,6 +147,7 @@ function NetworkInfo:initialize()
 
     local info_fields = {
       'address',
+      'address6',
       'broadcast',
       'destination',
       'flags',
