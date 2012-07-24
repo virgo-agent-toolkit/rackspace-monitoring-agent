@@ -87,6 +87,9 @@ dist: dist_build $(spec_file_built)
 	rm -rf $(TARNAME)
 	gzip -f -9 $(TARNAME).tar
 
+#######################
+### RPM
+
 rpmbuild_dir = out/rpmbuild
 rpmbuild_dirs = $(rpmbuild_dir)/SPECS \
                 $(rpmbuild_dir)/SOURCES \
@@ -102,8 +105,22 @@ rpm: all dist $(rpmbuild_dirs)
 	cp $(TARNAME).tar.gz $(rpmbuild_dir)/SOURCES/
 	rpmbuild --define '_topdir $(PWD)/$(rpmbuild_dir)' -ba $(spec_file_built)
 
+#######################
+### Debian
+debbuild_dir = debbuild
+
+$(debbuild_dir):
+	mkdir -p $@
+
+deb: all dist $(debbuild_dir)
+	cp $(TARNAME).tar.gz $(debbuild_dir)
+	rm -rf $(debbuild_dir)/rackspace-monitoring-agent && mkdir -p $(debbuild_dir)/rackspace-monitoring-agent
+	tar zxf $(TARNAME).tar.gz --strip-components=1 -C $(debbuild_dir)/rackspace-monitoring-agent
+	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l `date +%Y%m%d%H%M%S` build ${RPM_VERSION} 'Bug Fixes'
+	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
+
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
 
-.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built)
+.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built) deb
