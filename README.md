@@ -81,3 +81,12 @@ Distro Packages
 
     yum install rpm-build
     make rpm
+
+Find the rpms in out/rpmbuild/RPMS/
+
+### dpkg
+
+    apt-get install devscripts
+    make deb
+
+Find the deb in out/debbuild/
