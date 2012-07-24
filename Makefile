@@ -67,7 +67,8 @@ $(spec_file_built): $(spec_file_in)
 	    -e 's/@@TARNAME@@/$(TARNAME)/g' < $< > $@
 
 dist_build:
-	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' < monitoring-agent.gyp > monitoring-agent.gyp.dist
+	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' -e 's/'\''BUNDLE_VERSION.*/'\''BUNDLE_VERSION'\'': '\'''${VERSION}\''/' < monitoring-agent.gyp > monitoring-agent.gyp.dist
+	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' -e 's/'\''BUNDLE_VERSION.*/'\''BUNDLE_VERSION'\'': '\'''${VERSION}\''/' < lib/virgo.gyp > lib/virgo.gyp.dist
 
 dist: dist_build $(spec_file_built)
 	./tools/git-archive-all/git-archive-all --prefix=virgo-$(VERSION)/ virgo-$(VERSION).tar.gz
@@ -75,11 +76,15 @@ dist: dist_build $(spec_file_built)
 	make -C deps/luvit dist_build
 	cp $(spec_file_built) $(TARNAME)/$(spec_file_dir)
 	mv monitoring-agent.gyp.dist $(TARNAME)/monitoring-agent.gyp
+	mv lib/virgo.gyp.dist $(TARNAME)/lib/virgo.gyp
 	mv deps/luvit/luvit.gyp.dist $(TARNAME)/deps/luvit/luvit.gyp
 	mv deps/luvit/Makefile.dist $(TARNAME)/deps/luvit/Makefile
 	tar -cf $(TARNAME).tar $(TARNAME)
 	rm -rf $(TARNAME)
 	gzip -f -9 $(TARNAME).tar
+
+#######################
+### RPM
 
 rpmbuild_dir = out/rpmbuild
 rpmbuild_dirs = $(rpmbuild_dir)/SPECS \
@@ -95,6 +100,19 @@ rpm: dist $(rpmbuild_dirs)
 	cp $(spec_file_built) $(rpmbuild_dir)/SPECS/
 	cp $(TARNAME).tar.gz $(rpmbuild_dir)/SOURCES/
 	rpmbuild --define '_topdir $(PWD)/$(rpmbuild_dir)' -ba $(spec_file_built)
+
+#######################
+### Debian
+debbuild_dir = debbuild
+
+$(debbuild_dir):
+	mkdir -p $@
+
+deb: dist $(debbuild_dir)
+	cp $(TARNAME).tar.gz $(debbuild_dir)
+	rm -rf $(debbuild_dir)/virgo && mkdir -p $(debbuild_dir)/virgo
+	tar zxf $(TARNAME).tar.gz --strip-components=1 -C $(debbuild_dir)/virgo
+	cd $(debbuild_dir)/virgo && dpkg-buildpackage
 
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
