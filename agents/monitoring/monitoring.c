@@ -65,9 +65,9 @@ show_help()
 }
 
 static void
-show_version()
+show_version(virgo_t *v)
 {
-  printf("%s\n", VIRGO_VERSION);
+  printf("%s\n", virgo_conf_get(v, "version"));
   fflush(stdout);
 }
 
@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
       return 0;
     }
     else if (err->err == VIRGO_EVERSIONREQ) {
-      show_version();
+      show_version(v);
       virgo_error_clear(err);
       return 0;
     }

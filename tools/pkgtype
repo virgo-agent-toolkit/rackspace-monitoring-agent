@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+import platform
+
+# Figure out what type of package to build based on platform info
+#
+# TODO: Windows does MSI?
+
+deb = ['debian', 'ubuntu']
+rpm = ['redhat', 'fedora', 'suse', 'opensuse']
+
+dist = platform.dist()[0].lower()
+
+if dist in deb:
+    print "deb"
+
+if dist in rpm:
+    print "rpm"
