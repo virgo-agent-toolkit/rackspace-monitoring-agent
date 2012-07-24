@@ -107,7 +107,7 @@ rpm: all dist $(rpmbuild_dirs)
 
 #######################
 ### Debian
-debbuild_dir = debbuild
+debbuild_dir = out/debbuild
 
 $(debbuild_dir):
 	mkdir -p $@
