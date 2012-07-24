@@ -50,11 +50,11 @@ install: all
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
-# Generate versions for RPM without dashes from git describe
+# Generate versions for RPM/dpkg without dashes from git describe
 # make release 0 if tag matches exactly
-RPM_VERLIST = $(filter-out dirty,$(subst -, ,$(VERSION))) 0
-RPM_VERSION = $(word 1,$(RPM_VERLIST))
-RPM_RELEASE = $(word 2,$(RPM_VERLIST))
+PKG_VERLIST = $(filter-out dirty,$(subst -, ,$(VERSION))) 0
+PKG_VERSION = $(word 1,$(PKG_VERLIST))
+PKG_RELEASE = $(word 2,$(PKG_VERLIST))
 
 spec_file_name = rackspace-monitoring-agent.spec
 spec_file_dir = pkg/monitoring/rpm
@@ -62,8 +62,8 @@ spec_file_built = out/$(spec_file_name)
 spec_file_in = $(spec_file_dir)/$(spec_file_name).in
 
 $(spec_file_built): $(spec_file_in)
-	sed -e 's/@@VERSION@@/$(RPM_VERSION)/g' \
-	    -e 's/@@RELEASE@@/$(RPM_RELEASE)/g' \
+	sed -e 's/@@VERSION@@/$(PKG_VERSION)/g' \
+	    -e 's/@@RELEASE@@/$(PKG_RELEASE)/g' \
 	    -e 's/@@TARNAME@@/$(TARNAME)/g' < $< > $@
 
 dist_build:
@@ -116,7 +116,7 @@ deb: all dist $(debbuild_dir)
 	cp $(TARNAME).tar.gz $(debbuild_dir)
 	rm -rf $(debbuild_dir)/rackspace-monitoring-agent && mkdir -p $(debbuild_dir)/rackspace-monitoring-agent
 	tar zxf $(TARNAME).tar.gz --strip-components=1 -C $(debbuild_dir)/rackspace-monitoring-agent
-	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${RPM_RELEASE} build ${RPM_VERSION} '${VERSION}'
+	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${PKG_RELEASE} build ${PKG_VERSION} '${VERSION}'
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
 
 update:
