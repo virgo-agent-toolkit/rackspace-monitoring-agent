@@ -116,7 +116,7 @@ deb: all dist $(debbuild_dir)
 	cp $(TARNAME).tar.gz $(debbuild_dir)
 	rm -rf $(debbuild_dir)/rackspace-monitoring-agent && mkdir -p $(debbuild_dir)/rackspace-monitoring-agent
 	tar zxf $(TARNAME).tar.gz --strip-components=1 -C $(debbuild_dir)/rackspace-monitoring-agent
-	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l `date +%Y%m%d%H%M%S` build ${RPM_VERSION} 'Bug Fixes'
+	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${RPM_RELEASE} build ${RPM_VERSION} '${VERSION}'
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
 
 update:
