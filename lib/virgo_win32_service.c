@@ -25,9 +25,92 @@
 #include <process.h>
 #include <stdlib.h>
 
+/* TODO: Make part of agent config? */
+#define SVCNAME "Rackspace Monitoring Agent"
+
 virgo_error_t*
 virgo__service_install(virgo_t *v)
 {
+  int rv;
+  char exePath[MAX_PATH];
+  SC_HANDLE schSCManager;
+  SC_HANDLE schService;
+  LPTSTR szDesc = TEXT("Provides Rackspace Monitoring Agent. The agent can record disk, bandwidth, CPU usage, and more. Data collected from the agent goes into Rackspace Cloud Monitoring's systems.");
+  SERVICE_DESCRIPTION sd;
+  SC_ACTION sa[1];
+  SERVICE_FAILURE_ACTIONS sfa;
+
+  if (!GetModuleFileNameA(NULL, exePath, MAX_PATH)) {
+    return virgo_error_createf(VIRGO_EINVAL, "Cannot get module file name: err=%d", GetLastError());
+  }
+
+  schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+
+  if (NULL == schSCManager) {
+    return virgo_error_createf(VIRGO_EINVAL, "OpenSCManager Failed: err=%d", GetLastError());
+  }
+
+  /* Check if already installed... */
+  schService = OpenService(schSCManager, SVCNAME, SC_MANAGER_CONNECT);
+
+  if (schService != NULL) {
+    /* service already is installed */
+    CloseServiceHandle(schService);
+    CloseServiceHandle(schSCManager);
+    return VIRGO_SUCCESS;
+  }
+
+  schService = CreateService(
+      schSCManager,              // SCM database
+      SVCNAME,                   // name of service
+      SVCNAME,                   // service name to display
+      SERVICE_ALL_ACCESS,        // desired access
+      SERVICE_WIN32_OWN_PROCESS, // service type
+      SERVICE_AUTO_START,        // start type
+      SERVICE_ERROR_NORMAL,      // error control type
+      exePath,                    // path to service's binary
+      NULL,                      // no load ordering group
+      NULL,                      // no tag identifier
+      NULL,                      // no dependencies
+      NULL,                      // LocalSystem account
+      NULL);                     // no password
+
+  if (schService == NULL) {
+    CloseServiceHandle(schSCManager);
+    return virgo_error_createf(VIRGO_EINVAL, "CreateService failed: err=%d", GetLastError());
+  }
+
+
+  sd.lpDescription = szDesc;
+
+  rv = ChangeServiceConfig2(schService, SERVICE_CONFIG_DESCRIPTION, &sd);
+
+  if (rv == 0) {
+    CloseServiceHandle(schService);
+    CloseServiceHandle(schSCManager);
+    return virgo_error_createf(VIRGO_EINVAL, "ChangeServiceConfig2 SERVICE_CONFIG_DESCRIPTION failed: err=%d", GetLastError());
+  }
+
+  sfa.dwResetPeriod = 0;
+  sfa.lpRebootMsg = NULL;
+  sfa.lpCommand = NULL;
+  sfa.cActions = 1;
+  sa[0].Type = SC_ACTION_RESTART;
+  sa[0].Delay = 0;
+  sfa.lpsaActions = sa;
+  sfa.dwResetPeriod = 0;
+
+  rv = ChangeServiceConfig2(schService, SERVICE_CONFIG_FAILURE_ACTIONS, &sfa);
+
+  if (rv == 0) {
+    CloseServiceHandle(schService);
+    CloseServiceHandle(schSCManager);
+    return virgo_error_createf(VIRGO_EINVAL, "ChangeServiceConfig2 SERVICE_CONFIG_FAILURE_ACTIONS failed: err=%d", GetLastError());
+  }
+
+  CloseServiceHandle(schService);
+  CloseServiceHandle(schSCManager);
+
   return VIRGO_SUCCESS;
 }
 

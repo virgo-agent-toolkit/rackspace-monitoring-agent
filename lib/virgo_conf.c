@@ -188,7 +188,7 @@ virgo__conf_get_path(virgo_t *v, const char **p_path)
 {
 #ifdef _WIN32
   char *programfiles;
-  char *path;
+  const char *path;
 
   path = virgo__argv_get_value(v, "-c", "--config");
 
