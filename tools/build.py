@@ -22,9 +22,9 @@ def build():
 
 def pkg():
   if sys.platform.find('freebsd') == 0:
-      cmd = 'gmake pkg'
+      cmd = 'gmake -C %s pkg' % root
   elif sys.platform != "win32":
-      cmd = 'make pkg'
+      cmd = 'make -C %s pkg' % root
   else:
       print 'win32 not supported skipping packaging'
       sys.exit(0)
