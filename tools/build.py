@@ -20,6 +20,18 @@ def build():
   print cmd
   sys.exit(subprocess.call(cmd, shell=True))
 
+def pkg():
+  if sys.platform.find('freebsd') == 0:
+      cmd = 'gmake pkg'
+  elif sys.platform != "win32":
+      cmd = 'make pkg'
+  else:
+      print 'win32 not supported skipping packaging'
+      sys.exit(0)
+
+  print cmd
+  sys.exit(subprocess.call(cmd, shell=True))
+
 def test_cmd(additional=""):
   if sys.platform != "win32":
     agent = os.path.join(root, 'out', 'Debug', 'monitoring-agent')
@@ -58,6 +70,7 @@ def test_file():
 
 commands = {
   'build': build,
+  'pkg': pkg,
   'test': test_std,
   'test_pipe': test_pipe,
   'test_file': test_file,
