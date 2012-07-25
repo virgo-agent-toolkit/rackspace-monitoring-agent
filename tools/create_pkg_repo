@@ -31,8 +31,33 @@ def create_rpm(src, dest):
         print("createrepo FAILED")
         return 1
 
-def create_deb(src, dest):
-    return 1
+def create_deb(src, dest, dist):
+    conf = os.path.join(dest, 'conf')
+    distributions = """Codename: cloudmonitoring
+Components: main
+Architectures: i386 amd64 source
+Origin: Rackspace
+Description: Rackspace Cloud Monitoring Agent for %s %s
+""" % (dist[0], dist[1])
+
+    if not os.path.isdir(dest):
+        os.mkdir(dest)
+    if not os.path.isdir(conf):
+        os.mkdir(conf)
+
+    f = open(os.path.join(conf, 'distributions'), 'w')
+    f.write(distributions)
+    f.close()
+
+    reprepro = "reprepro -b %s includedeb cloudmonitoring %s"
+    for deb in glob.glob(os.path.join(src, '*.deb')):
+        if subprocess.call(reprepro % (dest, deb), shell=True) == 0:
+            print("includedeb %s OK", deb)
+        else:
+            print("includedeb %s FAILED", deb)
+            return 1
+
+    return 0
 
 if __name__ == "__main__":
     pkg = pkg_type()
@@ -51,9 +76,8 @@ if __name__ == "__main__":
     dest = os.path.join(dest, "%s-%s" % dist[:2])
 
     if pkg == 'rpm':
-	src = os.path.join(out, 'rpmbuild')
-        print src
+        src = os.path.join(out, 'rpmbuild')
         sys.exit(create_rpm(src, dest))
     elif pkg == 'deb':
-	src = os.path.join(out, 'debbuild')
-        sys.exit(create_deb(src, dest))
+        src = os.path.join(out, 'debbuild')
+        sys.exit(create_deb(src, dest, dist))
