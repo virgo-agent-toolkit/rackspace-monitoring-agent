@@ -119,9 +119,9 @@ deb: all dist $(debbuild_dir)
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${PKG_RELEASE} build ${PKG_VERSION} '${VERSION}'
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
 
+PKG_TYPE=$(shell python ./tools/pkgtype)
 pkg:
-	@type=$(shell ./tools/pkgtype)
-	@make $(type)
+	$(MAKE) $(PKG_TYPE)
 
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
