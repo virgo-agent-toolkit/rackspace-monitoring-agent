@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+import glob
+import os
+import platform
+import shutil
+import subprocess
+import sys
+
+from pkgtype import pkg_type
+from optparse import OptionParser
+
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+out = os.path.join(root, 'out')
+
+def create_rpm(src, dest):
+    if os.path.isdir(dest):
+        print "assuming %s is already a repo" % dest
+    elif os.mkdir(dest):
+        print "created %s" % dest
+
+    # Copy RPMs into the target repo
+    rpm_dirs = ["SRPMS", "RPMS"]
+    for d in rpm_dirs:
+        for f in glob.glob(os.path.join(src, d, '*.rpm')):
+            shutil.copy(f, dest)
+
+    if subprocess.call("createrepo %s" % dest, shell=True) == 0:
+        print("createrepo OK")
+        return 0
+    else:
+        print("createrepo FAILED")
+        return 1
+
+def create_deb(src, dest):
+    return 1
+
+if __name__ == "__main__":
+    pkg = pkg_type()
+
+    usage = "usage: %prog destination"
+    parser = OptionParser(usage=usage)
+    (options, args) = parser.parse_args()
+
+    if len(args) != 1:
+        parser.print_usage()
+        sys.exit(1)
+
+    dest = args[0]
+
+    dist = platform.dist()
+    dest = os.path.join(dest, "%s-%s" % dist[:2])
+
+    if pkg == 'rpm':
+	src = os.path.join(out, 'rpmbuild')
+        print src
+        sys.exit(create_rpm(src, dest))
+    elif pkg == 'deb':
+	src = os.path.join(out, 'debbuild')
+        sys.exit(create_deb(src, dest))
