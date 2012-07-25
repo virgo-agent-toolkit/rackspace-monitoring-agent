@@ -73,3 +73,20 @@ The entry point to the agent defaults to
     ./monitoring-agent -z monitoring-test.zip -e tests
 
 This example would run `agents/monitoring/tests/init.lua`.
+
+Distro Packages
+===============
+
+### RPM
+
+    yum install rpm-build
+    make rpm
+
+Find the rpms in out/rpmbuild/RPMS/
+
+### dpkg
+
+    apt-get install devscripts
+    make deb
+
+Find the deb in out/debbuild/

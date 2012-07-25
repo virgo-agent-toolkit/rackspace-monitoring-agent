@@ -50,11 +50,11 @@ install: all
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
-# Generate versions for RPM without dashes from git describe
+# Generate versions for RPM/dpkg without dashes from git describe
 # make release 0 if tag matches exactly
-RPM_VERLIST = $(filter-out dirty,$(subst -, ,$(VERSION))) 0
-RPM_VERSION = $(word 1,$(RPM_VERLIST))
-RPM_RELEASE = $(word 2,$(RPM_VERLIST))
+PKG_VERLIST = $(filter-out dirty,$(subst -, ,$(VERSION))) 0
+PKG_VERSION = $(word 1,$(PKG_VERLIST))
+PKG_RELEASE = $(word 2,$(PKG_VERLIST))
 
 spec_file_name = rackspace-monitoring-agent.spec
 spec_file_dir = pkg/monitoring/rpm
@@ -62,24 +62,33 @@ spec_file_built = out/$(spec_file_name)
 spec_file_in = $(spec_file_dir)/$(spec_file_name).in
 
 $(spec_file_built): $(spec_file_in)
-	sed -e 's/@@VERSION@@/$(RPM_VERSION)/g' \
-	    -e 's/@@RELEASE@@/$(RPM_RELEASE)/g' \
+	sed -e 's/@@VERSION@@/$(PKG_VERSION)/g' \
+	    -e 's/@@RELEASE@@/$(PKG_RELEASE)/g' \
 	    -e 's/@@TARNAME@@/$(TARNAME)/g' < $< > $@
 
 dist_build:
-	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' < monitoring-agent.gyp > monitoring-agent.gyp.dist
+	sed -e "s/'BUNDLE_VERSION':.*/'BUNDLE_VERSION': '${VERSION}',/" \
+	      < monitoring-agent.gyp > monitoring-agent.gyp.dist
+	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' \
+	      < lib/virgo.gyp > lib/virgo.gyp.dist
+	sed -e 's/^VERSION=.*/VERSION=${VERSION}/' < Makefile > Makefile.dist
 
 dist: dist_build $(spec_file_built)
 	./tools/git-archive-all/git-archive-all --prefix=virgo-$(VERSION)/ virgo-$(VERSION).tar.gz
 	tar xzf virgo-$(VERSION).tar.gz
 	make -C deps/luvit dist_build
 	cp $(spec_file_built) $(TARNAME)/$(spec_file_dir)
+	mv lib/virgo.gyp.dist $(TARNAME)/lib/virgo.gyp
 	mv monitoring-agent.gyp.dist $(TARNAME)/monitoring-agent.gyp
 	mv deps/luvit/luvit.gyp.dist $(TARNAME)/deps/luvit/luvit.gyp
 	mv deps/luvit/Makefile.dist $(TARNAME)/deps/luvit/Makefile
+	mv Makefile.dist $(TARNAME)/Makefile
 	tar -cf $(TARNAME).tar $(TARNAME)
 	rm -rf $(TARNAME)
 	gzip -f -9 $(TARNAME).tar
+
+#######################
+### RPM
 
 rpmbuild_dir = out/rpmbuild
 rpmbuild_dirs = $(rpmbuild_dir)/SPECS \
@@ -91,13 +100,31 @@ rpmbuild_dirs = $(rpmbuild_dir)/SPECS \
 $(rpmbuild_dirs):
 	mkdir -p $@
 
-rpm: dist $(rpmbuild_dirs)
+rpm: all dist $(rpmbuild_dirs)
 	cp $(spec_file_built) $(rpmbuild_dir)/SPECS/
 	cp $(TARNAME).tar.gz $(rpmbuild_dir)/SOURCES/
 	rpmbuild --define '_topdir $(PWD)/$(rpmbuild_dir)' -ba $(spec_file_built)
+
+#######################
+### Debian
+debbuild_dir = out/debbuild
+
+$(debbuild_dir):
+	mkdir -p $@
+
+deb: all dist $(debbuild_dir)
+	cp $(TARNAME).tar.gz $(debbuild_dir)
+	rm -rf $(debbuild_dir)/rackspace-monitoring-agent && mkdir -p $(debbuild_dir)/rackspace-monitoring-agent
+	tar zxf $(TARNAME).tar.gz --strip-components=1 -C $(debbuild_dir)/rackspace-monitoring-agent
+	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${PKG_RELEASE} build ${PKG_VERSION} '${VERSION}'
+	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
+
+pkg:
+	@type=$(shell ./tools/pkgtype)
+	@make $(type)
 
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
 
-.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built)
+.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built) deb pkg
