@@ -42,6 +42,7 @@ Building on RHEL 5.x
 ====================
 
     # rpm -ivh http://mirror.chpc.utah.edu/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
+    # yum update
     # yum install git
 
 The certificate bundle in RHEL 5.x is old. We upgrade it in the next step.
