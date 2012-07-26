@@ -43,7 +43,7 @@ Building on RHEL 5.x
 
 Add the EPEL repo and install dependencies
 
-    # rpm -ivh http://download.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
+    # rpm -ivh http://mirror.hiwaay.net/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
     # yum update
     # yum groupinstall 'Development Tools'
     # yum install git python26 gcc44 gcc44-c++
