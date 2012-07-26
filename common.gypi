@@ -16,7 +16,7 @@
     'default_configuration': 'Debug',
     'configurations': {
       'Debug': {
-        'defines': [ 'DEBUG', '_DEBUG' ],
+        'defines': [ 'DEBUG', '_DEBUG', '_GNU_SOURCE' ],
         'cflags': [ '-g', '-O0' ],
         'msvs_settings': {
           'VCCLCompilerTool': {
@@ -40,6 +40,7 @@
       },
       'Release': {
         'cflags': [ '-g', '-Os', '-fdata-sections', '-ffunction-sections', ],
+        'defines': [ '_GNU_SOURCE' ],
         'ldflags': [ '-Wl,--gc-section', ],
         'msvs_settings': {
           'VCCLCompilerTool': {

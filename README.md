@@ -43,10 +43,10 @@ Building on RHEL 5.x
 
 Add the EPEL repo and install dependencies
 
-    # rpm -ivh http://mirror.chpc.utah.edu/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
+    # rpm -ivh http://download.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
     # yum update
-    # yum install git python26
     # yum groupinstall 'Development Tools'
+    # yum install git python26 gcc44 gcc44-c++
 
 Default to python2.6:
 
@@ -63,7 +63,8 @@ Clone the repository:
 Configure and Build:
 
     # ./configure
-    # make -C out
+    # CC=gcc44 CXX=g++44 make
+    # CC=gcc44 CXX=g++44 make install
 
 Building on Windows
 ====================
