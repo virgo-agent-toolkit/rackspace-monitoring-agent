@@ -10,8 +10,14 @@ rpm = ['redhat', 'fedora', 'suse', 'opensuse']
 
 dist = platform.dist()[0].lower()
 
-if dist in deb:
-    print "deb"
+def pkg_type():
+    if dist in deb:
+        return "deb"
 
-if dist in rpm:
-    print "rpm"
+    if dist in rpm:
+        return "rpm"
+
+    return Null
+
+if __name__ == "__main__":
+    print pkg_type()
