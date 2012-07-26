@@ -38,6 +38,17 @@ forth between a running agent. You can run a server and agent like this:
      python agents/monitoring/runner server_fixture
      python agents/monitoring/runner agent_fixture
 
+Building on RHEL 5.x
+====================
+
+    # rpm -ivh http://mirror.chpc.utah.edu/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
+    # yum install git
+
+The certificate bundle in RHEL 5.x is old. We upgrade it in the next step.
+
+    # curl http://curl.haxx.se/ca/cacert.pem -o /etc/pki/tls/certs/ca-bundle.crt
+    # git clone https://github.com/racker/virgo.git
+
 Building on Windows
 ====================
 
