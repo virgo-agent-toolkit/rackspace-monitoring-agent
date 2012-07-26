@@ -41,14 +41,29 @@ forth between a running agent. You can run a server and agent like this:
 Building on RHEL 5.x
 ====================
 
+Add the EPEL repo and install dependencies
+
     # rpm -ivh http://mirror.chpc.utah.edu/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
     # yum update
-    # yum install git
+    # yum install git python26
+    # yum groupinstall 'Development Tools'
+
+Default to python2.6:
+
+    # ln -s /usr/bin/python2.6 /usr/local/bin/python
+    # export PATH=/usr/local/bin:$PATH
 
 The certificate bundle in RHEL 5.x is old. We upgrade it in the next step.
 
     # curl http://curl.haxx.se/ca/cacert.pem -o /etc/pki/tls/certs/ca-bundle.crt
+
+Clone the repository:
     # git clone https://github.com/racker/virgo.git
+
+Configure and Build:
+
+    # ./configure
+    # make -C out
 
 Building on Windows
 ====================
