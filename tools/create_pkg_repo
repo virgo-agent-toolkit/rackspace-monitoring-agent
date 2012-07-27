@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 
-from pkgtype import pkg_type
+from pkgtype import pkg_type, pkg_dir
 from optparse import OptionParser
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     dest = args[0]
 
     dist = platform.dist()
-    dest = os.path.join(dest, "%s-%s" % dist[:2])
+    dest = os.path.join(dest, pkg_dir())
 
     if pkg == 'rpm':
         src = os.path.join(out, 'rpmbuild')

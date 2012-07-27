@@ -19,5 +19,9 @@ def pkg_type():
 
     return Null
 
+def pkg_dir():
+    dist = platform.dist()
+    return "%s-%s" % dist[:2]
+
 if __name__ == "__main__":
     print pkg_type()
