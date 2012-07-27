@@ -19,7 +19,7 @@ def create_rpm(src, dest):
         print "created %s" % dest
 
     # Copy RPMs into the target repo
-    rpm_dirs = ["SRPMS", "RPMS"]
+    rpm_dirs = ["SRPMS", "RPMS/*"]
     for d in rpm_dirs:
         for f in glob.glob(os.path.join(src, d, '*.rpm')):
             shutil.copy(f, dest)
