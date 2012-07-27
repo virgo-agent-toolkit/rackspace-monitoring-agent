@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import os
+import subprocess
+import sys
+from optparse import OptionParser
+
+root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+out = os.path.join(root, 'out')
+
+sys.path.append(os.path.join(root, 'tools'))
+
+from pkgtype import pkg_type, pkg_dir
+
+usage = "usage: %prog destination"
+parser = OptionParser(usage=usage)
+(options, args) = parser.parse_args()
+
+if len(args) != 1:
+    parser.print_usage()
+    sys.exit(1)
+
+f = open(os.path.join(out, 'VERSION'))
+version = f.readlines()[0].strip()
+f.close()
+
+branch = "%s/%s-%s" % (pkg_dir(), "rackspace-monitoring-agent", version)
+cmd = "./commit %s %s" % (branch, branch)
+
+print cmd
+if subprocess.call(cmd, cwd=args[0], shell=True) != 0:
+    print "error calling: %s" % cmd
+    sys.exit(1)
+
+sys.exit(0)
