@@ -121,6 +121,7 @@ deb: all dist $(debbuild_dir)
 
 PKG_TYPE=$(shell python ./tools/pkgtype.py)
 pkg:
+	python ./tools/version.py $(PKG_VERSION) $(PKG_RELEASE) > out/VERSION
 	$(MAKE) $(PKG_TYPE)
 
 update:
