@@ -38,6 +38,9 @@ test: tests
 tests: all
 	python tools/build.py test
 
+crash: all
+	python tools/build.py crash
+
 test_endpoint:
 	python tools/build.py test_endpoint
 
@@ -128,4 +131,4 @@ update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
 
-.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built) deb pkg
+.PHONY: clean dist distclean all test tests crash endpoint-tests rpm $(spec_file_built) deb pkg
