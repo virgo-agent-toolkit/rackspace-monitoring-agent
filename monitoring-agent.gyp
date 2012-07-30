@@ -33,6 +33,7 @@
     'test_modules': [
       '<@(modules_agent)',
       '<@(modules_collector)',
+      'agents/monitoring/crash',
       'agents/monitoring/tests',
       'agents/monitoring/tests/tls',
       'agents/monitoring/tests/crypto',
