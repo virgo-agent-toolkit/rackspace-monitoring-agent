@@ -43,13 +43,13 @@ def test_cmd(additional=""):
 
   return '%s -c %s -s %s %s' % (agent, monitoring_config, state_config, additional)
 
-def test(stdout=None):
+def test(stdout=None, entry="tests"):
   if sys.platform != "win32":
     agent_tests = os.path.join(root, 'out', 'Debug', 'monitoring-test.zip')
   else:
     agent_tests = os.path.join(root, 'Debug', 'monitoring-test.zip')
 
-  cmd = test_cmd("--zip %s -e tests" % agent_tests)
+  cmd = test_cmd("--zip %s -e %s" % (agent_tests, entry))
   print cmd
   rc = 0
   if stdout == None:
@@ -63,12 +63,16 @@ def test_std():
 
 def test_pipe():
   test(subprocess.PIPE)
-  
+
 def test_file():
   stdout = open("stdout", "w+")
   test(stdout)
 
+def crash():
+  test(None, "crash")
+
 commands = {
+  'crash': crash,
   'build': build,
   'pkg': pkg,
   'test': test_std,
