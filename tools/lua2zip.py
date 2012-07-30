@@ -18,6 +18,7 @@ luvit_keystone_client_lua = os.path.join('modules', 'luvit-keystone-client')
 luvit_lua = os.path.join('deps', 'luvit', 'lib', 'luvit')
 monitoring_lua = os.path.join('agents', 'monitoring', 'default')
 collector_lua = os.path.join('agents', 'monitoring', 'collector')
+crash_lua = os.path.join('agents', 'monitoring', 'crash')
 monitoring_tests = os.path.join('agents', 'monitoring', 'tests')
 
 modules = {
@@ -45,6 +46,8 @@ modules = {
     generate_bundle_map('modules/monitoring/collector', 'agents/monitoring/collector'),
   monitoring_tests:
     generate_bundle_map('modules/monitoring/tests', 'agents/monitoring/tests'),
+  crash_lua:
+    generate_bundle_map('modules/monitoring/crash', 'agents/monitoring/crash'),
 }
 
 target = sys.argv[1]
