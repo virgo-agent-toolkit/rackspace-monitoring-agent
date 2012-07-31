@@ -23,7 +23,7 @@ def pkg_dir():
     dist = platform.dist()
 
     # Lower case everyting (looking at you Ubuntu)
-    dist = [x.lower() for x in dist]
+    dist = tuple([x.lower() for x in dist])
 
     return "%s-%s" % dist[:2]
 
