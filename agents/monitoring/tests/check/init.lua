@@ -21,6 +21,8 @@ local os = require('os')
 local Check = require('monitoring/default/check')
 local Metric = require('monitoring/default/check/base').Metric
 local constants = require('monitoring/default/util/constants')
+local msg = require ('monitoring/default/protocol/messages')
+
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
 
@@ -340,6 +342,7 @@ exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
     asserts.ok(result ~= nil)
     asserts.equals(result:getStatus(), 'First status line')
     asserts.equals(result:getState(), 'available')
+    asserts.ok(result:getTimestamp() > 1343400000)
 
     asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
     asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
@@ -442,6 +445,19 @@ exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(t
     asserts.equals(result:getState(), 'unavailable')
 
     asserts.dequals(metrics, {})
+    test.done()
+  end)
+end
+
+exports['test_check_metrics_post_serialization'] = function(test, asserts)
+  local check = DiskCheck:new({id='foo', period=30})
+  asserts.ok(check._lastResult == nil)
+  check:run(function(results)
+    local check_metrics_post = msg.MetricsRequest:new(check, results)
+    local serialized = check_metrics_post:serialize()
+    asserts.ok(serialized.params.timestamp > 1343400000)
+    asserts.equals(serialized.params.check_type, 'agent.disk')
+    asserts.equals(serialized.params.check_id, 'foo')
     test.done()
   end)
 end
