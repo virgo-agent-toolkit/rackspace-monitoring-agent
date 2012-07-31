@@ -87,12 +87,12 @@ typedef struct {
  * Return a new @c virgo_error_t with underlying @c virgo_status_t @a err
  * and message @a msg.
  */
-#define virgo_error_create(err, msg) virgo_error_create_impl(err, 0, 0,    \
+#define virgo_error_create(err, msg) virgo_error_create_impl(err, 0, 1,    \
                                                            msg,        \
                                                            __LINE__,   \
                                                            __FILE__)
 
-#define virgo_error_os_create(err, oserr, msg) virgo_error_create_impl(err, oserr, 0,    \
+#define virgo_error_os_create(err, oserr, msg) virgo_error_create_impl(err, oserr, 1,    \
                                                            msg,        \
                                                            __LINE__,   \
                                                            __FILE__)
