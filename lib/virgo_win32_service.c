@@ -41,13 +41,13 @@ virgo__service_install(virgo_t *v)
   SERVICE_FAILURE_ACTIONS sfa;
 
   if (!GetModuleFileNameA(NULL, exePath, MAX_PATH)) {
-    return virgo_error_createf(VIRGO_EINVAL, "Cannot get module file name: err=%d", GetLastError());
+    return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Cannot get module file name.");
   }
 
   schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 
   if (NULL == schSCManager) {
-    return virgo_error_createf(VIRGO_EINVAL, "OpenSCManager Failed: err=%d", GetLastError());
+    return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenSCManager failed");
   }
 
   /* Check if already installed... */

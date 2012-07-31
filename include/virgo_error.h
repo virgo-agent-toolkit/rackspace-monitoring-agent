@@ -87,27 +87,42 @@ typedef struct {
  * Return a new @c virgo_error_t with underlying @c virgo_status_t @a err
  * and message @a msg.
  */
-#define virgo_error_create(err, msg) virgo_error_create_impl(err,    \
+#define virgo_error_create(err, msg) virgo_error_create_impl(err, 0, 0,    \
                                                            msg,        \
                                                            __LINE__,   \
                                                            __FILE__)
 
+#define virgo_error_os_create(err, oserr, msg) virgo_error_create_impl(err, oserr, 0,    \
+                                                           msg,        \
+                                                           __LINE__,   \
+                                                           __FILE__)
+
+
 /**
- * The underlying function that implements @c virgo_error_t_error_create.
+* The underlying function that implements @c virgo_error_t_error_create.
  *
  * This is an implementation detail, and should not be directly called
  * by users.
  */
 VIRGO_API(virgo_error_t *)
-virgo_error_create_impl(virgo_status_t err, const char *msg,
-                          uint32_t line,
-                          const char *file);
+virgo_error_create_impl(virgo_status_t err,
+                        int os_error,
+                        int copy_msg,
+                        const char *msg,
+                        uint32_t line,
+                        const char *file);
 
 /**
  * Return a new @c virgo_error_t with underlying @c virgo_status_t @a err
  * and message created @c printf style with @a fmt and varargs.
  */
-#define virgo_error_createf(err, fmt, ...) virgo_error_createf_impl(err,         \
+#define virgo_error_createf(err, fmt, ...) virgo_error_createf_impl(err, 0,    \
+                                                                  __LINE__,    \
+                                                                  __FILE__,    \
+                                                                  fmt,         \
+                                                                  __VA_ARGS__)
+
+#define virgo_error_os_createf(err, oserr, fmt, ...) virgo_error_createf_impl(err, oserr,    \
                                                                   __LINE__,    \
                                                                   __FILE__,    \
                                                                   fmt,         \
@@ -121,6 +136,7 @@ virgo_error_create_impl(virgo_status_t err, const char *msg,
  */
 VIRGO_API(virgo_error_t *)
 virgo_error_createf_impl(virgo_status_t err,
+                         int os_error,
                          uint32_t line,
                          const char *file,
                          const char *fmt,
