@@ -75,7 +75,7 @@ if __name__ == "__main__":
     dist = platform.dist()
 
     # Lower case everyting (looking at you Ubuntu)
-    [x.lower() for x in dist]
+    dist = [x.lower() for x in dist]
 
     dest = os.path.join(dest, pkg_dir())
 
