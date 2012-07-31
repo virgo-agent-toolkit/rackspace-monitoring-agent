@@ -73,10 +73,6 @@ if __name__ == "__main__":
     dest = args[0]
 
     dist = platform.dist()
-
-    # Lower case everyting (looking at you Ubuntu)
-    dist = [x.lower() for x in dist]
-
     dest = os.path.join(dest, pkg_dir())
 
     if pkg == 'rpm':
