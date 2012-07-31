@@ -237,6 +237,90 @@
         },
       ],
     }
-  ] # end targets
+  ],# end targets
+
+  'conditions': [
+    [ 'OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'rackspace-monitoring-agent.msi',
+          'type': 'none',
+          'dependencies': [
+            'monitoring-agent#host',
+          ],
+          'variables': {
+            # TODO: switch to brandons new version thing
+            'BUNDLE_VERSION': '<!(git --git-dir .git describe --tags)',
+            # TODO: detect path via a python script?
+            'LIGHT_EXE': '"C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\light.exe"',
+            'CANDLE_EXE': '"C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\candle.exe"',
+          },
+
+          'sources': [
+            'pkg/monitoring/windows/RackspaceMonitoringAgent.wxs',
+            'pkg/monitoring/windows/version.wxi.in',
+          ],
+
+          'actions': [
+                        {
+                          'action_name': 'generate_version_wxi',
+                          'inputs': [
+                            'pkg/monitoring/windows/version.wxi.in'
+                          ],
+                          'outputs': [
+                            '<(INTERMEDIATE_DIR)/version.wxi'
+                          ],
+                          'action': [
+                            'python',
+                            'tools/lame_sed.py',
+                            '<@(_inputs)',
+                            '<@(_outputs)',
+                            '{AGENT_VERSION}:<(BUNDLE_VERSION)'
+                          ],
+                        },
+                        {
+                          'action_name': 'candle',
+                          'inputs': [
+                            'pkg/monitoring/windows/RackspaceMonitoringAgent.wxs',
+                            '<(INTERMEDIATE_DIR)/version.wxi',
+                          ],
+                          'outputs': [
+                            '<(INTERMEDIATE_DIR)/RackspaceMonitoringAgent.wixobj',
+                          ],
+                          'action': [
+                            '<(CANDLE_EXE)',
+                            '-out',
+                            '<@(_outputs)',
+                            'pkg/monitoring/windows/RackspaceMonitoringAgent.wxs',
+                            '-dAGENT_EXE=<(PRODUCT_DIR)/monitoring-agent.exe',
+                            '-dVERSION_WXI=<(BUNDLE_VERSION)',
+                            '-dREPO_DIR=<(RULE_INPUT_DIRNAME)',
+                            '-dPRODUCT_DIR=<(PRODUCT_DIR)',
+                          ],
+                          'process_outputs_as_sources': 1,
+                        },
+                        {
+                          'action_name': 'light',
+                          'extension': 'wxs',
+                          'inputs': [
+                            '<(INTERMEDIATE_DIR)/RackspaceMonitoringAgent.wixobj',
+                            '<(PRODUCT_DIR)/monitoring-agent.exe',
+                          ],
+                          'outputs': [
+                            '<(PRODUCT_DIR)/rackspace-monitoring-agent.msi',
+                          ],
+                          'action': [
+                            '<(LIGHT_EXE)',
+                            '<(INTERMEDIATE_DIR)/RackspaceMonitoringAgent.wixobj',
+                            '-ext', 'WixUIExtension',
+                            '-ext', 'WixUtilExtension',
+                            '-out', '<@(_outputs)',
+                          ],
+                          'process_outputs_as_sources': 1,
+                        },
+                    ] #end actions
+        }], #end targets
+    }], #end win32
+  ],
 }
 

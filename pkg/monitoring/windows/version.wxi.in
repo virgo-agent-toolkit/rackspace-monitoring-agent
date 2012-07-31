@@ -1,0 +1,5 @@
+AGENT_VERSION
+<?xml version='1.0' encoding='utf-8'?>
+<?define VERSION = '${AGENT_VERSION}' ?>
+<Include>
+</Include>
