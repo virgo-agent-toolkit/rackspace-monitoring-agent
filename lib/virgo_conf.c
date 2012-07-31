@@ -33,6 +33,18 @@
 #endif
 
 virgo_error_t*
+virgo_conf_service_name(virgo_t *v, const char *name)
+{
+  if (v->service_name) {
+    free((void*)v->service_name);
+  }
+
+  v->service_name = strdup(name);
+
+  return VIRGO_SUCCESS;
+}
+
+virgo_error_t*
 virgo_conf_lua_load_path(virgo_t *v, const char *path)
 {
   if (v->lua_load_path) {
