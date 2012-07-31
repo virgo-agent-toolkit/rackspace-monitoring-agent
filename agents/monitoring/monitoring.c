@@ -84,6 +84,13 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
+  /* Set Service Name */
+  err = virgo_conf_service_name(v, "Rackspace Monitoring Agent");
+  if (err) {
+    handle_error("Error setting service name", err);
+    return EXIT_FAILURE;
+  }
+
   /* default filename */
   err = virgo_conf_lua_load_path(v, VIRGO_DEFAULT_ZIP_UNIX_PATH);
   if (err) {

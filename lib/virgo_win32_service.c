@@ -26,9 +26,6 @@
 #include <process.h>
 #include <stdlib.h>
 
-/* TODO: Make part of agent config? */
-#define SVCNAME "Rackspace Monitoring Agent"
-
 virgo_error_t*
 virgo__service_install(virgo_t *v)
 {
@@ -52,7 +49,7 @@ virgo__service_install(virgo_t *v)
   }
 
   /* Check if already installed... */
-  schService = OpenService(schSCManager, SVCNAME, SC_MANAGER_CONNECT);
+  schService = OpenService(schSCManager, v->service_name, SC_MANAGER_CONNECT);
 
   if (schService != NULL) {
     /* service already is installed */
@@ -63,8 +60,8 @@ virgo__service_install(virgo_t *v)
 
   schService = CreateService(
       schSCManager,              // SCM database
-      SVCNAME,                   // name of service
-      SVCNAME,                   // service name to display
+      v->service_name,                   // name of service
+      v->service_name,                   // service name to display
       SERVICE_ALL_ACCESS,        // desired access
       SERVICE_WIN32_OWN_PROCESS, // service type
       SERVICE_AUTO_START,        // start type
@@ -127,7 +124,7 @@ virgo__service_delete(virgo_t *v)
     return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenSCManager failed");
   }
 
-  schService = OpenService(schSCManager, SVCNAME, DELETE);
+  schService = OpenService(schSCManager, v->service_name, DELETE);
   if (schService == NULL) {
     err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenService failed");
     CloseServiceHandle(schSCManager);
@@ -244,7 +241,7 @@ static VOID WINAPI virgo__win32_service_main(DWORD dwArgc,LPTSTR* lpszArgv)
 {
   HANDLE worker_thread;
   virgo_t *v = virgo_baton_hack;
-  v->service_handle = RegisterServiceCtrlHandler(SVCNAME, virgo__win32_service_handler);
+  v->service_handle = RegisterServiceCtrlHandler(v->service_name, virgo__win32_service_handler);
 
   if (v->service_handle == NULL) {
     goto error;
@@ -299,7 +296,7 @@ virgo__service_handler(virgo_t *v)
   }
   else {
     SERVICE_TABLE_ENTRY ste[]={
-      { SVCNAME, virgo__win32_service_main },
+      { v->service_name, virgo__win32_service_main },
       { NULL, NULL }
     };
 

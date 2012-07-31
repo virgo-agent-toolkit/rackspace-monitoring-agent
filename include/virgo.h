@@ -62,6 +62,11 @@ VIRGO_API(virgo_error_t*) virgo_conf_trust_network_ca(virgo_t *v, const char *ca
 VIRGO_API(virgo_error_t*) virgo_conf_trust_code_ca(virgo_t *v, const char *ca_cert);
 
 /**
+ * Sets the Service Name when running under a Windows Service.
+ */
+VIRGO_API(virgo_error_t*) virgo_conf_service_name(virgo_t *v, const char *name);
+
+/**
  * Set path to a Zip file containing Lua files. init.lua inside the zip file
  * will be ran first, and other files can be loaded via require.
  */
