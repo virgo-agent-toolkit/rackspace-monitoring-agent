@@ -23,6 +23,8 @@ local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
 local PluginCheck = require('./plugin').PluginCheck
 
+local Error = require('core').Error
+
 local fmt = require('string').format
 
 function create(checkData)
@@ -50,6 +52,22 @@ function create(checkData)
   end
 end
 
+-- Test Check
+function test(checkParams, callback)
+  if type(checkParams) ~= 'table' then
+    callback(Error:new('checkParams is not a table'))
+    return
+  end
+  local check = create(checkParams)
+  if check then
+    check:run(function(results)
+      callback(nil, results)
+    end)
+  else
+    callback(Error:new('Invalid check type'))
+  end
+end
+
 local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
@@ -61,4 +79,5 @@ exports.NetworkCheck = NetworkCheck
 exports.PluginCheck = PluginCheck
 
 exports.create = create
+exports.test = test
 return exports

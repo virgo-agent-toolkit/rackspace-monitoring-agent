@@ -182,6 +182,17 @@ function HostInfoResponse:serialize(msgId)
   return Response.serialize(self, msgId)
 end
 
+--[[ CheckTestResponse ]]--
+local CheckTestResponse = Response:extend()
+function CheckTestResponse:initialize(replyTo, result)
+  Response.initialize(self, replyTo)
+  self.result = result
+end
+
+function CheckTestResponse:serialize(msgId)
+  return Response.serialize(self, msgId)
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.Request = Request
@@ -193,4 +204,5 @@ exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse
 exports.ScheduleChangeAck = ScheduleChangeAck
 exports.HostInfoResponse = HostInfoResponse
+exports.CheckTestResponse = CheckTestResponse
 return exports
