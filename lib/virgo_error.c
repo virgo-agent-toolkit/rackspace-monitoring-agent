@@ -62,13 +62,13 @@ virgo_error_create_impl(virgo_status_t err,
                    0,
                    buf, sizeof(buf), NULL);
 
-      virgo_asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
+    asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
 #else
     char buf[128];
 
     strerror_r(os_error, buf, sizeof(buf));
 
-    virgo_asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
+    asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
 #endif
   }
   e->line = line;
