@@ -15,10 +15,16 @@
  *
  */
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
 #include "virgo.h"
 #include "lua.h"
 
 #include "stdio.h"
+
 
 #ifndef _virgo__types_h_
 #define _virgo__types_h_
@@ -39,6 +45,12 @@ struct virgo_t {
   virgo_log_level_e log_level;
   FILE *log_fp;
   const char *log_path;
+#ifdef _WIN32
+  /* Windows Services support */
+  SERVICE_STATUS service_status;
+  HANDLE service_stop_event;
+  SERVICE_STATUS_HANDLE service_handle;
+#endif
 };
 
 
