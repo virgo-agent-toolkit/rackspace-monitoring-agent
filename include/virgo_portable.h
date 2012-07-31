@@ -28,7 +28,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if _MSC_VER
+#if _WIN32
 #define snprintf _snprintf
 #define VIRGO_WANT_ASPRINTF
 #define vasprintf virgo_vasprintf
@@ -40,6 +40,8 @@ extern "C" {
 #include <stdio.h>
 int virgo_vasprintf(char **outstr, const char *fmt, va_list args);
 int virgo_asprintf(char **outstr, const char *fmt, ...);
+#else
+
 #endif
 
 char* virgo_basename(char *name);
@@ -52,7 +54,6 @@ char* virgo_basename(char *name);
 #else
 #define VIRGO_ATTR_FMT_FUNC(x,y)
 #endif
-
 
 #ifdef __cplusplus
 }
