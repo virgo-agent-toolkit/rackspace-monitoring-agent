@@ -18,6 +18,7 @@
 #include "virgo.h"
 #include "virgo__util.h"
 #include "virgo__lua.h"
+#include "virgo__types.h"
 
 #ifdef _WIN32
 
@@ -165,8 +166,7 @@ virgo__win32_is_service(int *result)
   scm = OpenSCManager(0, SERVICES_ACTIVE_DATABASE, SC_MANAGER_ENUMERATE_SERVICE);
 
   if (scm == NULL) {
-    err = GetLastError();
-    return virgo_error_createf(VIRGO_EINVAL, "Failed to call OpenSCManager(): %d", err);
+    return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenSCManager() failed");
   }
   
   rv = EnumServicesStatusExA(scm, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_ACTIVE,
@@ -180,7 +180,7 @@ virgo__win32_is_service(int *result)
       buf = malloc(bufneeded);
     }
     else {
-      return virgo_error_createf(VIRGO_EINVAL, "First call to EnumServicesStatusEx() failed: %d", err);
+      return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "First EnumServicesStatusEx() failed");
     }
   }
   else {
@@ -193,8 +193,7 @@ virgo__win32_is_service(int *result)
                             &resume, NULL);
 
   if (rv == 0) {
-    err = GetLastError();
-    return virgo_error_createf(VIRGO_EINVAL, "Second call to EnumServicesStatusEx() failed: %d", err);
+    return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Second EnumServicesStatusEx() failed");
   }
 
   svcPtr = (ENUM_SERVICE_STATUS_PROCESS*) buf;
@@ -212,6 +211,81 @@ virgo__win32_is_service(int *result)
   return VIRGO_SUCCESS;
 }
 
+static virgo_t *virgo_baton_hack = NULL;
+
+static VOID WINAPI virgo__win32_service_handler(DWORD dwControl)
+{
+  virgo_t *v = virgo_baton_hack;
+
+  if (dwControl == SERVICE_CONTROL_STOP) {
+    v->service_status.dwCurrentState = SERVICE_STOP_PENDING;
+    SetEvent(v->service_stop_event);
+  }
+  SetServiceStatus(v->service_handle, &v->service_status);
+}
+
+DWORD WINAPI virgo__win32_service_worker(PVOID baton)
+{
+  virgo_error_t *err;
+  virgo_t *v = baton;
+  err = virgo__lua_run(v);
+  if (err != VIRGO_SUCCESS) {
+    /* TODO: logging? better error handling? */
+    return 1;
+  }
+  return 0;
+}
+
+#ifndef ARRAYSIZE
+#define ARRAYSIZE(a) sizeof(a)/sizeof(a[0])
+#endif
+
+static VOID WINAPI virgo__win32_service_main(DWORD dwArgc,LPTSTR* lpszArgv)
+{
+  HANDLE worker_thread;
+  virgo_t *v = virgo_baton_hack;
+  v->service_handle = RegisterServiceCtrlHandler(SVCNAME, virgo__win32_service_handler);
+
+  if (v->service_handle == NULL) {
+    goto error;
+  }
+
+  v->service_status.dwCurrentState = SERVICE_RUNNING;
+  v->service_status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+  v->service_status.dwControlsAccepted = SERVICE_ACCEPT_STOP;
+
+  v->service_stop_event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  SetServiceStatus(v->service_handle, &v->service_status);
+
+  worker_thread = CreateThread(0, 0, virgo__win32_service_worker, v, 0, NULL);
+  if (worker_thread == NULL) {
+    goto error;
+  }
+
+  {
+    HANDLE wait_objects[] = {worker_thread, v->service_stop_event};
+
+    DWORD dwWait = WaitForMultipleObjects(ARRAYSIZE(wait_objects), wait_objects, FALSE, INFINITE);
+    if (dwWait == WAIT_OBJECT_0) {
+      /* if the thread ended, use the exit code */
+      GetExitCodeThread(worker_thread, &v->service_status.dwServiceSpecificExitCode);
+    }
+  }
+
+  if (v->service_status.dwServiceSpecificExitCode != 0) {
+    /* TODO: log */
+    v->service_status.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR;
+  }
+
+  v->service_status.dwCurrentState = SERVICE_STOPPED;
+  SetServiceStatus(v->service_handle, &v->service_status);
+  return;
+error:
+  v->service_status.dwWin32ExitCode = GetLastError();
+  v->service_status.dwCurrentState = SERVICE_STOPPED;
+  SetServiceStatus(v->service_handle, &v->service_status);
+}
+
 virgo_error_t*
 virgo__service_handler(virgo_t *v)
 {
@@ -224,7 +298,19 @@ virgo__service_handler(virgo_t *v)
     err = virgo__lua_run(v);
   }
   else {
-    /* TODO: service management. */
+    SERVICE_TABLE_ENTRY ste[]={
+      { SVCNAME, virgo__win32_service_main },
+      { NULL, NULL }
+    };
+
+    /* Services are invoked in their own thread, but we aren't allowed to actually
+     * pass anything to them. sigh.
+     */
+    virgo_baton_hack = v;
+
+    if (!StartServiceCtrlDispatcher(ste)) {
+      return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "StartServiceCtrlDispatcher failed");
+    }
   }
 
   return err;
