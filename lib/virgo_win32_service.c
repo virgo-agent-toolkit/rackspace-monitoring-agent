@@ -117,6 +117,29 @@ virgo__service_install(virgo_t *v)
 virgo_error_t*
 virgo__service_delete(virgo_t *v)
 {
+  virgo_error_t *err;
+  SC_HANDLE schSCManager;
+  SC_HANDLE schService;
+  schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+
+  if (NULL == schSCManager) {
+    return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenSCManager failed");
+  }
+
+  schService = OpenService(schSCManager, SVCNAME, DELETE);
+  if (schService == NULL) {
+    err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenService failed");
+    CloseServiceHandle(schSCManager);
+    return err;
+  }
+
+  // Delete the service.
+  if (!DeleteService(schService)) {
+    err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "DeleteService failed");
+  }
+
+  CloseServiceHandle(schService);
+  CloseServiceHandle(schSCManager);
   return VIRGO_SUCCESS;
 }
 
