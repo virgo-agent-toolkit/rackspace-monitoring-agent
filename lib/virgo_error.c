@@ -24,6 +24,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <strsafe.h>
+#endif
+
 #include "virgo_error.h"
 #include "virgo_portable.h"
 
@@ -40,7 +45,7 @@ virgo_error_create_impl(virgo_status_t err,
   e = malloc(sizeof(*e));
 
   e->err = err;
-  if (os_error != 0) {
+  if (os_error == 0) {
     if (copy_msg) {
       e->msg = strdup(msg);
     }
@@ -49,7 +54,22 @@ virgo_error_create_impl(virgo_status_t err,
     }
   }
   else {
-     /* TODO: OS errors */
+#ifdef _WIN32
+    char buf[128];
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                   NULL,
+                   os_error,
+                   0,
+                   buf, sizeof(buf), NULL);
+
+      virgo_asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
+#else
+    char buf[128];
+
+    strerror_r(os_error, buf, sizeof(buf);
+
+    virgo_asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
+#endif
   }
   e->line = line;
   e->file = strdup(file);
