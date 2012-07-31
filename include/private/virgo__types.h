@@ -45,6 +45,7 @@ struct virgo_t {
   virgo_log_level_e log_level;
   FILE *log_fp;
   const char *log_path;
+  const char *service_name;
 #ifdef _WIN32
   /* Windows Services support */
   SERVICE_STATUS service_status;
