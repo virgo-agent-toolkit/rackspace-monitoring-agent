@@ -55,7 +55,11 @@ virgo__argv_has_flag(virgo_t *v, const char *short_opt, const char *long_opt)
   while (i < argc) {
     arg = argv[i];
 
-    if (strcmp(arg, short_opt) == 0 || strcmp(arg, long_opt) == 0) {
+    if (short_opt != NULL && strcmp(arg, short_opt) == 0) {
+      return 1;
+    }
+
+    if (long_opt != NULL && strcmp(arg, long_opt) == 0) {
       return 1;
     }
     i++;

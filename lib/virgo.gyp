@@ -19,6 +19,11 @@
             '../deps/breakpad/src',
           ],
         }],
+        ['OS=="win"', {
+          'sources': [
+            'virgo_win32_service.c',
+          ],
+        }],
       ],
       'dependencies': [
         '../deps/luvit/deps/zlib/zlib.gyp:zlib',

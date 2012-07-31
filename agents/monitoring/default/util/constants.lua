@@ -33,7 +33,7 @@ end
 if os.type() == 'win32' then
   exports.DEFAULT_CONFIG_PATH = path.join('.', virgo.default_config_filename)
 else
-  exports.DEFAULT_CONFIG_PATH = virgo.default_config_unix_path
+  exports.DEFAULT_CONFIG_PATH = virgo.default_config_path
 end
 
 -- Custom plugins related settings

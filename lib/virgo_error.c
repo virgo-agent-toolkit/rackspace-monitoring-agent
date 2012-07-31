@@ -24,21 +24,53 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <strsafe.h>
+#endif
+
 #include "virgo_error.h"
 #include "virgo_portable.h"
 
 virgo_error_t*
 virgo_error_create_impl(virgo_status_t err,
-                         const char *msg,
-                         uint32_t line,
-                         const char *file)
+                        int os_error,
+                        int copy_msg,
+                        const char *msg,
+                        uint32_t line,
+                        const char *file)
 {
   virgo_error_t *e;
 
   e = malloc(sizeof(*e));
 
   e->err = err;
-  e->msg = strdup(msg);
+  if (os_error == 0) {
+    if (copy_msg) {
+      e->msg = strdup(msg);
+    }
+    else {
+      e->msg = msg;
+    }
+  }
+  else {
+#ifdef _WIN32
+    char buf[128];
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                   NULL,
+                   os_error,
+                   0,
+                   buf, sizeof(buf), NULL);
+
+    asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
+#else
+    char buf[128];
+
+    strerror_r(os_error, buf, sizeof(buf));
+
+    asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
+#endif
+  }
   e->line = line;
   e->file = strdup(file);
 
@@ -47,30 +79,30 @@ virgo_error_create_impl(virgo_status_t err,
 
 virgo_error_t *
 virgo_error_createf_impl(virgo_status_t err,
-                          uint32_t line,
-                          const char *file,
-                          const char *fmt,
-                          ...)
+                         int os_error,
+                         uint32_t line,
+                         const char *file,
+                         const char *fmt,
+                         ...)
 {
+  char *msg = NULL;
   int rv;
-  virgo_error_t *e;
+  int copy = 0;
+  virgo_error_t *err_out;
   va_list ap;
 
-  e = malloc(sizeof(*e));
-
-  e->err = err;
-
   va_start(ap, fmt);
-  rv = vasprintf((char **) &e->msg, fmt, ap);
+  rv = vasprintf((char **) &msg, fmt, ap);
   va_end(ap);
 
   if (rv == -1) {
-    e->msg = strdup("vasprintf inside virgo_error_createf_impl returned -1, you likely have larger problems here");
+    copy = 1;
+    msg = "vasprintf inside virgo_error_createf_impl returned -1, you likely have larger problems here";
   }
 
-  e->line = line;
-  e->file = strdup(file);
-  return e;
+  err_out = virgo_error_create_impl(err, os_error, copy, msg, line, file);
+
+  return err_out;
 }
 
 void
