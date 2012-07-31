@@ -66,7 +66,7 @@ virgo_error_create_impl(virgo_status_t err,
 #else
     char buf[128];
 
-    strerror_r(os_error, buf, sizeof(buf);
+    strerror_r(os_error, buf, sizeof(buf));
 
     virgo_asprintf((char**)&e->msg, "%s: (%d) %s", msg, os_error, buf);
 #endif
