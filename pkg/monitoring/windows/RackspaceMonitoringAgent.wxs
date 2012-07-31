@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <Product Name='Rackspace Monitoring Service'
+           Id='*'
+           UpgradeCode="826873C9-1A63-4A05-98F4-95D8D8EF3507"
+           Language='1033' Codepage='1252' Version='1.%version_string%'
+           Manufacturer='Rackspace Hosting, Inc.'>
+
+   <Package Id='*' Keywords='Installer'
+      Description="Rackspace Monitoring Installer"
+      Comments='Rackspace Monitoring Agent is the component that runs on the monitored server.'
+      Manufacturer='Rackspace Hosting, Inc.'
+      InstallerVersion='200'
+      Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+      <Upgrade Id="826873C9-1A63-4A05-98F4-95D8D8EF3507">
+        <UpgradeVersion OnlyDetect="no" Property="PREVIOUSFOUND"
+           Minimum="1.0.0.0"  IncludeMinimum="yes"
+           Maximum="99.0.0.0" IncludeMaximum="no" />
+      </Upgrade>
+      <InstallExecuteSequence>
+          <RemoveExistingProducts Before="InstallInitialize"/>
+      </InstallExecuteSequence>
+
+    <Media Id='1' Cabinet='RackspaceMonitoringAgentInstaller.cab' EmbedCab='yes' />
+
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+          <Directory Id='RAXMONAGENT' Name='Rackspace Monitoring Agent'>
+
+              <Component Id='MainExecutable' Guid='F044290F-E32E-438D-8E1A-C628E0353BD4'>
+                <File Id='RackspaceMonitoringAgentEXE' Name='monitoring-rackspace.exe' DiskId='1' Source='src/monitoring-agent.exe' KeyPath='yes'>
+                </File>
+
+                <ServiceInstall Id="InstallRackspaceMonitoringAgent"
+                  Name="Rackspace Monitoring Agent"
+                  DisplayName="Rackspace Monitoring Agent"
+                  Type="ownProcess"
+                  Vital="yes"
+                  Start="auto"
+                  ErrorControl="normal"
+                  Description="Provides Rackspace Monitoring Agent. The agent can record disk, bandwidth, CPU usage, and more. Data collected from the agent goes into Rackspace Cloud Monitoring's systems."
+                  >
+
+                  <util:ServiceConfig
+                    FirstFailureActionType="restart"
+                    SecondFailureActionType="restart"
+                    ThirdFailureActionType="restart" />
+
+                </ServiceInstall>                                                           
+
+                <ServiceControl Id="StartControlRackspaceMonitoringAgent"
+                  Name="Rackspace Monitoring Agent" Start="install" Wait="no"  />
+                <ServiceControl Id="StopControlRackspaceMonitoringAgent"
+                  Name="Rackspace Monitoring Agent" Stop="both" Remove="uninstall" Wait="yes"  />    
+
+              </Component>
+
+              <Directory Id='PLUGINS' Name='plugins'>
+              </Directory>
+
+          </Directory>
+      </Directory>
+    </Directory>
+
+    <Feature Id='Complete' Level='1'>
+      <ComponentRef Id='MainExecutable' />
+      <ComponentRef Id='ConfigFile' />
+      <ComponentRef Id='ProgramMenuDir' />
+    </Feature>
+    <Icon Id="rackspace-monitoring-agent.ico" SourceFile="pkg/windows/rackspace-monitoring-agent.ico" />
+    <Property Id="ARPPRODUCTICON" Value="rackspace-monitoring-agent.ico" />
+  </Product>
+</Wix>
