@@ -1,8 +1,8 @@
 ID ICON "rackspace-monitoring-agent.ico"
 
 1 VERSIONINFO
-FILEVERSION     1,${version_major},${version_minor},${version_patch}
-PRODUCTVERSION  1,${version_major},${version_minor},${version_patch}
+FILEVERSION     ${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${VERSION_RELEASE}
+PRODUCTVERSION  ${VERSION_MAJOR},${VERSION_MINOR},${VERSION_PATCH},${VERSION_RELEASE}
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
@@ -10,12 +10,12 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "Rackspace Hosting, Inc."
       VALUE "FileDescription", "Monitoring Agent for Rackspace Cloud Monitoring."
-      VALUE "FileVersion", "${version_string}"
+      VALUE "FileVersion", "${VERSION_FULL}"
       VALUE "InternalName", "rackspace-monitoring-agent.exe"
       VALUE "LegalCopyright", "Rackspace Hosting, Inc."
       VALUE "OriginalFilename", "rackspace-monitoring-agent.exe"
       VALUE "ProductName", "Rackspace Monitoring Agent"
-      VALUE "ProductVersion", "${version_string}"
+      VALUE "ProductVersion", "${VERSION_FULL}"
     END
   END
 
