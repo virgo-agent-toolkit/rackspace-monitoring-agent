@@ -165,6 +165,8 @@ function Scheduler:initialize(stateFile, checks, callback)
         self._scanner:dumpChecks(self._checks, function()
           self._log(logging.DEBUG, 'checks dumped at '..os.time())
         end)
+        -- log check
+        self._log(logging.INFO, fmt('check completed %s', check:getSummary()))
         -- emit check
         self:emit('check', check, checkResult)
         -- determine when the next scan should be.
