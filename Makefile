@@ -53,11 +53,8 @@ install: all
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
-# Generate versions for RPM/dpkg without dashes from git describe
-# make release 0 if tag matches exactly
-PKG_VERLIST = $(filter-out dirty,$(subst -, ,$(VERSION))) 0
-PKG_VERSION = $(word 1,$(PKG_VERLIST))
-PKG_RELEASE = $(word 2,$(PKG_VERLIST))
+PKG_VERSION = $(shell python tools/version.py tag)
+PKG_RELEASE = $(shell python tool/version.py release)
 
 spec_file_name = rackspace-monitoring-agent.spec
 spec_file_dir = pkg/monitoring/rpm
@@ -124,7 +121,7 @@ deb: all dist $(debbuild_dir)
 
 PKG_TYPE=$(shell python ./tools/pkgtype.py)
 pkg:
-	python ./tools/version.py $(PKG_VERSION) $(PKG_RELEASE) > out/VERSION
+	python ./tools/version.py > out/VERSION
 	$(MAKE) $(PKG_TYPE)
 
 update:
