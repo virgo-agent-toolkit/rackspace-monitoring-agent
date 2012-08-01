@@ -55,6 +55,30 @@ exports['test_memory_check'] = function(test, asserts)
   end)
 end
 
+exports['test_check'] = function(test, asserts)
+  local checkParams = {
+    id = 1,
+    period = 30,
+    type = 'agent.memory'
+  }
+  Check.test(checkParams, function(err, ch, results)
+    asserts.ok(results ~= nil)
+    test.done()
+  end)
+end
+
+exports['test_check_invalid_type'] = function(test, asserts)
+  local checkParams = {
+    id = 1,
+    period = 30,
+    type = 'invalid.type'
+  }
+  Check.test(checkParams, function(err, ch, results)
+    asserts.ok(err ~= nil)
+    test.done()
+  end)
+end
+
 exports['test_cpu_check'] = function(test, asserts)
   local check = CpuCheck:new({id='foo', period=30})
   asserts.ok(check._lastResult == nil)

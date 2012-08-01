@@ -25,6 +25,7 @@ local msg = require ('./messages')
 local table = require('table')
 local utils = require('utils')
 local hostInfo = require('../host_info')
+local check = require('../check')
 
 -- Response timeouts in ms
 local HANDSHAKE_TIMEOUT = 30000
@@ -77,6 +78,20 @@ responses['host_info.get'] = function(self, request, callback)
   local info = hostInfo.create(request.params.type)
   local m = msg.HostInfoResponse:new(request, info:serialize())
   self:_send(m:serialize(self._msgid), nil, 200, callback)
+end
+
+responses['check.test'] = function(self, request, callback)
+  local status, checkParams = pcall(function()
+    return JSON.parse(request.params.checkParams)
+  end)
+  if not status then
+    return
+  end
+  checkParams.period = 30
+  check.test(checkParams, function(err, ch, results)
+    local m = msg.CheckTestResponse:new(request, results)
+    self:_send(m:serialize(self._msgid), nil, 200, callback)
+  end)
 end
 
 function AgentProtocolConnection:initialize(log, myid, token, conn)
@@ -282,6 +297,5 @@ function AgentProtocolConnection:execute(msg)
     self:emit('error', err)
   end
 end
-
 
 return AgentProtocolConnection
