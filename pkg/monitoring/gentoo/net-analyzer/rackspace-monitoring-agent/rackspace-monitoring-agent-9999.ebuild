@@ -36,5 +36,5 @@ src_install() {
 	make install DESTDIR="${D}" || die "failed install"
 
 	dodir /etc/init.d
-	cp "${FILESDIR}"/init "${D}"/etc/init.d/monitoring-rackspace
+	cp "${FILESDIR}"/init "${D}"/etc/init.d/rackspace-monitoring-agent
 }

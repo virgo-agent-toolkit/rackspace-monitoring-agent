@@ -48,13 +48,13 @@ install: all
 	install -d ${BINDIR}
 	install -d ${ETCDIR}
 	install -d ${SHAREDIR}
-	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/monitoring-rackspace
+	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/rackspace-monitoring-agent
 	install out/${BUILDTYPE}/monitoring.zip ${SHAREDIR}
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
 PKG_VERSION = $(shell python tools/version.py tag)
-PKG_RELEASE = $(shell python tool/version.py release)
+PKG_RELEASE = $(shell python tools/version.py release)
 
 spec_file_name = rackspace-monitoring-agent.spec
 spec_file_dir = pkg/monitoring/rpm
