@@ -160,12 +160,13 @@ function Scheduler:initialize(stateFile, checks, callback)
     -- todo: need a process of determining at this point if a check SHOULD NOT be run.
     local check = self._checkMap[checkMeta.id]
     if check ~= nil then
-      self._log(logging.INFO, fmt('Running check %s', check:toString()))
       check:run(function(checkResult)
         self._runCount = self._runCount + 1
         self._scanner:dumpChecks(self._checks, function()
           self._log(logging.DEBUG, 'checks dumped at '..os.time())
         end)
+        -- log check
+        self._log(logging.INFO, fmt('check completed %s', check:getSummary()))
         -- emit check
         self:emit('check', check, checkResult)
         -- determine when the next scan should be.

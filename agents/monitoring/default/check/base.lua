@@ -59,6 +59,16 @@ function BaseCheck:getNextRun()
   end
 end
 
+function BaseCheck:getSummary(obj)
+  local str = ''
+  if obj then
+    for k, v in pairs(obj) do
+      str = str .. fmt(', %s=%s', k, v)
+    end
+  end
+  return fmt('(id=%s, type=%s%s)', self.id, self._type, str)
+end
+
 function BaseCheck:toString()
   return fmt('%s (id=%s, period=%ss)', self._type, self.id, self.period)
 end
