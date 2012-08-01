@@ -1,0 +1,26 @@
+ID ICON "rackspace-monitoring-agent.ico"
+
+1 VERSIONINFO
+FILEVERSION     1,${version_major},${version_minor},${version_patch}
+PRODUCTVERSION  1,${version_major},${version_minor},${version_patch}
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "CompanyName", "Rackspace Hosting, Inc."
+      VALUE "FileDescription", "Monitoring Agent for Rackspace Cloud Monitoring."
+      VALUE "FileVersion", "${version_string}"
+      VALUE "InternalName", "rackspace-monitoring-agent.exe"
+      VALUE "LegalCopyright", "Rackspace Hosting, Inc."
+      VALUE "OriginalFilename", "rackspace-monitoring-agent.exe"
+      VALUE "ProductName", "Rackspace Monitoring Agent"
+      VALUE "ProductVersion", "${version_string}"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1252
+  END
+END
