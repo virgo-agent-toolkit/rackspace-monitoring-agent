@@ -77,6 +77,10 @@ function ConnectionMessages:onMessage(client, msg)
     client:log(logging.DEBUG, 'received host info request ' .. msg.params.type or 'UNDEFINED')
     client.protocol:respond(msg.method, msg, function()
     end)
+  elseif msg.method == 'check.test' then
+    client:log(logging.DEBUG, 'received check test')
+    client.protocol:respond(msg.method, msg, function()
+    end)
   end
 end
 
