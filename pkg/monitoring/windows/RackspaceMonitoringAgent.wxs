@@ -44,7 +44,7 @@
         <Feature Id="Complete" Level="1">
             <ComponentRef Id="MainExecutable" />
         </Feature>
-    <Icon Id="agent_icon" SourceFile="$(var.ProductDir)\..\pkg\monitoring\windows\agent.ico" />
+    <Icon Id="agent_icon" SourceFile="$(var.ProductDir)\..\agents\monitoring\rackspace-monitoring-agent.ico" />
     <Property Id="ARPPRODUCTICON" Value="agent_icon" />
 <!--
         <UI>

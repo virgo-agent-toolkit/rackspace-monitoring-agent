@@ -39,6 +39,11 @@
       'agents/monitoring/tests/crypto',
       'agents/monitoring/tests/agent-protocol',
     ],
+    'VERSION_FULL': '<!(python tools/version.py --sep=.)',
+    'VERSION_MAJOR': '<!(python tools/version.py --sep=. major)',
+    'VERSION_MINOR': '<!(python tools/version.py --sep=. minor)',
+    'VERSION_PATCH': '<!(python tools/version.py --sep=. patch)',
+    'VERSION_RELEASE': '<!(python tools/version.py --sep=. release)',
     'test_modules_sources': [
       '<!@(python tools/bundle.py -l <(test_modules))',
     ],
@@ -74,13 +79,39 @@
         '_FILE_OFFSET_BITS=64',
       ],
 
+      'actions': [
+        {
+          'action_name': 'generate_rc',
+          'inputs': [
+            'agents/monitoring/monitoring.rc.in'
+          ],
+          'outputs': [
+            'agents/monitoring/monitoring.rc'
+          ],
+          'action': [
+            'python',
+            'tools/lame_sed.py',
+            '<@(_inputs)',
+            '<@(_outputs)',
+            '{VERSION_FULL}:<(VERSION_FULL)',
+            '{VERSION_MAJOR}:<(VERSION_MAJOR)',
+            '{VERSION_MINOR}:<(VERSION_MINOR)',
+            '{VERSION_PATCH}:<(VERSION_PATCH)',
+            '{VERSION_RELEASE}:<(VERSION_RELEASE)',
+          ],
+        },
+      ],
+
       'conditions': [
         [ 'OS=="win"',
           {
             'defines': [
               'FD_SETSIZE=1024'
             ],
-            'libraries': [ '-lpsapi.lib', '-lversion.lib', '-lnetapi32.lib', '-lShlwapi.lib']
+            'libraries': [ '-lpsapi.lib', '-lversion.lib', '-lnetapi32.lib', '-lShlwapi.lib'],
+            'sources': [
+                'agents/monitoring/monitoring.rc',
+            ],
           },
           { # POSIX
             'defines': [ '__POSIX__' ]
