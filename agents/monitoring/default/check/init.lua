@@ -61,7 +61,7 @@ function test(checkParams, callback)
   local check = create(checkParams)
   if check then
     check:run(function(results)
-      callback(nil, results)
+      callback(nil, check, results)
     end)
   else
     callback(Error:new('Invalid check type'))

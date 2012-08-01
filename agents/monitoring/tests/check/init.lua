@@ -61,7 +61,7 @@ exports['test_check'] = function(test, asserts)
     period = 30,
     type = 'agent.memory'
   }
-  Check.test(checkParams, function(err, results)
+  Check.test(checkParams, function(err, ch, results)
     asserts.ok(results ~= nil)
     test.done()
   end)
@@ -73,7 +73,7 @@ exports['test_check_invalid_type'] = function(test, asserts)
     period = 30,
     type = 'invalid.type'
   }
-  Check.test(checkParams, function(err, results)
+  Check.test(checkParams, function(err, ch, results)
     asserts.ok(err ~= nil)
     test.done()
   end)

@@ -186,7 +186,9 @@ end
 local CheckTestResponse = Response:extend()
 function CheckTestResponse:initialize(replyTo, result)
   Response.initialize(self, replyTo)
-  self.result = result
+  self.result.metrics = result:serialize()
+  self.result.state = result:getState()
+  self.result.status = result:getStatus()
 end
 
 function CheckTestResponse:serialize(msgId)

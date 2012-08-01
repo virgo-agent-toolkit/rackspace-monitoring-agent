@@ -81,11 +81,15 @@ responses['host_info.get'] = function(self, request, callback)
 end
 
 responses['check.test'] = function(self, request, callback)
-  check.test(request.params.checkParams, function(err, results)
-    if err then
-      return
-    end
-    local m = msg.CheckTestResponse:new(request, results:serialize())
+  local status, checkParams = pcall(function()
+    return JSON.parse(request.params.checkParams)
+  end)
+  if not status then
+    return
+  end
+  checkParams.period = 30
+  check.test(checkParams, function(err, ch, results)
+    local m = msg.CheckTestResponse:new(request, results)
     self:_send(m:serialize(self._msgid), nil, 200, callback)
   end)
 end
@@ -293,6 +297,5 @@ function AgentProtocolConnection:execute(msg)
     self:emit('error', err)
   end
 end
-
 
 return AgentProtocolConnection
