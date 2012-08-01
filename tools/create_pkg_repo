@@ -38,6 +38,7 @@ Components: main
 Architectures: i386 amd64 source
 Origin: Rackspace
 Description: Rackspace Cloud Monitoring Agent for %s %s
+SignWith: D05AB914
 """ % (dist[0], dist[1])
 
     if not os.path.isdir(dest):

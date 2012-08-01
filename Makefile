@@ -126,6 +126,9 @@ deb: all dist $(debbuild_dir)
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${PKG_RELEASE} build ${PKG_VERSION} '${VERSION}'
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
 
+deb-sign:
+	@echo noop
+
 PKG_TYPE=$(shell python ./tools/pkgtype.py)
 pkg:
 	python ./tools/version.py > out/VERSION
