@@ -115,8 +115,8 @@ if __name__ == '__main__':
                       help='Codespeed instance url')
     parser.add_option('--builder', dest='builder', default=BUILDER_NAME,
                       help='Name of the builder')
-    parser.add_option('--executable', dest='executable', default='monitoring-rackspace',
-                      help='Executable name (e.g. monitoring-rackspace)')
+    parser.add_option('--executable', dest='executable', default='rackspace-monitoring-agent',
+                      help='Executable name (e.g. rackspace-monitoring-agent)')
     parser.add_option('--options', dest='options', default='',
                       help='Options to pass to the executable')
     parser.add_option('--sleep', dest='sleep', default=SLEEP_SECONDS,
