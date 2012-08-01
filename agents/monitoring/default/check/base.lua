@@ -59,6 +59,11 @@ function BaseCheck:getNextRun()
   end
 end
 
+--[[
+Retreieve the summary information of the check.
+
+obj - optional - optional parameters for the resulting string.
+]]--
 function BaseCheck:getSummary(obj)
   local str = ''
   if obj then
