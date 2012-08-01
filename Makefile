@@ -105,6 +105,13 @@ rpm: all dist $(rpmbuild_dirs)
 	cp $(TARNAME).tar.gz $(rpmbuild_dir)/SOURCES/
 	rpmbuild --define '_topdir $(PWD)/$(rpmbuild_dir)' -ba $(spec_file_built)
 
+rpm-sign:
+	-mv ~/.rpmmacros ~/.rpmmacros.bak
+	ln -s $(PWD)/pkg/monitoring/rpm/rpm_macros_gpg ~/.rpmmacros
+	find $(rpmbuild_dir)/ -type f -name *.rpm -exec pkg/monitoring/rpm/rpm-sign.exp {} \;
+	rm ~/.rpmmacros
+	-mv ~/.rpmmacros.bak ~/.rpmmacros
+
 #######################
 ### Debian
 debbuild_dir = out/debbuild
@@ -124,8 +131,11 @@ pkg:
 	python ./tools/version.py > out/VERSION
 	$(MAKE) $(PKG_TYPE)
 
+pkg-sign:
+	make $(PKG_TYPE)-sign
+
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
 
-.PHONY: clean dist distclean all test tests crash endpoint-tests rpm $(spec_file_built) deb pkg
+.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built) deb pkg rpm-sign pkg-sign
