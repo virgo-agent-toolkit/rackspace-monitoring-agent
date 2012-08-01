@@ -66,6 +66,10 @@ obj - optional - optional parameters for the resulting string.
 ]]--
 function BaseCheck:getSummary(obj)
   local str = ''
+  obj = obj or {}
+  if self._lastResult and not obj['status'] then
+    obj['state'] = self._lastResult:getState()
+  end
   if obj then
     for k, v in pairs(obj) do
       str = str .. fmt(', %s=%s', k, v)
