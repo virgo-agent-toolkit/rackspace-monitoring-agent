@@ -253,6 +253,15 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
   else:
     input_dir_preamble = ''
 
+  if [x for x in cmd if '$(OutDir)' in x]:
+    input_dir_preamble += (
+        'set OUTDIR=$(OutDir)\n'
+        'set OUTDIR=%OUTDIR:$(ProjectDir)=%\n'
+        'set OUTDIR=%OUTDIR:~0,-1%\n'
+        )
+  else:
+    input_dir_preamble += ''
+
   if cygwin_shell:
     # Find path to cygwin.
     cygwin_dir = _FixPath(spec.get('msvs_cygwin_dirs', ['.'])[0])
@@ -298,7 +307,9 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
     # Fix the paths
     # If the argument starts with a slash, it's probably a command line switch
     arguments = [i.startswith('/') and i or _FixPath(i) for i in cmd[1:]]
+    arguments = [i.startswith('-') and i or _FixPath(i) for i in cmd[1:]]
     arguments = [i.replace('$(InputDir)','%INPUTDIR%') for i in arguments]
+    arguments = [i.replace('$(OutDir)','%OUTDIR%') for i in arguments]
     if quote_cmd:
       # Support a mode for using cmd directly.
       # Convert any paths to native form (first element is used directly).
@@ -306,7 +317,6 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
       arguments = ['"%s"' % i for i in arguments]
     # Collapse into a single command.
     return input_dir_preamble + ' '.join(command + arguments)
-
 
 def _BuildCommandLineForRule(spec, rule, has_input_path, do_setup_env):
   # Currently this weird argument munging is used to duplicate the way a
