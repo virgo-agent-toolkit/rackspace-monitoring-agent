@@ -26,8 +26,7 @@ def pkg():
   elif sys.platform != "win32":
       cmd = 'make -C %s pkg' % root
   else:
-      print 'win32 not supported skipping packaging'
-      sys.exit(0)
+      cmd = 'tools\win_pkg.bat'
 
   print cmd
   sys.exit(subprocess.call(cmd, shell=True))
