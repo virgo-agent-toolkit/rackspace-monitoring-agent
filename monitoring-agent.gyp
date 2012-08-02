@@ -280,8 +280,6 @@
             'monitoring-agent#host',
           ],
           'variables': {
-            # TODO: switch to brandons new version thing
-            'BUNDLE_VERSION': '<!(git --git-dir .git describe --tags)',
             # TODO: detect path via a python script?
             'LIGHT_EXE': '"C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\light.exe"',
             'CANDLE_EXE': '"C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\candle.exe"',
