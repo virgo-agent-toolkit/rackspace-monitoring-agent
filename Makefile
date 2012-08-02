@@ -53,6 +53,7 @@ install: all
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
+PKG_FULL_VERSION = $(shell python tools/version.py)
 PKG_VERSION = $(shell python tools/version.py tag)
 PKG_RELEASE = $(shell python tools/version.py release)
 
@@ -130,7 +131,7 @@ deb: all dist $(debbuild_dir)
 	cp $(TARNAME).tar.gz $(debbuild_dir)
 	rm -rf $(debbuild_dir)/rackspace-monitoring-agent && mkdir -p $(debbuild_dir)/rackspace-monitoring-agent
 	tar zxf $(TARNAME).tar.gz --strip-components=1 -C $(debbuild_dir)/rackspace-monitoring-agent
-	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${PKG_RELEASE} build ${PKG_VERSION} '${VERSION}'
+	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -v ${PKG_FULL_VERSION} 'Release of ${VERSION}'
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
 
 deb-sign:
