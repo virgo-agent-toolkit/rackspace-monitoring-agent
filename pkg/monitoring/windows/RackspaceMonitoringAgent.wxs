@@ -25,7 +25,7 @@
                 <Directory Id="RAXMONAGENT" Name="$(var.ProductName)">
                     <Component Id="MainExecutable" Guid="F044290F-E32E-438D-8E1A-C628E0353BD4">
                         <File Id="RackspaceMonitoringAgentEXE"
-                                Name="monitoring-rackspace.exe"
+                                Name="rackspace-monitoring-agent.exe"
                                 DiskId="1"
                                 Source='$(var.ProductDir)\monitoring-agent.exe' KeyPath="yes">
                         </File>
@@ -46,25 +46,29 @@
                         </ServiceInstall>
                         <ServiceControl Id="StartControlAgent" Name="$(var.ProductName)" Start="install" Wait="no" />
                         <ServiceControl Id="StopControlAgent" Name="$(var.ProductName)" Stop="both" Remove="uninstall" Wait="yes" />
+
                     </Component>
-                    <Directory Id="PLUGINS" Name="plugins">
-                    </Directory>
-                </Directory>
+                        <Directory Id="PLUGINS" Name="plugins">
+                            <Component Id="PluginDirectory" Guid="9DC64F5F-0B17-4C73-AEEC-A906DB3DEF84">
+                                <CreateFolder />
+                            </Component>
+                        </Directory>
+              </Directory>
             </Directory>
-            <!--
             <Directory Id="CommonAppDataFolder" Name="CommonAppDataFolder">
               <Directory Id="RaxMonFolder" Name="Rackspace Monitoring">
                 <Component Id="ExampleConfigFile" Guid="F875141D-191A-4219-B70F-E44BFCE437EE">
-                  <File Id="example_config_file"
-                        Name="rackspace-monitoring-agent-example.cfg"
-                        Source="$(var.ProductDir)\..\pkg\monitoring\rackspace-monitoring-agent.cfg" />
+                          <File Id="example_config_file"
+                                Name="rackspace-monitoring-agent-example.cfg"
+                                Source="$(var.ProductDir)\..\pkg\monitoring\rackspace-monitoring-agent.cfg" />
                 </Component>
             </Directory>
           </Directory>
-          -->
         </Directory>
         <Feature Id="Complete" Level="1">
             <ComponentRef Id="MainExecutable" />
+            <ComponentRef Id="PluginDirectory" />
+            <ComponentRef Id="ExampleConfigFile" />
         </Feature>
     <Icon Id="agent_icon" SourceFile="$(var.ProductDir)\..\agents\monitoring\rackspace-monitoring-agent.ico" />
     <Property Id="ARPPRODUCTICON" Value="agent_icon" />
