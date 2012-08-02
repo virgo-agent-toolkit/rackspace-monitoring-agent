@@ -47,7 +47,8 @@ def zero_release(version):
     return version
 
 def git_describe_fields(version):
-    fields = ["tag", "release", "hash"]
+    fields = ["tag", "release", "hash", "major", "minor", "patch"]
+    version.extend(version[0].split('.'))
     return dict(zip(fields, version))
 
 version = git_describe()
