@@ -114,6 +114,9 @@ rpm-sign:
 
 #######################
 ### Debian
+DEBFULLNAME := "Rackspace Cloud Monitoring Agent Package Repo"
+DEBEMAIL := "monitoring@rackspace.com"
+
 debbuild_dir = out/debbuild
 
 $(debbuild_dir):
