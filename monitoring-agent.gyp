@@ -292,22 +292,6 @@
 
           'actions': [
                         {
-                          'action_name': 'generate_version_wxi',
-                          'inputs': [
-                            'pkg/monitoring/windows/version.wxi.in'
-                          ],
-                          'outputs': [
-                            '<(INTERMEDIATE_DIR)/version.wxi'
-                          ],
-                          'action': [
-                            'python',
-                            'tools/lame_sed.py',
-                            '<@(_inputs)',
-                            '<@(_outputs)',
-                            '{AGENT_VERSION}:<(BUNDLE_VERSION)'
-                          ],
-                        },
-                        {
                           'action_name': 'candle',
                           'inputs': [
                             'pkg/monitoring/windows/RackspaceMonitoringAgent.wxs',
