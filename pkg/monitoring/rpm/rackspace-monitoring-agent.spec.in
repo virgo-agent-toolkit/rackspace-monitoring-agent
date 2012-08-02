@@ -44,7 +44,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc README.md LICENSE.txt
-%{_bindir}/monitoring-rackspace
+%{_bindir}/rackspace-monitoring-agent
 %{_sysconfdir}/rackspace-monitoring-agent.cfg
 %{_datadir}/rackspace-monitoring-agent/*
 

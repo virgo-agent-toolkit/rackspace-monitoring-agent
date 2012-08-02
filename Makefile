@@ -48,13 +48,14 @@ install: all
 	install -d ${BINDIR}
 	install -d ${ETCDIR}
 	install -d ${SHAREDIR}
-	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/monitoring-rackspace
+	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/rackspace-monitoring-agent
 	install out/${BUILDTYPE}/monitoring.zip ${SHAREDIR}
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
+PKG_FULL_VERSION = $(shell python tools/version.py)
 PKG_VERSION = $(shell python tools/version.py tag)
-PKG_RELEASE = $(shell python tool/version.py release)
+PKG_RELEASE = $(shell python tools/version.py release)
 
 spec_file_name = rackspace-monitoring-agent.spec
 spec_file_dir = pkg/monitoring/rpm
@@ -105,8 +106,22 @@ rpm: all dist $(rpmbuild_dirs)
 	cp $(TARNAME).tar.gz $(rpmbuild_dir)/SOURCES/
 	rpmbuild --define '_topdir $(PWD)/$(rpmbuild_dir)' -ba $(spec_file_built)
 
+rpm-sign:
+	-mv ~/.rpmmacros ~/.rpmmacros.bak
+	ln -s $(PWD)/pkg/monitoring/rpm/rpm_macros_gpg ~/.rpmmacros
+	find $(rpmbuild_dir)/ -type f -name *.rpm -exec pkg/monitoring/rpm/rpm-sign.exp {} \;
+	rm ~/.rpmmacros
+	-mv ~/.rpmmacros.bak ~/.rpmmacros
+
 #######################
 ### Debian
+export NAME := Rackspace Cloud Monitoring Agent Package Repo (http://www.rackspace.com/cloud/cloud_hosting_products/monitoring/)
+export EMAIL := monitoring@rackspace.com
+
+echo:
+	echo "$(NAME)"
+	echo "$(EMAIL)"
+
 debbuild_dir = out/debbuild
 
 $(debbuild_dir):
@@ -116,16 +131,22 @@ deb: all dist $(debbuild_dir)
 	cp $(TARNAME).tar.gz $(debbuild_dir)
 	rm -rf $(debbuild_dir)/rackspace-monitoring-agent && mkdir -p $(debbuild_dir)/rackspace-monitoring-agent
 	tar zxf $(TARNAME).tar.gz --strip-components=1 -C $(debbuild_dir)/rackspace-monitoring-agent
-	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -l ${PKG_RELEASE} build ${PKG_VERSION} '${VERSION}'
+	cd $(debbuild_dir)/rackspace-monitoring-agent && dch -v ${PKG_FULL_VERSION} 'Release of ${VERSION}'
 	cd $(debbuild_dir)/rackspace-monitoring-agent && dpkg-buildpackage
+
+deb-sign:
+	@echo noop
 
 PKG_TYPE=$(shell python ./tools/pkgtype.py)
 pkg:
 	python ./tools/version.py > out/VERSION
 	$(MAKE) $(PKG_TYPE)
 
+pkg-sign:
+	make $(PKG_TYPE)-sign
+
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
 
 
-.PHONY: clean dist distclean all test tests crash endpoint-tests rpm $(spec_file_built) deb pkg
+.PHONY: clean dist distclean all test tests endpoint-tests rpm $(spec_file_built) deb pkg rpm-sign pkg-sign

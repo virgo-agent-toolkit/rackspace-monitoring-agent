@@ -31,6 +31,18 @@ def pkg():
   print cmd
   sys.exit(subprocess.call(cmd, shell=True))
 
+def pkg_sign():
+  if sys.platform.find('freebsd') == 0:
+      cmd = 'gmake -C %s pkg-sign' % root
+  elif sys.platform != "win32":
+      cmd = 'make -C %s pkg-sign' % root
+  else:
+      print 'win32 not supported skipping packaging'
+      sys.exit(0)
+
+  print cmd
+  sys.exit(subprocess.call(cmd, shell=True))
+
 def test_cmd(additional=""):
   if sys.platform != "win32":
     agent = os.path.join(root, 'out', 'Debug', 'monitoring-agent')
@@ -74,6 +86,7 @@ commands = {
   'crash': crash,
   'build': build,
   'pkg': pkg,
+  'pkg-sign': pkg_sign,
   'test': test_std,
   'test_pipe': test_pipe,
   'test_file': test_file,
