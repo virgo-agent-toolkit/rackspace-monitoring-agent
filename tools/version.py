@@ -26,7 +26,8 @@ def git_describe():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
     except OSError as e:
-        print "ERROR: running: %s" % version_run
+        print "ERROR: running: %s" % describe
+        print e
         sys.exit(1)
 
     version, errors = p.communicate()
