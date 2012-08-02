@@ -134,14 +134,17 @@ def render_openssl_symlinks(src, dest):
             # use copy2, so we preserve mtimes, reducing rebuilds
             shutil.copy2(srcf, destf)
 
+rv = None
 if sys.platform == "win32":
     os.environ['GYP_MSVS_VERSION'] = '2010'
     render_openssl_symlinks('deps/luvit/deps/openssl/openssl/include/openssl',
         'deps/luvit/deps/openssl/openssl-configs/realized/openssl')
-    os.system("python tools\gyp_virgo -f msvs -G msvs_version=2010")
+    rv = os.system("python tools\gyp_virgo -f msvs -G msvs_version=2010")
 else:
-    os.system("tools/gyp_virgo")
+    rv = os.system("tools/gyp_virgo")
 
+if rv != 0:
+    sys.exit(rv)
 print ""
 print "Done!"
 print ""
