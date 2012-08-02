@@ -24,7 +24,8 @@ def git_describe():
     try:
         p = subprocess.Popen(describe.split(),
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                stderr=subprocess.PIPE,
+                shell=True)
     except OSError as e:
         print "ERROR: running: %s" % describe
         print e
