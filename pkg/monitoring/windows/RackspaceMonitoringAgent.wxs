@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <?define ProductVersion='$(var.VERSION_WXI)' ?>
-    <?define ProductVersion='1.0.0.1' ?>
+    <?define ProductVersion = $(var.VERSIONFULL) ?>
     <?define ProductName = "Rackspace Monitoring Agent" ?>
     <?define ProductDescription = "Rackspace Monitoring Agent is the component that runs on the monitored server." ?>
     <?define ProductServiceDescription = "Provides Rackspace Monitoring Agent. The agent can record disk, bandwidth, CPU usage, and more. Data collected from the agent goes into Rackspace Cloud Monitoring's systems." ?>
     <?define ProductAuthor = "Rackspace Hosting, Inc." ?>
-    <?define RepoDir='$(var.REPO_DIR)' ?>
-    <?define ProductDir='$(var.PRODUCT_DIR)' ?>
-    <?define ProductDir='C:\data\virgo\Debug' ?>
-    <?define SourceDir='$(var.RepoDir)' ?>
+    <?define ProductDir = $(var.PRODUCTDIR) ?>
+    <?define RepoDir = $(var.REPODIR) ?>
+<!--    <?define ProductDir = $(var.PRODUCTDIR) ?> -->
+<!--    <?define ProductDir='C:\data\virgo\Debug' ?> -->
+    <?define SourceDir = $(var.RepoDir) ?>
     <Product Name="$(var.ProductName)" Id="*" UpgradeCode="826873C9-1A63-4A05-98F4-95D8D8EF3507" Language="1033" Codepage="1252" Version="$(var.ProductVersion)" Manufacturer="$(var.ProductAuthor)">
         <Package Id="*" Keywords="Installer" Description="$(var.ProductName) Installer" Comments="$(var.ProductDescription)" Manufacturer="$(var.ProductAuthor)" InstallerVersion="200" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
         <Upgrade Id="826873C9-1A63-4A05-98F4-95D8D8EF3507">
@@ -19,14 +19,25 @@
             <RemoveExistingProducts Before="InstallInitialize" />
         </InstallExecuteSequence>
         <Media Id="1" Cabinet="RackspaceMonitoringAgentInstaller.cab" EmbedCab="yes" />
+
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="ProgramFilesFolder" Name="PFiles">
                 <Directory Id="RAXMONAGENT" Name="$(var.ProductName)">
                     <Component Id="MainExecutable" Guid="F044290F-E32E-438D-8E1A-C628E0353BD4">
-                        <File Id="RackspaceMonitoringAgentEXE" Name="monitoring-rackspace.exe" DiskId="1" Source="$(var.ProductDir)\monitoring-agent.exe" KeyPath="yes">
+                        <File Id="RackspaceMonitoringAgentEXE"
+                                Name="monitoring-rackspace.exe"
+                                DiskId="1"
+                                Source='$(var.ProductDir)\monitoring-agent.exe' KeyPath="yes">
                         </File>
-                        <ServiceInstall Id="InstallRackspaceMonitoringAgent" Name="$(var.ProductName)" DisplayName="$(var.ProductName)" Type="ownProcess" Vital="yes" Start="auto" ErrorControl="normal" Description="$(var.ProductServiceDescription)">
-                            <!--
+                        <!--  Vital="yes" Removed until we can fixup more services integration. -->
+                        <ServiceInstall Id="InstallRackspaceMonitoringAgent"
+                            Name="$(var.ProductName)"
+                            DisplayName="$(var.ProductName)"
+                            Type="ownProcess"
+                            Start="auto"
+                            ErrorControl="normal"
+                            Description="$(var.ProductServiceDescription)">
+                  <!--
                   <util:ServiceConfig
                     FirstFailureActionType="restart"
                     SecondFailureActionType="restart"
@@ -40,6 +51,17 @@
                     </Directory>
                 </Directory>
             </Directory>
+            <!--
+            <Directory Id="CommonAppDataFolder" Name="CommonAppDataFolder">
+              <Directory Id="RaxMonFolder" Name="Rackspace Monitoring">
+                <Component Id="ExampleConfigFile" Guid="F875141D-191A-4219-B70F-E44BFCE437EE">
+                  <File Id="example_config_file"
+                        Name="rackspace-monitoring-agent-example.cfg"
+                        Source="$(var.ProductDir)\..\pkg\monitoring\rackspace-monitoring-agent.cfg" />
+                </Component>
+            </Directory>
+          </Directory>
+          -->
         </Directory>
         <Feature Id="Complete" Level="1">
             <ComponentRef Id="MainExecutable" />
