@@ -22,7 +22,7 @@ def git_describe():
     describe = "git describe --tags --always"
 
     try:
-        p = subprocess.Popen(describe.split(),
+        p = subprocess.Popen(describe,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 shell=True)
