@@ -114,8 +114,12 @@ rpm-sign:
 
 #######################
 ### Debian
-export NAME := "Rackspace Cloud Monitoring Agent Package Repo (http://www.rackspace.com/cloud/cloud_hosting_products/monitoring/)"
-export EMAIL := "monitoring@rackspace.com"
+export NAME := Rackspace Cloud Monitoring Agent Package Repo (http://www.rackspace.com/cloud/cloud_hosting_products/monitoring/)
+export EMAIL := monitoring@rackspace.com
+
+echo:
+	echo "$(NAME)"
+	echo "$(EMAIL)"
 
 debbuild_dir = out/debbuild
 
