@@ -59,6 +59,25 @@ function BaseCheck:getNextRun()
   end
 end
 
+--[[
+Retreieve the summary information of the check.
+
+obj - optional - optional parameters for the resulting string.
+]]--
+function BaseCheck:getSummary(obj)
+  local str = ''
+  obj = obj or {}
+  if self._lastResult and not obj['status'] then
+    obj['state'] = self._lastResult:getState()
+  end
+  if obj then
+    for k, v in pairs(obj) do
+      str = str .. fmt(', %s=%s', k, v)
+    end
+  end
+  return fmt('(id=%s, type=%s%s)', self.id, self._type, str)
+end
+
 function BaseCheck:toString()
   return fmt('%s (id=%s, period=%ss)', self._type, self.id, self.period)
 end
