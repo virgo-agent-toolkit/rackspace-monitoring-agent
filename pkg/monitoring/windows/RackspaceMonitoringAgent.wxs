@@ -2,6 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <?define ProductVersion = $(var.VERSIONFULL) ?>
     <?define ProductName = "Rackspace Monitoring Agent" ?>
+    <?define ProductShortName = "Rackspace Monitoring" ?>
     <?define ProductDescription = "Rackspace Monitoring Agent is the component that runs on the monitored server." ?>
     <?define ProductServiceDescription = "Provides Rackspace Monitoring Agent. The agent can record disk, bandwidth, CPU usage, and more. Data collected from the agent goes into Rackspace Cloud Monitoring's systems." ?>
     <?define ProductAuthor = "Rackspace Hosting, Inc." ?>
@@ -22,9 +23,9 @@
 
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="ProgramFilesFolder" Name="PFiles">
-                <Directory Id="RAXMONAGENT" Name="$(var.ProductName)">
+                <Directory Id="RAXMONAGENT" Name="$(var.ProductShortName)">
                     <Component Id="MainExecutable" Guid="F044290F-E32E-438D-8E1A-C628E0353BD4">
-                        <File Id="RackspaceMonitoringAgentEXE"
+                        <File Id="agent_exe"
                                 Name="rackspace-monitoring-agent.exe"
                                 DiskId="1"
                                 Source='$(var.ProductDir)\monitoring-agent.exe' KeyPath="yes">
