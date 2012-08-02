@@ -287,7 +287,6 @@
 
           'sources': [
             'pkg/monitoring/windows/RackspaceMonitoringAgent.wxs',
-            'pkg/monitoring/windows/version.wxi.in',
           ],
 
           'actions': [
