@@ -18,11 +18,19 @@ exports.SRV_RECORD_FAILURE_DELAY_JITTER = 15 * 1000
 exports.SETUP_AUTH_TIMEOUT = 15 * 1000
 exports.SETUP_AUTH_CHECK_INTERVAL = 2 * 1000
 
-exports.DEFAULT_MONITORING_SRV_QUERIES = {
-  '_monitoringagent._tcp.dfw1.prod.monitoring.api.rackspacecloud.com',
-  '_monitoringagent._tcp.ord1.prod.monitoring.api.rackspacecloud.com',
-  '_monitoringagent._tcp.lon3.prod.monitoring.api.rackspacecloud.com'
-}
+if process.env.STAGING then
+  exports.DEFAULT_MONITORING_SRV_QUERIES = {
+    '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com',
+    '_monitoringagent._tcp.ord1.stage.monitoring.api.rackspacecloud.com',
+    '_monitoringagent._tcp.lon3.stage.monitoring.api.rackspacecloud.com'
+  }
+else
+  exports.DEFAULT_MONITORING_SRV_QUERIES = {
+    '_monitoringagent._tcp.dfw1.prod.monitoring.api.rackspacecloud.com',
+    '_monitoringagent._tcp.ord1.prod.monitoring.api.rackspacecloud.com',
+    '_monitoringagent._tcp.lon3.prod.monitoring.api.rackspacecloud.com'
+  }
+end
 
 if os.type() == 'win32' then
   exports.DEFAULT_PERSISTENT_VARIABLE_PATH = './'

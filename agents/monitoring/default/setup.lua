@@ -21,6 +21,7 @@ local fmt = require('string').format
 local fs = require('fs')
 local timer = require('timer')
 local JSON = require('json')
+local table = require('table')
 
 local async = require('async')
 local ask = require('./util/prompt').ask
@@ -56,6 +57,18 @@ function Setup:save(token, hostname, callback)
   process.stdout:write(fmt('Writing token to %s: ', self._configFile))
   local data = fmt('monitoring_token %s\n', token)
   data = data .. fmt('monitoring_id %s\n', hostname)
+
+  --[[
+  1. We are using an environment variable because we thought adding special hidden
+  command line arguments logic may make it too complex.
+
+  2. this feature will be ran by such a small set of people who are very
+  technically minded anyways so setting an environment variable is OK.
+  ]]--
+  if process.env.STAGING then
+    local srvServers = table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ', ')
+    data = data .. fmt('monitoring_endpoints %s\n', srvServers)
+  end
   fs.writeFile(self._configFile, data, function(err)
     if err then
       process.stdout:write('failed writing config filen\n')
