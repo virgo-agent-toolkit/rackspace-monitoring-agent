@@ -9,6 +9,13 @@ import sys
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 build_dir = os.path.join(root, 'out')
 
+def extra_env():
+    env = {}
+    if sys.platform.find('freebsd') == 0:
+        env['CC'] = 'gcc48'
+        env['CXX'] = 'g++48'
+    return env
+
 def build():
   if sys.platform.find('freebsd') == 0:
       cmd = 'gmake -C %s' % build_dir
@@ -103,6 +110,11 @@ ins = sys.argv[1]
 if not commands.has_key(ins):
   print('Invalid command: %s' % ins)
   sys.exit(1)
+
+extra_env = extra_env()
+
+for key in extra_env.keys():
+    os.environ[key] = extra_env[key]
 
 print('Running %s' % ins)
 cmd = commands.get(ins)
