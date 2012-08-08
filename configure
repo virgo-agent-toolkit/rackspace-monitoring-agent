@@ -84,6 +84,7 @@ def configure_virgo(o):
   # TODO add gdb and dest_cpu
   o['variables']['virgo_debug'] = 'true' if options.debug else 'false'
   o['variables']['virgo_prefix'] = options.prefix if options.prefix else ''
+  o['variables']['luvit_prefix'] = options.prefix if options.prefix else ''
   o['variables']['host_arch'] = host_arch()
   o['variables']['target_arch'] = target_arch()
 
