@@ -49,7 +49,7 @@ end
 local function runit(modname, callback)
   local status, mod = pcall(require, modname)
   if status ~= true then
-    process.stdout:write(fmt('Error loading test module [%s]: %s\n\n', modname, mod))
+    process.stdout:write(fmt('Error loading test module [%s]: %s\n\n', modname, tostring(mod)))
     callback(mod)
   end
   process.stdout:write(fmt('Executing test module [%s]\n\n', modname))
