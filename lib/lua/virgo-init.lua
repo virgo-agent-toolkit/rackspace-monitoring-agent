@@ -110,7 +110,6 @@ function process:addHandlerType(name)
   local code = constants[name]
   if code then
     native.activateSignalHandler(code)
-    native.unref()
   end
 end
 
@@ -149,13 +148,9 @@ OS_BINDING.time = OLD_OS.time
 -- These shouldn't hold open the event loop
 if OS_BINDING.type() ~= "win32" then
   native.activateSignalHandler(constants.SIGPIPE)
-  native.unref()
   native.activateSignalHandler(constants.SIGINT)
-  native.unref()
   native.activateSignalHandler(constants.SIGTERM)
-  native.unref()
   native.activateSignalHandler(constants.SIGUSR1)
-  native.unref()
 end
 
 
@@ -463,6 +458,5 @@ process:on('SIGHUP', onHUP)
 local GC_INTERVAL = 5 * 1000 -- milliseconds
 timer.setInterval(GC_INTERVAL, gc)
 -- Unref the interval timer. We don't want it to keep the eventloop blocked
-native.unref()
 
 return virgo_init
