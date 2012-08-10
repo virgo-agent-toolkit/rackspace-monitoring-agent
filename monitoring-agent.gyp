@@ -119,7 +119,7 @@
         ],
         [ 'OS=="mac"',
           {
-            'libraries': [ '-framework Carbon -framework IOKit' ]
+            'libraries': [ 'Carbon.framework', 'IOKit.framework' ]
           }
         ],
         [ 'OS=="linux"',
