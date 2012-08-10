@@ -24,3 +24,4 @@ scheduler.state
 ._*
 rpmbuild/*
 agents/monitoring/default/util/version.lua
+agents/monitoring/monitoring.rc
