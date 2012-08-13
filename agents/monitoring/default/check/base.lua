@@ -90,6 +90,15 @@ function BaseCheck:serialize()
   }
 end
 
+local SubProcCheck = BaseCheck:extend()
+
+function SubProcCheck:_runCheckInChild(check, callback)
+  local cr = CheckResult(self, {})
+  checkResult:setError('Not implemented')
+  callback(cr)
+end
+
+
 function CheckResult:initialize(check, options)
   self._options = options or {}
   self._metrics = {}
@@ -197,6 +206,7 @@ end
 local exports = {}
 exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES
 exports.BaseCheck = BaseCheck
+exports.SubProcCheck = SubProcCheck
 exports.CheckResult = CheckResult
 exports.Metric = Metric
 return exports
