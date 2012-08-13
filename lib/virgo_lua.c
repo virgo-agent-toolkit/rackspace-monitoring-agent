@@ -17,6 +17,7 @@
 
 #include "virgo.h"
 #include "virgo__types.h"
+#include "virgo__time.h"
 #include "virgo__lua.h"
 #include "virgo__util.h"
 #include "virgo_error.h"
@@ -125,6 +126,10 @@ virgo__lua_init(virgo_t *v)
   lua_getglobal(L, "virgo");
   lua_pushcfunction(L, virgo__lua_force_crash);
   lua_setfield(L, -2, "force_crash");
+
+  lua_getglobal(L, "virgo");
+  lua_pushcfunction(L, virgo_time_now);
+  lua_setfield(L, -2, "gmtnow");
 
 #ifdef _WIN32
   lua_getglobal(L, "virgo");

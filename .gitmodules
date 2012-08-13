@@ -1,6 +1,8 @@
 [submodule "deps/luvit"]
 	path = deps/luvit
 	url = https://github.com/racker/luvit.git
+	ignore = dirty
 [submodule "deps/sigar"]
 	path = deps/sigar
 	url = https://github.com/racker/sigar.git
+	ignore = dirty
