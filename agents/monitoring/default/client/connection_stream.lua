@@ -24,6 +24,7 @@ local async = require('async')
 local Scheduler = require('../schedule').Scheduler
 local AgentClient = require('./client').AgentClient
 local ConnectionMessages = require('./connection_messages').ConnectionMessages
+local TimeSync = require('../timesync').TimeSync
 local logging = require('logging')
 local consts = require('../util/constants')
 local misc = require('../util/misc')
@@ -36,6 +37,7 @@ function ConnectionStream:initialize(id, token, options)
   self._unauthedClients = {}
   self._delays = {}
   self._messages = ConnectionMessages:new(self)
+  self._timesync = TimeSync:new(self)
   self._options = options or {}
 end
 
@@ -142,6 +144,7 @@ function ConnectionStream:_promoteClient(client)
   client:log(logging.INFO, fmt('Connection has been authenticated to %s', datacenter))
   self._clients[datacenter] = client
   self._unauthedClients[datacenter] = nil
+  self._timesync:start()
   self:emit('promote')
 end
 

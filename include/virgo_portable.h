@@ -20,6 +20,7 @@
  */
 
 #include <stdarg.h>
+#include <time.h>
 
 #ifndef _virgo_portable_h_
 #define _virgo_portable_h_
@@ -33,6 +34,7 @@ extern "C" {
 #define VIRGO_WANT_ASPRINTF
 #define vasprintf virgo_vasprintf
 #define asprintf virgo_asprintf
+double round(double val);
 #endif
 
 

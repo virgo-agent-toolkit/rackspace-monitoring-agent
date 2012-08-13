@@ -52,4 +52,7 @@ exports.PLUGIN_TYPE_MAP = {string = 'string', int = 'int64', float = 'double', g
 
 exports.CRASH_REPORT_URL = 'https://monitoring.api.rackspacecloud.com/agent-crash-report'
 
+-- Time Sync Constants
+exports.DEFAULT_TIMESYNC_INTERVAL = 1000 * 60 * 30 -- 30 minutes
+
 return exports

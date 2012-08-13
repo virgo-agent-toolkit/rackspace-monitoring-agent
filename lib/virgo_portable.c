@@ -83,3 +83,10 @@ virgo__platform_default_config_path(virgo_t *v) {
 #endif
 }
 
+#ifdef _WIN32
+double
+round(double val)
+{    
+  return floor(val + 0.5);
+}
+#endif
