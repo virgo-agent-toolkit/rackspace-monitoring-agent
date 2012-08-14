@@ -16,7 +16,6 @@ limitations under the License.
 
 local Object = require('core').Object
 local version = require('../util/version')
-local vtime = require('virgo-time')
 
 --[[ Message ]]--
 
@@ -71,7 +70,6 @@ function Request:serialize(msgId)
     params = self.params
   }
 end
-
 
 --[[ Handshake.Hello ]]--
 
