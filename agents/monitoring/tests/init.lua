@@ -40,7 +40,17 @@ local function remove_tmp(callback)
   end)
 end
 
-local TESTS_TO_RUN = {'./collector', './tls', './agent-protocol', './crypto', './misc', './check', './fs', './schedule', './virgo'}
+local TESTS_TO_RUN = {
+  './collector',
+  './tls',
+  './agent-protocol',
+  './crypto',
+  './misc',
+  './check',
+  './fs',
+  './schedule',
+  './virgo'
+}
 
 if process.env['TEST_FILES'] then
   TESTS_TO_RUN = split(process.env['TEST_FILES'])
