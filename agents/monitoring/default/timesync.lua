@@ -30,7 +30,7 @@ end
 
 function TimeSync:_tick(callback)
   callback = callback or function() end
-  logging.infof('Synchronizing Time')
+  logging.info('Synchronizing Time')
   local client = self.conn_stream:getClient()
   if not client then
     logging.info('zero active clients')
