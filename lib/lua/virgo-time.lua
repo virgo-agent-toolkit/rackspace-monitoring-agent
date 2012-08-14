@@ -33,6 +33,10 @@ local function setDelta(_delta)
   delta = _delta
 end
 
+local function getDelta()
+  return delta
+end
+
 --[[
 
 This algorithm follows the NTP algorithm found here:
@@ -65,6 +69,7 @@ end
 
 local exports = {}
 exports.setDelta = setDelta
+exports.getDelta = getDelta
 exports.now = now
 exports.raw = raw
 exports.timesync = timesync
