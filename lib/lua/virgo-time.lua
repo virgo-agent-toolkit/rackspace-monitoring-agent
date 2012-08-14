@@ -16,16 +16,17 @@ limitations under the License.
 
 local logging = require('logging')
 local Error = require('core').Error
+local math = require('math')
 
 local delta = 0
 local delay = 0
 
 local function now()
-  return virgo.gmtnow() + delta
+  return math.floor(virgo.gmtnow() + delta)
 end
 
 local function raw()
-  return virgo.gmtnow()
+  return math.floor(virgo.gmtnow())
 end
 
 local function setDelta(_delta)

@@ -34,7 +34,6 @@ extern "C" {
 #define VIRGO_WANT_ASPRINTF
 #define vasprintf virgo_vasprintf
 #define asprintf virgo_asprintf
-double round(double val);
 #endif
 
 

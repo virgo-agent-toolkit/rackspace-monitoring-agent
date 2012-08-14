@@ -140,6 +140,10 @@ function ConnectionStream:_attachTimeSyncEvent(client)
     self._activeTimeSyncClient = nil
     return
   end
+  if self._activeTimeSyncClient then
+    -- client already attached
+    return
+  end
   self._activeTimeSyncClient = client
   client:on('time_sync', function(timeObj)
     logging.info('Syncing time')
@@ -157,9 +161,7 @@ function ConnectionStream:_promoteClient(client)
   client:log(logging.INFO, fmt('Connection has been authenticated to %s', datacenter))
   self._clients[datacenter] = client
   self._unauthedClients[datacenter] = nil
-  if self._activeTimeSyncClient == nil then
-    self:_attachTimeSyncEvent(client)
-  end
+  self:_attachTimeSyncEvent(client)
   self:emit('promote')
 end
 

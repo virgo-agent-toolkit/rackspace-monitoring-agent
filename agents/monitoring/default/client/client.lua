@@ -157,24 +157,25 @@ function AgentClient:startHeartbeatInterval()
       this._log(logging.DEBUG, fmt('Sending heartbeat (timestamp=%d,sent_heartbeat_count=%d,got_pong_count=%d)',
                                     send_timestamp, this._sent_heartbeat_count, this._got_pong_count))
       this._sent_heartbeat_count = this._sent_heartbeat_count + 1
-      this.protocol:sendHeartbeat(send_timestamp, function(err, msg)
+      this.protocol:request('heartbeat.post', send_timestamp, function(err, msg)
         if err then
+          p(err)
           this._log(logging.DEBUG, 'Got an error while sending heartbeat: ' .. tostring(err))
           return
         end
 
         local recv_timestamp = vtime.raw()
         this._latency = Timer.now() - timestamp
-        if msg.timestamp then
+        if msg.result.timestamp then
           local timeObj = {}
           timeObj.agent_send_timestamp = send_timestamp
           timeObj.agent_recv_timestamp = recv_timestamp
-          timeObj.server_receive_timestamp = msg.timestamp
-          timeObj.server_response_timestamp = msg.timestamp
+          timeObj.server_receive_timestamp = msg.result.timestamp
+          timeObj.server_response_timestamp = msg.result.timestamp
           self:emit('time_sync', timeObj)
         end
 
-        if msg.timestamp then
+        if msg.result.timestamp then
           this._got_pong_count = this._got_pong_count + 1
           this._log(logging.DEBUG, fmt('Got pong (latency=%f,sent_heartbeat_count=%d,got_pong_count=%d)',
                                        this._latency, this._sent_heartbeat_count, this._got_pong_count))

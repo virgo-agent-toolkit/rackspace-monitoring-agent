@@ -285,16 +285,6 @@ function AgentProtocolConnection:getManifest(callback)
   end)
 end
 
-function AgentProtocolConnection:sendHeartbeat(timestamp, callback)
-  self:request('heartbeat.post', timestamp, function(err, response)
-    if err then
-      callback(err)
-    else
-      callback(nil, response.result)
-    end
-  end)
-end
-
 --[[
 Process an async message
 
