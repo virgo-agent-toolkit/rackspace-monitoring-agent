@@ -60,6 +60,6 @@ virgo__time_now() {
 
 int
 virgo_time_now(lua_State *L) {
-  lua_pushnumber(L, round(virgo__time_now()));
+  lua_pushnumber(L, virgo__time_now());
   return 1;
 }
