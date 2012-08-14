@@ -20,6 +20,7 @@
  */
 
 #include <stdarg.h>
+#include <time.h>
 
 #ifndef _virgo_portable_h_
 #define _virgo_portable_h_

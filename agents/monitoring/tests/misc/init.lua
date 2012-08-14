@@ -50,6 +50,12 @@ exports['test_pid'] = function(test, asserts)
   end)
 end
 
+exports['test_gmtnow'] = function(test, asserts)
+  local now = virgo.gmtnow()
+  asserts.ok(now ~= nil)
+  test.done()
+end
+
 exports['test_splitAddress'] = function(test, asserts)
   local valid = '127.0.0.1:6000'
   local invalid = '127.0.0.2'
