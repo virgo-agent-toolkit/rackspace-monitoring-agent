@@ -24,6 +24,10 @@ local function now()
   return virgo.gmtnow() + delta
 end
 
+local function raw()
+  return virgo.gmtnow()
+end
+
 local function setDelta(_delta)
   delta = _delta
 end
@@ -40,24 +44,27 @@ T3 = server transmit timestamp
 T4 = agent destination timestamp
 
 ]]--
-local function timesync(T1, T2, T3, T4, callback)
+local function timesync(T1, T2, T3, T4)
   if not T1 or not T2 or not T3 or not T4 then
-    callback(Error:new('T1, T2, T3, or T4 was null. Failed to sync time.'))
-    return
+    return Error:new('T1, T2, T3, or T4 was null. Failed to sync time.')
   end
+
   logging.debug('T1 = %i', T1)
   logging.debug('T2 = %i', T2)
   logging.debug('T3 = %i', T3)
   logging.debug('T4 = %i', T4)
+
   delta = ((T2 - T1) + (T3 - T4)) / 2
   delay = ((T4 - T1) + (T3 - T2))
+
   logging.infof('Setting time delta to %i', delta)
-  callback()
+
   return
 end
 
 local exports = {}
 exports.setDelta = setDelta
 exports.now = now
+exports.raw = raw
 exports.timesync = timesync
 return exports

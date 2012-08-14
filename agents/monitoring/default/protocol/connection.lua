@@ -285,8 +285,9 @@ function AgentProtocolConnection:getManifest(callback)
   end)
 end
 
-function AgentProtocolConnection:sendHeartbeat(callback)
-  self:request('heartbeat.post', vtime.now(), function(err, response)
+function AgentProtocolConnection:sendHeartbeat(timestamp, callback)
+  p(timestamp)
+  self:request('heartbeat.post', timestamp, function(err, response)
     if err then
       callback(err)
     else

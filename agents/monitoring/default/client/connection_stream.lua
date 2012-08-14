@@ -24,10 +24,10 @@ local async = require('async')
 local Scheduler = require('../schedule').Scheduler
 local AgentClient = require('./client').AgentClient
 local ConnectionMessages = require('./connection_messages').ConnectionMessages
-local TimeSync = require('../timesync').TimeSync
 local logging = require('logging')
 local consts = require('../util/constants')
 local misc = require('../util/misc')
+local vtime = require('virgo-time')
 
 local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token, options)
@@ -37,7 +37,7 @@ function ConnectionStream:initialize(id, token, options)
   self._unauthedClients = {}
   self._delays = {}
   self._messages = ConnectionMessages:new(self)
-  self._timesync = TimeSync:new(self)
+  self._activeTimeSyncClient = nil
   self._options = options or {}
 end
 
@@ -135,6 +135,19 @@ function ConnectionStream:getClient()
   return client
 end
 
+function ConnectionStream:_attachTimeSyncEvent(client)
+  if not client then
+    self._activeTimeSyncClient = nil
+    return
+  end
+  self._activeTimeSyncClient = client
+  client:on('time_sync', function(timeObj)
+    logging.info('Syncing time')
+    vtime.timesync(timeObj.agent_send_timestamp, timeObj.server_receive_timestamp,
+                   timeObj.server_response_timestamp, timeObj.agent_recv_timestamp)
+  end)
+end
+
 --[[
 Move an unauthenticated client to the list of clients that have been authenticated.
 client - the client.
@@ -144,7 +157,9 @@ function ConnectionStream:_promoteClient(client)
   client:log(logging.INFO, fmt('Connection has been authenticated to %s', datacenter))
   self._clients[datacenter] = client
   self._unauthedClients[datacenter] = nil
-  self._timesync:start()
+  if self._activeTimeSyncClient == nil then
+    self:_attachTimeSyncEvent(client)
+  end
   self:emit('promote')
 end
 
@@ -186,6 +201,12 @@ function ConnectionStream:createConnection(options, callback)
 
   client:on('end', function()
     self:emit('client_end', client)
+
+    -- Find a new client to handle time sync
+    if self._activeTimeSyncClient == client then
+      self._attachTimeSyncEvent(self:getClient())
+    end
+
     logging.debugf('%s:%d -> Remote endpoint closed the connection', opts.host, opts.port)
     client:destroy()
     self:reconnect(opts, callback)
