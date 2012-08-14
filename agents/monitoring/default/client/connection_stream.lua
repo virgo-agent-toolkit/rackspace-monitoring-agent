@@ -135,6 +135,15 @@ function ConnectionStream:getClient()
   return client
 end
 
+--[[
+The algorithm for syncing time follows:
+
+Note: Promoted clients have been handshake accepted to the endpoint.
+
+1. On promotion, attach a time_sync event to the client
+2. If a client disconnects and it is the time sync client then find
+   a new client to perform time syncs
+]]--
 function ConnectionStream:_attachTimeSyncEvent(client)
   if not client then
     self._activeTimeSyncClient = nil
@@ -187,6 +196,11 @@ function ConnectionStream:createConnection(options, callback)
     err.port = opts.port
     err.datacenter = opts.datacenter
     err.message = errorMessage
+
+    -- Find a new client to handle time sync
+    if self._activeTimeSyncClient == client then
+      self._attachTimeSyncEvent(self:getClient())
+    end
 
     client:destroy()
     self:reconnect(opts, callback)
