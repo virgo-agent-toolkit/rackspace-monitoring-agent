@@ -27,6 +27,7 @@ local ConnectionMessages = require('./connection_messages').ConnectionMessages
 local logging = require('logging')
 local consts = require('../util/constants')
 local misc = require('../util/misc')
+local vtime = require('virgo-time')
 
 local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token, options)
@@ -36,6 +37,7 @@ function ConnectionStream:initialize(id, token, options)
   self._unauthedClients = {}
   self._delays = {}
   self._messages = ConnectionMessages:new(self)
+  self._activeTimeSyncClient = nil
   self._options = options or {}
 end
 
@@ -134,6 +136,32 @@ function ConnectionStream:getClient()
 end
 
 --[[
+The algorithm for syncing time follows:
+
+Note: Promoted clients have been handshake accepted to the endpoint.
+
+1. On promotion, attach a time_sync event to the client
+2. If a client disconnects and it is the time sync client then find
+   a new client to perform time syncs
+]]--
+function ConnectionStream:_attachTimeSyncEvent(client)
+  if not client then
+    self._activeTimeSyncClient = nil
+    return
+  end
+  if self._activeTimeSyncClient then
+    -- client already attached
+    return
+  end
+  self._activeTimeSyncClient = client
+  client:on('time_sync', function(timeObj)
+    logging.info('Syncing time')
+    vtime.timesync(timeObj.agent_send_timestamp, timeObj.server_receive_timestamp,
+                   timeObj.server_response_timestamp, timeObj.agent_recv_timestamp)
+  end)
+end
+
+--[[
 Move an unauthenticated client to the list of clients that have been authenticated.
 client - the client.
 ]]--
@@ -142,6 +170,7 @@ function ConnectionStream:_promoteClient(client)
   client:log(logging.INFO, fmt('Connection has been authenticated to %s', datacenter))
   self._clients[datacenter] = client
   self._unauthedClients[datacenter] = nil
+  self:_attachTimeSyncEvent(client)
   self:emit('promote')
 end
 
@@ -168,6 +197,11 @@ function ConnectionStream:createConnection(options, callback)
     err.datacenter = opts.datacenter
     err.message = errorMessage
 
+    -- Find a new client to handle time sync
+    if self._activeTimeSyncClient == client then
+      self._attachTimeSyncEvent(self:getClient())
+    end
+
     client:destroy()
     self:reconnect(opts, callback)
     if err then
@@ -183,6 +217,12 @@ function ConnectionStream:createConnection(options, callback)
 
   client:on('end', function()
     self:emit('client_end', client)
+
+    -- Find a new client to handle time sync
+    if self._activeTimeSyncClient == client then
+      self._attachTimeSyncEvent(self:getClient())
+    end
+
     logging.debugf('%s:%d -> Remote endpoint closed the connection', opts.host, opts.port)
     client:destroy()
     self:reconnect(opts, callback)
