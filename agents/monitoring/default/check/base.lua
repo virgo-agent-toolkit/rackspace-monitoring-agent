@@ -450,8 +450,10 @@ function CheckResult:setError(message)
 end
 
 function CheckResult:addMetric(name, dimension, type, value)
-  name = name:gsub('[/\\.]', '_')
-  dimension = dimension:gsub('[/\\.]', '_')
+  local pattern = '[^0-9a-zA-Z_]'
+
+  name = name:gsub(pattern, '_')
+  dimension = dimension:gsub(pattern, '_')
 
   local metric = Metric:new(name, dimension, type, value)
 
