@@ -4,7 +4,7 @@ local Metric = require('./base').Metric
 
 local CpuCheck = BaseCheck:extend()
 
-local PREFIX = 'cpu_'
+local PREFIX = 'cpu'
 
 function CpuCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.cpu', params)
