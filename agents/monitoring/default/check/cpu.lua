@@ -4,7 +4,7 @@ local Metric = require('./base').Metric
 
 local CpuCheck = BaseCheck:extend()
 
-local DIMENSION_PREFIX = 'cpu.'
+local PREFIX = 'cpu_'
 
 function CpuCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.cpu', params)
@@ -20,7 +20,7 @@ function CpuCheck:run(callback)
   for i=1, #cpuinfo do
     for key, value in pairs(cpuinfo[i]:data()) do
       local index = i - 1
-      checkResult:addMetric(key, DIMENSION_PREFIX .. index, nil, value)
+      checkResult:addMetric(key, PREFIX .. index, nil, value)
     end
   end
 
