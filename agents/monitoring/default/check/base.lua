@@ -450,6 +450,9 @@ function CheckResult:setError(message)
 end
 
 function CheckResult:addMetric(name, dimension, type, value)
+  name = name:gsub('[/\\.]', '_')
+  dimension = dimension:gsub('[/\\.]', '_')
+
   local metric = Metric:new(name, dimension, type, value)
 
   if not self._metrics[metric.dimension] then

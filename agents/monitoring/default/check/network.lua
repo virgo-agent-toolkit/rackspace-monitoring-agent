@@ -3,8 +3,6 @@ local CheckResult = require('./base').CheckResult
 
 local NetworkCheck = BaseCheck:extend()
 
-local DIMENSION_PREFIX = 'interface.'
-
 function NetworkCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.network', params)
 end
@@ -24,7 +22,7 @@ function NetworkCheck:run(callback)
 
     if usage then
       for key, value in pairs(usage) do
-        checkResult:addMetric(key, DIMENSION_PREFIX .. info.name, 'gauge', value)
+        checkResult:addMetric(key, info.name, 'gauge', value)
       end
     end
   end

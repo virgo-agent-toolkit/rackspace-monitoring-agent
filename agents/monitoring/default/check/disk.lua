@@ -3,8 +3,6 @@ local CheckResult = require('./base').CheckResult
 
 local DiskCheck = BaseCheck:extend()
 
-local DIMENSION_PREFIX = 'mount.'
-
 function DiskCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.disk', params)
 end
@@ -24,7 +22,7 @@ function DiskCheck:run(callback)
 
     if usage then
       for key, value in pairs(usage) do
-        checkResult:addMetric(key, DIMENSION_PREFIX .. name, nil, value)
+        checkResult:addMetric(key, name, nil, value)
       end
     end
   end
