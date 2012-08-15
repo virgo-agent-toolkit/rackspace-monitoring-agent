@@ -54,15 +54,12 @@ local function timesync(T1, T2, T3, T4)
     return Error:new('T1, T2, T3, or T4 was null. Failed to sync time.')
   end
 
-  logging.debug('T1 = %i', T1)
-  logging.debug('T2 = %i', T2)
-  logging.debug('T3 = %i', T3)
-  logging.debug('T4 = %i', T4)
+  logging.debugf('time_sync data: T1 = %.0f T2 = %.0f T3 = %.0f T4 = %.0f', T1, T2, T3, T4)
 
   delta = ((T2 - T1) + (T3 - T4)) / 2
   delay = ((T4 - T1) + (T3 - T2))
 
-  logging.infof('Setting time delta to %i', delta)
+  logging.infof('Setting time delta to %.0fms based on server time %.0fms', delta, T2)
 
   return
 end
