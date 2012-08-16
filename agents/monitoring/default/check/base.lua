@@ -20,6 +20,7 @@ local JSON = require('json')
 local Emitter = require('core').Emitter
 local fmt = require('string').format
 local table = require('table')
+local vtime = require('virgo-time')
 
 local toString = require('../util/misc').toString
 local tableContains = require('../util/misc').tableContains
@@ -132,6 +133,11 @@ function CheckResult:initialize(check, options)
   self._state = 'available'
   self._status = nil
   self._nextRun = os.time() + check.period
+  self._timestamp = vtime.now()
+end
+
+function CheckResult:getTimestamp()
+  return self._timestamp
 end
 
 function CheckResult:setAvailable()

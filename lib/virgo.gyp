@@ -49,6 +49,7 @@
         'virgo_lua_vfs.c',
         'virgo_logging.c',
         'virgo_portable.c',
+        'virgo_time.c',
         'virgo_util.c',
       ],
       'include_dirs': [

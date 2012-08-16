@@ -4,11 +4,22 @@ local fixtures = require('./')
 local LineEmitter = require('line-emitter').LineEmitter
 local tls = require('tls')
 local timer = require('timer')
+local string = require('string')
+local math = require('math')
 
 local lineEmitter = LineEmitter:new()
-local port = 50041
-local send_schedule_changed_initial = 2000
-local send_schedule_changed_interval = 60000
+local ports = {50041, 50051, 50061}
+
+local opts = {}
+local function set_option(options, name, default)
+  options[name] = process.env[string.upper(name)] or default
+end
+
+set_option(opts, "send_schedule_changed_initial", 2000)
+set_option(opts, "send_schedule_changed_interval", 60000)
+set_option(opts, "destroy_connection_jitter", 60000)
+set_option(opts, "destroy_connection_base", 60000)
+set_option(opts, "listen_ip", '127.0.0.1')
 
 local keyPem = [[
 -----BEGIN RSA PRIVATE KEY-----
@@ -56,7 +67,7 @@ local options = {
   key = keyPem
 }
 
-local respond = function(client, payload)
+local respond = function(log, client, payload)
 
   -- skip responses to requests
   if payload.method == nil then
@@ -72,7 +83,7 @@ local respond = function(client, payload)
   response.source = payload.target
   response.id = payload.id
 
-  print("Sending response:")
+  log("Sending response:")
   p(response)
 
   response_out = JSON.stringify(response)
@@ -81,29 +92,50 @@ local respond = function(client, payload)
   client:write(response_out .. '\n')
 end
 
-local send_schedule_changed = function(client)
+local send_schedule_changed = function(log, client)
   local request = fixtures['check_schedule.changed.request']
 
-  print("Sending request:")
+  log("Sending request:")
   p(JSON.parse(request))
   client:write(request .. '\n')
 end
 
-tls.createServer(options, function (client)
-  client:pipe(lineEmitter)
-  lineEmitter:on('data', function(line)
-    local payload = JSON.parse(line)
-    print("Got payload:")
-    p(payload)
-    respond(client, payload)
-  end)
+local function start_fixture_server(options, port)
+  local log = function(...)
+    print(port .. ": " .. ...)
+  end
 
-  timer.setTimeout(send_schedule_changed_initial, function()
-    send_schedule_changed(client)
-  end)
-  timer.setInterval(send_schedule_changed_interval, function()
-    send_schedule_changed(client)
-  end)
-end):listen(port)
+  tls.createServer(options, function (client)
+    client:pipe(lineEmitter)
+    lineEmitter:on('data', function(line)
+      local payload = JSON.parse(line)
+      log("Got payload:")
+      p(payload)
+      respond(log, client, payload)
+    end)
 
-print("TCP echo server listening on port " .. port)
+    timer.setTimeout(opts.send_schedule_changed_initial, function()
+      send_schedule_changed(log, client)
+    end)
+    timer.setInterval(opts.send_schedule_changed_interval, function()
+      send_schedule_changed(log, client)
+    end)
+
+    -- Disconnect the agent after some random number of seconds
+    -- to exercise reconnect logic
+    local disconnect_time = opts.destroy_connection_base + math.floor(math.random() * opts.destroy_connection_jitter)
+    timer.setTimeout(disconnect_time, function()
+      log("Destroying connection after " .. disconnect_time .. "ms connected")
+      client:destroy()
+    end)
+  end):listen(port, opts.listen_ip)
+end
+
+
+-- There is no cleanup code for the server here as the process for exiting is
+-- to just ctrl+c the runner or kill the process.
+for k, v in pairs(ports) do
+  start_fixture_server(options, v)
+  print("TCP echo server listening on port " .. v)
+end
+
