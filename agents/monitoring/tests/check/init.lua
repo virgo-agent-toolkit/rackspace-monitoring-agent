@@ -21,6 +21,8 @@ local os = require('os')
 local Check = require('monitoring/default/check')
 local Metric = require('monitoring/default/check/base').Metric
 local constants = require('monitoring/default/util/constants')
+local misc = require('monitoring/default/util/constants')
+local merge = require('monitoring/default/util/misc').merge
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
 
@@ -28,10 +30,11 @@ local CpuCheck = Check.CpuCheck
 local DiskCheck = Check.DiskCheck
 local MemoryCheck = Check.MemoryCheck
 local NetworkCheck = Check.NetworkCheck
-local MySQLCheck = Check.MySQLCheck
 local PluginCheck = Check.PluginCheck
 
-exports = {}
+local MySQLTests = require('./mysql')
+
+local exports = merge(MySQLTests, {})
 
 exports['test_base_check'] = function(test, asserts)
   local check = BaseCheck:new('test', {id='foo', period=30})

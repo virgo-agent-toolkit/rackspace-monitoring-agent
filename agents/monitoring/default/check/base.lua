@@ -105,17 +105,16 @@ end
 function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
   local ffi = require('ffi')
   local clib = nil
-  local exact
+  local i,exact
 
   function loadsharedobj(name)
-    local err, lib = pcall(ffi.load(name, false))
-    p(err, lib)
+    local err, lib = pcall(ffi.load, name, false)
     if err == true then
-      clib = err
+      clib = lib
     end
   end
 
-  for exact in ipairs(mysqlexact) do
+  for i,exact in ipairs(mysqlexact) do
     loadsharedobj(exact)
     if clib ~= nil then
       return clib
