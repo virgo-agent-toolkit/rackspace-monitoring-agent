@@ -15,12 +15,12 @@ function MySQLCheck:_runCheckInChild(callback)
   }
 
   local mysqlpattern = {
-    'libmysqlclient_r\.so.*',
-    'libmysqlclient_r\.dylib.*',
-    'libmysqlclient_r\.dll.*',
-    'libmysqlclient\.so.*',
-    'libmysqlclient\.dylib.*',
-    'libmysqlclient\.dll.*',
+    'libmysqlclient_r%.so.*',
+    'libmysqlclient_r%.dylib.*',
+    'libmysqlclient_r%.dll.*',
+    'libmysqlclient%.so.*',
+    'libmysqlclient%.dylib.*',
+    'libmysqlclient%.dll.*',
   }
 
   local mysqlpaths = {

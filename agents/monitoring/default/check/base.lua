@@ -108,7 +108,7 @@ function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
   local exact
 
   function loadsharedobj(name)
-    local err, lib = pcall(ffi.load(, false))
+    local err, lib = pcall(ffi.load(name, false))
     p(err, lib)
     if err == true then
       clib = err
@@ -119,6 +119,7 @@ function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
     loadsharedobj(exact)
     if clib ~= nil then
       return clib
+    end
   end
 
   -- TODO: path grepping with patterns and paths
