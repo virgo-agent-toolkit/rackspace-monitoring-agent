@@ -153,13 +153,10 @@ function CpuCheck:run(callback)
         callback(nil, self:_getCpuInfo())
         return
       end
-      -- this is our first run
+      -- store the cpu info, then spawn a timer to wait
+      self._previousCpuinfo = self:_getCpuInfo()
       timer.setTimeout(SAMPLE_RATE, function()
-        -- store the cpu info, then spawn a timer to wait
-        self._previousCpuinfo = self:_getCpuInfo()
-        timer.setTimeout(SAMPLE_RATE, function()
-          callback(nil, self:_getCpuInfo())
-        end)
+        callback(nil, self:_getCpuInfo())
       end)
     end,
     -- attach cpu average metrics
