@@ -19,6 +19,7 @@ set_option(opts, "send_schedule_changed_initial", 2000)
 set_option(opts, "send_schedule_changed_interval", 60000)
 set_option(opts, "destroy_connection_jitter", 60000)
 set_option(opts, "destroy_connection_base", 60000)
+set_option(opts, "listen_ip", '127.0.0.1')
 
 local keyPem = [[
 -----BEGIN RSA PRIVATE KEY-----
@@ -127,7 +128,7 @@ local function start_fixture_server(options, port)
       log("Destroying connection after " .. disconnect_time .. "ms connected")
       client:destroy()
     end)
-  end):listen(port)
+  end):listen(port, opts.listen_ip)
 end
 
 
