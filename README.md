@@ -38,6 +38,9 @@ forth between a running agent. You can run a server and agent like this:
      python agents/monitoring/runner server_fixture
      python agents/monitoring/runner agent_fixture
 
+If you want to have the fixtures server listen on something other than
+`127.0.0.1` provide the environment variable `LISTEN_IP="0.0.0.0"`.
+
 Building on RHEL 5.x
 ====================
 
