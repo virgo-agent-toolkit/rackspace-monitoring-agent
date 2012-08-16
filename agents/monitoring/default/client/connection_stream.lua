@@ -155,7 +155,6 @@ function ConnectionStream:_attachTimeSyncEvent(client)
   end
   self._activeTimeSyncClient = client
   client:on('time_sync', function(timeObj)
-    logging.info('Syncing time')
     vtime.timesync(timeObj.agent_send_timestamp, timeObj.server_receive_timestamp,
                    timeObj.server_response_timestamp, timeObj.agent_recv_timestamp)
   end)
