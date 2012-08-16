@@ -4,29 +4,13 @@ local Metric = require('./base').Metric
 local logging = require('logging')
 local timer = require('timer')
 local math = require('math')
+local table = require('table')
 local async = require('async')
 local sctx = require('../sigar').ctx
 
 local CpuCheck = BaseCheck:extend()
 
 local SAMPLE_RATE = 5000 -- Milliseconds of sample on initial run
-
-local SIGAR_METRICS = {
-  'user',
-  'sys',
-  'idle',
-  'wait',
-  'irq',
-  'stolen'
-}
-local AGGREGATE_METRICS = {
-  'user_percent',
-  'sys_percent',
-  'idle_percent',
-  'wait_percent',
-  'irq_percent',
-  'stolen_percent',
-}
 
 local function metricCpuKey(index)
   return 'cpu' .. index
@@ -38,6 +22,20 @@ end
 
 local function metricAverageKey(sigarMetric)
   return sigarMetric .. '_average'
+end
+
+local SIGAR_METRICS = {
+  'user',
+  'sys',
+  'idle',
+  'wait',
+  'irq',
+  'stolen'
+}
+
+local AGGREGATE_METRICS = {}
+for _, v in pairs(SIGAR_METRICS) do
+  table.insert(AGGREGATE_METRICS, metricPercentKey(v))
 end
 
 function CpuCheck:initialize(params)
