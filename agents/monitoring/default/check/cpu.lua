@@ -79,7 +79,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
 
   -- calculate CPU usage percentages across all cpus
   for i=1, #cpuinfo do
-    local total = diffcpuinfo[i]['user'] + diffcpuinfo[i]['sys'] + diffcpuinfo[i]['idle'] +
+    total = diffcpuinfo[i]['user'] + diffcpuinfo[i]['sys'] + diffcpuinfo[i]['idle'] +
       diffcpuinfo[i]['wait'] + diffcpuinfo[i]['irq'] + diffcpuinfo[i]['stolen']
 
     percentages[i] = {}
@@ -104,6 +104,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
   end
 
   -- calculate CPU usage percentage averages across all CPUs
+  total = 0
   for i=1, #cpuinfo do
     local current_cpu_total = 0
     for _, v in pairs(AGGREGATE_METRICS) do
