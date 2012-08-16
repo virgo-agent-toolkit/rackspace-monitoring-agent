@@ -92,11 +92,38 @@ end
 
 local SubProcCheck = BaseCheck:extend()
 
-function SubProcCheck:_runCheckInChild(check, callback)
-  local cr = CheckResult(self, {})
-  checkResult:setError('Not implemented')
-  callback(cr)
+function SubProcCheck:run(callback)
+  -- TOOD: spawn subprocess, run with cutsom entry point
+  -- TODO: until then, just run inline.
+  self:_runCheckInChild(function (cr)
+    self._lastResult = cr
+    callback(cr)
+  end)
 end
+
+function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
+  local ffi = require('ffi')
+  local clib = nil
+  local exact
+
+  function loadsharedobj(name)
+    local err, lib = pcall(ffi.load(, false))
+    p(err, lib)
+    if err == true then
+      clib = err
+    end
+  end
+
+  for exact in ipairs(mysqlexact) do
+    loadsharedobj(exact)
+    if clib ~= nil then
+      return clib
+  end
+
+  -- TODO: path grepping with patterns and paths
+  return clib
+end
+
 
 
 function CheckResult:initialize(check, options)

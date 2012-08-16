@@ -28,6 +28,7 @@ local CpuCheck = Check.CpuCheck
 local DiskCheck = Check.DiskCheck
 local MemoryCheck = Check.MemoryCheck
 local NetworkCheck = Check.NetworkCheck
+local MySQLCheck = Check.MySQLCheck
 local PluginCheck = Check.PluginCheck
 
 exports = {}
