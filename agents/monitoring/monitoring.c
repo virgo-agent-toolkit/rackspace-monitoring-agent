@@ -58,6 +58,7 @@ show_help()
          "    --username          Rackspace Cloud username for setup.\n"
          "    --apikey            Rackspace Cloud API Key or Password for setup.\n"
          "  -i, --insecure        Use insecure SSL CA cert (for testing/debugging).\n"
+         "  -D, --detach          Detach the process and run the agent in the background.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);
