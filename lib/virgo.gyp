@@ -14,6 +14,7 @@
           ],
           'sources': [
             'virgo_crash_reporter.cc',
+            'virgo_detach.c',
           ],
           'include_dirs': [
             '../deps/breakpad/src',

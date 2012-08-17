@@ -20,6 +20,10 @@
 #include "virgo_portable.h"
 #include "virgo_error.h"
 
+#ifndef WIN32
+#include "virgo_unix.h"
+#endif
+
 #ifndef _virgo_h_
 #define _virgo_h_
 
