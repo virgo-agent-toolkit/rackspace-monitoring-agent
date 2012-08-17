@@ -133,12 +133,14 @@ virgo_run(virgo_t *v)
   }
 #endif
 
+#ifndef _WIN32
   if (virgo__argv_has_flag(v, "-D", "--detach") == 1) {
     err = virgo_detach();
     if (err != VIRGO_SUCCESS) {
       return err;
     }
   }
+#endif
 
   err = virgo__log_rotate(v);
 
