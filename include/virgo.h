@@ -39,6 +39,11 @@ typedef struct virgo_conf_t virgo_conf_t;
 VIRGO_API(virgo_error_t*) virgo_create(virgo_t **ctxt, const char *default_module);
 
 /**
+ * Detach a process and daemonize
+ */
+VIRGO_API(virgo_error_t*) virgo_detach();
+
+/**
  * Destroys a Virsgo context. After this call, ctxt points to invalid memory
  * and should not be used.
  */
