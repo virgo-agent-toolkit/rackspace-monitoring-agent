@@ -77,6 +77,7 @@
         'PLATFORM="<(OS)"',
         '_LARGEFILE_SOURCE',
         '_FILE_OFFSET_BITS=64',
+        'VERSION_FULL="<(VERSION_FULL)"',
       ],
 
       'actions': [
