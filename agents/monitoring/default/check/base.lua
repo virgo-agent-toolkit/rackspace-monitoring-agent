@@ -107,8 +107,8 @@ function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
   local clib = nil
   local i,exact
 
-  function loadsharedobj(name)
-    local err, lib = pcall(ffi.load, name, false)
+  local function loadsharedobj(name)
+    local err, lib = pcall(ffi.load, name, true)
     if err == true then
       clib = lib
     end
