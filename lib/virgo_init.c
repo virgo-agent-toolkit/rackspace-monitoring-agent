@@ -115,13 +115,6 @@ virgo_run(virgo_t *v)
 {
   virgo_error_t* err;
 
-  if (virgo__argv_has_flag(v, "-D", "--detach") == 1) {
-    err = virgo_detach();
-    if (err != VIRGO_SUCCESS) {
-      return err;
-    }
-  }
-
   if (virgo__argv_has_flag(v, "-h", "--help") == 1) {
     return virgo_error_create(VIRGO_EHELPREQ, "--help was passed");;
   }
@@ -139,6 +132,13 @@ virgo_run(virgo_t *v)
     return virgo__service_delete(v);
   }
 #endif
+
+  if (virgo__argv_has_flag(v, "-D", "--detach") == 1) {
+    err = virgo_detach();
+    if (err != VIRGO_SUCCESS) {
+      return err;
+    }
+  }
 
   err = virgo__log_rotate(v);
 
