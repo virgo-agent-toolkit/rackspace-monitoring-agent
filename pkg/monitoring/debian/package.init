@@ -1,0 +1,55 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          rackspace-monitoring-agent
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Rackspace Cloud Monitoring Agent
+# Description:       An agent to monitor your machine using Rackspace
+#                    Cloud Monitoring
+### END INIT INFO
+
+NAME=rackspace-monitoring-agent
+DAEMON=/usr/bin/rackspace-monitoring-agent
+PIDFILE=/var/run/rackspace-monitoring-agent.pid
+LOG=/var/log/rackspace-monitoring-agent.log
+
+test -f $DAEMON || exit 0
+
+. /lib/lsb/init-functions
+
+case "$1" in
+start)	log_daemon_msg "Starting $NAME" "$NAME"
+        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --startas $DAEMON -- -D -p $PIDFILE -l $LOG $EXTRA_OPTS
+        log_end_msg $?
+	;;
+stop)	log_daemon_msg "Stopping $NAME" "$NAME"
+        start-stop-daemon --stop --quiet --pidfile $PIDFILE --exec $DAEMON
+        log_end_msg $?
+        ;;
+restart) log_daemon_msg "Restarting $NAME" "$NAME" 
+        start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE --exec $DAEMON
+        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --startas $DAEMON -- -D -p $PIDFILE -l $LOG $EXTRA_OPTS
+        log_end_msg $?
+        ;;
+status)
+       log_action_begin_msg "Checking $NAME"
+       if pidofproc -p "$PIDFILE" >/dev/null; then
+            log_action_end_msg 0 "running"
+            exit 0
+       else
+           if [ -e "$PIDFILE" ]; then
+                log_action_end_msg 1 "failed to start"
+                exit 1
+           else
+                log_action_end_msg 0 "not running"
+                exit 3
+           fi
+       fi
+         ;;
+*)	log_action_msg "Usage: /etc/init.d/rackspace-monitoring-agent {start|stop|status|restart}"
+        exit 2
+        ;;
+esac
+exit 0
