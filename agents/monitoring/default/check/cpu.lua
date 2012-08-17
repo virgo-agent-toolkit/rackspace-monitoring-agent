@@ -10,7 +10,7 @@ local sctx = require('../sigar').ctx
 
 local CpuCheck = BaseCheck:extend()
 
-local SAMPLE_RATE = 5000 -- Milliseconds of sample on initial run
+local SAMPLE_RATE = 5000 -- Milliseconds to sample on initial run
 
 local function metricCpuKey(index)
   return 'cpu' .. index
@@ -48,7 +48,7 @@ function CpuCheck:_getCpuInfo()
   local cpuinfo = sctx:cpus()
   local results = {}
 
-  for i=1, #cpuinfo do
+  for i = 1, #cpuinfo do
     local data = cpuinfo[i]:data()
 
     -- store sigar metrics
@@ -68,7 +68,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
   local total = 0
 
   -- calculate the delta between two runs
-  for i=1, #cpuinfo do
+  for i = 1, #cpuinfo do
     diffcpuinfo[i] = {}
     for _, v in pairs(SIGAR_METRICS) do
       diffcpuinfo[i][v] = cpuinfo[i][v] - self._previousCpuinfo[i][v]
@@ -76,7 +76,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
   end
 
   -- calculate CPU usage percentages across all cpus
-  for i=1, #cpuinfo do
+  for i = 1, #cpuinfo do
     total = diffcpuinfo[i]['user'] + diffcpuinfo[i]['sys'] + diffcpuinfo[i]['idle'] +
       diffcpuinfo[i]['wait'] + diffcpuinfo[i]['irq'] + diffcpuinfo[i]['stolen']
 
@@ -94,7 +94,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
   -- average all the cpu state percentages across all cpus
   for _, key in pairs(AGGREGATE_METRICS) do
     total = 0
-    for i=1, #cpuinfo do
+    for i = 1, #cpuinfo do
       total = total + percentages[i][key]
     end
     local average = total / #cpuinfo
@@ -103,7 +103,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
 
   -- calculate CPU usage percentage averages across all CPUs
   total = 0
-  for i=1, #cpuinfo do
+  for i = 1, #cpuinfo do
     local current_cpu_total = 0
     for _, v in pairs(AGGREGATE_METRICS) do
       if v ~= metricPercentKey('idle') then -- discard idle percentage
@@ -120,7 +120,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
   local cpu_min_index = 0
   local cpu_max_usage = 0
   local cpu_min_usage = 100
-  for i=1, #cpuinfo do
+  for i = 1, #cpuinfo do
     local usage = percentages[i]['current_cpu_usage']
     if math.max(usage, cpu_max_usage) == usage then
       cpu_max_usage = usage
@@ -186,6 +186,13 @@ function CpuCheck:run(callback)
     callback(checkResult)
   end)
 end
+
+local c = CpuCheck:new({id = '1', period = 30})
+c:run(function(result)
+  for k, v in pairs(result:serialize()) do
+    p(v[2])
+  end
+end)
 
 local exports = {}
 exports.CpuCheck = CpuCheck

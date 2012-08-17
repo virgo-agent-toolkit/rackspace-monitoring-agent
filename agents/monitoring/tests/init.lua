@@ -61,6 +61,7 @@ local function runit(modname, callback)
   if status ~= true then
     process.stdout:write(fmt('Error loading test module [%s]: %s\n\n', modname, tostring(mod)))
     callback(mod)
+    return
   end
   process.stdout:write(fmt('Executing test module [%s]\n\n', modname))
   bourbon.run(nil, mod, function(err, stats)
