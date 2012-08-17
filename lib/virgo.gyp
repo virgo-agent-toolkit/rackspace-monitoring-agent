@@ -40,6 +40,7 @@
 
       'sources': [
         'virgo_conf.c',
+        'virgo_detach.c',
         'virgo_error.c',
         'virgo_init.c',
         'virgo_lua.c',
