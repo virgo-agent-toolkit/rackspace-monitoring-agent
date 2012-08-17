@@ -20,6 +20,10 @@
 #include "virgo_portable.h"
 #include "virgo_error.h"
 
+#ifndef WIN32
+#include "virgo_unix.h"
+#endif
+
 #ifndef _virgo_h_
 #define _virgo_h_
 
@@ -37,11 +41,6 @@ typedef struct virgo_conf_t virgo_conf_t;
  * Creates a Virgo context.
  */
 VIRGO_API(virgo_error_t*) virgo_create(virgo_t **ctxt, const char *default_module);
-
-/**
- * Detach a process and daemonize
- */
-VIRGO_API(virgo_error_t*) virgo_detach();
 
 /**
  * Destroys a Virsgo context. After this call, ctxt points to invalid memory
