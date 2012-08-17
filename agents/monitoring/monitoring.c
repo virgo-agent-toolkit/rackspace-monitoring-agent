@@ -67,7 +67,7 @@ show_help()
 static void
 show_version(virgo_t *v)
 {
-  printf("%s\n", virgo_conf_get(v, "version"));
+  printf("%s\n", VERSION_FULL);
   fflush(stdout);
 }
 
