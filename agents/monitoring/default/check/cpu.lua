@@ -182,13 +182,6 @@ function CpuCheck:run(callback)
     end,
     -- add metrics to checkResult
     function(cpuinfo, metrics, callback)
-      -- attach cpu metrics
-      for i=1, #cpuinfo do
-        for key, value in pairs(cpuinfo[i]) do
-          local index = i - 1
-          checkResult:addMetric(key, metricCpuKey(index), nil, value)
-        end
-      end
       -- attach percentages and averages
       for key, value in pairs(metrics) do
         checkResult:addMetric(key, 'cpu', nil, value)
