@@ -14,7 +14,7 @@ function MemoryCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
 
   for key, value in pairs(meminfo) do
-    checkResult:addMetric(key, 'memory', 'gauge', value)
+    checkResult:addMetric(key, nil, 'gauge', value)
   end
 
   -- Return Result
