@@ -21,7 +21,6 @@ local os = require('os')
 local Check = require('monitoring/default/check')
 local Metric = require('monitoring/default/check/base').Metric
 local constants = require('monitoring/default/util/constants')
-local misc = require('monitoring/default/util/constants')
 local merge = require('monitoring/default/util/misc').merge
 local msg = require ('monitoring/default/protocol/messages')
 
