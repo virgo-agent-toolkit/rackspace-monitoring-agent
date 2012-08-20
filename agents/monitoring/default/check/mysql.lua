@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local SubProcCheck = require('./base').SubProcCheck
+local fmt = require('string').format
 
+local SubProcCheck = require('./base').SubProcCheck
 local MySQLCheck = SubProcCheck:extend()
 local CheckResult = require('./base').CheckResult
+
 
 function MySQLCheck:initialize(params)
   SubProcCheck.initialize(self, 'agent.mysql', params)
@@ -121,10 +123,6 @@ function MySQLCheck:_runCheckInChild(callback)
 
   loadMySQL()
 
-  p('SLEEPING')
-  ffi.C.poll(nil, 0, 5000*1000)
-  p('DONE SLEEPING')
-
   local conn = ffi.C.mysql_init(nil)
 
   if conn == nil then
@@ -136,7 +134,7 @@ function MySQLCheck:_runCheckInChild(callback)
   local rv = clib.mysql_real_connect(conn, self.mysql_host, self.mysql_username, self.mysql_password, nil, self.mysql_port, nil, 0)
 
   if rv == nil then
-    cr:setError(fmt('mysql_real_connect failed: (%d) %s', mysql_errno(conn), mysql_error(conn)))
+    cr:setError(fmt('mysql_real_connect failed: (%d) %s', clib.mysql_errno(conn), ffi.string(clib.mysql_error(conn))))
     clib.mysql_close(conn)
     callback(cr)
     return
