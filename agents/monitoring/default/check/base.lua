@@ -140,11 +140,17 @@ function CheckResult:initialize(check, options)
   self._metrics = {}
   self._state = 'available'
   self._status = nil
+  self:setTimestamp(self._options.timestamp)
   self._nextRun = os.time() + check.period
   self._timestamp = vtime.now()
 end
 
 function CheckResult:getTimestamp()
+  return self._timestamp
+end
+
+function CheckResult:setTimestamp(timestamp)
+  self._timestamp = timestamp or vtime.now()
   return self._timestamp
 end
 
