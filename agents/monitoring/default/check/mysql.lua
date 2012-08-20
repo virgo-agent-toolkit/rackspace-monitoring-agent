@@ -35,8 +35,15 @@ function MySQLCheck:initialize(params)
 
 end
 
+local loadedCDEF = false
 local function loadMySQL()
   local ffi = require('ffi')
+
+  if loadedCDEF == true then
+    return
+  end
+
+  loadedCDEF = true
 
   ffi.cdef[[
   typedef void MYSQL;
@@ -84,7 +91,6 @@ local function loadMySQL()
 
   void mysql_server_end(void);
 
-  int poll(struct pollfd *fds, unsigned long nfds, int timeout);
   ]]
 
 end

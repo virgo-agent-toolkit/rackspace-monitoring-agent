@@ -25,6 +25,20 @@ testcases['failed_init']['mysql_init'] = function (conn)
   return nil
 end
 
+testcases['failed_real_connect'] = {}
+testcases['failed_real_connect']['mysql_real_connect'] = function (conn)
+  return nil
+end
+
+testcases['failed_real_connect']['mysql_errno'] = function (conn)
+  return 42
+end
+
+testcases['failed_real_connect']['mysql_error'] = function (conn)
+  return 'mocked error'
+end
+
+
 exports.mock = function(clib)
 
   local mt = {

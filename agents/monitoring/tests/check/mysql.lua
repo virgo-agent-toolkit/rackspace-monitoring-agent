@@ -47,4 +47,17 @@ exports['test_mysql_check_failed_init'] = function(test, asserts)
   end)
 end
 
+exports['test_mysql_check_failed_real_connect'] = function(test, asserts)
+  setupTest('failed_real_connect')
+  local check = MySQLCheck:new({id='foo', period=30})
+  asserts.ok(check._lastResult == nil)
+  check:run(function(results)
+    asserts.not_nil(results, nil)
+    asserts.not_nil(check._lastResult, nil)
+    asserts.equal(results['_status'], "mysql_real_connect failed: (42) mocked error")
+    asserts.equal(results['_state'], "unavailable")
+    test.done()
+  end)
+end
+
 return exports
