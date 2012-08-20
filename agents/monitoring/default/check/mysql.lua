@@ -137,15 +137,27 @@ function MySQLCheck:_runCheckInChild(callback)
     return
   end
 
-  local rv = clib.mysql_real_connect(conn, self.mysql_host, self.mysql_username, self.mysql_password, nil, self.mysql_port, nil, 0)
+  -- http://dev.mysql.com/doc/refman/5.0/en/mysql-real-connect.html
+  local rv = clib.mysql_real_connect(conn,
+                                     self.mysql_host,
+                                     self.mysql_username,
+                                     self.mysql_password,
+                                     nil,
+                                     self.mysql_port,
+                                     nil,
+                                     0)
 
   if rv == nil then
     local host = self.mysql_host and self.mysql_host or '(null)'
     local port = self.mysql_port and self.mysql_port or 0
     local username = self.mysql_username and self.mysql_username or '(null)'
+
     cr:setError(fmt('mysql_real_connect(host=%s, port=%d, username=%s) failed: (%d) %s',
-                host, port, username,
-                clib.mysql_errno(conn), ffi.string(clib.mysql_error(conn))))
+                    host,
+                    port,
+                    username,
+                    clib.mysql_errno(conn),
+                    ffi.string(clib.mysql_error(conn))))
     clib.mysql_close(conn)
     callback(cr)
     return
@@ -153,7 +165,9 @@ function MySQLCheck:_runCheckInChild(callback)
 
   rv = clib.mysql_query(conn, "show status")
   if rv ~= 0 then
-    cr:setError(fmt('mysql_query "show status" failed: (%d) %s', clib.mysql_errno(conn), ffi.string(clib.mysql_error(conn))))
+    cr:setError(fmt('mysql_query "show status" failed: (%d) %s',
+                    clib.mysql_errno(conn),
+                    ffi.string(clib.mysql_error(conn))))
     clib.mysql_close(conn)
     callback(cr)
     return
@@ -161,7 +175,9 @@ function MySQLCheck:_runCheckInChild(callback)
 
   local result = clib.mysql_use_result(conn)
   if result == nil then
-    cr:setError(fmt('mysql_use_result failed: (%d) %s', clib.mysql_errno(conn), ffi.string(clib.mysql_error(conn))))
+    cr:setError(fmt('mysql_use_result failed: (%d) %s',
+                    clib.mysql_errno(conn),
+                    ffi.string(clib.mysql_error(conn))))
     clib.mysql_close(conn)
     callback(cr)
     return
