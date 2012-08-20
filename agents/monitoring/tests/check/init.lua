@@ -106,24 +106,17 @@ end
 
 exports['test_cpu_check_percentages'] = function(test, asserts)
   local check = CpuCheck:new({id='foo', period=30})
-  local found = false
   asserts.ok(check._lastResult == nil)
   check:run(function(results)
     local obj = results:serialize()
-    asserts.ok(#obj == 1)
-    for i, cpu in pairs(obj) do
-      if cpu[1] == 'cpu' then
-        found = true
-        assertsIsPercentage(asserts, cpu[2].user_percent_average)
-        assertsIsPercentage(asserts, cpu[2].usage_average)
-        assertsIsPercentage(asserts, cpu[2].sys_percent_average)
-        assertsIsPercentage(asserts, cpu[2].irq_percent_average)
-        assertsIsPercentage(asserts, cpu[2].idle_percent_average)
-        asserts.ok(type(cpu[2].min_cpu_usage_name.v) == 'string')
-        asserts.ok(type(cpu[2].max_cpu_usage_name.v) == 'string')
-      end
-    end
-    asserts.ok(found == true)
+    local cpu = obj[1]
+    assertsIsPercentage(asserts, cpu[2].user_percent_average)
+    assertsIsPercentage(asserts, cpu[2].usage_average)
+    assertsIsPercentage(asserts, cpu[2].sys_percent_average)
+    assertsIsPercentage(asserts, cpu[2].irq_percent_average)
+    assertsIsPercentage(asserts, cpu[2].idle_percent_average)
+    asserts.ok(type(cpu[2].min_cpu_usage_name.v) == 'string')
+    asserts.ok(type(cpu[2].max_cpu_usage_name.v) == 'string')
     test.done()
   end)
 end
