@@ -183,6 +183,16 @@ function MySQLCheck:_runCheckInChild(callback)
     return
   end
 
+  local nfields = clib.mysql_num_fields(result)
+  if nfields ~= 2 then
+    cr:setError(fmt('mysql_num_fields failed: expected 2 fields, but got %i',
+                    nfields))
+    clib.mysql_free_result(result)
+    clib.mysql_close(conn)
+    callback(cr)
+    return
+  end
+
   cr:setError('Found mysqlclient, but not implemented')
   callback(cr)
   return

@@ -45,6 +45,12 @@ end
 function MySQLMock:mysql_query(conn, query)
   return 0
 end
+function MySQLMock:mysql_use_result(conn)
+  return {}
+end
+function MySQLMock:mysql_free_result(result)
+  return
+end
 
 
 
@@ -73,6 +79,12 @@ function MockUseResult:mysql_use_result(conn)
   return nil
 end
 testcases['failed_use_result'] = MockUseResult:new()
+
+local MockNumFields = MySQLMock:extend()
+function MockNumFields:mysql_num_fields(results)
+  return 3
+end
+testcases['failed_num_fields'] = MockNumFields:new()
 
 exports.mock = function(clib)
 
