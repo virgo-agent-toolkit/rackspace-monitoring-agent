@@ -58,6 +58,7 @@ show_help()
          "    --username          Rackspace Cloud username for setup.\n"
          "    --apikey            Rackspace Cloud API Key or Password for setup.\n"
          "  -i, --insecure        Use insecure SSL CA cert (for testing/debugging).\n"
+         "  -D, --detach          Detach the process and run the agent in the background.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);
@@ -67,7 +68,7 @@ show_help()
 static void
 show_version(virgo_t *v)
 {
-  printf("%s\n", virgo_conf_get(v, "version"));
+  printf("%s\n", VERSION_FULL);
   fflush(stdout);
 }
 
