@@ -73,4 +73,17 @@ exports['test_mysql_check_mysql_query_failed'] = function(test, asserts)
   end)
 end
 
+exports['test_mysql_check_use_result_failed'] = function(test, asserts)
+  setupTest('failed_use_result')
+  local check = MySQLCheck:new({id='foo', period=30})
+  asserts.ok(check._lastResult == nil)
+  check:run(function(results)
+    asserts.not_nil(results, nil)
+    asserts.not_nil(check._lastResult, nil)
+    asserts.equal(results['_status'], "mysql_use_result failed: (42) mocked error")
+    asserts.equal(results['_state'], "unavailable")
+    test.done()
+  end)
+end
+
 return exports
