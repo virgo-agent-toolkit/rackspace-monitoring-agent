@@ -73,7 +73,7 @@ asserts.is_nil = function(a, msg)
 end
 
 asserts.is_number = function(a, msg)
-  local msg = msg or tostring(a) .. ' is not a number'
+  local msg = msg or tostring(a) .. ' is not a number (was a ' .. type(a) .. ')'
   asserts.assert(type(a) == 'number', msg)
 end
 
