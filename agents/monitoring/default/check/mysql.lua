@@ -146,6 +146,22 @@ function MySQLCheck:_runCheckInChild(callback)
     return
   end
 
+  rv = clib.mysql_query(conn, "show status")
+  if rv ~= 0 then
+    cr:setError(fmt('mysql_query "show status" failed: (%d) %s', clib.mysql_errno(conn), ffi.string(clib.mysql_error(conn))))
+    clib.mysql_close(conn)
+    callback(cr)
+    return
+  end
+
+  local result = clib.mysql_use_result(conn)
+  if result == nil then
+    cr:setError(fmt('mysql_use_result failed: (%d) %s', clib.mysql_errno(conn), ffi.string(clib.mysql_error(conn))))
+    clib.mysql_close(conn)
+    callback(cr)
+    return
+  end
+
   cr:setError('Found mysqlclient, but not implemented')
   callback(cr)
   return
