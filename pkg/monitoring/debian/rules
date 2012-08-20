@@ -2,7 +2,6 @@
 
 DESTDIR=$(CURDIR)/debian/rackspace-monitoring-agent
 ETCDIR=$(DESTDIR)/etc
-INITDIR=$(DESTDIR)/etc/init
 BINDIR=$(DESTDIR)/usr/bin
 SHAREDIR=$(DESTDIR)/usr/share/rackspace-monitoring-agent
 
@@ -24,8 +23,7 @@ install: build
 	dh_prep
 	dh_installdirs
 	DESTDIR=$(DESTDIR) $(MAKE) install
-	install -d $(INITDIR)
-	install -o root -g root -m 644 pkg/monitoring/upstart/rackspace-monitoring-agent.conf $(INITDIR)
+	dh_installinit -r --name=rackspace-monitoring-agent -- defaults 91 09
 
 binary-arch: build install
 	dh_testdir

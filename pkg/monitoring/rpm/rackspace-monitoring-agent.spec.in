@@ -11,6 +11,10 @@ BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	python traceroute
 Requires:	glibc
+Requires(post): chkconfig
+Requires(preun): chkconfig
+# This is for /sbin/service
+Requires(preun): initscripts
 
 %description
 rackspace-monitoring-agent is a daemon that is installed on a host to gather
@@ -30,7 +34,11 @@ make %{?_smp_mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
-
+# TODO: do distro detection here
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
+install -m 644 pkg/monitoring/systemd/rackspace-monitoring-agent.service $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
+install -d $RPM_BUILD_ROOT/%{_initrddir}
+install -m 755 pkg/monitoring/sysv-redhat/rackspace-monitoring-agent $RPM_BUILD_ROOT/%{_initrddir}/
 
 %check
 
@@ -41,14 +49,31 @@ make test
 rm -rf $RPM_BUILD_ROOT
 
 
+%post
+# This adds the proper /etc/rc*.d links for the script
+/sbin/chkconfig --add rackspace-monitoring-agent
+
+
+%preun
+# Uninstall the service links on uninstall
+if [ $1 -eq 0 ] ; then
+    /sbin/service rackspace-monitoring-agent stop >/dev/null 2>&1
+    /sbin/chkconfig --del rackspace-monitoring-agent
+fi
+# Restart agent on upgrade
+if [ "$1" -ge "1" ] ; then
+    /sbin/service rackspace-monitoring-agent condrestart >/dev/null 2>&1 || :
+fi
+
+
 %files
 %defattr(-,root,root,-)
 %doc README.md LICENSE.txt
 %{_bindir}/rackspace-monitoring-agent
 %{_sysconfdir}/rackspace-monitoring-agent.cfg
 %{_datadir}/rackspace-monitoring-agent/*
-
-
+%{_sysconfdir}/systemd/system/rackspace-monitoring-agent.service
+%{_initrddir}/rackspace-monitoring-agent
 
 %changelog
 

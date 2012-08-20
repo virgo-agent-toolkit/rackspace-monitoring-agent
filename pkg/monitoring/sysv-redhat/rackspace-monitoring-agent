@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# Startup script for Rackspace Cloud Monitoring Agent
+#
+# chkconfig: 345 85 15     - start or stop process definition within the boot process
+# description: Rackspace Cloud Monitoring Agent
+# processname: rackspace-monitoring-agent
+# pidfile: /var/run/rackspace-monitoring-agent.pid
+
+NAME=rackspace-monitoring-agent
+DAEMON=/usr/bin/rackspace-monitoring-agent
+PIDFILE=/var/run/rackspace-monitoring-agent.pid
+LOG=/var/log/rackspace-monitoring-agent.log
+
+# Source function library.      This creates the operating environment for the process to be started
+. /etc/init.d/functions
+
+case "$1" in
+  start)
+        echo -n "Starting $DAEMON: "
+        daemon $DAEMON -D -p $PIDFILE -l $LOG
+        echo
+        touch /var/lock/subsys/process-name
+        ;;
+  stop)
+        echo -n "Shutting down $DAEMON: "
+        killproc $DAEMON
+        echo
+        rm -f $PIDFILE
+        ;;
+  status)
+        status $DAEMON
+        ;;
+  restart)
+        $0 stop
+        $0 start
+        ;;
+  reload)
+        echo -n "Reloading $DAEMON: "
+        killproc $DAEMON -HUP
+        echo
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart|reload|status}"
+        exit 1
+esac
+
+exit 0
