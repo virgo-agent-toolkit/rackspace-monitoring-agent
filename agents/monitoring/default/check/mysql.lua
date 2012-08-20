@@ -140,7 +140,12 @@ function MySQLCheck:_runCheckInChild(callback)
   local rv = clib.mysql_real_connect(conn, self.mysql_host, self.mysql_username, self.mysql_password, nil, self.mysql_port, nil, 0)
 
   if rv == nil then
-    cr:setError(fmt('mysql_real_connect failed: (%d) %s', clib.mysql_errno(conn), ffi.string(clib.mysql_error(conn))))
+    local host = self.mysql_host and self.mysql_host or '(null)'
+    local port = self.mysql_port and self.mysql_port or 0
+    local username = self.mysql_username and self.mysql_username or '(null)'
+    cr:setError(fmt('mysql_real_connect(host=%s, port=%d, username=%s) failed: (%d) %s',
+                host, port, username,
+                clib.mysql_errno(conn), ffi.string(clib.mysql_error(conn))))
     clib.mysql_close(conn)
     callback(cr)
     return
