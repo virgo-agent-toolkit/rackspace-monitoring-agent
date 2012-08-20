@@ -4,6 +4,11 @@
       'target_name': 'virgolib',
       'type': 'static_library',
       'conditions': [
+        ['OS!="win"', {
+          'sources': [
+            'virgo_detach.c',
+          ],
+        }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'cflags': [ '--std=c89' ],
           'defines': [ '_GNU_SOURCE' ]
@@ -14,7 +19,6 @@
           ],
           'sources': [
             'virgo_crash_reporter.cc',
-            'virgo_detach.c',
           ],
           'include_dirs': [
             '../deps/breakpad/src',
