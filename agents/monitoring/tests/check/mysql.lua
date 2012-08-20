@@ -114,6 +114,8 @@ exports['test_mysql_row_parsing'] = function(test, asserts)
     asserts.is_string(m['none']['Uptime']['v'])
     asserts.is_string(m['none']['Uptime']['v'])
     asserts.is_number(tonumber(m['none']['Uptime']['v']))
+    asserts.equal(tonumber(m['none']['Uptime']['v']), 3212)
+    asserts.equal(tonumber(m['none']['Innodb_buffer_pool_pages_flushed']['v']), 2)
     -- TOOD: more tests on values?
     -- asserts.equal(results['_status'], "mysql_num_fields failed: expected 2 fields, but got 3")
     asserts.ok(#check._lastResult:serialize() > 0)
