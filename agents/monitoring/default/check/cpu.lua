@@ -128,7 +128,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
     total = total + current_cpu_total
     percentages[i]['current_cpu_usage'] = current_cpu_total
   end
-  metrics['average_usage'] = total / #cpuinfo
+  metrics['usage_average'] = total / #cpuinfo
 
   -- find cpu with minimum and maximum usage usage
   local cpu_max_index = 0
