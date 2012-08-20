@@ -20,7 +20,7 @@ asserts.assert = assert
 
 asserts.equal = function(a, b, msg)
   local msg = msg or tostring(a) .. ' != ' .. tostring(b)
-  asserts.assert(a == b, 'a')
+  asserts.assert(a == b, msg)
 end
 
 asserts.ok = function(a, msg)
