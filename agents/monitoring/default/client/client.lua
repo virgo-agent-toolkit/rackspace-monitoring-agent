@@ -52,7 +52,6 @@ function AgentClient:initialize(options, scheduler)
     rejectUnauthorized = true,
     ca = caCerts
   }
-  self._tls_options.rejectUnauthorized = false
 
   self._scheduler = scheduler
 
