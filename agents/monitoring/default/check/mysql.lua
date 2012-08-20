@@ -123,7 +123,7 @@ function MySQLCheck:_runCheckInChild(callback)
 
   loadMySQL()
 
-  local conn = ffi.C.mysql_init(nil)
+  local conn = clib.mysql_init(nil)
 
   if conn == nil then
     cr:setError('mysql_init failed')

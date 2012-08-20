@@ -17,6 +17,7 @@ limitations under the License.
 local JSON = require('json')
 local path = require('path')
 local os = require('os')
+local env = require('env')
 
 local Check = require('monitoring/default/check')
 local Metric = require('monitoring/default/check/base').Metric
@@ -28,19 +29,20 @@ local MySQLCheck = Check.MySQLCheck
 
 local exports = {}
 
-exports['test_mysql_check'] = function(test, asserts)
+local function setupTest(tcName)
+  env.set('VIRGO_SUBPROC_MOCK', 'monitoring/tests/check/mysql_mock', 1)
+  env.set("VIRGO_SUBPROC_TESTCASE", tcName, 1)
+end
+
+exports['test_mysql_check_failed_init'] = function(test, asserts)
+  setupTest('failed_init')
   local check = MySQLCheck:new({id='foo', period=30})
   asserts.ok(check._lastResult == nil)
   check:run(function(results)
-    asserts.ok(results ~= nil)
-    p(results)
-    p(check._lastResult)
-    asserts.ok(check._lastResult ~= nil)
-    p('serialize:')
-    p(check._lastResult:serialize())
-    p('')
-    asserts.ok(#check._lastResult:serialize() > 0)
-    asserts.ok(check._lastResult._nextRun)
+    asserts.not_nil(results, nil)
+    asserts.not_nil(check._lastResult, nil)
+    asserts.equal(results['_status'], "mysql_init failed")
+    asserts.equal(results['_state'], "unavailable")
     test.done()
   end)
 end

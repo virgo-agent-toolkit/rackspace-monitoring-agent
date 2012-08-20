@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 local os = require('os')
+local env = require('env')
 local Object = require('core').Object
 local JSON = require('json')
 local Emitter = require('core').Emitter
@@ -117,11 +118,18 @@ function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
   for i,exact in ipairs(mysqlexact) do
     loadsharedobj(exact)
     if clib ~= nil then
-      return clib
+      break
     end
   end
 
   -- TODO: path grepping with patterns and paths
+
+  local mocker = env.get('VIRGO_SUBPROC_MOCK')
+  if mocker ~= nil then
+    local mock = require(mocker)
+    clib = mock.mock(clib)
+  end
+
   return clib
 end
 
