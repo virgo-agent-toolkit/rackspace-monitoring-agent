@@ -40,7 +40,7 @@ testcases['failed_query'] = {}
 testcases['failed_query']['mysql_real_connect'] = function (conn)
   return conn
 end
-testcases['failed_query']['mysql_query'] = function (conn)
+testcases['failed_query']['mysql_query'] = function (conn, query)
   return 1
 end
 testcases['failed_query']['mysql_errno'] = function (conn)
