@@ -28,9 +28,25 @@ function MemoryCheck:run(callback)
   local s = sigar:new()
   local meminfo = s:mem()
   local checkResult = CheckResult:new(self, {})
+  local percent_metrics = {
+    'used_percent',
+    'free_percent'
+  }
+  local metrics = {
+    'actual_used',
+    'free',
+    'total',
+    'ram',
+    'actual_free',
+    'used'
+  }
 
-  for key, value in pairs(meminfo) do
-    checkResult:addMetric(key, nil, 'gauge', value)
+  for _, key in pairs(percent_metrics) do
+    checkResult:addMetric(key, nil, nil, meminfo[key])
+  end
+
+  for _, key in pairs(metrics) do
+    checkResult:addMetric(key, nil, 'gauge', meminfo[key])
   end
 
   -- Return Result
