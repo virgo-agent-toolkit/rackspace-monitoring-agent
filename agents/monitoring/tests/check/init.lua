@@ -110,11 +110,12 @@ exports['test_cpu_check_percentages'] = function(test, asserts)
   asserts.ok(check._lastResult == nil)
   check:run(function(results)
     local obj = results:serialize()
+    asserts.ok(#obj == 1)
     for i, cpu in pairs(obj) do
       if cpu[1] == 'cpu' then
         found = true
         assertsIsPercentage(asserts, cpu[2].user_percent_average)
-        assertsIsPercentage(asserts, cpu[2].average_usage)
+        assertsIsPercentage(asserts, cpu[2].usage_average)
         assertsIsPercentage(asserts, cpu[2].sys_percent_average)
         assertsIsPercentage(asserts, cpu[2].irq_percent_average)
         assertsIsPercentage(asserts, cpu[2].idle_percent_average)
