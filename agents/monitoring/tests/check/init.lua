@@ -99,6 +99,34 @@ exports['test_cpu_check'] = function(test, asserts)
   end)
 end
 
+local function assertsIsPercentage(asserts, value)
+  local num = tonumber(value.v)
+  return asserts.ok(num >= 0.0 and num <= 100.0)
+end
+
+exports['test_cpu_check_percentages'] = function(test, asserts)
+  local check = CpuCheck:new({id='foo', period=30})
+  local found = false
+  asserts.ok(check._lastResult == nil)
+  check:run(function(results)
+    local obj = results:serialize()
+    for i, cpu in pairs(obj) do
+      if cpu[1] == 'cpu' then
+        found = true
+        assertsIsPercentage(asserts, cpu[2].user_percent_average)
+        assertsIsPercentage(asserts, cpu[2].average_usage)
+        assertsIsPercentage(asserts, cpu[2].sys_percent_average)
+        assertsIsPercentage(asserts, cpu[2].irq_percent_average)
+        assertsIsPercentage(asserts, cpu[2].idle_percent_average)
+        asserts.ok(type(cpu[2].min_cpu_usage_name.v) == 'string')
+        asserts.ok(type(cpu[2].max_cpu_usage_name.v) == 'string')
+      end
+    end
+    asserts.ok(found == true)
+    test.done()
+  end)
+end
+
 exports['test_network_check'] = function(test, asserts)
   local check = NetworkCheck:new({id='foo', period=30})
   asserts.ok(check._lastResult == nil)
