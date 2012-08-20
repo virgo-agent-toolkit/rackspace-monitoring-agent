@@ -95,6 +95,41 @@ local function loadMySQL()
 
 end
 
+-- List of MySQL Stats that we export, along with their metric type.
+local stat_types = {
+  Aborted_clients = 'uint64',
+  Connections = 'gauge',
+
+  Innodb_buffer_pool_pages_dirty = 'uint64',
+  Innodb_buffer_pool_pages_free = 'uint64',
+  Innodb_buffer_pool_pages_flushed = 'uint64',
+  Innodb_buffer_pool_pages_total = 'uint64',
+  Innodb_row_lock_time = 'uint64',
+  Innodb_row_lock_time_avg = 'uint64',
+  Innodb_row_lock_time_max = 'uint64',
+  Innodb_rows_deleted = 'gauge',
+  Innodb_rows_inserted = 'gauge',
+  Innodb_rows_read = 'gauge',
+  Innodb_rows_updated = 'gauge',
+
+  Queries = 'gauge',
+
+  Threads_connected = 'uint64',
+  Threads_created = 'uint64',
+  Threads_running = 'uint64',
+
+  Uptime = 'uint64',
+
+  Qcache_free_blocks = 'uint64',
+  Qcache_free_memory = 'uint64',
+  Qcache_hits = 'gauge',
+  Qcache_inserts  = 'gauge',
+  Qcache_lowmem_prunes  = 'gauge',
+  Qcache_not_cached = 'gauge',
+  Qcache_queries_in_cache = 'uint64',
+  Qcache_total_blocks = 'uint64',
+}
+
 function MySQLCheck:_runCheckInChild(callback)
   local ffi = require('ffi')
   local cr = CheckResult:new(self, {})
@@ -193,7 +228,21 @@ function MySQLCheck:_runCheckInChild(callback)
     return
   end
 
-  cr:setError('Found mysqlclient, but not implemented')
+  while true do
+    r = clib.mysql_fetch_row(result)
+    if r == nil then
+      break
+    end
+    local keyname = ffi.string(r[0])
+    local ktype = stat_types[keyname]
+    if ktype ~= nil then
+      -- TODO: would be nice to use mysql native types here?
+      local val = ffi.string(r[1])
+      cr:addMetric(keyname, nil, ktype, val)
+    end
+  end
+
+  -- TOOD: status message
   callback(cr)
   return
 end
