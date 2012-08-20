@@ -93,6 +93,21 @@ local run_test = function(runner, stats, callback)
   runner.context:run(runner.func, test_baton)
 end
 
+local function pairsByKeys (t, f)
+  -- from PIL, 19.3, http://www.lua.org/pil/19.3.html
+  local a = {}
+  for n in pairs(t) do table.insert(a, n) end
+  table.sort(a, f)
+  local i = 0      -- iterator variable
+  local iter = function ()   -- iterator function
+    i = i + 1
+    if a[i] == nil then return nil
+    else return a[i], t[a[i]]
+    end
+  end
+  return iter
+end
+
 local run = function(options, mods, callback)
   if not mods then return end
   local runners = {}
@@ -104,7 +119,7 @@ local run = function(options, mods, callback)
     verbose = true
   }
 
-  for k, v in pairs(get_tests(mods)) do
+  for k, v in pairsByKeys(get_tests(mods)) do
     if not is_control_function(k) then
       table.insert(runners, 1, { name = k, func = v, context = context:new() })
     end

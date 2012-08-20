@@ -20,7 +20,7 @@ asserts.assert = assert
 
 asserts.equal = function(a, b, msg)
   local msg = msg or tostring(a) .. ' != ' .. tostring(b)
-  bourbon_assert(a == b, 'a')
+  asserts.assert(a == b, msg)
 end
 
 asserts.ok = function(a, msg)
@@ -73,7 +73,7 @@ asserts.is_nil = function(a, msg)
 end
 
 asserts.is_number = function(a, msg)
-  local msg = msg or tostring(a) .. ' is not a number'
+  local msg = msg or tostring(a) .. ' is not a number (was a ' .. type(a) .. ')'
   asserts.assert(type(a) == 'number', msg)
 end
 
