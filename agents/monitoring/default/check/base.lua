@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 local os = require('os')
+local env = require('env')
 local Object = require('core').Object
 local JSON = require('json')
 local Emitter = require('core').Emitter
@@ -90,6 +91,49 @@ function BaseCheck:serialize()
     nextrun = self:getNextRun()
   }
 end
+
+local SubProcCheck = BaseCheck:extend()
+
+function SubProcCheck:run(callback)
+  -- TOOD: spawn subprocess, run with cutsom entry point
+  -- TODO: until then, just run inline.
+  self:_runCheckInChild(function (cr)
+    self._lastResult = cr
+    callback(cr)
+  end)
+end
+
+function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
+  local ffi = require('ffi')
+  local clib = nil
+  local i,exact
+
+  local function loadsharedobj(name)
+    local err, lib = pcall(ffi.load, name, true)
+    if err == true then
+      clib = lib
+    end
+  end
+
+  for i,exact in ipairs(mysqlexact) do
+    loadsharedobj(exact)
+    if clib ~= nil then
+      break
+    end
+  end
+
+  -- TODO: path grepping with patterns and paths
+
+  local mocker = env.get('VIRGO_SUBPROC_MOCK')
+  if mocker ~= nil then
+    local mock = require(mocker)
+    clib = mock.mock(clib)
+  end
+
+  return clib
+end
+
+
 
 function CheckResult:initialize(check, options)
   self._options = options or {}
@@ -209,6 +253,7 @@ end
 local exports = {}
 exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES
 exports.BaseCheck = BaseCheck
+exports.SubProcCheck = SubProcCheck
 exports.CheckResult = CheckResult
 exports.Metric = Metric
 return exports
