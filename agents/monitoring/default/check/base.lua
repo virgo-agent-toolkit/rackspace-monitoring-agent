@@ -31,6 +31,8 @@ local constants = require('../util/constants')
 local loggingUtil = require('../util/logging')
 local tableContains = require('../util/misc').tableContains
 local toString = require('../util/misc').toString
+local lastIndexOf = require('../util/misc').lastIndexOf
+local split = require('../util/misc').split
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
@@ -162,7 +164,7 @@ function ChildCheck:_handleLine(checkResult, line)
       return
     end
 
-    value = line:sub(statusEndIndex + 2)
+    value = line:sub(stateEndIndex + 2)
 
     if value ~= 'available' and value ~= 'unavailable' then
       msg = 'State line not in the following format: <available|unavailable>'
@@ -178,7 +180,7 @@ function ChildCheck:_handleLine(checkResult, line)
       checkResult:setUnavailable()
     end
   elseif metricEndIndex then
-    value = line:sub(metricEndIndex + 2)
+    value = line:sub(metricEndIndex + 1)
     splitString = split(value, '[^%s]+')
     partsCount = #splitString
 
@@ -199,7 +201,6 @@ function ChildCheck:_handleLine(checkResult, line)
     metricValue = table.concat(splitString, ' ')
 
     dotIndex = lastIndexOf(metricName, '%.')
-
     if dotIndex then
       -- Metric name contains a dimension key
       metricDimension = metricName:sub(0, dotIndex - 1)
@@ -208,7 +209,11 @@ function ChildCheck:_handleLine(checkResult, line)
       metricDimension = nil
     end
 
-    if tableContains(VALID_METRIC_TYPES, metricType) then
+    local function matcher(v)
+      return v == metricType
+    end
+
+    if tableContains(matcher, VALID_METRIC_TYPES) then
       internalMetricType = metricType
     else
       internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
@@ -267,7 +272,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     killed = true
 
     checkResult:setError(fmt('Plugin didn\'t finish in %s seconds', timeoutSeconds))
-    self._lastResults = checkResult
+    self._lastResult = checkResult
     callback(checkResult)
   end)
 
@@ -297,8 +302,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
       if code ~= 0 then
         checkResult:setError(fmt('Plugin exited with non-zero status code (code=%s)', (code)))
       end
-
-      self._lastResults = checkResult
+      self._lastResult = checkResult
       callback(checkResult)
     end)
   end)
@@ -317,6 +321,27 @@ function ChildCheck:_setError(checkResult, message)
 
   self._hasError = true
   checkResult:setError(message)
+end
+
+function ChildCheck:_childEnv()
+  local ENV_PREFIX = 'RAX_'
+  local k,v
+  local cenv = {}
+
+  -- process.env isn't a real table, but this works, so iterate rather than using a merge() function.
+  for k,v in pairs(process.env) do
+    cenv[k] = v
+  end
+
+  cenv[ENV_PREFIX .. 'CHECK_ID'] = self.id
+  cenv[ENV_PREFIX .. 'CHECK_PERIOD'] = tostring(self.period)
+  cenv[ENV_PREFIX .. 'CHECK_TYPE'] = self._type
+
+  for k,v in pairs(self._params.details) do
+    cenv[ENV_PREFIX .. 'DETAILS_' .. k:upper()] = tostring(v)
+  end
+
+  return cenv
 end
 
 
@@ -346,26 +371,6 @@ function SubProcCheck:run(callback)
   end
 end
 
-function SubProcCheck:_childEnv()
-  local ENV_PREFIX = 'RAX_'
-  local k,v
-  local cenv = {}
-
-  -- process.env isn't a real table, but this works, so iterate rather than using a merge() function.
-  for k,v in pairs(process.env) do
-    cenv[k] = v
-  end
-
-  cenv[ENV_PREFIX .. 'CHECK_ID'] = self.id
-  cenv[ENV_PREFIX .. 'CHECK_PERIOD'] = tostring(self.period)
-  cenv[ENV_PREFIX .. 'CHECK_TYPE'] = self._type
-
-  for k,v in pairs(self._params.details) do
-    cenv[ENV_PREFIX .. 'DETAILS_' .. k:upper()] = v
-  end
-
-  return cenv
-end
 
 function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
   local ffi = require('ffi')

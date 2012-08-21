@@ -210,7 +210,7 @@ exports['test_custom_plugin_timeout'] = function(test, asserts)
 
   local check = PluginCheck:new({id='foo', period=30,
                                 details={timeout=500, file='timeout.py'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
     asserts.equals(result:getStatus(), 'Plugin didn\'t finish in 0.5 seconds')
@@ -230,7 +230,7 @@ exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='not_executable.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
     asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=127)')
@@ -245,7 +245,7 @@ exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='doesnt_exist.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
     asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=127)')
@@ -261,7 +261,7 @@ exports['test_custom_plugin_cmd_arguments'] = function(test, asserts)
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='plugin_custom_arguments.sh',
                                  args={'foo_bar', 'a', 'b', 'c'}}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()['none']
 
@@ -283,7 +283,7 @@ exports['test_custom_plugin_all_types'] = function(test, asserts)
 
   local check = PluginCheck:new({id='foo', period=30,
                                 details={file='plugin_1.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()['none']
 
@@ -306,7 +306,7 @@ exports['test_custom_plugin_dimensions'] = function(test, asserts)
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='plugin_dimensions.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
@@ -328,7 +328,7 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = 
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='cloudkick_agent_custom_plugin_1.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
@@ -348,7 +348,7 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = 
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='cloudkick_agent_custom_plugin_2.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
@@ -368,7 +368,7 @@ exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='repeated_status_line.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
@@ -389,7 +389,7 @@ exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='partial_output_with_sleep.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()['none']
 
@@ -412,7 +412,7 @@ exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = function
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_1.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
@@ -431,7 +431,7 @@ exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_2.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
@@ -450,7 +450,7 @@ exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_met
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_3.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
@@ -469,7 +469,7 @@ exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(t
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_4.sh'}})
-  asserts.ok(check._lastResults == nil)
+  asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local metrics = result:getMetrics()
 
