@@ -21,6 +21,7 @@ local CpuCheck = require('./cpu').CpuCheck
 local DiskCheck = require('./disk').DiskCheck
 local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
+local MySQLCheck = require('./mysql').MySQLCheck
 local PluginCheck = require('./plugin').PluginCheck
 
 local Error = require('core').Error
@@ -47,6 +48,8 @@ function create(checkData)
     return CpuCheck:new(obj)
   elseif checkType == 'agent.plugin' then
     return PluginCheck:new(obj)
+  elseif checkType == 'agent.mysql' then
+    return MySQLCheck:new(obj)
   else
     return nil
   end
@@ -76,6 +79,7 @@ exports.CpuCheck = CpuCheck
 exports.DiskCheck = DiskCheck
 exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
+exports.MySQLCheck = MySQLCheck
 exports.PluginCheck = PluginCheck
 
 exports.create = create

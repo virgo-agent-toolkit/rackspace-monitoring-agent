@@ -26,6 +26,8 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#include "luajit.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -113,6 +115,11 @@ virgo_error_t*
 virgo__lua_init(virgo_t *v)
 {
   lua_State *L = luaL_newstate();
+
+#if 0
+  /* Can disable the JIT if you think it will allow better debugging */
+  luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE|LUAJIT_MODE_OFF);
+#endif
 
   v->L = L;
 
