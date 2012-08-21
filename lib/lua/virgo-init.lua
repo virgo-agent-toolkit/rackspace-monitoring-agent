@@ -456,6 +456,7 @@ process:on('SIGHUP', onHUP)
 
 -- Setup GC
 local GC_INTERVAL = 5 * 1000 -- milliseconds
+-- TODO: Unref was removed with libuv upgrade, but if we setInterval here, we can't clean exit -- need to fix the reference count.
 timer.setInterval(GC_INTERVAL, gc)
 -- Unref the interval timer. We don't want it to keep the eventloop blocked
 

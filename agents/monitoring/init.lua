@@ -52,6 +52,7 @@ function Entry.run()
 
   if err == false then
     logging.error(msg)
+    process.exit(1)
   end
 end
 
