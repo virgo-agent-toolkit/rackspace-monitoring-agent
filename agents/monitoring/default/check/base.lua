@@ -303,14 +303,14 @@ end
 function SubProcCheck:run(callback)
   local args = {
     '-e',
-    'check_runner',
+    'default/check_runner',
     '--zip',
     virgo.loaded_zip_path,
-    '--run-check',
+    '-x',
     self:getType()
   }
 
-  -- p(process.execPath, args)
+  p(process.execPath, args)
   local child = self:_runChild(process.execPath, args, callback)
   local msg = self:_childMsg()
   pcall(function()
