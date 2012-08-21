@@ -74,7 +74,8 @@ function CheckRunner:reportError(callback)
 end
 
 function CheckRunner:report(callback)
-  p('ERROR', self._cr)
+  local out = self._cr:serializeAsPluginOutput()
+  process.stdout:write(out)
   callback()
 end
 

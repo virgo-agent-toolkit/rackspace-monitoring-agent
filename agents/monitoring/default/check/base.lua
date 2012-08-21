@@ -104,6 +104,7 @@ function ChildCheck:initialize(checkType, params)
   BaseCheck.initialize(self, checkType, params)
   self._log = nil
   self._gotStatusLine = false
+  self._gotStateLine = false
   self._hasError = false
   self._metricCount = 0
   if params.details == nil then
@@ -118,7 +119,7 @@ Parse a line output by a plugin and mutate CheckResult object (set status
 or add a metric).
 --]]
 function ChildCheck:_handleLine(checkResult, line)
-  local statusEndIndex, metricEndIndex, splitString, value, state
+  local stateEndIndex, statusEndIndex, metricEndIndex, splitString, value, state
   local metricName, metricType, metricValue, dotIndex, internalMetricType, partsCount
   local msg
 
@@ -129,6 +130,7 @@ function ChildCheck:_handleLine(checkResult, line)
   end
 
   _, statusEndIndex = line:find('^status')
+  _, stateEndIndex = line:find('^state')
   _, metricEndIndex = line:find('^metric')
 
   if statusEndIndex then
@@ -154,6 +156,27 @@ function ChildCheck:_handleLine(checkResult, line)
     self._log(logging.DEBUG, fmt('Setting check status string (status=%s)', status))
     self._gotStatusLine = true
     checkResult:setStatus(status)
+  elseif stateEndIndex then
+    if self._gotStateLine then
+      self._log(logging.WARNING, 'Duplicated state line, ignoring it...')
+      return
+    end
+
+    value = line:sub(statusEndIndex + 2)
+
+    if value ~= 'available' and value ~= 'unavailable' then
+      msg = 'State line not in the following format: <available|unavailable>'
+      self._log(logging.WARNING, fmt('Invalid state line (line=%s) - %s', line, msg))
+      self:_setError(checkResult, msg)
+      return
+    end
+
+    self._gotStateLine = true
+    if value == 'available' then
+      checkResult:setAvailable()
+    else
+      checkResult:setUnavailable()
+    end
   elseif metricEndIndex then
     value = line:sub(metricEndIndex + 2)
     splitString = split(value, '[^%s]+')
@@ -185,13 +208,17 @@ function ChildCheck:_handleLine(checkResult, line)
       metricDimension = nil
     end
 
-    internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
+    if tableContains(VALID_METRIC_TYPES, metricType) then
+      internalMetricType = metricType
+    else
+      internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
+    end
 
     if not internalMetricType then
-      msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
-      self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
-      self:_setError(checkResult, msg)
-      return
+        msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
+        self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
+        self:_setError(checkResult, msg)
+        return
     end
 
     if metricType ~= 'string' and partsCount ~= 3 then
@@ -450,6 +477,31 @@ function CheckResult:serialize()
   end
 
   return result
+end
+
+function CheckResult:serializeAsPluginOutput()
+  local result = {}
+  local k,v,j,metric
+
+  table.insert(result, 'state '.. self:getState())
+  table.insert(result, 'status '.. self:getStatus())
+
+  local m = self:getMetrics()
+
+  for k,v in pairs(m) do
+    for j,metric in pairs(v) do
+      local mname
+      if (k ~= 'none') then
+        mname = k .. '.' .. j
+      else
+        mname = j
+      end
+
+      table.insert(result, 'metric' .. mname .. ' ' .. metric.t .. ' ' .. metric.v)
+    end
+  end
+
+  return table.concat(result, '\n') .. '\n'
 end
 
 function Metric:initialize(name, dimension, type, value)
