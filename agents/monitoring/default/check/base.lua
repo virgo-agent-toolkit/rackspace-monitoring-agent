@@ -22,9 +22,11 @@ local Emitter = require('core').Emitter
 local fmt = require('string').format
 local table = require('table')
 local vtime = require('virgo-time')
+local childprocess = require('childprocess')
 
 local toString = require('../util/misc').toString
 local tableContains = require('../util/misc').tableContains
+local constants = require('../util/constants')
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
@@ -94,13 +96,77 @@ end
 
 local SubProcCheck = BaseCheck:extend()
 
+function SubProcCheck:initialize(checkType, params)
+  BaseCheck.initialize(self, checkType, params)
+  self._timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+end
+
 function SubProcCheck:run(callback)
   -- TOOD: spawn subprocess, run with cutsom entry point
   -- TODO: until then, just run inline.
-  self:_runCheckInChild(function (cr)
-    self._lastResult = cr
-    callback(cr)
+  local args = {
+    '-e',
+    'check_runner',
+    '--zip',
+    'ZIP_PATH',
+  }
+  local killed = false
+  local child = childprocess.spawn(process.execPath, args)
+
+  local childTimeout = timer.setTimeout(self._timeout, function()
+    local timeoutSeconds = (self._timeout / 1000)
+
+    self._log(logging.DEBUG, fmt('Didn\'t finish check in %s seconds', timeoutSeconds))
+    child:kill(9)
+    killed = true
+
+    checkResult:setError(fmt('Plugin didn\'t finish in %s seconds', timeoutSeconds))
+    self._lastResults = checkResult
+    callback(checkResult)
   end)
+
+
+  lineEmitter:on('data', function(line)
+    self:_handleLine(checkResult, line)
+  end)
+
+  child.stdout:on('data', function(chunk)
+    lineEmitter:write(chunk)
+  end)
+
+  child.stderr:on('data', function(chunk)
+    stderrBuffer = stderrBuffer .. chunk
+  end)
+
+  child:on('exit', function(code)
+    timer.clearTimer(childTimeout)
+
+    if killed then
+      -- Plugin timed out and callback has already been called.
+      return
+    end
+
+    process.nextTick(function()
+      -- Callback is called on the next tick so any pending line processing can
+      -- happen before calling a callback.
+      if code ~= 0 then
+        checkResult:setError(fmt('Plugin exited with non-zero status code (code=%s)', (code)))
+      end
+
+      self._lastResults = checkResult
+      callback(checkResult)
+    end)
+  end)
+[[
+self:_runCheckInChild(function (cr)
+  self._lastResult = cr
+  callback(cr)
+end)
+]]
+end
+
+function SubProcCheck:_handleLine(checkResult, line)
+
 end
 
 function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
