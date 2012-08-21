@@ -140,6 +140,11 @@ testcases['fake_results'] = MySQLMock:new()
 
 exports.mock = function(clib)
 
+  -- Handle case where mysqlclient isn't installed at all :(
+  if clib == nil then
+    clib = {}
+  end
+
   local mt = {
     __index = function(t, key)
       local rv = clib[key]
