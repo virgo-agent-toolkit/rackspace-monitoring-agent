@@ -1,15 +1,15 @@
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 
-local LoadCheck = BaseCheck:extend()
+local LoadAverageCheck = BaseCheck:extend()
 
-function LoadCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.load', params)
+function LoadAverageCheck:initialize(params)
+  BaseCheck.initialize(self, 'agent.load_averge', params)
 end
 
-function LoadCheck:run(callback)
+function LoadAverageCheck:run(callback)
   local s = sigar:new()
-  local err, load = pcall(s:load)
+  local err, load = pcall(function() return s:load() end)
   local checkResult = CheckResult:new(self, {})
 
   if err == true then
@@ -25,5 +25,5 @@ function LoadCheck:run(callback)
 end
 
 local exports = {}
-exports.LoadCheck = LoadCheck
+exports.LoadAverageCheck = LoadAverageCheck
 return exports

@@ -32,7 +32,7 @@ local DiskCheck = Check.DiskCheck
 local MemoryCheck = Check.MemoryCheck
 local NetworkCheck = Check.NetworkCheck
 local PluginCheck = Check.PluginCheck
-local LoadCheck = Check.LoadCheck
+local LoadAverageCheck = Check.LoadAverageCheck
 
 local MySQLTests = require('./mysql')
 
@@ -123,8 +123,8 @@ exports['test_disks_check'] = function(test, asserts)
   end)
 end
 
-exports['test_load_check'] = function(test, asserts)
-  local check = LoadCheck:new({id='foo', period=30})
+exports['test_load_average_check'] = function(test, asserts)
+  local check = LoadAverageCheck:new({id='foo', period=30})
   asserts.ok(check._lastResult == nil)
   check:run(function(results)
     if os.type() == "win32" then
