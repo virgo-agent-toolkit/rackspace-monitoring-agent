@@ -100,7 +100,8 @@ function PluginCheck:run(callback)
     end
   end
 
-  local child = self:_runChild(exePath, exeArgs, callback)
+  local cenv = self:_childEnv()
+  local child = self:_runChild(exePath, exeArgs, cenv, callback)
   if child.stdin._closed ~= true then
     child.stdin:close()
   end

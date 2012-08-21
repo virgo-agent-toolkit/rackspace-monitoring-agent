@@ -106,6 +106,11 @@ function ChildCheck:initialize(checkType, params)
   self._gotStatusLine = false
   self._hasError = false
   self._metricCount = 0
+  if params.details == nil then
+    params.details = {}
+  end
+  self._params = params
+
 end
 
 --[[
@@ -217,13 +222,15 @@ function ChildCheck:_handleLine(checkResult, line)
   end
 end
 
-function ChildCheck:_runChild(exePath, exeArgs, callback)
+function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local checkResult = CheckResult:new(self, {})
   local stderrBuffer = ''
   local killed = false
   local lineEmitter = LineEmitter:new()
 
-  local child = childprocess.spawn(exePath, exeArgs)
+  local child = childprocess.spawn(exePath,
+                                   exeArgs,
+                                   { env = environ })
 
   local pluginTimeout = timer.setTimeout(self._timeout, function()
     local timeoutSeconds = (self._timeout / 1000)
@@ -289,15 +296,9 @@ end
 local SubProcCheck = ChildCheck:extend()
 
 function SubProcCheck:initialize(checkType, params)
-  BaseCheck.initialize(self, checkType, params)
-
-  if params.details == nil then
-    params.details = {}
-  end
-
+  ChildCheck.initialize(self, checkType, params)
   self._timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', checkType))
-  self._params = params
 end
 
 function SubProcCheck:run(callback)
@@ -310,19 +311,33 @@ function SubProcCheck:run(callback)
     self:getType()
   }
 
-  p(process.execPath, args)
-  local child = self:_runChild(process.execPath, args, callback)
-  local msg = self:_childMsg()
-  pcall(function()
-    child.stdin:write(msg)
-    if child.stdin._closed ~= true then
-      child.stdin:close()
-    end
-  end)
+  local cenv = self:_childEnv()
+  local child = self:_runChild(process.execPath, args, cenv, callback)
+
+  if child.stdin._closed ~= true then
+    child.stdin:close()
+  end
 end
 
-function SubProcCheck:_childMsg()
-  return JSON.stringify(self._params) .. '\n'
+function SubProcCheck:_childEnv()
+  local ENV_PREFIX = 'RAX_'
+  local k,v
+  local cenv = {}
+
+  -- process.env isn't a real table, but this works, so iterate rather than using a merge() function.
+  for k,v in pairs(process.env) do
+    cenv[k] = v
+  end
+
+  cenv[ENV_PREFIX .. 'CHECK_ID'] = self.id
+  cenv[ENV_PREFIX .. 'CHECK_PERIOD'] = tostring(self.period)
+  cenv[ENV_PREFIX .. 'CHECK_TYPE'] = self._type
+
+  for k,v in pairs(self._params.details) do
+    cenv[ENV_PREFIX .. 'DETAILS_' .. k:upper()] = v
+  end
+
+  return cenv
 end
 
 function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
