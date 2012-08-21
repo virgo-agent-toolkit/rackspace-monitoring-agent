@@ -32,6 +32,7 @@ local DiskCheck = Check.DiskCheck
 local MemoryCheck = Check.MemoryCheck
 local NetworkCheck = Check.NetworkCheck
 local PluginCheck = Check.PluginCheck
+local LoadCheck = Check.LoadCheck
 
 local MySQLTests = require('./mysql')
 
@@ -119,6 +120,35 @@ exports['test_disks_check'] = function(test, asserts)
     asserts.ok(#check._lastResult:serialize() > 0)
     asserts.ok(check._lastResult._nextRun)
     test.done()
+  end)
+end
+
+exports['test_load_check'] = function(test, asserts)
+  local check = LoadCheck:new({id='foo', period=30})
+  asserts.ok(check._lastResult == nil)
+  check:run(function(results)
+    if os.type() == "win32" then
+      -- Check isn't portable to win32, but make sure it still reports unavailable correctly.
+      asserts.ok(results ~= nil)
+      asserts.ok(check._lastResult ~= nil)
+      asserts.equal(results['_state'], "unavailable")
+      test.done()
+    else
+      asserts.ok(results ~= nil)
+      asserts.equal(results['_state'], "available")
+      local m = results:getMetrics()
+      asserts.not_nil(m)
+      asserts.not_nil(m['load'])
+      asserts.not_nil(m['load']['5m'])
+      asserts.not_nil(m['load']['10m'])
+      asserts.not_nil(m['load']['15m'])
+      asserts.is_number(tonumber(m['load']['5m']['v']))
+      asserts.equal(m['load']['5m']['t'], 'double')
+      asserts.ok(check._lastResult ~= nil)
+      asserts.ok(#check._lastResult:serialize() > 0)
+      asserts.ok(check._lastResult._nextRun)
+      test.done()
+    end
   end)
 end
 
