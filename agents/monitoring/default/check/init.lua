@@ -22,6 +22,7 @@ local DiskCheck = require('./disk').DiskCheck
 local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
 local MySQLCheck = require('./mysql').MySQLCheck
+local LoadAverageCheck = require('./load_average').LoadAverageCheck
 local PluginCheck = require('./plugin').PluginCheck
 
 local Error = require('core').Error
@@ -50,6 +51,8 @@ function create(checkData)
     return PluginCheck:new(obj)
   elseif checkType == 'agent.mysql' then
     return MySQLCheck:new(obj)
+  elseif checkType == 'agent.load_average' then
+    return LoadAverageCheck:new(obj)
   else
     return nil
   end
@@ -81,6 +84,7 @@ exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
 exports.MySQLCheck = MySQLCheck
 exports.PluginCheck = PluginCheck
+exports.LoadAverageCheck = LoadAverageCheck
 
 exports.create = create
 exports.test = test
