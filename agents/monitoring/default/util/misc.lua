@@ -169,6 +169,14 @@ function lastIndexOf(str, pat)
   return lastIndex
 end
 
+function shuffleArray(array)
+    local arrayCount = #array
+    for i = arrayCount, 2, -1 do
+        local j = math.random(1, i)
+        array[i], array[j] = array[j], array[i]
+    end
+    return array
+end
 
 --[[ Exports ]]--
 local exports = {}
@@ -181,4 +189,5 @@ exports.tableContains = tableContains
 exports.trim = trim
 exports.writePid = writePid
 exports.lastIndexOf = lastIndexOf
+exports.shuffleArray = shuffleArray
 return exports
