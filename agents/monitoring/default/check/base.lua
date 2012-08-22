@@ -14,17 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local os = require('os')
-local env = require('env')
-local Object = require('core').Object
-local JSON = require('json')
 local Emitter = require('core').Emitter
+local JSON = require('json')
+local LineEmitter = require('line-emitter').LineEmitter
+local Object = require('core').Object
+local childprocess = require('childprocess')
+local env = require('env')
 local fmt = require('string').format
+local logging = require('logging')
+local os = require('os')
 local table = require('table')
+local timer = require('timer')
 local vtime = require('virgo-time')
 
-local toString = require('../util/misc').toString
+local constants = require('../util/constants')
+local loggingUtil = require('../util/logging')
 local tableContains = require('../util/misc').tableContains
+local toString = require('../util/misc').toString
+local lastIndexOf = require('../util/misc').lastIndexOf
+local split = require('../util/misc').split
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
@@ -92,16 +100,277 @@ function BaseCheck:serialize()
   }
 end
 
-local SubProcCheck = BaseCheck:extend()
+local ChildCheck = BaseCheck:extend()
+
+function ChildCheck:initialize(checkType, params)
+  BaseCheck.initialize(self, checkType, params)
+  self._log = nil
+  self._gotStatusLine = false
+  self._gotStateLine = false
+  self._hasError = false
+  self._metricCount = 0
+  if params.details == nil then
+    params.details = {}
+  end
+  self._params = params
+
+end
+
+--[[
+Parse a line output by a plugin and mutate CheckResult object (set status
+or add a metric).
+--]]
+function ChildCheck:_handleLine(checkResult, line)
+  local stateEndIndex, statusEndIndex, metricEndIndex, splitString, value, state
+  local metricName, metricType, metricValue, dotIndex, internalMetricType, partsCount
+  local msg
+
+  if self._hasError then
+    -- If a CheckResult already has an error set, all the lines which come after
+    -- the error are ignored.
+    return
+  end
+
+  _, statusEndIndex = line:find('^status')
+  _, stateEndIndex = line:find('^state')
+  _, metricEndIndex = line:find('^metric')
+
+  if statusEndIndex then
+    if self._gotStatusLine then
+      self._log(logging.WARNING, 'Duplicated status line, ignoring it...')
+      return
+    end
+
+    value = line:sub(statusEndIndex + 2)
+    splitString = split(value, '[^%s]+')
+    state = splitString[1]
+
+    if state == 'ok' or state == 'warn' or state == 'err' then
+      -- Assume this is an old Cloudkick agent plugin which also outputs plugin
+      -- state which is ignored by the new agent. In Cloud monitoring alarm
+      -- criteria is used to determine check state.
+      table.remove(splitString, 1)
+      status = table.concat(splitString, ' ')
+    else
+      status = value
+    end
+
+    self._log(logging.DEBUG, fmt('Setting check status string (status=%s)', status))
+    self._gotStatusLine = true
+    checkResult:setStatus(status)
+  elseif stateEndIndex then
+    if self._gotStateLine then
+      self._log(logging.WARNING, 'Duplicated state line, ignoring it...')
+      return
+    end
+
+    value = line:sub(stateEndIndex + 2)
+
+    if value ~= 'available' and value ~= 'unavailable' then
+      msg = 'State line not in the following format: <available|unavailable>'
+      self._log(logging.WARNING, fmt('Invalid state line (line=%s) - %s', line, msg))
+      self:_setError(checkResult, msg)
+      return
+    end
+
+    self._gotStateLine = true
+    if value == 'available' then
+      checkResult:setAvailable()
+    else
+      checkResult:setUnavailable()
+    end
+  elseif metricEndIndex then
+    value = line:sub(metricEndIndex + 2)
+    splitString = split(value, '[^%s]+')
+    partsCount = #splitString
+
+    if partsCount < 3 then
+      msg = 'Metric line not in the following format: metric <name> <type> <value>'
+      self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
+      self:_setError(checkResult, msg)
+      return
+    end
+
+    metricName = splitString[1]
+    metricType = splitString[2]
+
+    -- Everything after name and type is treated as a metric value
+    table.remove(splitString, 1)
+    table.remove(splitString, 1)
+
+    metricValue = table.concat(splitString, ' ')
+
+    dotIndex = lastIndexOf(metricName, '%.')
+    if dotIndex then
+      -- Metric name contains a dimension key
+      metricDimension = metricName:sub(0, dotIndex - 1)
+      metricName = metricName:sub(dotIndex + 1)
+    else
+      metricDimension = nil
+    end
+
+    local function matcher(v)
+      return v == metricType
+    end
+
+    if tableContains(matcher, VALID_METRIC_TYPES) then
+      internalMetricType = metricType
+    else
+      internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
+    end
+
+    if not internalMetricType then
+      msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
+      self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
+      self:_setError(checkResult, msg)
+      return
+    end
+
+    if metricType ~= 'string' and partsCount ~= 3 then
+      -- Only values for string metrics can contain spaces
+      local msg = fmt('Invalid value "%s" for a non-string metric', metricValue)
+      self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
+      self:_setError(checkResult, msg)
+      return
+    end
+
+    local status, err = pcall(function()
+      checkResult:addMetric(metricName, metricDimension, internalMetricType,
+                            metricValue)
+    end)
+
+    if err then
+      self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
+                                     tostring(err)))
+    else
+      self._metricCount = self._metricCount + 1
+      self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
+                 tostring(metricDimension), metricName, metricType, metricValue))
+    end
+  else
+    msg = fmt('Unrecognized line "%s"', line)
+    self._log(logging.WARNING, msg)
+    self:_setError(checkResult, msg)
+  end
+end
+
+function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
+  local checkResult = CheckResult:new(self, {})
+  local stderrBuffer = ''
+  local killed = false
+  local lineEmitter = LineEmitter:new()
+
+  local child = childprocess.spawn(exePath,
+                                   exeArgs,
+                                   { env = environ })
+
+  local pluginTimeout = timer.setTimeout(self._timeout, function()
+    local timeoutSeconds = (self._timeout / 1000)
+
+    self._log(logging.DEBUG, fmt("Plugin didn't finish in %s seconds, killing it...", timeoutSeconds))
+    child:kill(9)
+    killed = true
+
+    checkResult:setError(fmt("Plugin didn't finish in %s seconds", timeoutSeconds))
+    self._lastResult = checkResult
+    callback(checkResult)
+  end)
+
+  lineEmitter:on('data', function(line)
+    self:_handleLine(checkResult, line)
+  end)
+
+  child.stdout:on('data', function(chunk)
+    lineEmitter:write(chunk)
+  end)
+
+  child.stderr:on('data', function(chunk)
+    stderrBuffer = stderrBuffer .. chunk
+  end)
+
+  child:on('exit', function(code)
+    timer.clearTimer(pluginTimeout)
+
+    if killed then
+      -- Plugin timed out and callback has already been called.
+      return
+    end
+
+    process.nextTick(function()
+      -- Callback is called on the next tick so any pending line processing can
+      -- happen before calling a callback.
+      if code ~= 0 then
+        checkResult:setError(fmt('Plugin exited with non-zero status code (code=%s)', (code)))
+      end
+      self._lastResult = checkResult
+      callback(checkResult)
+    end)
+  end)
+
+  return child
+end
+
+--[[
+Set an error on the CheckResult object if and only if the error hasn't been
+set yet.
+--]]
+function ChildCheck:_setError(checkResult, message)
+  if self._hasError then
+    return
+  end
+
+  self._hasError = true
+  checkResult:setError(message)
+end
+
+function ChildCheck:_childEnv()
+  local ENV_PREFIX = 'RAX_'
+  local k,v
+  local cenv = {}
+
+  -- process.env isn't a real table, but this works, so iterate rather than using a merge() function.
+  for k,v in pairs(process.env) do
+    cenv[k] = v
+  end
+
+  cenv[ENV_PREFIX .. 'CHECK_ID'] = self.id
+  cenv[ENV_PREFIX .. 'CHECK_PERIOD'] = tostring(self.period)
+  cenv[ENV_PREFIX .. 'CHECK_TYPE'] = self._type
+
+  for k,v in pairs(self._params.details) do
+    cenv[ENV_PREFIX .. 'DETAILS_' .. k:upper()] = tostring(v)
+  end
+
+  return cenv
+end
+
+
+local SubProcCheck = ChildCheck:extend()
+
+function SubProcCheck:initialize(checkType, params)
+  ChildCheck.initialize(self, checkType, params)
+  self._timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+  self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', checkType))
+end
 
 function SubProcCheck:run(callback)
-  -- TOOD: spawn subprocess, run with cutsom entry point
-  -- TODO: until then, just run inline.
-  self:_runCheckInChild(function (cr)
-    self._lastResult = cr
-    callback(cr)
-  end)
+  local args = {
+    '-e',
+    'default/check_runner',
+    '--zip',
+    virgo.loaded_zip_path,
+    '-x',
+    self:getType()
+  }
+
+  local cenv = self:_childEnv()
+  local child = self:_runChild(process.execPath, args, cenv, callback)
+
+  if child.stdin._closed ~= true then
+    child.stdin:close()
+  end
 end
+
 
 function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
   local ffi = require('ffi')
@@ -215,6 +484,31 @@ function CheckResult:serialize()
   return result
 end
 
+function CheckResult:serializeAsPluginOutput()
+  local result = {}
+  local k,v,j,metric
+
+  table.insert(result, 'state '.. self:getState())
+  table.insert(result, 'status '.. self:getStatus())
+
+  local m = self:getMetrics()
+
+  for k,v in pairs(m) do
+    for j,metric in pairs(v) do
+      local mname
+      if (k ~= 'none') then
+        mname = k .. '.' .. j
+      else
+        mname = j
+      end
+
+      table.insert(result, 'metric ' .. mname .. ' ' .. metric.t .. ' ' .. metric.v)
+    end
+  end
+
+  return table.concat(result, '\n') .. '\n'
+end
+
 function Metric:initialize(name, dimension, type, value)
   self.name = name
   self.dimension = dimension or 'none'
@@ -253,6 +547,7 @@ end
 local exports = {}
 exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES
 exports.BaseCheck = BaseCheck
+exports.ChildCheck = ChildCheck
 exports.SubProcCheck = SubProcCheck
 exports.CheckResult = CheckResult
 exports.Metric = Metric

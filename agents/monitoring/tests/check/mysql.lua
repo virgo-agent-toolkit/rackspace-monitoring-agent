@@ -101,7 +101,7 @@ end
 
 exports['test_mysql_row_parsing'] = function(test, asserts)
   setupTest('fake_results')
-  local check = MySQLCheck:new({id='foo', period=30})
+  local check = MySQLCheck:new({id='foo', period=30, details={username='fooo'}})
   asserts.is_nil(check._lastResult)
   check:run(function(results)
     asserts.not_nil(results)

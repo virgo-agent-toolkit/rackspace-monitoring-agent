@@ -23,6 +23,7 @@ local argv = require("options")
   .describe("i", "use insecure tls cert")
   .describe("i", "insecure")
   .describe("e", "entry module")
+  .describe("x", "check to run")
   .describe("s", "state directory path")
   .describe("c", "config file path")
   .describe("p", "pid file path")
@@ -33,7 +34,7 @@ local argv = require("options")
   .alias({['n'] = 'username'})
   .describe("k", "apikey")
   .alias({['k'] = 'apikey'})
-  .argv("idhe:p:c:s:n:k:u")
+  .argv("idhe:x:p:c:s:n:k:u")
 
 function Entry.run()
   local mod = argv.args.e and argv.args.e or 'default'
@@ -52,6 +53,7 @@ function Entry.run()
 
   if err == false then
     logging.error(msg)
+    process.exit(1)
   end
 end
 
