@@ -267,11 +267,11 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local pluginTimeout = timer.setTimeout(self._timeout, function()
     local timeoutSeconds = (self._timeout / 1000)
 
-    self._log(logging.DEBUG, fmt('Plugin didn\'t finish in %s seconds, killing it...', timeoutSeconds))
+    self._log(logging.DEBUG, fmt("Plugin didn't finish in %s seconds, killing it...", timeoutSeconds))
     child:kill(9)
     killed = true
 
-    checkResult:setError(fmt('Plugin didn\'t finish in %s seconds', timeoutSeconds))
+    checkResult:setError(fmt("Plugin didn't finish in %s seconds", timeoutSeconds))
     self._lastResult = checkResult
     callback(checkResult)
   end)
