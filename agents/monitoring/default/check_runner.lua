@@ -68,8 +68,16 @@ function CheckRunner:run(callback)
   end)
 end
 
-function CheckRunner:reportError(callback)
-  p('SUCCESS', self._cr)
+function CheckRunner:reportError(err, callback)
+  local out = ''
+  if self._cr and self._cr:getState() ~= nil then
+    -- Hrm... we have an error, but check already failed, fall through with the 'upper' error?
+    out = self._cr:serializeAsPluginOutput()
+  else
+    out = out + 'state unavailable\n'
+    out = out + 'status err ' .. tostring(err) .. '\n'
+  end
+  process.stdout:write(out)
   callback()
 end
 
