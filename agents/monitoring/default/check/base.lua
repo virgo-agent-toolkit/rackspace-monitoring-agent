@@ -220,10 +220,10 @@ function ChildCheck:_handleLine(checkResult, line)
     end
 
     if not internalMetricType then
-        msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
-        self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
-        self:_setError(checkResult, msg)
-        return
+      msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
+      self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
+      self:_setError(checkResult, msg)
+      return
     end
 
     if metricType ~= 'string' and partsCount ~= 3 then
