@@ -180,7 +180,7 @@ function ChildCheck:_handleLine(checkResult, line)
       checkResult:setUnavailable()
     end
   elseif metricEndIndex then
-    value = line:sub(metricEndIndex + 1)
+    value = line:sub(metricEndIndex + 2)
     splitString = split(value, '[^%s]+')
     partsCount = #splitString
 
@@ -502,7 +502,7 @@ function CheckResult:serializeAsPluginOutput()
         mname = j
       end
 
-      table.insert(result, 'metric' .. mname .. ' ' .. metric.t .. ' ' .. metric.v)
+      table.insert(result, 'metric ' .. mname .. ' ' .. metric.t .. ' ' .. metric.v)
     end
   end
 
