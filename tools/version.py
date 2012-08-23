@@ -16,6 +16,7 @@ parser.add_option("-s", "--seperator", dest="seperator", default="-",
                           help="version seperator", metavar="SEP")
 (options, args) = parser.parse_args()
 
+
 # git describe return "0.1-143-ga554734"
 # git_describe() returns {'release': '143', 'tag': '0.1', 'hash': 'ga554734'}
 def git_describe():
@@ -40,6 +41,7 @@ def git_describe():
 
     return version
 
+
 # If there is no release then it is zero
 def zero_release(version):
     if len(version) == 1:
@@ -47,6 +49,7 @@ def zero_release(version):
         return version
 
     return version
+
 
 def git_describe_fields(version):
     fields = ["tag", "release", "hash", "major", "minor", "patch"]

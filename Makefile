@@ -34,9 +34,13 @@ distclean:
 VERSION=$(shell git describe --tags --always)
 TARNAME=virgo-$(VERSION)
 
+pep8:
+	python tools/pep8.py --exclude=deps,gyp,contrib,pep8.py --ignore=E126,E501,E128,E127 .
+
 test: tests
 tests: all
 	python tools/build.py test
+	$(MAKE) pep8
 
 crash: all
 	python tools/build.py crash
