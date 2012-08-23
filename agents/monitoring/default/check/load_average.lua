@@ -4,7 +4,7 @@ local CheckResult = require('./base').CheckResult
 local LoadAverageCheck = BaseCheck:extend()
 
 function LoadAverageCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.load_averge', params)
+  BaseCheck.initialize(self, 'agent.load_average', params)
 end
 
 function LoadAverageCheck:run(callback)
