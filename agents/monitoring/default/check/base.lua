@@ -510,19 +510,9 @@ function CheckResult:serializeAsPluginOutput()
 end
 
 function Metric:initialize(name, dimension, type, value)
-  local pattern = '[^0-9a-zA-Z_]'
-
   self.name = name
   self.dimension = dimension or 'none'
   self.value = tostring(value)
-
-  if self.name then
-    self.name = self.name:gsub(pattern, '_')
-  end
-
-  if self.dimension then
-    self.dimension = self.dimension:gsub(pattern, '_')
-  end
 
   if type then
     if not tableContains(function(v) return type == v end, VALID_METRIC_TYPES) then
