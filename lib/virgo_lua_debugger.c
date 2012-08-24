@@ -55,16 +55,18 @@
 
 #include "lua.h"
 #include "lauxlib.h"
+#include "virgo__lua.h"
 #include <stdlib.h>
 #include <string.h>
 
-/* TODO: real logging subsystem */
+char scratchbuf[64 * 1024];
+
+/*
+
 #define logErr(format, ...)  do { \
     fprintf (stderr, format , __VA_ARGS__); \
     fputs("\n", stderr); \
   } while(0);
-
-char scratchbuf[64 * 1024];
 
 static int retvalString(lua_State *L, const char *str)
 {
@@ -74,7 +76,7 @@ static int retvalString(lua_State *L, const char *str)
     lua_pushnil(L);
   return 1;
 }
-
+*/
 static int snprintfcat(char **ptr, size_t *len, const char *fmt, ...)
 {
   int bw = 0;
@@ -87,18 +89,16 @@ static int snprintfcat(char **ptr, size_t *len, const char *fmt, ...)
   return bw;
 }
 
-#ifndef logDebug
-#define logDebug logErr
-#endif
-
 int
 virgo__lua_debug_stackwalk(lua_State *L)
 {
+
+  virgo_t* v = virgo__lua_context(L);
   const char *errstr = lua_tostring(L, 1);
   lua_Debug ldbg;
   int i = 0;
   
-  logDebug("Lua stack backtrace: %s", errstr);
+  logDbg(v, "Lua stack backtrace: %s", errstr);
 
   /* start at 1 to skip this function. */
   for (i = 1; lua_getstack(L, i, &ldbg); i++)
@@ -114,7 +114,7 @@ virgo__lua_debug_stackwalk(lua_State *L)
     if (!lua_getinfo(L, "nSl", &ldbg))
     {
       snprintfcat(&ptr, &len, "???\n");
-      logDebug("%s", (const char *) scratchbuf);
+      logDbg(v, "%s", (const char *) scratchbuf);
       continue;
     }
     
@@ -152,13 +152,12 @@ virgo__lua_debug_stackwalk(lua_State *L)
         snprintfcat(&ptr, &len, ":%d", ldbg.currentline);
       snprintfcat(&ptr, &len, " %s()", ldbg.name);
     }
-    logDebug("%s", (const char *) scratchbuf);
+    logDbg(v, "%s", (const char *) scratchbuf);
   }
   
   return 0;
 }
 
-#if DEBUGGER_FIXED_FOR_VIRGO
 /* Start new lua debugger hackers by pquerna */
 
 typedef struct breakpoint_t breakpoint_t;
@@ -265,11 +264,12 @@ debugger_trace (lua_State *L, lua_Debug *ar)
 static int
 luahook_debugger(lua_State *L)
 {
+  virgo_t* v = virgo__lua_context(L);
 #if DISABLE_LUA_PARSER
-  logError("Lua debugger is disabled in this build (no parser).");
+  logError(v, "Lua debugger is disabled in this build (no parser).");
 #else
   int origtop;
-  const virgo_log_level_e origloglevel = virgo_log_level_get();
+  const virgo_log_level_e origloglevel = virgo_log_level_get(v);
   
   lua_pushcfunction(L, luahook_stackwalk);
   origtop = lua_gettop(L);
@@ -344,7 +344,7 @@ luahook_debugger(lua_State *L)
     else if (strcmp(buf, "bt") == 0)
     {
       //MojoLog_logLevel = MOJOSETUP_LOG_EVERYTHING;
-      virgo_log_level_set(VIRGO_LOG_EVERYTHING);
+      virgo_log_level_set(v, VIRGO_LOG_EVERYTHING);
       strcpy(buf, "virgo_stackwalk()");
     } // else if
     
@@ -366,12 +366,12 @@ luahook_debugger(lua_State *L)
     } // else
     
     //MojoLog_logLevel = origloglevel;
-    virgo_log_level_set(origloglevel);
+    virgo_log_level_set(v, origloglevel);
   } // while
   
   lua_pop(L, 1);
   printf("exiting debugger...\n");
-#endif
+//#endif
   
   return 0;
 } // luahook_debugger
@@ -383,54 +383,55 @@ virgo__lua_debug_stackdump(lua_State *L, const char *msg)
 {
   int i;
   int top = lua_gettop(L);
+  virgo_t* v = virgo__lua_context(L);
 
-  logErr("Lua Stack Dump: %s starting at %d", msg, top);
+  logErr(v, "Lua Stack Dump: %s starting at %d", msg, top);
 
   for (i = 1; i <= top; i++) {
     int t = lua_type(L, i);
     switch (t) {
       case LUA_TSTRING:{
-        logErr("%d:  '%s'", i, lua_tostring(L, i));
+        logErr(v, "%d:  '%s'", i, lua_tostring(L, i));
         break;
       }
       case LUA_TUSERDATA:{
-        logErr("%d:  <userdata %p>", i, lua_topointer(L, i));
+        logErr(v, "%d:  <userdata %p>", i, lua_topointer(L, i));
         break;
       }
       case LUA_TLIGHTUSERDATA:{
-        logErr("%d:  <lightuserdata %p>", i, lua_topointer(L, i));
+        logErr(v, "%d:  <lightuserdata %p>", i, lua_topointer(L, i));
         break;
       }
       case LUA_TNIL:{
-        logErr("%d:  NIL", i);
+        logErr(v, "%d:  NIL", i);
         break;
       }
       case LUA_TNONE:{
-        logErr("%d:  None", i);
+        logErr(v, "%d:  None", i);
         break;
       }
       case LUA_TBOOLEAN:{
-        logErr("%d:  %s", i, lua_toboolean(L, i) ? "true" : "false");
+        logErr(v, "%d:  %s", i, lua_toboolean(L, i) ? "true" : "false");
         break;
       }
       case LUA_TNUMBER:{
-        logErr("%d:  %g", i, lua_tonumber(L, i));
+        logErr(v, "%d:  %g", i, lua_tonumber(L, i));
         break;
       }
       case LUA_TTABLE:{
-        logErr("%d:  <table %p>", i, lua_topointer(L, i));
+        logErr(v, "%d:  <table %p>", i, lua_topointer(L, i));
         break;
       }
       case LUA_TTHREAD:{
-        logErr("%d:  <thread %p>", i, lua_topointer(L, i));
+        logErr(v, "%d:  <thread %p>", i, lua_topointer(L, i));
         break;
       }
       case LUA_TFUNCTION:{
-        logErr("%d:  <function %p>", i, lua_topointer(L, i));
+        logErr(v, "%d:  <function %p>", i, lua_topointer(L, i));
         break;
       }
       default:{
-        logErr("%d:  unknown: [%s]", i, lua_typename(L, i));
+        logErr(v, "%d:  unknown: [%s]", i, lua_typename(L, i));
         break;
       }
     }
@@ -455,9 +456,7 @@ int
 virgo__lua_debugger_init(lua_State *L)
 {
   lua_register(L, "virgo_stackdump", luahook_stackdump);
-#if DEBUGGER_FIXED_FOR_VIRGO
   lua_register(L, "virgo_debugger", luahook_debugger);
-#endif
   lua_register(L, "virgo_stackwalk", luahook_stackwalk);
   return 0;
 }
