@@ -286,7 +286,7 @@ luahook_debugger(lua_State *L)
     {
       printf("\n\n  fgets() on stdin failed: ");
       break;
-    } // if
+    }
     
     len = (int) (strlen(buf) - 1);
     while ( (len >= 0) && ((buf[len] == '\n') || (buf[len] == '\r')) )
@@ -343,38 +343,38 @@ luahook_debugger(lua_State *L)
     }
     else if (strcmp(buf, "bt") == 0)
     {
-      //MojoLog_logLevel = MOJOSETUP_LOG_EVERYTHING;
+      /*MojoLog_logLevel = MOJOSETUP_LOG_EVERYTHING;*/
       virgo_log_level_set(v, VIRGO_LOG_EVERYTHING);
       strcpy(buf, "virgo_stackwalk()");
-    } // else if
+    }
     
     if ( (luaL_loadstring(L, buf) != 0) ||
         (lua_pcall(L, 0, LUA_MULTRET, -2) != 0) )
     {
       printf("%s\n", lua_tostring(L, -1));
       lua_pop(L, 1);
-    } // if
+    }
     else
     {
       printf("Returned %d values.\n", lua_gettop(L) - origtop);
       while (lua_gettop(L) != origtop)
       {
-        // !!! FIXME: dump details of values to stdout here.
+        /*!!! FIXME: dump details of values to stdout here.*/
         lua_pop(L, 1);
-      } // while
+      }
       printf("\n");
-    } // else
+    }
     
-    //MojoLog_logLevel = origloglevel;
+    /*MojoLog_logLevel = origloglevel;*/
     virgo_log_level_set(v, origloglevel);
-  } // while
+  }
   
   lua_pop(L, 1);
   printf("exiting debugger...\n");
-//#endif
+/*#endif*/
   
   return 0;
-} // luahook_debugger
+}
 
 #endif
 
