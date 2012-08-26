@@ -25,6 +25,9 @@ set_option(opts, "destroy_connection_base", 60000)
 set_option(opts, "listen_ip", '127.0.0.1')
 set_option(opts, "perform_client_disconnect", 'true')
 
+set_option(opts, "rate_limit", 3000)
+set_option(opts, "rate_limit_reset", 86400) -- Reset limit in 24 hours
+
 local keyPem = [[
 -----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQDx3wdzpq2rvwm3Ucun1qAD/ClB+wW+RhR1nVix286QvaNqePAd
@@ -72,6 +75,7 @@ local options = {
 }
 
 local respond = function(log, client, payload)
+  local destroy = false
 
   -- skip responses to requests
   if payload.method == nil then
@@ -82,6 +86,12 @@ local respond = function(log, client, payload)
   local response = JSON.parse(fixtures[response_method])
   local response_out = nil
 
+  -- Handle rate limit logic
+  client.rate_limit = client.rate_limit - 1
+  if client.rate_limit <= 0 then
+    response = JSON.parse(fixtures['rate-limiting']['rate-limit-error'])
+    destroy = true
+  end
 
   response.target = payload.source
   response.source = payload.target
@@ -93,6 +103,11 @@ local respond = function(log, client, payload)
   response_out:gsub("\n", " ")
 
   client:write(response_out .. '\n')
+
+  if destroy == true then
+    client:destroy()
+  end
+
 end
 
 local send_schedule_changed = function(log, client)
@@ -109,6 +124,7 @@ local function start_fixture_server(options, port)
   end
 
   local server = tls.createServer(options, function (client)
+    client.rate_limit = opts.rate_limit
     client:pipe(lineEmitter)
     lineEmitter:on('data', function(line)
       local payload = JSON.parse(line)
@@ -117,9 +133,15 @@ local function start_fixture_server(options, port)
       respond(log, client, payload)
     end)
 
+    -- Reset rate limit counter
+    timer.setTimeout(opts.rate_limit_reset, function()
+      client.rate_limit = opts.rate_limit
+    end)
+
     timer.setTimeout(opts.send_schedule_changed_initial, function()
       send_schedule_changed(log, client)
     end)
+
     timer.setInterval(opts.send_schedule_changed_interval, function()
       send_schedule_changed(log, client)
     end)

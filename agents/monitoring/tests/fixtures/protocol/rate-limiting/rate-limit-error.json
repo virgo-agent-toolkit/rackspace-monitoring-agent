@@ -1,0 +1,11 @@
+{
+  "v": "1",
+  "id": 4,
+  "source": "endpoint",
+  "target": "agentA",
+  "error": {
+    "type": "rateLimitReached",
+    "code": 400,
+    "message": "Rate limit has been reached (%s requests in 24 hours), please try again later."
+  }
+}
