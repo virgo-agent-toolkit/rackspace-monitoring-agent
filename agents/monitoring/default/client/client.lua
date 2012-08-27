@@ -108,6 +108,12 @@ function AgentClient:connect()
     -- setup protocol
     self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, cleartext)
     self.protocol:on('error', function(err)
+      -- set self.rateLimitReached so reconnect logic stops
+      -- if close event is emitted before this message event
+      if err['type'] == 'rateLimitReached' then
+        self.rateLimitReached = true
+      end
+
       self:emit('error', err)
     end)
 
