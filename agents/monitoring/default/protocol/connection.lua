@@ -245,6 +245,10 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
         elseif resp_err then
           err = errors.ProtocolError:new(resp_err)
         end
+
+        if err ~= nil then
+          self:emit('error', err)
+        end
       end
 
       callback(err, resp)
