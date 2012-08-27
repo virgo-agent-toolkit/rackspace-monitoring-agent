@@ -123,7 +123,21 @@ function AgentProtocolConnection:request(name, ...)
 end
 
 function AgentProtocolConnection:respond(name, ...)
-  return self._responses[name](self, unpack({...}))
+  local args = {...}
+  local callback = args[#args]
+  local method = self._responses[name]
+
+  if type(callback) ~= 'function' then
+    error('last argument to respond() must be a callback')
+  end
+
+  if method == nil then
+    local err = errors.InvalidMethodError:new(name)
+    callback(err)
+    return
+  else
+    return method(self, unpack({...}))
+  end
 end
 
 function AgentProtocolConnection:_popLine()
@@ -288,20 +302,6 @@ function AgentProtocolConnection:getManifest(callback)
       callback(nil, response.result)
     end
   end)
-end
-
---[[
-Process an async message
-
-msg - The Incoming Message
-]]--
-function AgentProtocolConnection:execute(msg)
-  if msg.method == 'system.info' then
-    self:respond('system.info', msg)
-  else
-    local err = Error:new(fmt('invalid method [method=%s]', msg.method))
-    self:emit('error', err)
-  end
 end
 
 return AgentProtocolConnection

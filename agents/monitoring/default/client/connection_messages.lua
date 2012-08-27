@@ -65,23 +65,28 @@ function ConnectionMessages:fetchManifest(client)
 end
 
 function ConnectionMessages:onMessage(client, msg)
-  client:log(logging.DEBUG, '(onMessage)')
-  if msg.method == 'check_schedule.changed' then
+  client:log(logging.DEBUG, fmt('received %s', msg.method or 'UNDEFINED'))
+
+  local messageCallbacks = {}
+  messageCallbacks['check_schedule.changed'] = function(err)
+    if (err) then
+      errorCallback(err)
+      return
+    end
     self._lastFetchTime = 0
-    client:log(logging.DEBUG, 'received schedule change')
-    client.protocol:respond(msg.method, msg, function ()
-      client:log(logging.DEBUG, 'fetching manifest')
-      self:fetchManifest(client)
-    end)
-  elseif msg.method == 'host_info.get' then
-    client:log(logging.DEBUG, 'received host info request ' .. msg.params.type or 'UNDEFINED')
-    client.protocol:respond(msg.method, msg, function()
-    end)
-  elseif msg.method == 'check.test' then
-    client:log(logging.DEBUG, 'received check test')
-    client.protocol:respond(msg.method, msg, function()
-    end)
+    client:log(logging.DEBUG, 'fetching manifest')
+    self:fetchManifest(client)
   end
+
+  function errorCallback(err)
+    if err then
+      client:log(logging.INFO, fmt('error handling %s %s', msg.method, err))
+      self:emit('error', err)
+    end
+  end
+
+  local callback = messageCallbacks[msg.method] or errorCallback
+  client.protocol:respond(msg.method, msg, callback)
 end
 
 local exports = {}

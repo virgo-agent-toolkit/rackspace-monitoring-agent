@@ -110,10 +110,9 @@ function AgentClient:connect()
     self.protocol:on('error', function(err)
       self:emit('error', err)
     end)
-    -- response to messages
+
     self.protocol:on('message', function(msg)
       self:emit('message', msg, self)
-      self.protocol:execute(msg)
     end)
 
     -- begin handshake
