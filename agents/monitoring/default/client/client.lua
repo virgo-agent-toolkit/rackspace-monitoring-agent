@@ -152,7 +152,7 @@ end
 
 function AgentClient:startHeartbeatInterval()
   function startInterval(this)
-    local timeout = misc.calcJitter(self._heartbeat_interval, consts.HEARTBEAT_INTERVAL_JITTER)
+    local timeout = misc.calcJitter(this._heartbeat_interval, consts.HEARTBEAT_INTERVAL_JITTER)
 
     this._log(logging.DEBUG, fmt('Starting heartbeat interval, interval=%dms', this._heartbeat_interval))
 
@@ -165,7 +165,7 @@ function AgentClient:startHeartbeatInterval()
       this._sent_heartbeat_count = this._sent_heartbeat_count + 1
       this.protocol:request('heartbeat.post', send_timestamp, function(err, msg)
         if err then
-          p(err)
+          this:emit('error', err)
           this._log(logging.DEBUG, 'Got an error while sending heartbeat: ' .. tostring(err))
           return
         end
