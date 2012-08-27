@@ -134,8 +134,31 @@ function ConnectionStream:restart(client, options, callback)
     self._attachTimeSyncEvent(self:getClient())
   end
 
+  -- The error we hit was rateLimit related.
+  -- Shut down the agent.
+  if client.rateLimitReached then
+    client:log(logging.ERROR, fmt('Rate limit reached on connection to %s. ' ..
+        'Shutting down this agent', client:getDatacenter()))
+
+    self:shutdown('Shutting down. The rate limit was exceeded for the ' ..
+     'agent API endpoint. Contact support if you need an increased rate limit.')
+     return
+  end
+
   client:destroy()
   self:reconnect(options, callback)
+end
+
+function ConnectionStream:shutdown(msg)
+  for k, v in pairs(self._clients) do
+    v:destroy()
+  end
+
+  -- Sleep to keep from busy restarting on upstart/systemd/etc
+  timer.setTimeout(consts.RATE_LIMIT_SLEEP, function()
+    logging.error(msg)
+    process.exit(consts.RATE_LIMIT_RETURN_CODE)
+  end)
 end
 
 function ConnectionStream:getClient()
