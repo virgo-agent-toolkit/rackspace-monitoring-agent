@@ -2,6 +2,7 @@ local net = require('net')
 local JSON = require('json')
 local fixtures = require('./')
 local LineEmitter = require('line-emitter').LineEmitter
+local table = require('table')
 local tls = require('tls')
 local timer = require('timer')
 local string = require('string')
@@ -108,6 +109,7 @@ local respond = function(log, client, payload)
     client:destroy()
   end
 
+  return destroy
 end
 
 local send_schedule_changed = function(log, client)
@@ -118,19 +120,35 @@ local send_schedule_changed = function(log, client)
   client:write(request .. '\n')
 end
 
+local function clear_timers(timer_ids)
+  for k, v in pairs(timer_ids) do
+    if v._closed ~= true then
+      timer.clearTimer(v)
+    end
+  end
+end
+
 local function start_fixture_server(options, port)
   local log = function(...)
     print(port .. ": " .. ...)
   end
 
   local server = tls.createServer(options, function (client)
+    local destroyed = false
+    local timers = {}
+
     client.rate_limit = opts.rate_limit
     client:pipe(lineEmitter)
     lineEmitter:on('data', function(line)
       local payload = JSON.parse(line)
       log("Got payload:")
       p(payload)
-      respond(log, client, payload)
+      destroyed = respond(log, client, payload)
+
+      if destroyed == true then
+        clear_timers(timers)
+      end
+
     end)
 
     -- Reset rate limit counter
@@ -142,9 +160,11 @@ local function start_fixture_server(options, port)
       send_schedule_changed(log, client)
     end)
 
-    timer.setInterval(opts.send_schedule_changed_interval, function()
-      send_schedule_changed(log, client)
-    end)
+    table.insert(timers,
+      timer.setInterval(opts.send_schedule_changed_interval, function()
+        send_schedule_changed(log, client)
+      end)
+    )
 
     -- Disconnect the agent after some random number of seconds
     -- to exercise reconnect logic
