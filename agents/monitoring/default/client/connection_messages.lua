@@ -44,7 +44,7 @@ function ConnectionMessages:fetchManifest(client)
     if client then
       client:log(logging.DEBUG, 'Retrieving check manifest...')
 
-      client.protocol:getManifest(function(err, manifest)
+      client.protocol:request('check_schedule.get', function(err, manifest)
         if err then
           -- TODO Abort connection?
           client:log(logging.ERROR, 'Error while retrieving manifest: ' .. err.message)

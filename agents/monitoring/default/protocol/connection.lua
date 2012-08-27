@@ -294,14 +294,4 @@ function AgentProtocolConnection:startHandshake(callback)
   end)
 end
 
-function AgentProtocolConnection:getManifest(callback)
-  self:request('check_schedule.get', function(err, response)
-    if err then
-      callback(err)
-    else
-      callback(nil, response.result)
-    end
-  end)
-end
-
 return AgentProtocolConnection
