@@ -23,6 +23,7 @@ local JSON = require('json')
 local fmt = require('string').format
 local logging = require('logging')
 local msg = require ('./messages')
+local errors = require ('./errors')
 local table = require('table')
 local utils = require('utils')
 local hostInfo = require('../host_info')
@@ -225,12 +226,10 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
 
         -- response version must match request version
         if resp.v ~= msg.v then
-          err = Error:new(fmt('Version mismatch in response: version=%s',
-            resp.v or 'unknown'))
+          err = errors.VersionError:new(msg, resp)
         -- emit error if error field is set
         elseif resp_err then
-          err = Error:new(fmt('Error returned: code=%s, message=%s',
-            resp_err.code or "unknown", resp_err.message or "no message"))
+          err = errors.ProtocolError:new(resp_err)
         end
       end
 
