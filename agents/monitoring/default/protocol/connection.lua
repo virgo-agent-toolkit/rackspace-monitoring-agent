@@ -136,7 +136,7 @@ function AgentProtocolConnection:respond(name, ...)
     callback(err)
     return
   else
-    return method(self, unpack({...}))
+    return method(self, unpack(args))
   end
 end
 
