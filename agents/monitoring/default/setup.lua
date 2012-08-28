@@ -224,13 +224,18 @@ function Setup:run(callback)
     end
   }, function(err)
     if err then
+      local msg = nil
       if type(err) == 'string' then
-        process.stdout:write(fmt('Error: %s\n', err))
+        msg = err
       elseif err.message then
-        process.stdout:write(fmt('Error: %s\n', err.message))
-      else
-        process.stdout:write(fmt('Error: %s\n', JSON.stringify(err)))
+        msg = err.message
+      elseif err.data then
+        pcall(function() msg = JSON.parse(err.data).message end)
       end
+      if not msg then
+        msg = JSON.stringify(err)
+      end
+      process.stdout:write(fmt('Error: %s\n', msg))
     end
     process.exit(0)
   end)
