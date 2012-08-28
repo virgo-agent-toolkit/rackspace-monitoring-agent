@@ -227,30 +227,30 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
     self:_setCommandTimeoutHandler(key, timeout, callback)
   end
 
-  if callback then
-    self._completions[key] = function(err, resp)
-      local result = nil
+  self._completions[key] = function(err, resp)
+    local result = nil
 
-      if self._timeoutIds[key] ~= nil then
-        timer.clearTimer(self._timeoutIds[key])
+    if self._timeoutIds[key] ~= nil then
+      timer.clearTimer(self._timeoutIds[key])
+    end
+
+    if not err and resp then
+      local resp_err = resp['error']
+
+      -- response version must match request version
+      if resp.v ~= msg.v then
+        err = errors.VersionError:new(msg, resp)
+      -- emit error if error field is set
+      elseif resp_err then
+        err = errors.ProtocolError:new(resp_err)
       end
 
-      if not err and resp then
-        local resp_err = resp['error']
-
-        -- response version must match request version
-        if resp.v ~= msg.v then
-          err = errors.VersionError:new(msg, resp)
-        -- emit error if error field is set
-        elseif resp_err then
-          err = errors.ProtocolError:new(resp_err)
-        end
-
-        if err ~= nil then
-          self:emit('error', err)
-        end
+      if err ~= nil then
+        self:emit('error', err)
       end
+    end
 
+    if callback then
       callback(err, resp)
     end
   end
