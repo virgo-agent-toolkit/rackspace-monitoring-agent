@@ -57,6 +57,7 @@ show_help()
          "  --setup               Initial setup wizard.\n"
          "    --username          Rackspace Cloud username for setup.\n"
          "    --apikey            Rackspace Cloud API Key or Password for setup.\n"
+         "  -d, --debug           Log at debug level\n"
          "  -i, --insecure        Use insecure SSL CA cert (for testing/debugging).\n"
          "  -D, --detach          Detach the process and run the agent in the background.\n"
          "\n"
