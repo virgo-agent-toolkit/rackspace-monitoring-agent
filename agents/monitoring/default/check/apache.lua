@@ -86,21 +86,41 @@ function ApacheCheck:_parseLine(line, checkResult)
   local f = line:sub(0, i-1)
   local v = line:sub(i+1, #line)
 
-  f = f:gsub(" ", "_")
-  f = misc.trim(f)
+  f = misc.trim(f:gsub(" ", "_"))
   v = misc.trim(v)
-  if f == 'Total_Accesses' then
-    checkResult:addMetric(f, nil, 'gauge', v)
-  end
 
-  if f == 'Total_kBytes' or f == 'Uptime' or
-    f == 'BytesPerSec' or f == 'BytesPerReq' or f == 'BusyWorkers' or
-    f == 'IdleWorkers' then
-    checkResult:addMetric(f, nil, 'uint64', v)
-  end
+  local metrics = {
+    ['Total_Accesses'] = {
+      ['type'] = 'gauge'
+    },
+    ['Total_kBytes'] = {
+      ['type'] = 'uint64'
+    },
+    ['Uptime'] = {
+      ['type'] = 'uint64'
+    },
+    ['BytesPerSec'] = {
+      ['type'] = 'uint64'
+    },
+    ['BytesPerReq'] = {
+      ['type'] = 'uint64'
+    },
+    ['BusyWorkers'] = {
+      ['type'] = 'uint64'
+    },
+    ['IdleWorkers'] = {
+      ['type'] = 'uint64'
+    },
+    ['CPULoad'] = {
+      ['type'] = 'double'
+    },
+    ['ReqPerSec'] = {
+      ['type'] = 'double'
+    }
+  }
 
-  if f == 'CPULoad' or f == 'ReqPerSec' then
-    checkResult:addMetric(f, nil, 'double', v)
+  if metrics[f] then
+    checkResult:addMetric(f, nil, metrics[f].type, v)
   end
 
   if f == 'ReqPerSec' then
