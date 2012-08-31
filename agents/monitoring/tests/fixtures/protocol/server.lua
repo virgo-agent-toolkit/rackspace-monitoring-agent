@@ -6,6 +6,9 @@ local tls = require('tls')
 local timer = require('timer')
 local string = require('string')
 local math = require('math')
+local table = require('table')
+local http = require("http")
+local url = require('url')
 
 local lineEmitter = LineEmitter:new()
 local ports = {50041, 50051, 50061}
@@ -20,6 +23,7 @@ set_option(opts, "send_schedule_changed_interval", 60000)
 set_option(opts, "destroy_connection_jitter", 60000)
 set_option(opts, "destroy_connection_base", 60000)
 set_option(opts, "listen_ip", '127.0.0.1')
+set_option(opts, "perform_client_disconnect", 'true')
 
 local keyPem = [[
 -----BEGIN RSA PRIVATE KEY-----
@@ -84,7 +88,6 @@ local respond = function(log, client, payload)
   response.id = payload.id
 
   log("Sending response:")
-  p(response)
 
   response_out = JSON.stringify(response)
   response_out:gsub("\n", " ")
@@ -105,7 +108,7 @@ local function start_fixture_server(options, port)
     print(port .. ": " .. ...)
   end
 
-  tls.createServer(options, function (client)
+  local server = tls.createServer(options, function (client)
     client:pipe(lineEmitter)
     lineEmitter:on('data', function(line)
       local payload = JSON.parse(line)
@@ -123,14 +126,17 @@ local function start_fixture_server(options, port)
 
     -- Disconnect the agent after some random number of seconds
     -- to exercise reconnect logic
-    local disconnect_time = opts.destroy_connection_base + math.floor(math.random() * opts.destroy_connection_jitter)
-    timer.setTimeout(disconnect_time, function()
-      log("Destroying connection after " .. disconnect_time .. "ms connected")
-      client:destroy()
-    end)
+    if opts.perform_client_disconnect == 'true' then
+      local disconnect_time = opts.destroy_connection_base + math.floor(math.random() * opts.destroy_connection_jitter)
+      timer.setTimeout(disconnect_time, function()
+        log("Destroying connection after " .. disconnect_time .. "ms connected")
+        client:destroy()
+      end)
+    end
   end):listen(port, opts.listen_ip)
-end
 
+  return server
+end
 
 -- There is no cleanup code for the server here as the process for exiting is
 -- to just ctrl+c the runner or kill the process.
