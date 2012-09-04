@@ -44,6 +44,9 @@ exports['test_bad_version_hello_gives_err'] = function(test, asserts)
   end
 
   conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+  conn:on('error', function (err)
+    asserts.equal(err.message, 'Version mismatch: message_version=1 response_version=2147483647')
+  end)
 
   -- Ensure error is set
   conn:startHandshake(function(err, msg)
