@@ -49,7 +49,8 @@ local TESTS_TO_RUN = {
   './check',
   './fs',
   './schedule',
-  './virgo'
+  './virgo',
+  './net'
 }
 
 if process.env['TEST_FILES'] then
