@@ -62,7 +62,7 @@ function ConnectionStream:createConnections(addresses, callback)
     end,
     -- connect
     function(callback)
-      async.forEach(addresses, function(address, callback)
+      local iter = function(address, callback)
         local split, client, options
         split = misc.splitAddress(address)
         options = misc.merge({
@@ -71,7 +71,8 @@ function ConnectionStream:createConnections(addresses, callback)
           datacenter = address
         }, self._options)
         self:createConnection(options, callback)
-      end)
+      end
+      async.forEach(addresses, iter, callback)
     end
   }, callback)
 end
@@ -113,8 +114,9 @@ function ConnectionStream:reconnect(options, callback)
   local datacenter = options.datacenter
   local delay = self:_setDelay(datacenter)
 
-  logging.infof('%s:%d -> Retrying connection in %dms', options.host, options.port, delay)
+  logging.infof('%s %s:%d -> Retrying connection in %dms', datacenter, options.host, options.port, delay)
   timer.setTimeout(delay, function()
+    self:emit('reconnect', options)
     self:createConnection(options, callback)
   end)
 end
@@ -203,9 +205,6 @@ function ConnectionStream:createConnection(options, callback)
 
     client:destroy()
     self:reconnect(opts, callback)
-    if err then
-      self:emit('error', err)
-    end
   end)
 
   client:on('timeout', function()
@@ -231,6 +230,7 @@ function ConnectionStream:createConnection(options, callback)
     self:_promoteClient(client)
     self._delays[options.datacenter] = 0
     client:startHeartbeatInterval()
+    self:emit('handshake_success')
     self._messages:emit('handshake_success', client, data)
   end)
 
@@ -238,19 +238,15 @@ function ConnectionStream:createConnection(options, callback)
     self._messages:emit('message', client, msg)
   end)
 
-  client:connect(function(err)
-    if err then
-      client:destroy()
-      self:reconnect(opts, callback)
-      callback(err)
-      return
-    end
+  client:connect()
+  client.datacenter = opts.datacenter
+  self._unauthedClients[opts.datacenter] = client
 
-    client.datacenter = datacenter
-    self._unauthedClients[datacenter] = client
-
-    callback();
+  client:on('connect', function()
+    self:emit('connect', client)
   end)
+
+  callback()
 
   return client
 end

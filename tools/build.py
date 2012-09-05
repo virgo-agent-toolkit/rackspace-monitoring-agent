@@ -5,10 +5,26 @@ import subprocess
 import sys
 
 # TODO: release/debug
+BUILDTYPE = 'Debug'
+
+if os.environ.get('BUILDTYPE'):
+  BUILDTYPE = os.environ.get('BUILDTYPE')
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 build_dir = os.path.join(root, 'out')
 
+if sys.platform != "win32":
+  agent = os.path.join(root, 'out', BUILDTYPE, 'monitoring-agent')
+else:
+  agent = os.path.join(root, BUILDTYPE, 'monitoring-agent.exe')
+
+if sys.platform != "win32":
+  luvit = os.path.join(root, 'out', BUILDTYPE, 'luvit')
+else:
+  luvit = os.path.join(root, BUILDTYPE, 'luvit.exe')
+
+os.environ['AGENT_BIN'] = agent
+os.environ['LUVIT_BIN'] = luvit
 
 def extra_env():
     env = {}
@@ -32,9 +48,9 @@ def build():
 
 def pkg():
     if sys.platform.find('freebsd') == 0:
-        cmd = 'gmake -C %s pkg' % root
+        cmd = 'BUILDTYPE=%s gmake -C %s pkg' % (BUILDTYPE, root)
     elif sys.platform != "win32":
-        cmd = 'make -C %s pkg' % root
+        cmd = 'BUILDTYPE=%s make -C %s pkg' % (BUILDTYPE, root)
     else:
         cmd = 'tools\win_pkg.bat'
 
@@ -44,9 +60,9 @@ def pkg():
 
 def pkg_sign():
     if sys.platform.find('freebsd') == 0:
-        cmd = 'gmake -C %s pkg-sign' % root
+        cmd = 'BUILDTYPE=%s gmake -C %s pkg-sign' % (BUILDTYPE, root)
     elif sys.platform != "win32":
-        cmd = 'make -C %s pkg-sign' % root
+        cmd = 'BUILDTYPE=%s make -C %s pkg-sign' % (BUILDTYPE, root)
     else:
         print 'win32 not supported skipping packaging'
         sys.exit(0)
@@ -56,22 +72,17 @@ def pkg_sign():
 
 
 def test_cmd(additional=""):
-    if sys.platform != "win32":
-        agent = os.path.join(root, 'out', 'Debug', 'monitoring-agent')
-    else:
-        agent = os.path.join(root, 'Debug', 'monitoring-agent.exe')
-
     state_config = os.path.join(root, 'contrib')
     monitoring_config = os.path.join(root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
 
-    return '%s -c %s -s %s %s' % (agent, monitoring_config, state_config, additional)
+    return '%s -d -c %s -s %s %s' % (agent, monitoring_config, state_config, additional)
 
 
 def test(stdout=None, entry="tests"):
     if sys.platform != "win32":
-        agent_tests = os.path.join(root, 'out', 'Debug', 'monitoring-test.zip')
+        agent_tests = os.path.join(root, 'out', BUILDTYPE, 'monitoring-test.zip')
     else:
-        agent_tests = os.path.join(root, 'Debug', 'monitoring-test.zip')
+        agent_tests = os.path.join(root, BUILDTYPE, 'monitoring-test.zip')
 
     cmd = test_cmd("--zip %s -e %s" % (agent_tests, entry))
     print cmd

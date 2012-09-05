@@ -103,6 +103,7 @@ function AgentClient:connect()
   self._sock = tls.connect(self._port, self._host, self._tls_options, function(err, cleartext)
     -- Log
     self._log(logging.INFO, 'Connected')
+    self:emit('connect')
 
     -- setup protocol
     self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, cleartext)
@@ -205,7 +206,6 @@ function AgentClient:destroy()
   if self._sock then
     self._log(logging.DEBUG, 'Closing socket')
     self._sock:destroy()
-    self._sock = nil
   end
 end
 
