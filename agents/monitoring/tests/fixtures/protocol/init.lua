@@ -1,6 +1,7 @@
 local path = require('path')
 local fs = require('fs')
 local string = require('string')
+local JSON = require('json')
 
 local fixtures = nil
 
@@ -28,5 +29,10 @@ local base = path.join('agents', 'monitoring', 'tests', 'fixtures', 'protocol')
 
 fixtures = load_fixtures(base)
 fixtures['invalid-version'] = load_fixtures(path.join(base, 'invalid-version'))
+
+fixtures.prepareJson = function(msg)
+  local data = JSON.stringify(msg)
+  return strip_newlines(data)
+end
 
 return fixtures
