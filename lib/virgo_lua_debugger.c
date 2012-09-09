@@ -60,6 +60,7 @@
 #include <string.h>
 
 char scratchbuf[64 * 1024];
+static int luahook_stackwalk(lua_State *L);
 
 /*
 
