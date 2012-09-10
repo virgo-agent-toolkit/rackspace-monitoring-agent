@@ -18,6 +18,7 @@ local os = require('os')
 local timer = require('timer')
 local Emitter = require('core').Emitter
 local Error = require('core').Error
+local errors = require('../errors')
 local JSON = require('json')
 local fmt = require('string').format
 local logging = require('logging')
@@ -43,7 +44,7 @@ local requests = {}
 
 requests['handshake.hello'] = function(self, agentId, token, callback)
   local m = msg.HandshakeHello:new(token, agentId)
-  self:_send(m:serialize(self._msgid), HANDSHAKE_TIMEOUT, 200, callback)
+  self:_send(m:serialize(self._msgid), self.HANDSHAKE_TIMEOUT, 200, callback)
 end
 
 requests['heartbeat.post'] = function(self, timestamp, callback)
@@ -112,6 +113,7 @@ function AgentProtocolConnection:initialize(log, myid, token, conn)
   self._completions = {}
   self._requests = requests
   self._responses = responses
+  self.HANDSHAKE_TIMEOUT = HANDSHAKE_TIMEOUT
   self:setState(STATES.INITIAL)
 end
 
@@ -165,6 +167,8 @@ function AgentProtocolConnection:_processMessage(msg)
     if callback then
       self._completions[key] = nil
       callback(null, msg)
+    else
+      self._log(logging.ERROR, fmt('Ignoring unexpected response object %s', key))
     end
   end
 end
@@ -249,7 +253,9 @@ function AgentProtocolConnection:_setCommandTimeoutHandler(key, timeout, callbac
   local timeoutId
 
   timeoutId = timer.setTimeout(timeout, function()
-    callback(Error:new(fmt('Command timeout, haven\'t received response in %d ms', timeout)))
+    local msg = fmt("Command timeout, haven't received response in %d ms", timeout)
+    local err = errors.ResponseTimeoutError:new(msg)
+    callback(err)
   end)
   self._timeoutIds[key] = timeoutId
 end

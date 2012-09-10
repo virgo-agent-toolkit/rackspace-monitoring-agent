@@ -29,9 +29,17 @@ function AuthTimeoutError:initialize(message)
   self.message = message
 end
 
+--[[ ResponseTimeoutError --]]
+local ResponseTimeoutError = Error:extend()
+function ResponseTimeoutError:initialize(message)
+  Error.initialize(self)
+  self.message = message
+end
+
 --[[ Exports ]]--
 
 local exports = {}
 exports.UserResponseError = UserResponseError
 exports.AuthTimeoutError = AuthTimeoutError
+exports.ResponseTimeoutError = ResponseTimeoutError
 return exports

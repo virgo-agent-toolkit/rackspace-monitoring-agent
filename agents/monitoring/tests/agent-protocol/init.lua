@@ -16,10 +16,12 @@ limitations under the License.
 
 local fs = require('fs')
 local JSON = require('json')
+local errors = require('monitoring/default/errors')
 local Emitter = require('core').Emitter
 
 local AgentProtocolConnection = require('monitoring/default/protocol/connection')
 local loggingUtil = require ('monitoring/default/util/logging')
+local instanceof = require('core').instanceof
 
 local fixtures = require('../fixtures/protocol')
 
@@ -50,6 +52,32 @@ exports['test_bad_version_hello_gives_err'] = function(test, asserts)
     test.done()
   end)
 end
+
+exports['test_unexpected_response_and_hello_timeout'] = function(test, asserts)
+  local sock = Emitter:new()
+  local data = fixtures['invalid-version']['handshake.hello.response']
+  local msg = JSON.parse(data)
+
+  msg.id = 4
+
+  data = fixtures.prepareJson(msg)
+  sock.write = function()
+    sock:emit('data', data .. "\n")
+  end
+
+  local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+  conn.HANDSHAKE_TIMEOUT = 30
+  conn:on('error', function (err)
+    p(err)
+  end)
+
+  -- Ensure error is set
+  conn:startHandshake(function(err, msg)
+    asserts.ok(instanceof(err, errors.ResponseTimeoutError))
+    test.done()
+  end)
+end
+
 
 exports['test_fragmented_message'] = function(test, asserts)
   local sock = Emitter:new(), conn
