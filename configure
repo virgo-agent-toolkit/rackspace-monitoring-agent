@@ -25,6 +25,11 @@ parser.add_option("--prefix",
     dest="prefix",
     help="Select the install prefix (defaults to /usr/local)")
 
+parser.add_option("--ninja",
+    action="store_true",
+    dest="ninja_build",
+    help="Generate files for the ninja build system")
+
 (options, args) = parser.parse_args()
 
 
@@ -142,7 +147,10 @@ if sys.platform == "win32":
         'deps/luvit/deps/openssl/openssl-configs/realized/openssl')
     rv = os.system("python tools\gyp_virgo -f msvs -G msvs_version=2010")
 else:
-    rv = os.system("tools/gyp_virgo")
+    cmd = "tools/gyp_virgo"
+    if options.ninja_build:
+        cmd += " -f ninja"
+    rv = os.system(cmd)
 
 if rv != 0:
     sys.exit(rv)
