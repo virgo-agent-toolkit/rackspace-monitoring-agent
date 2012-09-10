@@ -32,21 +32,17 @@ else
   }
 end
 
-if os.type() == 'win32' then
-  exports.DEFAULT_PERSISTENT_VARIABLE_PATH = './'
-else
-  exports.DEFAULT_PERSISTENT_VARIABLE_PATH = '/var/lib/rackspace-monitoring-agent'
-end
+local PERSISTENT_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
+local LIBRARY_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_LIBRARY_DIR)
+local RUNTIME_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_RUNTIME_DIR)
 
-if os.type() == 'win32' then
-  exports.DEFAULT_CONFIG_PATH = path.join('.', virgo.default_config_filename)
-else
-  exports.DEFAULT_CONFIG_PATH = virgo.default_config_path
-end
+exports.DEFAULT_PERSISTENT_VARIABLE_PATH = path.join(PERSISTENT_DIR, 'variables')
+exports.DEFAULT_CONFIG_PATH = path.join(PERSISTENT_DIR, 'config')
+exports.DEFAULT_STATE_PATH = path.join(RUNTIME_DIR, 'states')
 
 -- Custom plugins related settings
 
-exports.DEFAULT_CUSTOM_PLUGINS_PATH = '/usr/lib/rackspace-monitoring-agent/plugins'
+exports.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(LIBRARY_DIR, 'plugins')
 exports.DEFAULT_PLUGIN_TIMEOUT = 30 * 1000
 exports.PLUGIN_TYPE_MAP = {string = 'string', int = 'int64', float = 'double', gauge = 'gauge'}
 

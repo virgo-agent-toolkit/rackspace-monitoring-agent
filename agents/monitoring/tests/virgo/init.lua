@@ -14,7 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local Error = require('core').Error
+local async = require('async')
 local vtime = require('virgo-time')
+local fs = require('fs')
 
 local times = {
   --   T1          T2          T3           T4     Delta
@@ -31,6 +34,40 @@ exports['test_vtime'] = function(test, asserts)
     asserts.ok(vtime.getDelta() == v[5])
   end
   test.done()
+end
+
+exports['test_paths'] = function(test, asserts)
+  local paths = {
+    virgo_paths.get(virgo_paths.VIRGO_PATH_CONFIG_DIR),
+    virgo_paths.get(virgo_paths.VIRGO_PATH_RUNTIME_DIR),
+    virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR),
+    virgo_paths.get(virgo_paths.VIRGO_PATH_TMP_DIR),
+    virgo_paths.get(virgo_paths.VIRGO_PATH_LIBRARY_DIR),
+    virgo_paths.get(virgo_paths.VIRGO_PATH_CONFIG_DIR)
+  }
+
+  function iter(path, callback)
+    fs.stat(path, function(err, stats)
+      if err then
+        if err.code == 'ENOENT' then
+          callback()
+          return
+        end
+        callback(err)
+        return
+      end
+      if stats.is_directory == true then
+        callback()
+      else
+        callback(Error:new('Not a directory ' .. path))
+      end
+    end)
+  end
+
+  async.forEach(paths, iter, function(err)
+    asserts.ok(err == nil)
+    test.done()
+  end)
 end
 
 return exports

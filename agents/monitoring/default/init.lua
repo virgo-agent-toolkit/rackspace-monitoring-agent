@@ -237,7 +237,7 @@ end
 
 function MonitoringAgent:initialize(options)
   if not options.stateDirectory then
-    options.stateDirectory = virgo.default_state_directory
+    options.stateDirectory = constants.DEFAULT_STATE_PATH
   end
   logging.debug('Using state directory ' .. options.stateDirectory)
   self._states = States:new(options.stateDirectory)
