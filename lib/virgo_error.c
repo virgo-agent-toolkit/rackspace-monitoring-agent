@@ -108,9 +108,16 @@ virgo_error_createf_impl(virgo_status_t err,
 void
 virgo_error_clear(virgo_error_t *err)
 {
-    if (err) {
-        free((void *) err->msg);
-        free((void *) err->file);
-        free(err);
-    }
+  if (err) {
+    free((void *) err->msg);
+    free((void *) err->file);
+    free(err);
+  }
+}
+
+int
+virgo_error_luaL(lua_State *L, virgo_error_t *err) {
+  lua_pushstring(L, err->msg);
+  virgo_error_clear(err);
+  return lua_error(L);
 }

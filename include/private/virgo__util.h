@@ -39,7 +39,4 @@ virgo_error_t* virgo__service_handler(virgo_t *v);
 
 #endif
 
-const char* virgo__platform_default_state_directory(virgo_t *v);
-const char* virgo__platform_default_config_path(virgo_t *v);
-
 #endif

@@ -20,6 +20,7 @@
 #include "virgo__time.h"
 #include "virgo__lua.h"
 #include "virgo__util.h"
+#include "virgo__paths.h"
 #include "virgo_error.h"
 
 #include "lua.h"
@@ -147,16 +148,13 @@ virgo__lua_init(virgo_t *v)
   virgo__set_virgo_key(L, "os", VIRGO_OS);
   virgo__set_virgo_key(L, "version", VIRGO_VERSION);
   virgo__set_virgo_key(L, "default_name", VIRGO_DEFAULT_NAME);
-  virgo__set_virgo_key(L, "default_config_windows_directory", VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY);
   virgo__set_virgo_key(L, "default_config_filename", VIRGO_DEFAULT_CONFIG_FILENAME);
-  virgo__set_virgo_key(L, "default_config_path", virgo__platform_default_config_path(v));
-  virgo__set_virgo_key(L, "default_state_directory", virgo__platform_default_state_directory(v));
-  virgo__set_virgo_key(L, "default_zip_unix_path", VIRGO_DEFAULT_ZIP_UNIX_PATH);
   virgo__set_virgo_key(L, "loaded_zip_path", v->lua_load_path);
 
   luaL_openlibs(L);
   luaopen_sigar(L);
 
+  virgo__lua_paths(L);
   virgo__lua_vfs_init(L);
   virgo__lua_loader_init(L);
   virgo__lua_debugger_init(L);
