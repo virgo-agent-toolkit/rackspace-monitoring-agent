@@ -1,5 +1,9 @@
 # Dependencies
 
+## breakpad
+
+ * source: http://code.google.com/p/google-breakpad/source/checkout
+ * license: New BSD
 
 ## http_parser - f1d48aa31c932f80a64122a75a87bc909b4073f9
 
