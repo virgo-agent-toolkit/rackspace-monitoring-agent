@@ -20,7 +20,7 @@
 ## openssl - 1.0.0e
 
  * source: http://www.openssl.org/
- * license: messy
+ * license: openssl "apache style" http://www.openssl.org/source/license.html 
 
 ## minizip - 1.1
 
