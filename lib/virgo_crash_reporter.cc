@@ -29,7 +29,7 @@ static bool dumpCallback(const char* dump_path,
                          void* context,
                          bool succeeded)
 {
-  printf("FATAL ERROR: Crash Dump written to: %s/%s-crash-report-%s.dmp\n", VIRGO_DEFAULT_NAME, dump_path, minidump_id);
+  printf("FATAL ERROR: Crash Dump written to: %s/%s-crash-report-%s.dmp\n", dump_path, VIRGO_DEFAULT_NAME, minidump_id);
   return succeeded;
 }
 

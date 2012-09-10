@@ -252,8 +252,8 @@ void ExceptionHandler::UpdateNextID() {
     char minidump_path[PATH_MAX];
     /* TODO: Make configurable */
     snprintf(minidump_path, sizeof(minidump_path), "%s/%s-crash-report-%s.dmp",
-             VIRGO_DEFAULT_NAME,
              dump_path_c_,
+             VIRGO_DEFAULT_NAME,
              guid_str);
 
     next_minidump_path_ = minidump_path;
