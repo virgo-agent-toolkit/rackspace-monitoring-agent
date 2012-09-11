@@ -25,6 +25,9 @@
 #define VIRGO_DEFAULT_NAME \
   "rackspace-monitoring-agent"
 
+#define VIRGO_DEFAULT_BUNDLE_NAME \
+  "monitoring.zip"
+
 #define VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY \
   "Rackspace Agent"
 
@@ -38,8 +41,7 @@
   "/bundle"
 
 #define VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY \
-  "/etc/" \
-  VIRGO_DEFAULT_CONFIG_FILENAME
+  "/etc"
 
 #define VIRGO_DEFAULT_RUNTIME_UNIX_DIRECTORY \
   "/var/run/" \

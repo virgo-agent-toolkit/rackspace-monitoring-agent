@@ -21,6 +21,8 @@
 #include "virgo__lua.h"
 #include "virgo__logging.h"
 #include "virgo__util.h"
+#include "uv.h"
+#include "luv.h"
 #include <stdlib.h>
 #include <assert.h>
 
@@ -141,14 +143,13 @@ virgo_run(virgo_t *v)
     }
   }
 #endif
+  err = virgo__lua_init(v);
 
-  err = virgo__log_rotate(v);
-
-  if (err) {
+  if (err ) {
     return err;
   }
 
-  err = virgo__lua_init(v);
+  err = virgo__log_rotate(v);
 
   if (err) {
     return err;
@@ -174,6 +175,10 @@ virgo_run(virgo_t *v)
   return VIRGO_SUCCESS;
 }
 
+uv_loop_t* virgo_get_loop(virgo_t *v) {
+  return luv_get_loop(v->L);
+}
+
 void
 virgo_destroy(virgo_t *v)
 {
@@ -195,8 +200,16 @@ virgo_destroy(virgo_t *v)
   if (v->log_fp && v->log_fp != stderr) {
     fclose(v->log_fp);
   }
+  if (v->lua_bundle_path) {
+    free((void*)v->lua_bundle_path);
+  }
 
   free((void*)v);
 
   virgo__global_terminate();
+}
+
+const char*
+virgo_get_load_path(virgo_t *ctxt) {
+  return ctxt->lua_load_path;
 }
