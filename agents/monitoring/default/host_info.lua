@@ -321,6 +321,20 @@ function SystemInfo:initialize()
   table.insert(self._params, obj)
 end
 
+--[[ Who is logged In ]]--
+local WhoInfo = HostInfo:extend()
+function WhoInfo:initialize()
+  HostInfo.initialize(self)
+  local who = sigarCtx:who()
+  local obj = {}
+
+  for i=1, #who do
+    table.insert(obj, who[i])
+  end
+
+  table.insert(self._params, obj)
+end
+
 
 
 --[[ Factory ]]--
@@ -339,6 +353,8 @@ function create(infoType)
     return FilesystemInfo:new()
   elseif infoType == 'SYSTEM' then
     return SystemInfo:new()
+  elseif infoType == 'WHO' then
+    return WhoInfo:new()
   end
 
   return NilInfo:new()
@@ -347,7 +363,7 @@ end
 -- Dump all the info objects to a file
 function debugInfo(fileName, callback)
   local data = ''
-  for k, v in pairs({'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS', 'FILESYSTEM'}) do
+  for k, v in pairs({'SYSTEM', 'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS', 'FILESYSTEM', 'WHO'}) do
     local info = create(v)
     local obj = info:serialize().metrics
     data = data .. '-- ' .. v .. '.' .. os.type() .. ' --\n\n'
