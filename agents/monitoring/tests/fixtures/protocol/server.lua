@@ -11,7 +11,6 @@ local table = require('table')
 local http = require("http")
 local url = require('url')
 
-local lineEmitter = LineEmitter:new()
 local ports = {50041, 50051, 50061}
 
 local opts = {}
@@ -134,6 +133,7 @@ local function start_fixture_server(options, port)
   end
 
   local server = tls.createServer(options, function (client)
+    local lineEmitter = LineEmitter:new()
     local destroyed = false
     local timers = {}
 
