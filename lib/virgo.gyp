@@ -38,6 +38,10 @@
         '../deps/sigar.gyp:lua_sigar',
       ],
 
+      'export_dependent_settings': [
+        '../deps/luvit/luvit.gyp:libluvit',
+      ],
+
       'defines': [
         'VIRGO_OS="<(OS)"',
         'VIRGO_VERSION="<!(git --git-dir ../.git rev-parse HEAD)"',
