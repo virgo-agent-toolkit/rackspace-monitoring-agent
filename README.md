@@ -17,6 +17,15 @@ virgo is distributed under the [Apache License 2.0][apache].
 [apache]: http://www.apache.org/licenses/LICENSE-2.0.html
 
 
+Bundles
+=======
+
+Bundles take the form [name].zip.[DebianVersion], ie:
+
+    monitoring.zip.0.0.1
+
+A command-line argument of '-b' will force a specific bundle directory.
+
 Building on a Unix-like Operating System
 ========================================
 
