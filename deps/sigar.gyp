@@ -14,7 +14,14 @@
             '_BIND_TO_CURRENT_CRT_VERSION=1',
             '_CRT_SECURE_NO_WARNINGS',
           ],
-        }
+        },
+        {
+          # !win32
+          'defines': [
+            # TODO: detect this correctly.
+            'HAVE_UTMPX_H',
+          ],
+        },
       ],
       ['OS=="mac" or OS=="freebsd"',
         {
