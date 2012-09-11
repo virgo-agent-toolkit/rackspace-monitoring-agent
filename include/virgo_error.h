@@ -22,6 +22,7 @@
  */
 
 #include <stdint.h>
+#include "lua.h"
 #include "virgo_visibility.h"
 
 #ifndef _virgo_error_h_
@@ -145,6 +146,10 @@ virgo_error_createf_impl(virgo_status_t err,
 /** Destroy @a err. */
 VIRGO_API(void)
 virgo_error_clear(virgo_error_t *err);
+
+/** Push a lua error and cleanup the virgo error object */
+VIRGO_API(int)
+virgo_error_luaL(lua_State *L, virgo_error_t *err);
 
 #ifdef __cplusplus
 }

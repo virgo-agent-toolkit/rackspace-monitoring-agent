@@ -62,24 +62,3 @@ char* virgo_basename(char *name)
   return s ? (s + 1) : (char*)name;
 }
 
-
-const char*
-virgo__platform_default_state_directory(virgo_t *v) {
-#ifndef _WIN32
-  return VIRGO_DEFAULT_STATE_UNIX_DIRECTORY;
-#else
-  /* TODO: registry */
-  return "C:/temp/";
-#endif
-}
-
-const char*
-virgo__platform_default_config_path(virgo_t *v) {
-#ifndef _WIN32
-  return VIRGO_DEFAULT_CONFIG_UNIX_PATH;
-#else
-  /* TODO: registry */
-  return "C:/temp/";
-#endif
-}
-
