@@ -231,7 +231,7 @@ virgo__conf_get_path(virgo_t *v, const char **p_path)
   path = virgo__argv_get_value(v, "-c", "--config");
 
   if (path == NULL) {
-    *p_path = strdup(VIRGO_DEFAULT_CONFIG_UNIX_PATH);
+    *p_path = strdup(VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY);
     return VIRGO_SUCCESS;
   }
 
