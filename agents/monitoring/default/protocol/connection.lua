@@ -68,8 +68,7 @@ local responses = {}
 
 responses['check_schedule.changed'] = function(self, replyTo, callback)
   local m = msg.ScheduleChangeAck:new(replyTo)
-  self:_send(m:serialize(self._msgid), nil, 200)
-  callback()
+  self:_send(m:serialize(self._msgid), nil, 200, callback)
 end
 
 responses['system.info'] = function(self, request, callback)
@@ -227,31 +226,38 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
     self:_setCommandTimeoutHandler(key, timeout, callback)
   end
 
-  self._completions[key] = function(err, resp)
-    local result = nil
+  -- if the msg does not have a method then it is
+  -- a response so we don't expect a reply. Don't
+  -- create a completion in this case.
+  if (msg.method == nil) then
+    callback()
+  else
+    self._completions[key] = function(err, resp)
+      local result = nil
 
-    if self._timeoutIds[key] ~= nil then
-      timer.clearTimer(self._timeoutIds[key])
-    end
-
-    if not err and resp then
-      local resp_err = resp['error']
-
-      -- response version must match request version
-      if resp.v ~= msg.v then
-        err = errors.VersionError:new(msg, resp)
-      -- emit error if error field is set
-      elseif resp_err then
-        err = errors.ProtocolError:new(resp_err)
+      if self._timeoutIds[key] ~= nil then
+        timer.clearTimer(self._timeoutIds[key])
       end
 
-      if err ~= nil then
-        self:emit('error', err)
-      end
-    end
+      if not err and resp then
+        local resp_err = resp['error']
 
-    if callback then
-      callback(err, resp)
+        -- response version must match request version
+        if resp.v ~= msg.v then
+          err = errors.VersionError:new(msg, resp)
+        -- emit error if error field is set
+        elseif resp_err then
+          err = errors.ProtocolError:new(resp_err)
+        end
+
+        if err ~= nil then
+          self:emit('error', err)
+        end
+      end
+
+      if callback then
+        callback(err, resp)
+      end
     end
   end
 

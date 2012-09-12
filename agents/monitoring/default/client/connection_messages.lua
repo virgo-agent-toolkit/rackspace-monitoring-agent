@@ -67,16 +67,17 @@ end
 function ConnectionMessages:onMessage(client, msg)
   client:log(logging.DEBUG, fmt('received %s', msg.method or 'UNDEFINED'))
 
+  if msg.method == 'check_schedule.changed' then
+    self._lastFetchTime =   0
+    client:log(logging.DEBUG, 'fetching manifest')
+    self:fetchManifest(client)
+  end
+
   local cb = function(err, msg)
     if (err) then
       client:log(logging.INFO, fmt('error handling %s %s', msg.method, err))
       self:emit('error', err)
       return
-    end
-    if msg.method == 'check_schedule.changed' then
-      self._lastFetchTime =   0
-      client:log(logging.DEBUG, 'fetching manifest')
-      self:fetchManifest(client)
     end
   end
 
