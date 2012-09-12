@@ -25,6 +25,9 @@
 #define VIRGO_DEFAULT_NAME \
   "rackspace-monitoring-agent"
 
+#define VIRGO_DEFAULT_BUNDLE_NAME \
+  "monitoring.zip"
+
 #define VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY \
   "Rackspace Agent"
 

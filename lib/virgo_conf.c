@@ -16,6 +16,7 @@
  */
 
 #include "virgo.h"
+#include "virgo_paths.h"
 #include "virgo_error.h"
 #include "virgo__types.h"
 #include "virgo__conf.h"
@@ -28,6 +29,7 @@
 #include <string.h>
 
 #ifndef _WIN32
+#include <limits.h>
 #include <unistd.h>
 #include <errno.h>
 #endif
@@ -40,6 +42,18 @@ virgo_conf_service_name(virgo_t *v, const char *name)
   }
 
   v->service_name = strdup(name);
+
+  return VIRGO_SUCCESS;
+}
+
+virgo_error_t*
+virgo_conf_lua_bundle_path(virgo_t *v, const char *path)
+{
+  if (v->lua_bundle_path) {
+    free((void*)v->lua_bundle_path);
+  }
+
+  v->lua_bundle_path = strdup(path);
 
   return VIRGO_SUCCESS;
 }
@@ -61,6 +75,8 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
 {
   virgo_error_t *err;
   const char *arg;
+  char path[PATH_MAX];
+  short forced_zip = 0;
 
   v->argc = argc;
   v->argv = argv;
@@ -71,11 +87,31 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
     if (err) {
       return err;
     }
+    forced_zip = 1;
   }
 
   arg = virgo__argv_get_value(v, "-l", "--logfile");
   if (arg != NULL) {
     v->log_path = strdup(arg);
+  }
+
+  if (!forced_zip) {
+    arg = virgo__argv_get_value(v, "-b", "--bundle-path");
+
+    if (arg) {
+      virgo_conf_lua_bundle_path(v, arg);
+    }
+
+    /* bundle filename */
+    err = virgo__paths_get(v, VIRGO_PATH_BUNDLE, path, sizeof(path));
+    if (err) {
+      return err;
+    }
+
+    err = virgo_conf_lua_load_path(v, path);
+    if (err) {
+      return err;
+    }
   }
 
   return VIRGO_SUCCESS;
@@ -226,12 +262,17 @@ virgo__conf_get_path(virgo_t *v, const char **p_path)
 
   return VIRGO_SUCCESS;
 #else /* !_WIN32 */
-  const char *path;
+  char *path;
+  char buffer[PATH_MAX];
+  int count;
 
-  path = virgo__argv_get_value(v, "-c", "--config");
+  path = (char*) virgo__argv_get_value(v, "-c", "--config");
 
   if (path == NULL) {
-    *p_path = strdup(VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY);
+    virgo__paths_get(v, VIRGO_PATH_CONFIG_DIR, buffer, sizeof(buffer));
+    count = strlen(buffer) + strlen(VIRGO_DEFAULT_CONFIG_FILENAME) + strlen(SEP) + 1;
+    *p_path = (char*) malloc(count);
+    snprintf((char*) *p_path, count, "%s%s%s", buffer, SEP, VIRGO_DEFAULT_CONFIG_FILENAME);
     return VIRGO_SUCCESS;
   }
 

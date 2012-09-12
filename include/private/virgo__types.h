@@ -38,6 +38,7 @@ struct virgo_conf_t {
 struct virgo_t {
   lua_State* L;
   struct virgo_conf_t *config;
+  const char *lua_bundle_path;
   const char *lua_load_path;
   char *lua_default_module;
   int argc;
