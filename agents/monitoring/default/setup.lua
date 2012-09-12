@@ -80,12 +80,21 @@ function Setup:save(token, hostname, callback)
   end)
 end
 
+function Setup:_out(msg)
+  process.stdout:write(msg .. '\n')
+end
+
 function Setup:run(callback)
   local username, token, hostname
   local agentToken, client
 
   hostname = os.hostname()
-  process.stdout:write(fmt('Using hostname \'%s\'\n', hostname))
+  self:_out('')
+  self:_out('Setup Settings:')
+  self:_out(fmt('  Hostname: %s', hostname))
+  self:_out(fmt('  Config File: %s', self._configFile))
+  self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
+  self:_out('')
 
   function createToken(callback)
     client.agent_tokens.create({ ['label'] = hostname }, function(err, token)

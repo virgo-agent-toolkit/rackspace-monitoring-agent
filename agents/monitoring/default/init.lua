@@ -240,6 +240,7 @@ function MonitoringAgent:initialize(options)
     options.stateDirectory = constants.DEFAULT_STATE_PATH
   end
   logging.debug('Using state directory ' .. options.stateDirectory)
+  self._stateDirectory = options.stateDirectory
   self._states = States:new(options.stateDirectory)
   self._config = virgo.config
   self._options = options
