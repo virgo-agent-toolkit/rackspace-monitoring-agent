@@ -38,8 +38,7 @@
   "/bundle"
 
 #define VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY \
-  "/etc/" \
-  VIRGO_DEFAULT_CONFIG_FILENAME
+  "/etc"
 
 #define VIRGO_DEFAULT_RUNTIME_UNIX_DIRECTORY \
   "/var/run/" \
