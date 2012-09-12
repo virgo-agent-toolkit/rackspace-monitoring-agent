@@ -241,7 +241,7 @@ function eventSource(name, fn, ...)
   end, debugm.traceback))
 end
 
-error_meta = {__tostring=function(table) return table.message end}
+errorMeta = {__tostring=function(table) return table.message end}
 
 local global_meta = {__index=_G}
 
