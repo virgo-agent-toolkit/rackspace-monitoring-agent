@@ -16,9 +16,9 @@
  */
 
 #include "virgo.h"
+#include "virgo_paths.h"
 #include "virgo_error.h"
 #include "virgo__types.h"
-#include "virgo__paths.h"
 #include "virgo__lua.h"
 
 #include "lua.h"
@@ -42,8 +42,17 @@ paths_get(lua_State *L) {
   return 1;
 }
 
+static int
+paths_set_bundle(lua_State *L) {
+  virgo_t *v = virgo__lua_context(L);
+  const char *path = luaL_checkstring(L, 1);
+  virgo_conf_lua_bundle_path(v, path);
+  return 0;
+}
+
 static const luaL_reg virgo_paths[] = {
   {"get", paths_get},
+  {"set_bundle_path", paths_set_bundle},
   {NULL, NULL}
 };
 
@@ -58,5 +67,6 @@ virgo__lua_paths(lua_State *L)
   VIRGO_DEFINE_CONSTANT(L, VIRGO_PATH_TMP_DIR);
   VIRGO_DEFINE_CONSTANT(L, VIRGO_PATH_LIBRARY_DIR);
   VIRGO_DEFINE_CONSTANT(L, VIRGO_PATH_CONFIG_DIR);
+  VIRGO_DEFINE_CONSTANT(L, VIRGO_PATH_BUNDLE);
   return 1;
 }

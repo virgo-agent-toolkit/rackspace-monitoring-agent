@@ -18,6 +18,8 @@ local Error = require('core').Error
 local async = require('async')
 local vtime = require('virgo-time')
 local fs = require('fs')
+local path = require('path')
+local table = require('table')
 
 local times = {
   --   T1          T2          T3           T4     Delta
@@ -42,8 +44,7 @@ exports['test_paths'] = function(test, asserts)
     virgo_paths.get(virgo_paths.VIRGO_PATH_RUNTIME_DIR),
     virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR),
     virgo_paths.get(virgo_paths.VIRGO_PATH_TMP_DIR),
-    virgo_paths.get(virgo_paths.VIRGO_PATH_LIBRARY_DIR),
-    virgo_paths.get(virgo_paths.VIRGO_PATH_CONFIG_DIR)
+    virgo_paths.get(virgo_paths.VIRGO_PATH_LIBRARY_DIR)
   }
 
   function iter(path, callback)
@@ -68,6 +69,22 @@ exports['test_paths'] = function(test, asserts)
     asserts.ok(err == nil)
     test.done()
   end)
+end
+
+exports['test_bundle_path'] = function(test, asserts)
+  local tmpPath = path.join('tests', 'bundles')
+  local files = {}
+
+  virgo_paths.set_bundle_path(path.join(tmpPath, 'a'))
+  asserts.ok(virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE) == 'tests/bundles/a/monitoring.zip.0.0.3')
+
+  virgo_paths.set_bundle_path(path.join(tmpPath, 'b'))
+  asserts.ok(virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE) == 'tests/bundles/b/monitoring.zip.1.0.0')
+
+  virgo_paths.set_bundle_path(path.join(tmpPath, 'c'))
+  asserts.ok(virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE) == 'tests/bundles/c/monitoring.zip.0.1.0')
+
+  test.done()
 end
 
 return exports

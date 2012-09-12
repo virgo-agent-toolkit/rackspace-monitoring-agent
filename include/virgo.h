@@ -19,6 +19,7 @@
 #include "virgo_visibility.h"
 #include "virgo_portable.h"
 #include "virgo_error.h"
+#include "uv.h"
 
 #ifndef WIN32
 #include "virgo_unix.h"
@@ -49,10 +50,20 @@ VIRGO_API(virgo_error_t*) virgo_create(virgo_t **ctxt, const char *default_modul
 VIRGO_API(void) virgo_destroy(virgo_t *ctxt);
 
 /**
+ * Retreive the bundle load path for a virigo context.
+ */
+VIRGO_API(const char*) virgo_get_load_path(virgo_t *ctxt);
+
+/**
  * Runs the configured Virgo Context.  Only returns on fatal error, or
  * when tricked into exiting for purposes of a test case.
  */
 VIRGO_API(virgo_error_t*) virgo_run(virgo_t *v);
+
+/**
+ * Configure the lua bundle path
+ */
+VIRGO_API(virgo_error_t*) virgo_conf_lua_bundle_path(virgo_t *v, const char *path);
 
 /**
  * Set a trusted CA certificate for Network operations
@@ -81,6 +92,11 @@ VIRGO_API(virgo_error_t*) virgo_conf_lua_load_path(virgo_t *v, const char *path)
  * will be ran first, and other files can be loaded via require.
  */
 VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char **argv);
+
+/**
+ * Retrieve event loop
+ */
+VIRGO_API(uv_loop_t*) virgo_get_loop(virgo_t *v);
 
 /**
  * Get variable from config.
