@@ -16,6 +16,7 @@
  */
 
 #include "virgo.h"
+#include "virgo_paths.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -48,6 +49,7 @@ show_help()
          "Options:\n"
          "  -v, --version         print monitoring-agent's version\n"
          "  -c, --config val      Set configuration file path. Default: /etc/rackspace-monitoring-agent.cfg\n"
+         "  -b, --bundle-dir val  Force the bundle directory."
          "  -e val                Entry module.\n"
          "  -l, --logfile val     Path and filename of logfile.\n"
 #ifndef _WIN32
@@ -93,20 +95,6 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  /* default filename */
-  err = virgo_conf_lua_load_path(v, VIRGO_DEFAULT_ZIP_UNIX_PATH);
-  if (err) {
-    handle_error("Error in setting lua load path", err);
-    return EXIT_FAILURE;
-  }
-
-  /* TODO: read path from config file */
-  err = virgo_conf_args(v, argc, argv);
-  if (err) {
-    handle_error("Error in settings args", err);
-    return EXIT_FAILURE;
-  }
-
   err = virgo_conf_args(v, argc, argv);
   if (err) {
     handle_error("Error in settings args", err);
@@ -114,14 +102,16 @@ int main(int argc, char* argv[])
   }
 
   /* Ensure we can read the zip file */
-  fd = open(virgo_conf_get(v, "lua_load_path"), O_RDONLY);
+  fd = open(virgo_get_load_path(v), O_RDONLY);
   if (fd < 0) {
-    fprintf(stderr, "Error: zip can't be opened %s\n", virgo_conf_get(v, "lua_load_path"));
+    fprintf(stderr, "Error: zip can't be opened %s\n", virgo_get_load_path(v));
     return EXIT_FAILURE;
   }
   else {
     close(fd);
   }
+
+  virgo_log_infof(v, "Using bundle %s", virgo_get_load_path(v));
 
   err = virgo_run(v);
   if (err) {
