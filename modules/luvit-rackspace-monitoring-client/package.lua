@@ -6,7 +6,7 @@ return {
   contributors = {
   },
   dependencies = {
-    ["async"] = "https://github.com/racker/lua-async/zipball/master",
+    ["async"] = "https://github.com/racker/luvit-async/zipball/master",
     ["keystone"] = "https://github.com/racker/luvit-keystone-client/zipball/master"
   },
 }
