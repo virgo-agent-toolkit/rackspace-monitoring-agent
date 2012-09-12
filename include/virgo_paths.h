@@ -29,6 +29,16 @@ typedef enum {
   VIRGO_PATH_BUNDLE,
 } virgo_path_e;
 
+#ifdef _WIN32
+  #ifndef SEP
+    #define SEP "\\\\"
+  #endif
+#else
+  #ifndef SEP
+    #define SEP "/"
+  #endif
+#endif
+
 virgo_error_t*
 virgo__paths_get(virgo_t *v, virgo_path_e type, char *buffer, size_t buffer_len);
 

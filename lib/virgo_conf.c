@@ -29,6 +29,7 @@
 #include <string.h>
 
 #ifndef _WIN32
+#include <limits.h>
 #include <unistd.h>
 #include <errno.h>
 #endif
@@ -261,12 +262,17 @@ virgo__conf_get_path(virgo_t *v, const char **p_path)
 
   return VIRGO_SUCCESS;
 #else /* !_WIN32 */
-  const char *path;
+  char *path;
+  char buffer[PATH_MAX];
+  int count;
 
-  path = virgo__argv_get_value(v, "-c", "--config");
+  path = (char*) virgo__argv_get_value(v, "-c", "--config");
 
   if (path == NULL) {
-    *p_path = strdup(VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY);
+    virgo__paths_get(v, VIRGO_PATH_CONFIG_DIR, buffer, sizeof(buffer));
+    count = strlen(buffer) + strlen(VIRGO_DEFAULT_CONFIG_FILENAME) + strlen(SEP) + 1;
+    *p_path = (char*) malloc(count);
+    snprintf((char*) *p_path, count, "%s%s%s", buffer, SEP, VIRGO_DEFAULT_CONFIG_FILENAME);
     return VIRGO_SUCCESS;
   }
 

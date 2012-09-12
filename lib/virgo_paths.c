@@ -23,8 +23,6 @@
 #include "uv.h"
 
 #include <ctype.h>
-#include <dirent.h>
-#include <string.h>
 
 virgo_error_t*
 virgo__path_current_executable_path(virgo_t *v, char *buffer, size_t buffer_len) {
@@ -162,16 +160,6 @@ compare_files(char *a, char *b, int *comparison) {
 
   return VIRGO_SUCCESS;
 }
-
-#ifdef _WIN32
-  #ifndef SEP
-    #define SEP "\\\\"
-  #endif
-#else
-  #ifndef SEP
-    #define SEP "/"
-  #endif
-#endif
 
 virgo_error_t*
 virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
