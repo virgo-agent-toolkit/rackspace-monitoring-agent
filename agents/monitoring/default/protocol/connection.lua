@@ -18,12 +18,12 @@ local os = require('os')
 local timer = require('timer')
 local Emitter = require('core').Emitter
 local Error = require('core').Error
-local errors = require('../errors')
+local errors = require('./errors')
+local ResponseTimeoutError = require('../errors').ResponseTimeoutError
 local JSON = require('json')
 local fmt = require('string').format
 local logging = require('logging')
 local msg = require ('./messages')
-local errors = require ('./errors')
 local table = require('table')
 local utils = require('utils')
 local hostInfo = require('../host_info')
@@ -271,7 +271,7 @@ function AgentProtocolConnection:_setCommandTimeoutHandler(key, timeout, callbac
 
   timeoutId = timer.setTimeout(timeout, function()
     local msg = fmt("Command timeout, haven't received response in %d ms", timeout)
-    local err = errors.ResponseTimeoutError:new(msg)
+    local err = ResponseTimeoutError:new(msg)
     callback(err)
   end)
   self._timeoutIds[key] = timeoutId
