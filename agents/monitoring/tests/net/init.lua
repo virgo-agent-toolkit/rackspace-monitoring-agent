@@ -44,6 +44,11 @@ exports['test_reconnects'] = function(test, asserts)
   }
   local client = ConnectionStream:new('id', 'token', options)
 
+  local errorCount = 0
+  client:on('error', function(err)
+    errorCount = errorCount + 1
+  end)
+
   function counterTrigger(trigger, callback)
     local counter = 0
     return function()
@@ -75,6 +80,7 @@ exports['test_reconnects'] = function(test, asserts)
       end)
     end,
   }, function()
+    asserts.ok(errorCount > 0)
     test.done()
   end)
 end
