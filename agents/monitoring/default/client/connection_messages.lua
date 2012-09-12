@@ -44,12 +44,12 @@ function ConnectionMessages:fetchManifest(client)
     if client then
       client:log(logging.DEBUG, 'Retrieving check manifest...')
 
-      client.protocol:getManifest(function(err, manifest)
+      client.protocol:request('check_schedule.get', function(err, resp)
         if err then
           -- TODO Abort connection?
           client:log(logging.ERROR, 'Error while retrieving manifest: ' .. err.message)
         else
-          client:scheduleManifest(manifest)
+          client:scheduleManifest(resp.result)
         end
       end)
     end
@@ -65,23 +65,22 @@ function ConnectionMessages:fetchManifest(client)
 end
 
 function ConnectionMessages:onMessage(client, msg)
-  client:log(logging.DEBUG, '(onMessage)')
-  if msg.method == 'check_schedule.changed' then
-    self._lastFetchTime = 0
-    client:log(logging.DEBUG, 'received schedule change')
-    client.protocol:respond(msg.method, msg, function ()
+  client:log(logging.DEBUG, fmt('received %s', msg.method or 'UNDEFINED'))
+
+  local cb = function(err, msg)
+    if (err) then
+      client:log(logging.INFO, fmt('error handling %s %s', msg.method, err))
+      self:emit('error', err)
+      return
+    end
+    if msg.method == 'check_schedule.changed' then
+      self._lastFetchTime =   0
       client:log(logging.DEBUG, 'fetching manifest')
       self:fetchManifest(client)
-    end)
-  elseif msg.method == 'host_info.get' then
-    client:log(logging.DEBUG, 'received host info request ' .. msg.params.type or 'UNDEFINED')
-    client.protocol:respond(msg.method, msg, function()
-    end)
-  elseif msg.method == 'check.test' then
-    client:log(logging.DEBUG, 'received check test')
-    client.protocol:respond(msg.method, msg, function()
-    end)
+    end
   end
+
+  client.protocol:respond(msg.method, msg, cb)
 end
 
 local exports = {}
