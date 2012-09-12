@@ -97,7 +97,9 @@ local respond = function(log, client, payload)
   response.source = payload.target
   response.id = payload.id
 
+  -- Print the payload. The p() is intentional, Ryan :D
   log("Sending response:")
+  p(response)
 
   response_out = JSON.stringify(response)
   response_out:gsub("\n", " ")
