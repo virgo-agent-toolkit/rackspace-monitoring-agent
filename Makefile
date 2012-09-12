@@ -5,7 +5,7 @@ BINDIR = ${DESTDIR}/usr/bin
 SHAREDIR = ${DESTDIR}/usr/share/rackspace-monitoring-agent
 ETCDIR = ${DESTDIR}/etc
 
-zip_files = monitoring.zip monitoring-test.zip
+zip_files = monitoring.zip
 sig_files = $(zip_files:%.zip=%.zip.sig)
 
 %.zip:
@@ -54,7 +54,6 @@ install: all
 	install -d ${SHAREDIR}
 	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/rackspace-monitoring-agent
 	install out/${BUILDTYPE}/monitoring.zip ${SHAREDIR}
-	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
 	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
 PKG_FULL_VERSION = $(shell python tools/version.py)

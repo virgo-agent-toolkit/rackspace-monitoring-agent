@@ -12,6 +12,11 @@
       'modules/line-emitter',
       'agents/monitoring/default',
       'agents/monitoring/init.lua',
+      'agents/monitoring/crash',
+      'agents/monitoring/tests',
+      'agents/monitoring/tests/tls',
+      'agents/monitoring/tests/crypto',
+      'agents/monitoring/tests/agent-protocol', 
     ],
     'modules_collector': [
       'lib/lua',
@@ -57,7 +62,6 @@
       'dependencies': [
         'lib/virgo.gyp:virgolib',
         'monitoring.zip#host',
-        'monitoring-test.zip#host',
         'collector.zip#host',
       ],
 
@@ -211,35 +215,6 @@
         },
       ],
     }, # end monitoring.zip
-    {
-      'target_name': 'monitoring-test.zip',
-      'type': 'none',
-      'toolsets': ['host'],
-      'variables': {
-      },
-
-      'actions': [
-        {
-          'action_name': 'virgo_luazip',
-
-          'inputs': [
-            '<@(test_modules_sources)',
-            'tools/lua2zip.py',
-          ],
-
-          'outputs': [
-            '<(PRODUCT_DIR)/monitoring-test.zip',
-          ],
-
-          'action': [
-            'python',
-            'tools/lua2zip.py',
-            '<@(_outputs)',
-            '<@(test_modules)',
-          ],
-        },
-      ],
-    }, # end monitoring-test.zip
     {
       'target_name': 'collector.zip',
       'type': 'none',
