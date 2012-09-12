@@ -18,6 +18,7 @@ local Error = require('core').Error
 local async = require('async')
 local vtime = require('virgo-time')
 local fs = require('fs')
+local table = require('table')
 
 local times = {
   --   T1          T2          T3           T4     Delta
@@ -43,7 +44,6 @@ exports['test_paths'] = function(test, asserts)
     virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR),
     virgo_paths.get(virgo_paths.VIRGO_PATH_TMP_DIR),
     virgo_paths.get(virgo_paths.VIRGO_PATH_LIBRARY_DIR),
-    virgo_paths.get(virgo_paths.VIRGO_PATH_CONFIG_DIR)
   }
 
   function iter(path, callback)
@@ -65,7 +65,7 @@ exports['test_paths'] = function(test, asserts)
   end
 
   async.forEach(paths, iter, function(err)
-    asserts.ok(err == nil)
+    asserts.ok(err == nil, table.concat(err or {}, '\n'))
     test.done()
   end)
 end
