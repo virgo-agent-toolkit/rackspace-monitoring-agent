@@ -88,7 +88,7 @@ end
 
 function MonitoringAgent:_savePersistentVariable(variable, data, callback)
   local filename = self:_getPersistentFilename(variable)
-  fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0644", function(err)
+  fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0755", function(err)
     if err and err.code ~= 'EEXIST' then
       callback(err)
       return
