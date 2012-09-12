@@ -23,6 +23,7 @@ local JSON = require('json')
 local fmt = require('string').format
 local logging = require('logging')
 local msg = require ('./messages')
+local errors = require ('./errors')
 local table = require('table')
 local utils = require('utils')
 local hostInfo = require('../host_info')
@@ -122,7 +123,21 @@ function AgentProtocolConnection:request(name, ...)
 end
 
 function AgentProtocolConnection:respond(name, ...)
-  return self._responses[name](self, unpack({...}))
+  local args = {...}
+  local callback = args[#args]
+  local method = self._responses[name]
+
+  if type(callback) ~= 'function' then
+    error('last argument to respond() must be a callback')
+  end
+
+  if method == nil then
+    local err = errors.InvalidMethodError:new(name)
+    callback(err)
+    return
+  else
+    return method(self, unpack(args))
+  end
 end
 
 function AgentProtocolConnection:_popLine()
@@ -212,28 +227,30 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
     self:_setCommandTimeoutHandler(key, timeout, callback)
   end
 
-  if callback then
-    self._completions[key] = function(err, resp)
-      local result = nil
+  self._completions[key] = function(err, resp)
+    local result = nil
 
-      if self._timeoutIds[key] ~= nil then
-        timer.clearTimer(self._timeoutIds[key])
+    if self._timeoutIds[key] ~= nil then
+      timer.clearTimer(self._timeoutIds[key])
+    end
+
+    if not err and resp then
+      local resp_err = resp['error']
+
+      -- response version must match request version
+      if resp.v ~= msg.v then
+        err = errors.VersionError:new(msg, resp)
+      -- emit error if error field is set
+      elseif resp_err then
+        err = errors.ProtocolError:new(resp_err)
       end
 
-      if not err and resp then
-        local resp_err = resp['error']
-
-        -- response version must match request version
-        if resp.v ~= msg.v then
-          err = Error:new(fmt('Version mismatch in response: version=%s',
-            resp.v or 'unknown'))
-        -- emit error if error field is set
-        elseif resp_err then
-          err = Error:new(fmt('Error returned: code=%s, message=%s',
-            resp_err.code or "unknown", resp_err.message or "no message"))
-        end
+      if err ~= nil then
+        self:emit('error', err)
       end
+    end
 
+    if callback then
       callback(err, resp)
     end
   end
@@ -279,30 +296,6 @@ function AgentProtocolConnection:startHandshake(callback)
     self._log(logging.DEBUG, fmt('handshake successful (heartbeat_interval=%dms)', msg.result.heartbeat_interval))
     callback(nil, msg)
   end)
-end
-
-function AgentProtocolConnection:getManifest(callback)
-  self:request('check_schedule.get', function(err, response)
-    if err then
-      callback(err)
-    else
-      callback(nil, response.result)
-    end
-  end)
-end
-
---[[
-Process an async message
-
-msg - The Incoming Message
-]]--
-function AgentProtocolConnection:execute(msg)
-  if msg.method == 'system.info' then
-    self:respond('system.info', msg)
-  else
-    local err = Error:new(fmt('invalid method [method=%s]', msg.method))
-    self:emit('error', err)
-  end
 end
 
 return AgentProtocolConnection

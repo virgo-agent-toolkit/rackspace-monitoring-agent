@@ -121,6 +121,46 @@ function ConnectionStream:reconnect(options, callback)
   end)
 end
 
+--[[
+Restart a client that has failed on error, timeout, or end
+
+client - client that needs restarting
+options - passed to ConnectionStream:reconnect
+callback - Callback called with (err)
+]]--
+function ConnectionStream:restart(client, options, callback)
+  -- Find a new client to handle time sync
+  if self._activeTimeSyncClient == client then
+    self._attachTimeSyncEvent(self:getClient())
+  end
+
+  -- The error we hit was rateLimit related.
+  -- Shut down the agent.
+  if client.rateLimitReached then
+    client:log(logging.ERROR, fmt('Rate limit reached on connection to %s. ' ..
+        'Shutting down this agent', client:getDatacenter()))
+
+    self:shutdown('Shutting down. The rate limit was exceeded for the ' ..
+     'agent API endpoint. Contact support if you need an increased rate limit.')
+     return
+  end
+
+  client:destroy()
+  self:reconnect(options, callback)
+end
+
+function ConnectionStream:shutdown(msg)
+  for k, v in pairs(self._clients) do
+    v:destroy()
+  end
+
+  -- Sleep to keep from busy restarting on upstart/systemd/etc
+  timer.setTimeout(consts.RATE_LIMIT_SLEEP, function()
+    logging.error(msg)
+    process.exit(consts.RATE_LIMIT_RETURN_CODE)
+  end)
+end
+
 function ConnectionStream:getClient()
   local client
   local latency
@@ -198,32 +238,22 @@ function ConnectionStream:createConnection(options, callback)
     err.datacenter = opts.datacenter
     err.message = errorMessage
 
-    -- Find a new client to handle time sync
-    if self._activeTimeSyncClient == client then
-      self._attachTimeSyncEvent(self:getClient())
-    end
+    self:restart(client, opts, callback)
 
-    client:destroy()
-    self:reconnect(opts, callback)
+    if err then
+      self:emit('error', err)
+    end
   end)
 
   client:on('timeout', function()
     logging.debugf('%s:%d -> Client Timeout', opts.host, opts.port)
-    client:destroy()
-    self:reconnect(opts, callback)
+    self:restart(client, opts, callback)
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
-
-    -- Find a new client to handle time sync
-    if self._activeTimeSyncClient == client then
-      self._attachTimeSyncEvent(self:getClient())
-    end
-
     logging.debugf('%s:%d -> Remote endpoint closed the connection', opts.host, opts.port)
-    client:destroy()
-    self:reconnect(opts, callback)
+    self:restart(client, opts, callback)
   end)
 
   client:on('handshake_success', function(data)

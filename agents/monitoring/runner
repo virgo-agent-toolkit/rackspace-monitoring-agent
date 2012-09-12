@@ -6,22 +6,20 @@ import sys
 import signal
 
 root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-build_dir = os.path.join(root, 'out')
-
-agent = os.environ['AGENT_BIN']
-luvit = os.environ['LUVIT_BIN']
+sys.path.insert(0, os.path.join(root, 'tools'))
+import paths
 
 def test_cmd(additional=""):
-  state_config = os.path.join(root, 'contrib')
-  monitoring_config = os.path.join(root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
+  state_config = os.path.join(paths.root, 'contrib')
+  monitoring_config = os.path.join(paths.root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
   zip_file = "monitoring.zip"
 
-  return '%s -z %s -c %s -s %s %s' % (agent, zip_file, monitoring_config, state_config, additional)
+  return '%s -z %s -c %s -s %s %s' % (paths.agent, zip_file, monitoring_config, state_config, additional)
 
 def test_server_fixture(stdout=None):
   server = os.path.join('agents', 'monitoring', 'tests', 'fixtures', 'protocol', 'server.lua')
 
-  cmd = "%s %s" % (luvit, server)
+  cmd = "%s %s" % (paths.luvit, server)
   print cmd
   rc = 0
   if stdout == None:
@@ -32,7 +30,7 @@ def test_server_fixture(stdout=None):
 
 def test_server_fixture_blocking(stdout=None):
   server = os.path.join('agents', 'monitoring', 'tests', 'fixtures', 'protocol', 'server.lua')
-  proc = subprocess.Popen([luvit, server])
+  proc = subprocess.Popen([paths.luvit, server])
 
   def handler(signum, frame):
     print(proc)
