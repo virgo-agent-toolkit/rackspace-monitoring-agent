@@ -29,9 +29,9 @@ def build():
 
 def pkg():
     if sys.platform.find('freebsd') == 0:
-        cmd = 'BUILDTYPE=%s gmake -C %s pkg' % (BUILDTYPE, paths.root)
+        cmd = 'BUILDTYPE=%s gmake -C %s pkg' % (paths.BUILDTYPE, paths.root)
     elif sys.platform != "win32":
-        cmd = 'BUILDTYPE=%s make -C %s pkg' % (BUILDTYPE, paths.root)
+        cmd = 'BUILDTYPE=%s make -C %s pkg' % (paths.BUILDTYPE, paths.root)
     else:
         cmd = 'tools\win_pkg.bat'
 
@@ -41,9 +41,9 @@ def pkg():
 
 def pkg_sign():
     if sys.platform.find('freebsd') == 0:
-        cmd = 'BUILDTYPE=%s gmake -C %s pkg-sign' % (BUILDTYPE, paths.root)
+        cmd = 'BUILDTYPE=%s gmake -C %s pkg-sign' % (paths.BUILDTYPE, paths.root)
     elif sys.platform != "win32":
-        cmd = 'BUILDTYPE=%s make -C %s pkg-sign' % (BUILDTYPE, paths.root)
+        cmd = 'BUILDTYPE=%s make -C %s pkg-sign' % (paths.BUILDTYPE, paths.root)
     else:
         print 'win32 not supported skipping packaging'
         sys.exit(0)
@@ -56,14 +56,14 @@ def test_cmd(additional=""):
     state_config = os.path.join(paths.root, 'contrib')
     monitoring_config = os.path.join(paths.root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
 
-    return '%s -d -c %s -s %s %s' % (agent, monitoring_config, state_config, additional)
+    return '%s -d -c %s -s %s %s' % (paths.agent, monitoring_config, state_config, additional)
 
 
 def test(stdout=None, entry="tests"):
     if sys.platform != "win32":
-        agent_tests = os.path.join(paths.root, 'out', BUILDTYPE, 'monitoring-test.zip')
+        agent_tests = os.path.join(paths.root, 'out', paths.BUILDTYPE, 'monitoring-test.zip')
     else:
-        agent_tests = os.path.join(paths.root, BUILDTYPE, 'monitoring-test.zip')
+        agent_tests = os.path.join(paths.root, paths.BUILDTYPE, 'monitoring-test.zip')
 
     cmd = test_cmd("--zip %s -e %s" % (agent_tests, entry))
     print cmd
