@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
 
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
-    /* Attempt upgrade */
+    /* Attempt upgrade. On success this process gets replaced. */
     err = virgo__exec_upgrade(v, upgrade_status_cb);
     if (err) {
       if (err->err == VIRGO_ENOFILE) {
@@ -151,6 +151,7 @@ int main(int argc, char* argv[])
 
   virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
 
+  /* Setup Lua Contexts for Luvit and Libuv runloop */
   err = virgo_init(v);
   if (err) {
     handle_error("Error in init", err);
@@ -163,6 +164,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
+  /* Enter Luvit and Execute */
   err = virgo_run(v);
   if (err) {
     if (err->err == VIRGO_EHELPREQ) {
@@ -181,7 +183,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
+  /* Cleanup */
   virgo_destroy(v);
-
   return 0;
 }
