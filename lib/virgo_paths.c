@@ -22,6 +22,7 @@
 #include "virgo__types.h"
 #include "uv.h"
 
+#include <stdlib.h>
 #include <ctype.h>
 
 virgo_error_t*
@@ -138,26 +139,12 @@ compare_versions(const char *a, const char *b) {
 
 static int
 is_bundle_file(const char *name) {
-  return strstr(name, VIRGO_DEFAULT_BUNDLE_NAME) != NULL;
+  return strstr(name, VIRGO_DEFAULT_BUNDLE_NAME_PREFIX) != NULL;
 }
 
 static virgo_error_t*
 compare_files(char *a, char *b, int *comparison) {
-  char *version_a, *version_b;
-
-  version_a = strstr(a, VIRGO_DEFAULT_BUNDLE_NAME);
-  version_b = strstr(b, VIRGO_DEFAULT_BUNDLE_NAME);
-
-  if (strlen(version_a) == 0) {
-    return virgo_error_create(-1, "no version number (a)");
-  }
-
-  if (strlen(version_b) == 0) {
-    return virgo_error_create(-1, "no version number (b)");
-  }
-
-  *comparison = compare_versions(version_a, version_b);
-
+  *comparison = compare_versions(a, b);
   return VIRGO_SUCCESS;
 }
 

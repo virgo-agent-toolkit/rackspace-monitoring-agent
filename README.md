@@ -20,9 +20,9 @@ virgo is distributed under the [Apache License 2.0][apache].
 Bundles
 =======
 
-Bundles take the form [name].zip.[DebianVersion], ie:
+Bundles take the form [name]-[version].zip, ie:
 
-    monitoring.zip.0.0.1
+    monitoring-0.0.1.zip
 
 A command-line argument of '-b' will force a specific bundle directory.
 
