@@ -92,6 +92,9 @@ VIRGO_API(virgo_error_t*) virgo_conf_service_name(virgo_t *v, const char *name);
  */
 VIRGO_API(virgo_error_t*) virgo_conf_lua_load_path(virgo_t *v, const char *path);
 
+/**
+ * Set the process argv arguments into the virgo context object.
+ */
 VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char** argv);
 
 /**
