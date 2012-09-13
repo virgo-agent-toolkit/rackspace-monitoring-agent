@@ -28,6 +28,14 @@
 #ifndef _virgo_h_
 #define _virgo_h_
 
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
