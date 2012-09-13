@@ -108,6 +108,9 @@ VIRGO_API(virgo_error_t*) virgo_agent_conf_set(virgo_t *v, const char *key, cons
  */
 VIRGO_API(uv_loop_t*) virgo_get_loop(virgo_t *v);
 
+/**
+ * Boolean telling if we should upgrade
+ */
 VIRGO_API(short) virgo_try_upgrade(virgo_t *v);
 
 /**
@@ -116,6 +119,10 @@ VIRGO_API(short) virgo_try_upgrade(virgo_t *v);
  */
 VIRGO_API(const char*) virgo_conf_get(virgo_t *v, const char *key);
 
+/**
+ * Is the Virgo Bundle Valid?
+ */
+VIRGO_API(virgo_error_t*) virgo__bundle_is_valid(virgo_t *ctxt);
 
 /**
  * Log levels.

@@ -234,3 +234,18 @@ const char*
 virgo_get_load_path(virgo_t *ctxt) {
   return ctxt->lua_load_path;
 }
+
+virgo_error_t*
+virgo__bundle_is_valid(virgo_t *v) {
+  int fd;
+
+  /* Ensure we can read the zip file */
+  fd = open(virgo_get_load_path(v), O_RDONLY);
+  if (fd < 0) {
+    return virgo_error_createf(-1, "Error: zip can't be opened %s", virgo_get_load_path(v));
+  }
+
+  close(fd);
+
+  return VIRGO_SUCCESS;
+}
