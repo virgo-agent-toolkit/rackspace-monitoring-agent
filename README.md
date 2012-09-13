@@ -26,6 +26,29 @@ Bundles take the form [name]-[version].zip, ie:
 
 A command-line argument of '-b' will force a specific bundle directory.
 
+Versioning
+==========
+
+The agent is versioned with a three digit dot seperated "semantic
+version" with the template being x.y.z. An example being e.g. 1.4.2. The
+rough meaning of each of these parts are:
+
+- major version numbers will change when we make a backwards
+  incompatible change to the bundle format. Binaries can only run
+  bundles with identical major version numbers. e.g. a binary of version
+  2.3.1 can only run bundles starting with 2.
+
+- minor version numbers will change when we make backwards compatible
+  changes to the bundle format. Binaries can only run bundles with minor
+  versions that are greater than or equal to the bundle version. e.g. a
+  binary of version 2.3.1 can run a 2.3.4 bundle but not a 2.2.1 bundle.
+
+- patch version numbers will change everytime a new bundle is released.
+  It has no semantic meaning to the versioning.
+
+The zip file bundle and the binary shipped in an rpm/deb/msi will be
+identical. If the binary is 1.4.2 then the bundle will be 1.4.2.
+
 Building on a Unix-like Operating System
 ========================================
 
