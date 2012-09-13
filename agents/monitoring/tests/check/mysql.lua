@@ -124,5 +124,4 @@ exports['test_mysql_row_parsing'] = function(test, asserts)
   end)
 end
 
-
 return exports

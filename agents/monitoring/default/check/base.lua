@@ -355,6 +355,7 @@ end
 
 function SubProcCheck:run(callback)
   local args = {
+    '-n',
     '-e',
     'default/check_runner',
     '--zip',

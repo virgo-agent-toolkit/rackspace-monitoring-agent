@@ -14,7 +14,7 @@ def test_cmd(additional=""):
   monitoring_config = os.path.join(paths.root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
   zip_file = "monitoring.zip"
 
-  return '%s -z %s -c %s -s %s %s' % (paths.agent, zip_file, monitoring_config, state_config, additional)
+  return '%s -n -z %s -c %s -s %s %s' % (paths.agent, zip_file, monitoring_config, state_config, additional)
 
 def test_server_fixture(stdout=None):
   server = os.path.join('agents', 'monitoring', 'tests', 'fixtures', 'protocol', 'server.lua')
