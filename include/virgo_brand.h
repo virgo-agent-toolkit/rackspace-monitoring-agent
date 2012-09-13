@@ -25,6 +25,9 @@
 #define VIRGO_DEFAULT_NAME \
   "rackspace-monitoring-agent"
 
+#define VIRGO_DEFAULT_EXE_NAME_PREFIX \
+  "rackspace-monitoring"
+
 #define VIRGO_DEFAULT_BUNDLE_NAME_PREFIX \
   "monitoring"
 
@@ -45,6 +48,11 @@
   "/var/lib/" \
   VIRGO_DEFAULT_NAME \
   "/bundle"
+
+#define VIRGO_DEFAULT_EXE_UNIX_DIRECTORY \
+  "/var/lib/" \
+  VIRGO_DEFAULT_NAME \
+  "/exe"
 
 #define VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY \
   "/etc"

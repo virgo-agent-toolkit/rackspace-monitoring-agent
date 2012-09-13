@@ -17,6 +17,8 @@
 
 #include "virgo.h"
 #include "virgo_paths.h"
+#include "virgo_exec.h"
+#include "virgo_versions.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -51,6 +53,7 @@ show_help()
          "  -c, --config val      Set configuration file path. Default: /etc/rackspace-monitoring-agent.cfg\n"
          "  -b, --bundle-dir val  Force the bundle directory."
          "  -e val                Entry module.\n"
+         "  -n                    Do not attempt upgrade.\n"
          "  -l, --logfile val     Path and filename of logfile.\n"
 #ifndef _WIN32
          "  -p, --pidfile val     Path and filename to pidfile.\n"
@@ -75,11 +78,20 @@ show_version(virgo_t *v)
   fflush(stdout);
 }
 
+static void
+upgrade_status_cb(virgo_t *v, const char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+  virgo_log_fmtv(v, VIRGO_LOG_INFO, fmt, ap);
+  va_end(ap);
+}
+
 int main(int argc, char* argv[])
 {
   virgo_t *v;
   virgo_error_t *err;
   int fd;
+  char path[PATH_MAX];
 
   err = virgo_create(&v, "./init");
 
@@ -95,11 +107,37 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
+  /* Read command-line arguments */
   err = virgo_conf_args(v, argc, argv);
   if (err) {
     handle_error("Error in settings args", err);
     return EXIT_FAILURE;
   }
+
+  /* See if we are upgrading */
+  if (virgo_try_upgrade(v)) {
+    /* Attempt upgrade */
+    err = virgo__exec_upgrade(v, upgrade_status_cb);
+    if (err) {
+      if (err->err == VIRGO_ENOFILE) {
+        virgo_log_info(v, "Continuing Startup without Upgrade");
+      } else {
+        virgo_log_errorf(v, "Exec Error: %s", err->msg);
+        virgo_error_clear(err);
+      }
+    } else {
+      /* this code never gets executed because of execve */
+      return 0;
+    }
+  }
+
+  err = virgo__paths_get(v, VIRGO_PATH_CURRENT_EXECUTABLE_PATH, path, sizeof(path));
+  if (err) {
+    handle_error("Could not find current executable name", err);
+    return EXIT_FAILURE;
+  }
+
+  virgo_log_infof(v, "Process Executable: %s", path);
 
   /* Ensure we can read the zip file */
   fd = open(virgo_get_load_path(v), O_RDONLY);
@@ -111,7 +149,7 @@ int main(int argc, char* argv[])
     close(fd);
   }
 
-  virgo_log_infof(v, "Using bundle %s", virgo_get_load_path(v));
+  virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
 
   err = virgo_run(v);
   if (err) {
