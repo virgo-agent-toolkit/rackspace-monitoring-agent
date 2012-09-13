@@ -50,6 +50,7 @@
       'sources': [
         'virgo_conf.c',
         'virgo_error.c',
+        'virgo_exec.c',
         'virgo_init.c',
         'virgo_lua.c',
         'virgo_lua_loader.c',
@@ -62,6 +63,7 @@
         'virgo_portable.c',
         'virgo_time.c',
         'virgo_util.c',
+        'virgo_versions.c',
       ],
       'include_dirs': [
         '.',
