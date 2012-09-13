@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 virgo_error_t*
 virgo__path_current_executable_path(virgo_t *v, char *buffer, size_t buffer_len) {
