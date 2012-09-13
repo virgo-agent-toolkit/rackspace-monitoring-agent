@@ -108,6 +108,8 @@ VIRGO_API(virgo_error_t*) virgo_agent_conf_set(virgo_t *v, const char *key, cons
  */
 VIRGO_API(uv_loop_t*) virgo_get_loop(virgo_t *v);
 
+VIRGO_API(short) virgo_try_upgrade(virgo_t *v);
+
 /**
  * Get variable from config.
  * @return NULL when key is not found.

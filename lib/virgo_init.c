@@ -46,12 +46,12 @@ static int global_virgo_init = 0;
 
 void virgo__crash_reporter_init()
 {
-  
+
 }
 
 void virgo__crash_reporter_destroy()
 {
-  
+
 }
 
 #endif
@@ -108,9 +108,15 @@ virgo_create(virgo_t **p_v, const char *default_module)
   v = calloc(1, sizeof(virgo_t));
   v->lua_default_module = strdup(default_module);
   v->log_level = VIRGO_LOG_EVERYTHING;
+  v->try_upgrade = TRUE;
   *p_v = v;
 
   return VIRGO_SUCCESS;
+}
+
+short
+virgo_try_upgrade(virgo_t *v) {
+  return v->try_upgrade;
 }
 
 virgo_error_t*
