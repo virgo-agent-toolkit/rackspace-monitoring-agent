@@ -69,6 +69,9 @@ typedef int virgo_status_t;
 /* Program version was requested */
 #define VIRGO_EVERSIONREQ -7
 
+/* No File for Upgrade */
+#define VIRGO_ENOFILE -8
+
 /** An exception object. */
 typedef struct {
   /** The underlying status code. */

@@ -15,33 +15,21 @@
  *
  */
 
-#ifndef _virgo__paths_h_
-#define _virgo__paths_h_
+#ifndef _virgo_exec_h_
+#define _virgo_exec_h_
 
-typedef enum {
-  VIRGO_PATH_CURRENT_EXECUTABLE_PATH,
-  VIRGO_PATH_BUNDLE_DIR,
-  VIRGO_PATH_EXE_DIR,
-  VIRGO_PATH_PERSISTENT_DIR,
-  VIRGO_PATH_TMP_DIR,
-  VIRGO_PATH_LIBRARY_DIR,
-  VIRGO_PATH_CONFIG_DIR,
-  VIRGO_PATH_RUNTIME_DIR,
-  VIRGO_PATH_BUNDLE,
-  VIRGO_PATH_EXE,
-} virgo_path_e;
+#include "virgo_brand.h"
+#include "virgo_visibility.h"
+#include "virgo_portable.h"
+#include "virgo_error.h"
+#include "uv.h"
 
-#ifdef _WIN32
-  #ifndef SEP
-    #define SEP "\\\\"
-  #endif
-#else
-  #ifndef SEP
-    #define SEP "/"
-  #endif
-#endif
+typedef void(*virgo__exec_upgrade_cb)(virgo_t *v, const char *fmt, ...);
 
-virgo_error_t*
-virgo__paths_get(virgo_t *v, virgo_path_e type, char *buffer, size_t buffer_len);
+/* Look for a new executable and bundle, then exec them.
+ * Note: does not return on success.
+ */
+VIRGO_API(virgo_error_t*) virgo__exec_upgrade(virgo_t *v,
+                                              virgo__exec_upgrade_cb status);
 
 #endif
