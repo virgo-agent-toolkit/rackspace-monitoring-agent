@@ -57,7 +57,7 @@ def test_cmd(additional=""):
     state_config = os.path.join(paths.root, 'contrib')
     monitoring_config = os.path.join(paths.root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
 
-    return '%s -d -c %s -s %s %s' % (paths.agent, monitoring_config, state_config, additional)
+    return '%s -n -d -c %s -s %s %s' % (paths.agent, monitoring_config, state_config, additional)
 
 
 def test(stdout=None, entry="tests"):
@@ -66,7 +66,7 @@ def test(stdout=None, entry="tests"):
     else:
         agent_tests = os.path.join(paths.root, paths.BUILDTYPE, 'monitoring-test.zip')
 
-    cmd = test_cmd("--zip %s -e %s" % (agent_tests, entry))
+    cmd = test_cmd("--zip %s -e %s -n" % (agent_tests, entry))
     print cmd
     rc = 0
     if stdout is None:
