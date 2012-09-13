@@ -55,6 +55,11 @@ VIRGO_API(void) virgo_destroy(virgo_t *ctxt);
 VIRGO_API(const char*) virgo_get_load_path(virgo_t *ctxt);
 
 /**
+ * Sets up the lua context and uv run loop. Does not start things running yet.
+ */
+VIRGO_API(virgo_error_t*) virgo_init(virgo_t *v);
+
+/**
  * Runs the configured Virgo Context.  Only returns on fatal error, or
  * when tricked into exiting for purposes of a test case.
  */
@@ -88,10 +93,15 @@ VIRGO_API(virgo_error_t*) virgo_conf_service_name(virgo_t *v, const char *name);
 VIRGO_API(virgo_error_t*) virgo_conf_lua_load_path(virgo_t *v, const char *path);
 
 /**
- * Set path to a Zip file containing Lua files. init.lua inside the zip file
- * will be ran first, and other files can be loaded via require.
+ * Set the process argv arguments into the virgo context object.
  */
-VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char **argv);
+VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char** argv);
+
+/**
+ * Set a key in the agent configuration table. This provides a way for the
+ * agent entry point to pass information into the lua side of the agent.
+ */
+VIRGO_API(virgo_error_t*) virgo_agent_conf_set(virgo_t *v, const char *key, const char *val);
 
 /**
  * Retrieve event loop

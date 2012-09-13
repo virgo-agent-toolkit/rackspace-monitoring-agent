@@ -113,6 +113,18 @@ int main(int argc, char* argv[])
 
   virgo_log_infof(v, "Using bundle %s", virgo_get_load_path(v));
 
+  err = virgo_init(v);
+  if (err) {
+    handle_error("Error in init", err);
+    return EXIT_FAILURE;
+  }
+
+  err = virgo_agent_conf_set(v, "version", VERSION_FULL);
+  if (err) {
+    handle_error("Error setting agent version", err);
+    return EXIT_FAILURE;
+  }
+
   err = virgo_run(v);
   if (err) {
     if (err->err == VIRGO_EHELPREQ) {

@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 
-local processVersion = virgo.version
+local processVersion = virgo.agent_config.version
 local bundleVersion = '${AGENT_BUNDLE_VERSION}'
 
 local exports = {}
