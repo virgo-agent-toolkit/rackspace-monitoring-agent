@@ -139,14 +139,11 @@ int main(int argc, char* argv[])
 
   virgo_log_infof(v, "Process Executable: %s", path);
 
-  /* Ensure we can read the zip file */
-  fd = open(virgo_get_load_path(v), O_RDONLY);
-  if (fd < 0) {
-    fprintf(stderr, "Error: zip can't be opened %s\n", virgo_get_load_path(v));
+  /* Check to see if bundle is valid */
+  err = virgo__bundle_is_valid(v);
+  if (err) {
+    handle_error("Virgo Bundle is invalid", err);
     return EXIT_FAILURE;
-  }
-  else {
-    close(fd);
   }
 
   virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
