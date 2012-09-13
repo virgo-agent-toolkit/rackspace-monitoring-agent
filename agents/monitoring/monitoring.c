@@ -90,7 +90,6 @@ int main(int argc, char* argv[])
 {
   virgo_t *v;
   virgo_error_t *err;
-  int fd;
   char path[PATH_MAX];
 
   err = virgo_create(&v, "./init");
