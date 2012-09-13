@@ -48,6 +48,7 @@
       ],
 
       'sources': [
+        'virgo_agent_conf.c',
         'virgo_conf.c',
         'virgo_error.c',
         'virgo_init.c',

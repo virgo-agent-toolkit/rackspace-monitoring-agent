@@ -16,6 +16,7 @@
  */
 
 #include "virgo.h"
+#include "virgo__agent_conf.h"
 #include "virgo__conf.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
@@ -113,7 +114,7 @@ virgo_create(virgo_t **p_v, const char *default_module)
 }
 
 virgo_error_t*
-virgo_run(virgo_t *v)
+virgo_init(virgo_t *v)
 {
   virgo_error_t* err;
 
@@ -135,6 +136,26 @@ virgo_run(virgo_t *v)
   }
 #endif
 
+  err = virgo__lua_init(v);
+
+  if (err ) {
+    return err;
+  }
+
+  err = virgo__agent_conf_init(v);
+
+  if (err) {
+    return err;
+  }
+
+  return VIRGO_SUCCESS;
+}
+
+virgo_error_t*
+virgo_run(virgo_t *v)
+{
+  virgo_error_t* err;
+
 #ifndef _WIN32
   if (virgo__argv_has_flag(v, "-D", "--detach") == 1) {
     err = virgo_detach();
@@ -143,12 +164,6 @@ virgo_run(virgo_t *v)
     }
   }
 #endif
-  err = virgo__lua_init(v);
-
-  if (err ) {
-    return err;
-  }
-
   err = virgo__log_rotate(v);
 
   if (err) {
