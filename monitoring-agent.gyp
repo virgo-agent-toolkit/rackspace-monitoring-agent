@@ -158,9 +158,6 @@
       'target_name': 'versions',
       'type': 'none',
       'toolsets': ['host'],
-      'variables': {
-        'BUNDLE_VERSION': '<!(git --git-dir .git describe --tags)'
-      },
       'actions': [
         {
           'action_name': 'generate_version',
@@ -175,7 +172,7 @@
             'tools/lame_sed.py',
             '<@(_inputs)',
             '<@(_outputs)',
-            '{AGENT_BUNDLE_VERSION}:<(BUNDLE_VERSION)'
+            '{AGENT_BUNDLE_VERSION}:<(VERSION_FULL)'
           ]
         }
       ]
