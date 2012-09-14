@@ -96,38 +96,38 @@ local function loadMySQL()
 end
 
 -- List of MySQL Stats that we export, along with their metric type.
-local stat_types = {
-  Aborted_clients = 'uint64',
-  Connections = 'gauge',
+local stat_map = {
+  Aborted_clients = { type = 'uint64', alias = 'aborted_clients' },
+  Connections = { type = 'gauge', alias = 'connections' },
 
-  Innodb_buffer_pool_pages_dirty = 'uint64',
-  Innodb_buffer_pool_pages_free = 'uint64',
-  Innodb_buffer_pool_pages_flushed = 'uint64',
-  Innodb_buffer_pool_pages_total = 'uint64',
-  Innodb_row_lock_time = 'uint64',
-  Innodb_row_lock_time_avg = 'uint64',
-  Innodb_row_lock_time_max = 'uint64',
-  Innodb_rows_deleted = 'gauge',
-  Innodb_rows_inserted = 'gauge',
-  Innodb_rows_read = 'gauge',
-  Innodb_rows_updated = 'gauge',
+  Innodb_buffer_pool_pages_dirty = { type = 'uint64', alias = 'innodb.buffer_pool_pages_dirty' },
+  Innodb_buffer_pool_pages_free = { type = 'uint64', alias = 'innodb.buffer_pool_pages_free'},
+  Innodb_buffer_pool_pages_flushed = { type = 'uint64', alias = 'innodb.buffer_pool_pages_flushed'},
+  Innodb_buffer_pool_pages_total = { type = 'uint64', alias = 'innodb.buffer_pool_pages_total'},
+  Innodb_row_lock_time = { type = 'uint64', alias = 'innodb.row_lock_time'},
+  Innodb_row_lock_time_avg = { type = 'uint64', alias = 'innodb.row_lock_time_avg'},
+  Innodb_row_lock_time_max = { type = 'uint64', alias = 'innodb.row_lock_time_max'},
+  Innodb_rows_deleted = { type = 'gauge', alias = 'innodb.rows_deleted'},
+  Innodb_rows_inserted = { type = 'gauge', alias = 'innodb.rows_inserted'},
+  Innodb_rows_read = { type = 'gauge', alias = 'innodb.rows_read'},
+  Innodb_rows_updated = { type = 'gauge', alias = 'innodb.rows_updated'},
 
-  Queries = 'gauge',
+  Queries = { type = 'gauge', alias = 'queries'},
 
-  Threads_connected = 'uint64',
-  Threads_created = 'uint64',
-  Threads_running = 'uint64',
+  Threads_connected = { type = 'uint64', alias = 'threads.connected'},
+  Threads_created = { type = 'uint64', alias = 'threads.created'},
+  Threads_running = { type = 'uint64', alias = 'threads.running'},
 
-  Uptime = 'uint64',
+  Uptime = { type = 'uint64', alias = 'uptime'},
 
-  Qcache_free_blocks = 'uint64',
-  Qcache_free_memory = 'uint64',
-  Qcache_hits = 'gauge',
-  Qcache_inserts  = 'gauge',
-  Qcache_lowmem_prunes  = 'gauge',
-  Qcache_not_cached = 'gauge',
-  Qcache_queries_in_cache = 'uint64',
-  Qcache_total_blocks = 'uint64',
+  Qcache_free_blocks = { type = 'uint64', alias = 'qcache.free_blocks'},
+  Qcache_free_memory = { type = 'uint64', alias = 'qcache.free_memory'},
+  Qcache_hits = { type = 'gauge', alias = 'qcache.hits'},
+  Qcache_inserts  = { type = 'gauge', alias = 'qcache.inserts'},
+  Qcache_lowmem_prunes  = { type = 'gauge', alias = 'qcache.lowmem_prunes'},
+  Qcache_not_cached = { type = 'gauge', alias = 'qcache.not_cached'},
+  Qcache_queries_in_cache = { type = 'uint64', alias = 'qcache.queries_in_cache'},
+  Qcache_total_blocks = { type = 'uint64', alias = 'qcache.total_blocks'},
 }
 
 function MySQLCheck:_runCheckInChild(callback)
@@ -234,11 +234,11 @@ function MySQLCheck:_runCheckInChild(callback)
       break
     end
     local keyname = ffi.string(r[0])
-    local ktype = stat_types[keyname]
-    if ktype ~= nil then
+    local kstat = stat_map[keyname]
+    if kstat ~= nil then
       -- TODO: would be nice to use mysql native types here?
       local val = ffi.string(r[1])
-      cr:addMetric(keyname, nil, ktype, val)
+      cr:addMetric(kstat.alias, nil, kstat.type, val)
     end
   end
 
