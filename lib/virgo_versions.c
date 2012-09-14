@@ -115,14 +115,14 @@ next:
     ptr = ptr + strlen(ptr) + 1;
   }
 
-  uv_fs_req_cleanup(&readdir_req);
-
   if (!latest) {
+    uv_fs_req_cleanup(&readdir_req);
     return virgo_error_create(VIRGO_ENOFILE, "zero files");
   }
 
   /* Save off the path */
   snprintf(buffer, buffer_len, "%s%s%s", path, SEP, latest);
+  uv_fs_req_cleanup(&readdir_req);
 
   return VIRGO_SUCCESS;
 }
