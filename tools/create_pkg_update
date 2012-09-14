@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+
+import os
+import errno
+import platform
+import shutil
+import subprocess
+import sys
+
+from pkgtype import system_info, git_describe
+from optparse import OptionParser
+
+BUNDLE_FILE = 'monitoring.zip'
+BUNDLE_FILE_TEMPL = 'monitoring-%s.zip'
+EXE_FILE = 'monitoring-agent'
+EXE_FILE_TEMPL = 'monitoring-agent-%s'
+
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+out = os.path.join(root, 'out')
+
+def copy_files(bundle_path, exe_path, tag):
+    src = os.path.join(root, BUNDLE_FILE)
+    to = os.path.join(bundle_path, BUNDLE_FILE_TEMPL % tag)
+    shutil.copy(src, to)
+
+    src = os.path.join(root, EXE_FILE)
+    to = os.path.join(exe_path, EXE_FILE_TEMPL % tag)
+    shutil.copy(src, to)
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc: # Python >2.5
+        if exc.errno == errno.EEXIST:
+            pass
+        else: raise
+
+def create_upgrade(dest, tag, system, dist):
+    dest = os.path.join(dest, 'unsigned')
+    bundle_path = os.path.join(dest, 'bundle')
+    exe_path = os.path.join(dest, 'exe')
+    exe_path = os.path.join(exe_path, system)
+    exe_path = os.path.join(exe_path, platform.machine())
+
+    mkdir_p(bundle_path)
+    mkdir_p(exe_path)
+    copy_files(bundle_path, exe_path, tag)
+
+if __name__ == "__main__":
+    usage = "usage: %prog [destination path]"
+    parser = OptionParser(usage=usage)
+    (options, args) = parser.parse_args()
+
+    if len(args) != 1:
+        parser.print_usage()
+        sys.exit(1)
+
+    dest = args[0]
+
+    # gather tag information or quit otherwise
+    tag = git_describe(is_exact=True, split=False)
+    if not tag:
+        sys.exit(0)
+
+    machine, system, dist = system_info()
+    create_upgrade(dest, tag, system, dist)
