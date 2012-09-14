@@ -88,7 +88,7 @@ end
 
 function MonitoringAgent:_savePersistentVariable(variable, data, callback)
   local filename = self:_getPersistentFilename(variable)
-  fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0644", function(err)
+  fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0755", function(err)
     if err and err.code ~= 'EEXIST' then
       callback(err)
       return
@@ -240,6 +240,7 @@ function MonitoringAgent:initialize(options)
     options.stateDirectory = constants.DEFAULT_STATE_PATH
   end
   logging.debug('Using state directory ' .. options.stateDirectory)
+  self._stateDirectory = options.stateDirectory
   self._states = States:new(options.stateDirectory)
   self._config = virgo.config
   self._options = options

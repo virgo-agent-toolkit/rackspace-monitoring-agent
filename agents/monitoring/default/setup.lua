@@ -80,12 +80,25 @@ function Setup:save(token, hostname, callback)
   end)
 end
 
+function Setup:_out(msg)
+  process.stdout:write(msg .. '\n')
+end
+
+function Setup:_getOsStartString()
+  return 'service rackspace-monitoring-agent start'
+end
+
 function Setup:run(callback)
   local username, token, hostname
   local agentToken, client
 
   hostname = os.hostname()
-  process.stdout:write(fmt('Using hostname \'%s\'\n', hostname))
+  self:_out('')
+  self:_out('Setup Settings:')
+  self:_out(fmt('  Hostname: %s', hostname))
+  self:_out(fmt('  Config File: %s', self._configFile))
+  self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
+  self:_out('')
 
   function createToken(callback)
     client.agent_tokens.create({ ['label'] = hostname }, function(err, token)
@@ -111,14 +124,14 @@ function Setup:run(callback)
     end,
     function(callback)
       if self._username == nil then
-        ask('What is your Rackspace cloud username:', callback)
+        ask('Username:', callback)
       else
         callback(nil, self._username)
       end
     end,
     function(_username, callback)
       if self._apikey == nil then
-        ask('What is your Rackspace API key or Password:', function(err, _token)
+        ask('API Key or Password:', function(err, _token)
           username = _username
           token = _token
           callback(err, username, token)
@@ -145,30 +158,35 @@ function Setup:run(callback)
     function(agentToken, tokens, callback)
       -- save the token if we found it
       if agentToken then
-        process.stdout:write('Found agent token for host\n')
+        self:_out('')
+        self:_out(fmt('Found existing Agent Token for %s', hostname))
+        self:_out('')
         self._agent:setConfig({ ['monitoring_token'] = agentToken })
         self:save(agentToken, hostname, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
          createToken(callback)
       elseif #tokens.values > 0 then
-        process.stdout:write('\n')
-        process.stdout:write('Tokens:\n')
+        self:_out('')
+        self:_out('The Monitoring Agent uses an authentication token to communicate with the Cloud Monitoring Service.')
+        self:_out('')
+        self:_out('Please select from an existing token, or create a new token:')
         for i, v in ipairs(tokens.values) do
           if v.label then
-            process.stdout:write(fmt('  %i. %s - %s\n', i, v.label, v.id))
+            self:_out(fmt('  %i. %s - %s', i, v.label, v.id))
           else
-            process.stdout:write(fmt('  %i. %s\n', i, v.id))
+            self:_out(fmt('  %i. %s', i, v.id))
           end
         end
-        process.stdout:write(fmt('  %i. Create Token', #tokens.values + 1))
-        process.stdout:write('\n')
-        ask('  Select Token:', function(err, index)
+        self:_out(fmt('  %i. Create New Token', #tokens.values + 1))
+        self:_out('')
+
+        ask('Select Option:', function(err, index)
           if err then
             callback(err)
             return
           end
-          process.stdout:write('\n')
+          self:_out('')
           local validatedIndex = tonumber(index) -- validate response
           if validatedIndex >= 1 and validatedIndex <= #tokens.values then
             self._agent:setConfig({ ['monitoring_token'] = tokens.values[validatedIndex].id })
@@ -186,7 +204,9 @@ function Setup:run(callback)
     end,
     -- test connectivity
     function(callback)
-      process.stdout:write('Testing agent connection...\n')
+      self:_out('')
+      self:_out('Testing Agent connectivity to Cloud Monitoring Service...')
+      self:_out('')
       async.series({
         function(callback)
           self._agent:loadStates(callback)
@@ -197,7 +217,7 @@ function Setup:run(callback)
         end,
         function(callback)
           function timeout()
-            callback(errors.AuthTimeoutError:new('Failed to authenticate.'))
+            callback(errors.AuthTimeoutError:new('Authentication timed out.'))
           end
 
           local authTimer = timer.setTimeout(constants.SETUP_AUTH_TIMEOUT, timeout)
@@ -205,6 +225,8 @@ function Setup:run(callback)
           function testAuth()
             timer.clearTimer(authTimer)
             if self._receivedPromotion then
+              self:_out('')
+              self:_out('Agent successfuly connected!')
               callback()
             else
               authTimer = timer.setTimeout(constants.SETUP_AUTH_TIMEOUT, timeout)
@@ -215,9 +237,15 @@ function Setup:run(callback)
           timer.setTimeout(constants.SETUP_AUTH_CHECK_INTERVAL, testAuth)
         end,
         function(callback)
-          process.stdout:write('\n\nSuccessfully tested Agent connection\n')
-          process.stdout:write('\nYour agent is ready to go, now run:\n')
-          process.stdout:write('\n    service rackspace-monitoring-agent start\n\n')
+          -- TODO: detect Platform, iniit.d system, etc
+          self:_out('')
+          self:_out('Your Agent configuration is now complete.')
+          self:_out('')
+          self:_out('To start the Agent on your server, now run:')
+          self:_out('')
+          self:_out(fmt('    %s', self:_getOsStartString()))
+          self:_out('')
+          self:_out('')
           callback()
         end
       }, callback)
