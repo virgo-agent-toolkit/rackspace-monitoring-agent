@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import subprocess
+import os
+import sys
+
+from pkgtype import system_info, git_describe
+from optparse import OptionParser
+
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+out = os.path.join(root, 'out')
+
+def sh(cmd):
+    print cmd
+    if subprocess.call(cmd, shell=True) != 0:
+       print "commit error"
+       sys.exit(1)
+
+def git_add_commit(dest, branch):
+    sh("cd %s && git checkout -B '%s'" % (dest, branch))
+    sh("cd %s && git add ." % dest)
+    sh("cd %s && git commit -m '%s'" % (dest, 'Release'))
+    sh("cd %s && git push origin '%s'" % (dest, branch))
+
+if __name__ == "__main__":
+    usage = "usage: %prog [destination path]"
+    parser = OptionParser(usage=usage)
+    (options, args) = parser.parse_args()
+
+    if len(args) != 1:
+        parser.print_usage()
+        sys.exit(1)
+
+    dest = args[0]
+
+    # gather tag information or quit otherwise
+    tag = git_describe(is_exact=True, split=False)
+    if not tag:
+        sys.exit(0)
+
+    machine, system, dist = system_info()
+    branch = "%s-%s-%s-%s-%s" % \
+        ("rackspace-monitoring-agent", tag, system, dist, machine)
+    git_add_commit(dest, branch)

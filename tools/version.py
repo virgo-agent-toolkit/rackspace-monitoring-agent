@@ -3,6 +3,7 @@
 import subprocess
 import sys
 from optparse import OptionParser
+from pkgtype import git_describe
 
 # Generate versions for RPM/dpkg without dashes from git describe
 # make release 0 if tag matches exactly
@@ -15,32 +16,6 @@ parser = OptionParser(usage=usage)
 parser.add_option("-s", "--seperator", dest="seperator", default="-",
                           help="version seperator", metavar="SEP")
 (options, args) = parser.parse_args()
-
-
-# git describe return "0.1-143-ga554734"
-# git_describe() returns {'release': '143', 'tag': '0.1', 'hash': 'ga554734'}
-def git_describe():
-    describe = "git describe --tags --always"
-
-    try:
-        p = subprocess.Popen(describe,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                shell=True)
-    except OSError as e:
-        print "ERROR: running: %s" % describe
-        print e
-        sys.exit(1)
-
-    version, errors = p.communicate()
-    if (len(errors)):
-        print(errors)
-        sys.exit(1)
-
-    version = version.strip().split('-')
-
-    return version
-
 
 # If there is no release then it is zero
 def zero_release(version):
@@ -56,7 +31,7 @@ def git_describe_fields(version):
     version.extend(version[0].split('.'))
     return dict(zip(fields, version))
 
-version = git_describe()
+version = git_describe(is_exact=False, split=True)
 zeroed = zero_release(version)
 fields = git_describe_fields(zeroed)
 
