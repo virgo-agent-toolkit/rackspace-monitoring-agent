@@ -17,6 +17,7 @@ parser.add_option("-s", "--seperator", dest="seperator", default="-",
                           help="version seperator", metavar="SEP")
 (options, args) = parser.parse_args()
 
+
 # If there is no release then it is zero
 def zero_release(version):
     if len(version) == 1:
