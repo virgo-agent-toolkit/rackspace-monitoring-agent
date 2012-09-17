@@ -76,7 +76,7 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
   virgo_error_t *err;
   const char *arg;
   char path[PATH_MAX];
-  short forced_zip = 0;
+  short forced_zip = FALSE;
 
   v->argc = argc;
   v->argv = argv;
@@ -87,7 +87,8 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
     if (err) {
       return err;
     }
-    forced_zip = 1;
+    forced_zip = TRUE;
+    v->try_upgrade = FALSE;
   }
 
   if (virgo__argv_has_flag(v, "-n", "--no-upgrade")) {
