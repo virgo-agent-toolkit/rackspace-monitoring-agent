@@ -21,6 +21,7 @@ def pkg_type():
 
     return None
 
+
 def pkg_dir():
     dist = platform.dist()
 
@@ -29,11 +30,13 @@ def pkg_dir():
 
     return "%s-%s" % dist[:2]
 
+
 def system_info():
     # gather system, machine, and distro info
     machine = platform.machine()
     system = platform.system().lower()
     return (machine, system, pkg_dir())
+
 
 # git describe return "0.1-143-ga554734"
 # git_describe() returns {'release': '143', 'tag': '0.1', 'hash': 'ga554734'}
