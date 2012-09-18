@@ -10,7 +10,7 @@ out = os.path.join(root, 'out')
 
 sys.path.append(os.path.join(root, 'tools'))
 
-from pkgtype import pkg_type, pkg_dir
+from pkgutils import pkg_type, pkg_dir
 
 usage = "usage: %prog destination"
 parser = OptionParser(usage=usage)
