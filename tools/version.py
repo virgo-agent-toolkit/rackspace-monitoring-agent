@@ -3,7 +3,7 @@
 import subprocess
 import sys
 from optparse import OptionParser
-from pkgtype import git_describe
+from pkgutils import git_describe
 
 # Generate versions for RPM/dpkg without dashes from git describe
 # make release 0 if tag matches exactly

@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 
-from pkgtype import pkg_type, pkg_dir
+from pkgutils import pkg_type, pkg_dir
 from optparse import OptionParser
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
