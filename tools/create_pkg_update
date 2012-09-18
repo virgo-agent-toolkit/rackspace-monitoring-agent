@@ -4,10 +4,9 @@ import os
 import errno
 import platform
 import shutil
-import subprocess
 import sys
 
-from pkgtype import system_info, git_describe
+from pkgutils import system_info, git_describe, mkdir_p
 from optparse import OptionParser
 
 BUNDLE_FILE = 'monitoring.zip'
@@ -27,18 +26,10 @@ def copy_files(bundle_path, exe_path, tag):
     to = os.path.join(exe_path, EXE_FILE_TEMPL % tag)
     shutil.copy(src, to)
 
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError as exc: # Python >2.5
-        if exc.errno == errno.EEXIST:
-            pass
-        else: raise
-
 def create_upgrade(dest, tag, system, dist):
     dest = os.path.join(dest, 'unsigned')
     bundle_path = os.path.join(dest, 'bundle')
-    exe_path = os.path.join(dest, 'exe')
+    exe_path = os.path.join(dest, 'binary')
     exe_path = os.path.join(exe_path, system)
     exe_path = os.path.join(exe_path, platform.machine())
 

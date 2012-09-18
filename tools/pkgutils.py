@@ -1,5 +1,8 @@
 #!/usr/bin/env python
+import os
+import errno
 import platform
+import sys
 import subprocess
 
 # Figure out what type of package to build based on platform info
@@ -29,6 +32,23 @@ def pkg_dir():
     dist = tuple([x.lower() for x in dist])
 
     return "%s-%s" % dist[:2]
+
+
+def sh(cmd):
+    print cmd
+    if subprocess.call(cmd, shell=True) != 0:
+        print "commit error"
+        sys.exit(1)
+
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST:
+            pass
+        else:
+            raise
 
 
 def system_info():
