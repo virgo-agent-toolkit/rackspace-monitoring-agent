@@ -141,7 +141,7 @@ deb: all dist $(debbuild_dir)
 deb-sign:
 	@echo noop
 
-PKG_TYPE=$(shell python ./tools/pkgtype.py)
+PKG_TYPE=$(shell python ./tools/pkgutils.py)
 pkg:
 	python ./tools/version.py > out/VERSION
 	$(MAKE) $(PKG_TYPE)
