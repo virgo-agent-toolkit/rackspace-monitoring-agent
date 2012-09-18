@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import shutil
+import sys
+import os
+import subprocess
+
+from pkgutils import mkdir_p, sh
+from optparse import OptionParser
+
+SIG_EXTENSION = '.sig'
+
+def sign(key, filepath):
+    sigpath = filepath + SIG_EXTENSION
+    sign = "openssl dgst -sha256 -sign %s -out %s %s" \
+        % (key, sigpath, filepath)
+
+    try:
+        p = subprocess.Popen(sign,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=True)
+    except OSError as e:
+        print "ERROR: running: %s" % describe
+        print e
+        sys.exit(1)
+
+    sig, errors = p.communicate()
+    if (len(errors)):
+        print(errors)
+        return None
+
+    return sigpath
+
+
+def git_promote(dest, branch):
+    sh("cd %s && git add ." % dest)
+    sh("cd %s && git ls-files --deleted | xargs git rm" % dest)
+    sh("cd %s && git commit -m '%s'" % (dest, "Promoted %s" % branch))
+    sh("cd %s && git push origin '%s'" % (dest, branch))
+    sh("cd %s && git checkout master" % (dest))
+    sh("cd %s && git merge '%s'" % (dest, branch))
+    sh("cd %s && git push origin master" % (dest))
+
+
+def promote(dest, branch, key):
+    unsigned_path = os.path.join(dest, 'unsigned')
+    signed_path = os.path.join(dest, 'release')
+    for root, dirs, files in os.walk(unsigned_path):
+        for name in files:
+            filepath = os.path.join(root, name)
+            if filepath.find(SIG_EXTENSION) < 0:
+                print('Signing %s' % filepath)
+                sigpath = sign(key, filepath)
+                if sigpath:
+                    relpath = os.path.relpath(sigpath, unsigned_path)
+                    newfile = os.path.join(signed_path, relpath)
+                    newpath = os.path.dirname(newfile)
+
+                    if not os.path.isdir(newpath):
+                        mkdir_p(newpath)
+
+                    try:
+                        shutil.move(filepath, newpath)
+                        shutil.move(sigpath, newpath)
+                    except shutil.Error, e:
+                        print(e)
+
+    git_promote(dest, branch)
+
+if __name__ == "__main__":
+    usage = "usage: %prog [destination path] [branch] [key]"
+    parser = OptionParser(usage=usage)
+    (options, args) = parser.parse_args()
+
+    if len(args) != 3:
+        parser.print_usage()
+        sys.exit(1)
+
+    dest = args[0]
+    branch = args[1]
+    key = args[2]
+
+    promote(dest, branch, key)

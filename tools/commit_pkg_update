@@ -1,20 +1,13 @@
 #!/usr/bin/env python
 
-import subprocess
 import os
 import sys
 
-from pkgtype import system_info, git_describe
+from pkgutils import system_info, git_describe, sh
 from optparse import OptionParser
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 out = os.path.join(root, 'out')
-
-def sh(cmd):
-    print cmd
-    if subprocess.call(cmd, shell=True) != 0:
-       print "commit error"
-       sys.exit(1)
 
 def git_add_commit(dest, branch):
     sh("cd %s && git checkout -B '%s'" % (dest, branch))
