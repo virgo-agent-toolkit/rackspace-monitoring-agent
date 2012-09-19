@@ -6,6 +6,9 @@
   "method": "handshake.hello",
   "params": {
     "token": "MYTOKEN",
-    "agent_id": "MYUID"
+    "agent_id": "MYUID",
+    "agent_name": "Rackspace Monitoring Agent",
+    "process_version": "1.0.0",
+    "bundle_version": "1.0.0"
   }
 }
