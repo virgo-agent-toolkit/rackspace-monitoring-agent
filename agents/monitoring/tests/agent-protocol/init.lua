@@ -56,6 +56,38 @@ exports['test_bad_version_hello_gives_err'] = function(test, asserts)
   end)
 end
 
+function test_hello_response_error_handling(fixture, checkCb)
+  return function(test, asserts)
+    local sock = Emitter:new(), conn
+    local data = fixtures[fixture]['handshake.hello.response']
+
+    sock.write = function()
+      sock:emit('data', data .. "\n")
+    end
+
+    conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+    conn:on('error', checkCb(test, asserts))
+
+    conn:startHandshake(function(err, msg)
+      -- Ensure error is set
+      asserts.ok(err)
+      test.done()
+    end)
+  end
+end
+
+exports['test_bad_process_version_hello_fails'] = test_hello_response_error_handling('invalid-process-version', function(test, asserts)
+  return function(err)
+    asserts.ok(err.message:find('Agent version [%w%p]* is too old, please upgrade to'))
+  end
+end)
+
+exports['test_bad_bundle_version_hello_fails'] = test_hello_response_error_handling('invalid-bundle-version', function(test, asserts)
+  return function(err)
+    asserts.ok(err.message:find('Agent bundle version [%w%p]* is too old, please upgrade to'))
+  end
+end)
+
 exports['test_unexpected_response_and_hello_timeout'] = function(test, asserts)
   local sock = Emitter:new()
   local data = fixtures['invalid-version']['handshake.hello.response']

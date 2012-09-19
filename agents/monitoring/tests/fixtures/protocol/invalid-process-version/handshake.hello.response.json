@@ -1,0 +1,11 @@
+{
+  "v": "1",
+  "id": 0,
+  "target": "agentA",
+  "source": "endpoint",
+  "error": {
+    "code": 400,
+    "message": "Agent version 9 is too old, please upgrade to 10.\nhttp://docs.rackspace.com/cm/api/v1.0/cm-agent/content/Upgrading.html"
+  },
+  "result": null
+}
