@@ -133,12 +133,12 @@ function Setup:run(callback)
         callback(nil, self._username, self._apikey)
       end
     end,
-    function(callback)
+    function(username, apikey, callback)
       if (self._username == nil and self._apikey ~= nil)
          or (self._username ~= nil and self._apikey == nil) then
         callback(errors.UserResponseError:new('Username and password/apikey must be provided together.'))
       end
-      callback()
+      callback(nil, username, token)
     end,
     -- fetch all tokens
     function(username, token, callback)
