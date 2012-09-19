@@ -65,10 +65,6 @@ function Setup:save(token, hostname, callback)
   2. this feature will be ran by such a small set of people who are very
   technically minded anyways so setting an environment variable is OK.
   ]]--
-  if process.env.STAGING then
-    local srvServers = table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ', ')
-    data = data .. fmt('monitoring_endpoints %s\n', srvServers)
-  end
   fs.writeFile(self._configFile, data, function(err)
     if err then
       process.stdout:write('failed writing config filen\n')
