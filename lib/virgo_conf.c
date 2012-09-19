@@ -91,7 +91,7 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
     v->try_upgrade = FALSE;
   }
 
-  if (virgo__argv_has_flag(v, "-n", "--no-upgrade")) {
+  if (virgo__argv_has_flag(v, "-o", "--no-upgrade")) {
     v->try_upgrade = FALSE;
   }
 
