@@ -79,6 +79,7 @@ function HandshakeHello:initialize(token, agentId)
   self.method = 'handshake.hello'
   self.params.token = token
   self.params.agent_id = agentId
+  self.params.agent_name = 'Rackspace Monitoring Agent'
   self.params.process_version = version.process
   self.params.bundle_version = version.bundle
 end
