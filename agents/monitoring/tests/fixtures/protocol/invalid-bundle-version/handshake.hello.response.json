@@ -5,7 +5,7 @@
   "source": "endpoint",
   "error": {
     "code": 400,
-    "message": "Agent bundle version 9 is too old, please upgrade to 10.\nhttp://docs.rackspace.com/cm/api/v1.0/cm-agent/content/Upgrading.html"
+    "message": "Agent bundle version 9.0.2 is too old, please upgrade to 10.0.0. http://docs.rackspace.com/cm/api/v1.0/cm-agent/content/Upgrading.html"
   },
   "result": null
 }
