@@ -1,7 +1,7 @@
 Source: rackspace-monitoring-agent
 Section: admin
 Priority: optional
-Maintainer: Rackspace Cloud Monitoring <cloud-monitoring@rackspace.com>
+Maintainer: Rackspace Cloud Monitoring <monitoring@rackspace.com>
 Build-Depends: debhelper (>= 7), python, build-essential
 Standards-Version: 3.9.1
 
