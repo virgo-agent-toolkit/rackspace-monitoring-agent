@@ -144,7 +144,7 @@ deb-sign:
 PKG_TYPE=$(shell python ./tools/pkgutils.py)
 pkg:
 	python ./tools/version.py > out/VERSION
-	$(MAKE) $(PKG_TYPE)
+	[ "$(PKG_TYPE)" == "None" ] || $(MAKE) $(PKG_TYPE)
 
 pkg-sign:
 	make $(PKG_TYPE)-sign
