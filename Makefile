@@ -147,7 +147,7 @@ pkg:
 	[ "$(PKG_TYPE)" == "None" ] || $(MAKE) $(PKG_TYPE)
 
 pkg-sign:
-	make $(PKG_TYPE)-sign
+	[ "$(PKG_TYPE)" == "None" ] || make $(PKG_TYPE)-sign
 
 update:
 	git submodule foreach git fetch && git submodule update --init --recursive
