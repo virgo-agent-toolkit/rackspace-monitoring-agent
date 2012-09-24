@@ -26,13 +26,17 @@ def pkg_type():
 
 
 def pkg_dir():
-    dist = platform.dist()
-
-    # Lower case everyting (looking at you Ubuntu)
-    dist = tuple([x.lower() for x in dist])
-
-    return "%s-%s" % dist[:2]
-
+    system = platform.system().lower()
+    machine = platform.machine().lower()
+    addon = ""
+    if system == "freebsd":
+        system = system + platform.release().lower()[0]
+    if system == "linux":
+        dist = platform.dist()
+        # Lower case everyting (looking at you Ubuntu)
+        dist = tuple([x.lower() for x in dist])
+        addon = "-%s-%s" % dist[:2]
+    return "%s-%s%s" % (system, machine, addon)
 
 def sh(cmd):
     print cmd
