@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "virgo.h"
 #include "virgo_error.h"
