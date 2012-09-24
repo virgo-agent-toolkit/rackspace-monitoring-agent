@@ -30,14 +30,26 @@ function DiskCheck:run(callback)
   local disks = s:disks()
   local checkResult = CheckResult:new(self, {})
   local name, usage
+  local metrics = {
+    'reads',
+    'writes',
+    'read_bytes',
+    'write_bytes',
+    'rtime',
+    'wtime',
+    'qtime',
+    'time',
+    'service_time',
+    'queue'
+  }
 
   for i=1, #disks do
     name = disks[i]:name()
     usage = disks[i]:usage()
 
     if usage then
-      for key, value in pairs(usage) do
-        checkResult:addMetric(key, name, nil, value)
+      for _, key in pairs(metrics) do
+        checkResult:addMetric(key, name, nil, usage[key])
       end
     end
   end
