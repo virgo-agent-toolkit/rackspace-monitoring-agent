@@ -1,0 +1,2 @@
+#!/bin/sh
+update-rc.d rackspace-monitoring-agent defaults 91 09
