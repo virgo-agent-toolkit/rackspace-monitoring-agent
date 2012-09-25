@@ -46,7 +46,7 @@ local table = require('table')
 local MonitoringAgent = Emitter:extend()
 
 function MonitoringAgent:_queryForEndpoints(domains, callback)
-  local endpoints = ''
+  local endpoints = {}
   function iter(domain, callback)
     dns.resolve(domain, 'SRV', function(err, results)
       if err then
@@ -61,11 +61,8 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
     local i, v, serverPort
     for i, v in pairs(results) do
       serverPort = results[i][1].name .. ':' .. results[i][1].port
-      endpoints = endpoints .. serverPort
+      table.insert(endpoints, serverPort)
       logging.info('found endpoint: ' .. serverPort)
-      if i ~= #results then
-        endpoints = endpoints .. ','
-      end
     end
     callback(nil, endpoints)
   end)
@@ -159,11 +156,15 @@ function MonitoringAgent:_verifyState(callback)
 end
 
 function MonitoringAgent:_loadEndpoints(callback)
-  local endpoints
+  local endpoints = {}
   local query_endpoints
 
   if not self._config['monitoring_query_endpoints'] then
     self._config['monitoring_query_endpoints'] = table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
+  end
+
+  function shuffleAndStringify(array)
+    return table.concat(misc.shuffleArray(array), ",")
   end
 
   if self._config['monitoring_query_endpoints'] and
@@ -176,7 +177,7 @@ function MonitoringAgent:_loadEndpoints(callback)
         callback(err)
         return
       end
-      self._config['monitoring_endpoints'] = endpoints
+      self._config['monitoring_endpoints'] = shuffleAndStringify(endpoints)
       callback()
     end)
   else
@@ -192,6 +193,7 @@ function MonitoringAgent:_loadEndpoints(callback)
         process.exit(1)
       end
     end
+    self._config['monitoring_endpoints'] = shuffleAndStringify(endpoints)
     callback()
   end
 end
