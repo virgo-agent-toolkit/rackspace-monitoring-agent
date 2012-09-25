@@ -96,7 +96,7 @@ responses['check.test'] = function(self, request, callback)
   end)
 end
 
-function AgentProtocolConnection:initialize(log, myid, token, conn)
+function AgentProtocolConnection:initialize(log, myid, token, guid, conn)
   assert(conn ~= nil)
   assert(myid ~= nil)
 
@@ -113,6 +113,7 @@ function AgentProtocolConnection:initialize(log, myid, token, conn)
   self._completions = {}
   self._requests = requests
   self._responses = responses
+  self._guid = guid
   self.HANDSHAKE_TIMEOUT = HANDSHAKE_TIMEOUT
   self:setState(STATES.INITIAL)
 end
@@ -199,7 +200,7 @@ function AgentProtocolConnection:_completionKey(...)
   local source = nil
 
   if #args == 1 then
-    source = self._myid
+    source = self._guid
     msgid = args[1]
   elseif #args == 2 then
     source = args[1]
@@ -213,7 +214,7 @@ end
 
 function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
   msg.target = 'endpoint'
-  msg.source = self._myid
+  msg.source = self._guid
   local msg_str = JSON.stringify(msg)
   local data = msg_str .. '\n'
   local key = self:_completionKey(msg.target, msg.id)

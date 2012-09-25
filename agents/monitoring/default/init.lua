@@ -28,6 +28,7 @@ local fs = require('fs')
 local os = require('os')
 local path = require('path')
 local Emitter = require('core').Emitter
+local vtime = require('virgo-time')
 
 local sigarCtx = require('./sigar').ctx
 
@@ -93,7 +94,9 @@ function MonitoringAgent:_savePersistentVariable(variable, data, callback)
       callback(err)
       return
     end
-    fs.writeFile(filename, data, callback)
+    fs.writeFile(filename, data, function(err)
+      callback(err, filename)
+    end)
   end)
 end
 
@@ -119,7 +122,10 @@ function MonitoringAgent:_verifyState(callback)
     process.exit(1)
   end
 
-  async.waterfall({
+  -- Regen GUID
+  self._config['monitoring_guid'] = self:_getSystemId()
+
+  async.series({
     -- retrieve persistent variables
     function(callback)
       if self._config['monitoring_id'] ~= nil then
@@ -129,7 +135,7 @@ function MonitoringAgent:_verifyState(callback)
 
       self:_getPersistentVariable('monitoring_id', function(err, monitoring_id)
         local getSystemId
-        getSystemId = function()
+        getSystemId = function(callback)
           monitoring_id = self:_getSystemId()
           if not monitoring_id then
             logging.error("could not retrieve system id... retrying")
@@ -142,8 +148,9 @@ function MonitoringAgent:_verifyState(callback)
 
         if err and err.code ~= 'ENOENT' then
           callback(err)
+          return
         elseif err and err.code == 'ENOENT' then
-          getSystemId()
+          getSystemId(callback)
         else
           self._config['monitoring_id'] = monitoring_id
           callback()
@@ -153,6 +160,7 @@ function MonitoringAgent:_verifyState(callback)
     -- log
     function(callback)
       logging.debug('Using monitoring_id ' .. self._config['monitoring_id'])
+      logging.debug('Using monitoring_guid ' .. self._config['monitoring_guid'])
       callback()
     end
   }, callback)
@@ -221,7 +229,10 @@ function MonitoringAgent:connect(callback)
     end)
     return
   end
-  self._streams = ConnectionStream:new(self._config['monitoring_id'], self._config['monitoring_token'], self._options)
+  self._streams = ConnectionStream:new(self._config['monitoring_id'],
+                                       self._config['monitoring_token'],
+                                       self._config['monitoring_guid'],
+                                       self._options)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)
