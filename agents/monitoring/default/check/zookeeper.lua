@@ -21,44 +21,24 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local split = require('../util/misc').split
 
-local METRICS_NAME_MAP = {
-  zk_version = 'version',
-  zk_avg_latency = 'avg_latency',
-  zk_max_latency = 'max_latency',
-  zk_min_latency = 'min_latency',
-  zk_packets_sent = 'packets_sent',
-  zk_packets_received = 'packets_received',
-  zk_num_alive_connections = 'num_alive_connections',
-  zk_outstanding_requests = 'outstanding_requests',
-  zk_server_state = 'server_state',
-  zk_znode_count = 'znode_count',
-  zk_watch_count = 'watch_count',
-  zk_approximate_data_size = 'approximate_data_size',
-  zk_open_file_descriptor_count = 'open_file_descriptor_count',
-  zk_max_file_descriptor_count = 'max_file_descriptor_count',
-  zk_followers = 'followers',
-  zk_synced_followers = 'synced_followers',
-  zk_pending_syncs = 'pending_syncs'
-}
-
-local METRICS_TYPE_MAP = {
-  zk_version = 'string',
-  zk_avg_latency = 'uint32',
-  zk_max_latency = 'uint32',
-  zk_min_latency = 'uint32',
-  zk_packets_sent = 'gauge',
-  zk_packets_received = 'gauge',
-  zk_num_alive_connections = 'uint32',
-  zk_outstanding_requests = 'uint32',
-  zk_server_state = 'string',
-  zk_znode_count = 'uint32',
-  zk_watch_count = 'uint32',
-  zk_approximate_data_size = 'uint32',
-  zk_open_file_descriptor_count = 'uint32',
-  zk_max_file_descriptor_count = 'uint32',
-  zk_followers = 'uint32',
-  zk_synced_followers = 'uint32',
-  zk_pending_syncs = 'uint32'
+local METRICS_MAP = {
+  zk_version = { type = 'string', alias = 'version' },
+  zk_avg_latency = { type = 'uint32', alias = 'avg_latency' },
+  zk_max_latency = { type = 'uint32', alias = 'max_latency' },
+  zk_min_latency = { type = 'uint32', alias = 'min_latency' },
+  zk_packets_sent = { type = 'gauge', alias = 'packets_sent' },
+  zk_packets_received = { type = 'gauge', alias = 'packets_received'},
+  zk_num_alive_connections = { type = 'uint32', alias = 'num_alive_connections' },
+  zk_outstanding_requests = { type = 'uint32', alias = 'outstanding_requests' },
+  zk_server_state = { type = 'string', alias = 'server_state' },
+  zk_znode_count = { type = 'uint32', alias = 'znode_count' },
+  zk_watch_count = { type = 'uint32', alias = 'watch_count' },
+  zk_approximate_data_size = { type = 'uint32', alias = 'approximate_data_size' },
+  zk_open_file_descriptor_count = { type = 'uint32', alias = 'open_file_descriptor_count' },
+  zk_max_file_descriptor_count = { type = 'uint32', alias = 'max_file_descriptor_count' },
+  zk_followers = { type = 'uint32', alias = 'followers' },
+  zk_synced_followers = { type = 'uint32', alias = 'synced_followers' },
+  zk_pending_syncs = { type = 'uint32', alias = 'pending_syncs' }
 }
 
 local ZooKeeperCheck = BaseCheck:extend()
@@ -70,16 +50,16 @@ function ZooKeeperCheck:initialize(params)
 end
 
 function ZooKeeperCheck:_parseResponse(data)
-  local result = {}, item, metricName, metricType, value
+  local result = {}, item, mapItem, value
 
   lines = data:gmatch('([^\n]*)\n')
   for line in lines do
     item = self:_parseLine(line)
-    metricName = METRICS_NAME_MAP[item['key']]
-    metricType = METRICS_TYPE_MAP[item['key']]
+    mapItem = METRICS_MAP[item['key']]
 
-    if item and metricName then
-      result[item['key']] = {name = metricName, type = metricType, value = item['value']}
+    if mapItem ~= nil then
+      result[item['key']] = {name = mapItem['alias'], type = mapItem['type'],
+                             value = item['value']}
     end
   end
 

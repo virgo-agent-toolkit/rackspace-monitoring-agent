@@ -48,9 +48,13 @@ exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
         asserts.equal(result:getState(), 'available')
 
         asserts.ok(metrics['version']['v']:find('3.4.4--1') ~= -1)
+        asserts.equal(metrics['version']['t'], 'string')
         asserts.equal(metrics['open_file_descriptor_count']['v'], '33')
+        asserts.equal(metrics['open_file_descriptor_count']['t'], 'uint32')
         asserts.equal(metrics['server_state']['v'], 'leader')
+        asserts.equal(metrics['server_state']['t'], 'string')
         asserts.equal(metrics['packets_received']['v'], '182451')
+        asserts.equal(metrics['packets_received']['t'], 'gauge')
         callback()
       end)
     end
