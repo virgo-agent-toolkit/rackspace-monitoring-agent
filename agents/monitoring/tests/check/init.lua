@@ -35,8 +35,10 @@ local PluginCheck = Check.PluginCheck
 local LoadAverageCheck = Check.LoadAverageCheck
 
 local MySQLTests = require('./mysql')
+local ZooKeeperTests = require('./zookeeper')
 
 local exports = merge(MySQLTests, {})
+exports = merge(exports, ZooKeeperTests)
 
 exports['test_base_check'] = function(test, asserts)
   local check = BaseCheck:new('test', {id='foo', period=30})

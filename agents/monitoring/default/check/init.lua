@@ -25,6 +25,7 @@ local NetworkCheck = require('./network').NetworkCheck
 local MySQLCheck = require('./mysql').MySQLCheck
 local LoadAverageCheck = require('./load_average').LoadAverageCheck
 local PluginCheck = require('./plugin').PluginCheck
+local ZooKeeperCheck = require('./zookeeper').ZooKeeperCheck
 
 local Error = require('core').Error
 
@@ -56,6 +57,8 @@ function create(checkData)
     return MySQLCheck:new(obj)
   elseif checkType == 'agent.load_average' then
     return LoadAverageCheck:new(obj)
+  elseif checkType == 'agent.zookeeper' then
+    return ZooKeeperCheck:new(obj)
   else
     return nil
   end
@@ -89,6 +92,7 @@ exports.MySQLCheck = MySQLCheck
 exports.PluginCheck = PluginCheck
 exports.LoadAverageCheck = LoadAverageCheck
 exports.ApacheCheck = ApacheCheck
+exports.ZooKeeperCheck = ZooKeeperCheck
 
 exports.create = create
 exports.test = test
