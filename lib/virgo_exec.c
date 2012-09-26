@@ -21,7 +21,10 @@
 #include "virgo_paths.h"
 #include "virgo_exec.h"
 
+#ifndef _WIN32
 #include <unistd.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -67,8 +70,8 @@ virgo__exec(virgo_t *v, const char *exe_path, const char *bundle_path) {
 virgo_error_t*
 virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
   virgo_error_t* err;
-  char exe_path[PATH_MAX];
-  char bundle_path[PATH_MAX];
+  char exe_path[VIRGO_PATH_MAX];
+  char bundle_path[VIRGO_PATH_MAX];
 
   err = virgo__paths_get(v, VIRGO_PATH_EXE, exe_path, sizeof(exe_path));
   if (err) {

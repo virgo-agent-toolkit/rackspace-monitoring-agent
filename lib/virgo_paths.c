@@ -114,7 +114,7 @@ is_exe_file(const char *name) {
 virgo_error_t*
 virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
   virgo_error_t *err = VIRGO_SUCCESS;
-  char path[PATH_MAX];
+  char path[VIRGO_PATH_MAX];
 
   /* Fetch the BUNDLE directory */
   err = virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR, path, sizeof(path));
@@ -144,7 +144,7 @@ default_bundle:
 virgo_error_t*
 virgo__path_exe_file(virgo_t* v, char *buffer, size_t buffer_len) {
   virgo_error_t *err;
-  char path[PATH_MAX];
+  char path[VIRGO_PATH_MAX];
 
   err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR, path, sizeof(path));
   if (err) {
