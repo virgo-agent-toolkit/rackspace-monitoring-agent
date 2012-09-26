@@ -21,6 +21,7 @@
 
 #include <stdarg.h>
 #include <time.h>
+#include "virgo_error.h"
 
 #ifndef _virgo_portable_h_
 #define _virgo_portable_h_
@@ -46,6 +47,9 @@ int virgo_asprintf(char **outstr, const char *fmt, ...);
 #endif
 
 char* virgo_basename(char *name);
+
+virgo_error_t* virgo__temp_dir_get(const char **temp_dir);
+
 
 /* Function annotation attribute to declare a function takes a format string, 
  * and to check it for valid args.

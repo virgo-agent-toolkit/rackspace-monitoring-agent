@@ -20,6 +20,7 @@
 #include "virgo_paths.h"
 #include "virgo_error.h"
 #include "virgo_versions.h"
+#include "virgo_portable.h"
 #include "virgo__types.h"
 #include "uv.h"
 
@@ -29,77 +30,84 @@ virgo__path_current_executable_path(virgo_t *v, char *buffer, size_t buffer_len)
   return VIRGO_SUCCESS;
 }
 
-#ifndef _WIN32
-
 virgo_error_t*
 virgo__path_bundle_dir(virgo_t *v, char *buffer, size_t buffer_len) {
   if (v->lua_bundle_path) {
     strncpy(buffer, v->lua_bundle_path, buffer_len);
   } else {
+#ifndef _WIN32
     strncpy(buffer, VIRGO_DEFAULT_BUNDLE_UNIX_DIRECTORY, buffer_len);
+#else
+    /* TODO: port */
+    strncpy(buffer, "C:/temp/", buffer_len);
+#endif
   }
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_exe_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_EXE_UNIX_DIRECTORY, buffer_len);
+#else
+  /* TODO: Port */
+#endif
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_persistent_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_PERSISTENT_UNIX_DIRECTORY, buffer_len);
+#else
+  /* TODO: port */
+  strncpy(buffer, "C:/temp/", buffer_len);
+#endif
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_tmp_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  strncpy(buffer, VIRGO_DEFAULT_TMP_UNIX_DIRECTORY, buffer_len);
+  char *tmp;
+  virgo_error_t* err = virgo__temp_dir_get(&tmp);
+  if (err) {
+    return err;
+  }
+
+  strncpy(buffer, tmp, buffer_len);
+  free(tmp);
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_library_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_LIBRARY_UNIX_DIRECTORY, buffer_len);
+#else
+  /* TODO: port */
+#endif
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_runtime_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_RUNTIME_UNIX_DIRECTORY, buffer_len);
+#else
+  /* TODO: port */
+#endif
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_config_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY, buffer_len);
-  return VIRGO_SUCCESS;
-}
-
+#else
+  /* TODO: port */
 #endif
-
-#ifdef _WIN32
-
-virgo_error_t*
-virgo__path_bundle_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  strncpy(buffer, "C:/temp/", buffer_len);
   return VIRGO_SUCCESS;
 }
-
-virgo_error_t*
-virgo__path_persistent_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  strncpy(buffer, "C:/temp/", buffer_len);
-  return VIRGO_SUCCESS;
-}
-
-virgo_error_t*
-virgo__path_tmp_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  strncpy(buffer, "C:/temp/", buffer_len);
-  return VIRGO_SUCCESS;
-}
-
-#endif
 
 static int
 is_bundle_file(const char *name) {

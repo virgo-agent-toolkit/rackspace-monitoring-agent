@@ -17,7 +17,13 @@
 
 #include "virgo.h"
 #include "virgo_portable.h"
+#include "virgo_paths.h"
 #include <string.h>
+
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 #ifdef VIRGO_WANT_ASPRINTF
 
@@ -62,3 +68,122 @@ char* virgo_basename(char *name)
   return s ? (s + 1) : (char*)name;
 }
 
+
+/**
+ * Based on the logic inside the Apache Portable Runtime, found here:
+ *   <https://github.com/apache/apr/blob/trunk/file_io/unix/tempdir.c>
+ */
+
+static int test_tempdir(const char *temp_dir)
+{
+  char *tpath = NULL;
+  int fd = -1;
+  int rv = virgo_asprintf(&tpath, "%s/tmp.XXXXXX", temp_dir);
+
+#ifdef _WIN32
+  _mktemp_s(tpath, strlen(tpath));
+  fd = open(tpath, O_CREAT|O_WRONLY);
+#else
+  fd = mktemps(tpath);
+#endif
+
+  if (fd == -1) {
+    free(tpath);
+    return 1;
+  }
+
+  rv = write(fd, "!", 1);
+  if (rv != 1) {
+    close(fd);
+#ifdef _WIN32
+    _unlink(tpath);
+#endif
+    free(tpath);
+    return 1;
+  }
+
+  close(fd);
+#ifdef _WIN32
+  _unlink(tpath);
+#endif
+  free(tpath);
+  return 0;
+}
+
+virgo_error_t*
+virgo__temp_dir_get(const char **temp_dir)
+{
+  const char *try_dirs[] = { "/tmp", "/usr/tmp", "/var/tmp" };
+  const char *try_envs[] = { "TMPDIR", "TMP", "TEMP"};
+  const char *dir;
+  int i;
+
+  /* Our goal is to find a temporary directory suitable for writing into.
+  Here's the order in which we'll try various paths:
+
+  $TMPDIR
+  $TMP
+  $TEMP
+  "C:\TEMP"     (windows only)
+  "SYS:\TMP"    (netware only)
+  "/tmp"
+  "/var/tmp"
+  "/usr/tmp"
+  P_tmpdir      (POSIX define)
+  `pwd` 
+
+  NOTE: This algorithm is basically the same one used by Python
+  2.2's tempfile.py module.  */
+
+  /* Try the environment first. */
+  for (i = 0; i < (sizeof(try_envs) / sizeof(const char *)); i++) {
+    char *value;
+    value = getenv(try_envs[i]);
+    if (value) {
+      size_t len = strlen(value);
+      if (len && (len < VIRGO_PATH_MAX) && test_tempdir(value)) {
+        dir = value;
+        goto end;
+      }
+    }
+  }
+
+#ifdef WIN32
+  /* Next, on Win32, try the C:\TEMP directory. */
+  if (test_tempdir("C:\\TEMP")) {
+    dir = "C:\\TEMP";
+    goto end;
+  }
+#endif
+#ifdef NETWARE
+  /* Next, on NetWare, try the SYS:/TMP directory. */
+  if (test_tempdir("SYS:/TMP")) {
+    dir = "SYS:/TMP";
+    goto end;
+  }
+#endif
+
+  /* Next, try a set of hard-coded paths. */
+  for (i = 0; i < (sizeof(try_dirs) / sizeof(const char *)); i++) {
+    if (test_tempdir(try_dirs[i])) {
+      dir = try_dirs[i];
+      goto end;
+    }
+  }
+
+#ifdef P_tmpdir
+  /* 
+  * If we have it, use the POSIX definition of where 
+  * the tmpdir should be 
+  */
+  if (test_tempdir(P_tmpdir)) {
+    dir = P_tmpdir;
+    goto end;
+  }
+#endif
+
+  return virgo_error_create(VIRGO_EINVAL, "Unable to detect temporary directory.");
+end:
+  *temp_dir = strdup(dir);
+  return VIRGO_SUCCESS;
+}
