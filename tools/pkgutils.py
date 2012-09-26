@@ -38,6 +38,7 @@ def pkg_dir():
         addon = "-%s-%s" % dist[:2]
     return "%s-%s%s" % (system, machine, addon)
 
+
 def sh(cmd):
     print cmd
     if subprocess.call(cmd, shell=True) != 0:

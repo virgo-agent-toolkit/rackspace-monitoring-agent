@@ -35,7 +35,7 @@ VERSION=$(shell git describe --tags --always)
 TARNAME=virgo-$(VERSION)
 
 pep8:
-	python tools/pep8.py --exclude=deps,gyp,contrib,pep8.py --ignore=E126,E501,E128,E127 .
+	python tools/pep8.py --exclude=deps,gyp,contrib,pep8.py --ignore=E126,E501,E128,E127 . configure
 
 test: tests
 tests: all
