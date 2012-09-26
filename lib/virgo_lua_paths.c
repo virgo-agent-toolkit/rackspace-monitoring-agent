@@ -31,7 +31,7 @@
 
 static int
 paths_get(lua_State *L) {
-  char buffer[PATH_MAX];
+  char buffer[VIRGO_PATH_MAX];
   virgo_t *v = virgo__lua_context(L);
   int type = luaL_checknumber(L, 1);
   virgo_error_t *err = virgo__paths_get(v, type, buffer, sizeof(buffer));
