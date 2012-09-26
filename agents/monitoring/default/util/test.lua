@@ -26,6 +26,8 @@ function runTestTCPServer(port, host, commandMap, callback)
       if (commandMap[data]) then
         client:write(commandMap[data])
         client:destroy()
+      else
+        client:destroy()
       end
     end)
   end)

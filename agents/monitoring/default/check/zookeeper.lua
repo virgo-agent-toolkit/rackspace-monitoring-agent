@@ -138,6 +138,7 @@ function ZooKeeperCheck:run(callback)
 
       if i == 0 then
         -- Only ZooKeeper 3.4.0 and above supports "mntr" command
+        checkResult:setError('Empty response or running ZooKeeper < 3.4.0')
       end
 
       callback(checkResult)

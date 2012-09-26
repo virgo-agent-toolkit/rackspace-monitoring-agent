@@ -35,7 +35,7 @@ exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
 
   async.series({
     function(callback)
-      testUtil.runTestTCPServer(8585, '127.0.0.1', commandMap, function(err, server)
+      testUtil.runTestTCPServer(8585, '127.0.0.1', commandMap, function(err, _server)
         server = _server
         callback(err)
       end)
@@ -51,8 +51,7 @@ exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
         asserts.equal(metrics['open_file_descriptor_count']['v'], '33')
         asserts.equal(metrics['server_state']['v'], 'leader')
         asserts.equal(metrics['packets_received']['v'], '182451')
-
-        test.done()
+        callback()
       end)
     end
   },
@@ -63,6 +62,41 @@ exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
     end
 
     asserts.equals(err, nil)
+    test.done()
+  end)
+end
+
+exports['test_zookeeper_empty_response'] = function(test, asserts)
+  local check = ZooKeeperCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8585}})
+  local server = nil
+
+  async.series({
+    function(callback)
+      testUtil.runTestTCPServer(8585, '127.0.0.1', {}, function(err, _server)
+        server = _server
+        callback(err)
+      end)
+    end,
+
+    function(callback)
+      check:run(function(result)
+        local metrics = result:getMetrics()
+
+        asserts.equal(#metrics, 0)
+        asserts.equal(result:getState(), 'unavailable')
+
+        callback()
+      end)
+    end
+  },
+
+  function(err)
+    if server then
+      server:close()
+    end
+
+    asserts.equals(err, nil)
+    test.done()
   end)
 end
 
