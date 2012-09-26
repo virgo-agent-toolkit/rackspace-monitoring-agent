@@ -23,6 +23,10 @@
 #ifdef WIN32
 #include <io.h>
 #include <fcntl.h>
+#else
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 #endif
 
 #ifdef VIRGO_WANT_ASPRINTF
@@ -78,13 +82,13 @@ static int test_tempdir(const char *temp_dir)
 {
   char *tpath = NULL;
   int fd = -1;
-  int rv = virgo_asprintf(&tpath, "%s/tmp.XXXXXX", temp_dir);
+  int rv = asprintf(&tpath, "%s/tmp.XXXXXX", temp_dir);
 
 #ifdef _WIN32
   _mktemp_s(tpath, strlen(tpath));
   fd = open(tpath, O_CREAT|O_WRONLY);
 #else
-  fd = mktemps(tpath);
+  fd = mkstemp(tpath);
 #endif
 
   if (fd == -1) {
@@ -116,7 +120,7 @@ virgo__temp_dir_get(const char **temp_dir)
   const char *try_dirs[] = { "/tmp", "/usr/tmp", "/var/tmp" };
   const char *try_envs[] = { "TMPDIR", "TMP", "TEMP"};
   const char *dir;
-  int i;
+  size_t i;
 
   /* Our goal is to find a temporary directory suitable for writing into.
   Here's the order in which we'll try various paths:
