@@ -31,7 +31,7 @@ exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
   local commandMap = {}
   local server = nil
 
-  commandMap['mntr\n'] = fs.readFileSync(filePath)
+  commandMap['mntr'] = fs.readFileSync(filePath)
 
   async.series({
     function(callback)
@@ -47,7 +47,7 @@ exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
 
         asserts.equal(result:getState(), 'available')
 
-        asserts.ok(metrics['version']['v']:find('3.4.4--1') ~= -1)
+        asserts.ok(metrics['version']['v']:find('3.4.4') ~= nil)
         asserts.equal(metrics['version']['t'], 'string')
         asserts.equal(metrics['open_file_descriptor_count']['v'], '33')
         asserts.equal(metrics['open_file_descriptor_count']['t'], 'uint32')
@@ -55,6 +55,45 @@ exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
         asserts.equal(metrics['server_state']['t'], 'string')
         asserts.equal(metrics['packets_received']['v'], '182451')
         asserts.equal(metrics['packets_received']['t'], 'gauge')
+        callback()
+      end)
+    end
+  },
+
+  function(err)
+    if server then
+      server:close()
+    end
+
+    asserts.equals(err, nil)
+    test.done()
+  end)
+end
+
+exports['test_zookeeper_partially_broken_response'] = function(test, asserts)
+  local check = ZooKeeperCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8585}})
+  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/zookeeper_response_broken.txt')
+  local commandMap = {}
+  local server = nil
+
+  commandMap['mntr'] = fs.readFileSync(filePath)
+
+  async.series({
+    function(callback)
+      testUtil.runTestTCPServer(8585, '127.0.0.1', commandMap, function(err, _server)
+        server = _server
+        callback(err)
+      end)
+    end,
+
+    function(callback)
+      check:run(function(result)
+        local metrics = result:getMetrics()['none']
+
+        asserts.equal(result:getState(), 'available')
+
+        asserts.ok(metrics['version']['v']:find('3.4.4') ~= nil)
+        asserts.equal(metrics['num_alive_connections']['v'], '4')
         callback()
       end)
     end

@@ -25,8 +25,8 @@ function runTestTCPServer(port, host, commandMap, callback)
   local server
 
   server = net.createServer(function(client)
-    local destroyed = false
     client:pipe(lineEmitter)
+
     lineEmitter:on('data', function(data)
       if commandMap[data] then
         client:write(commandMap[data])
