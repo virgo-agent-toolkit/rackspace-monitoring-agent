@@ -43,6 +43,7 @@ function AgentClient:initialize(options, scheduler)
   self._datacenter = options.datacenter
   self._id = options.id
   self._token = options.token
+  self._guid = options.guid
   self._target = 'endpoint'
   self._host = options.host
   self._port = options.port
@@ -106,7 +107,7 @@ function AgentClient:connect()
     self:emit('connect')
 
     -- setup protocol
-    self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, cleartext)
+    self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, self._guid, cleartext)
     self.protocol:on('error', function(err)
       -- set self.rateLimitReached so reconnect logic stops
       -- if close event is emitted before this message event

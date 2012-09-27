@@ -42,7 +42,7 @@ exports['test_reconnects'] = function(test, asserts)
     datacenter = 'test',
     tls = { rejectUnauthorized = false }
   }
-  local client = ConnectionStream:new('id', 'token', options)
+  local client = ConnectionStream:new('id', 'token', 'guid', options)
 
   local errorCount = 0
   client:on('error', function(err)
