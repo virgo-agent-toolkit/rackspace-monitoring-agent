@@ -31,7 +31,7 @@ exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
   local commandMap = {}
   local server = nil
 
-  commandMap['mntr\n'] = fs.readFileSync(filePath)
+  commandMap['mntr'] = fs.readFileSync(filePath)
 
   async.series({
     function(callback)
@@ -76,7 +76,7 @@ exports['test_zookeeper_partially_broken_response'] = function(test, asserts)
   local commandMap = {}
   local server = nil
 
-  commandMap['mntr\n'] = fs.readFileSync(filePath)
+  commandMap['mntr'] = fs.readFileSync(filePath)
 
   async.series({
     function(callback)

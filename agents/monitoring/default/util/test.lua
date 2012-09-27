@@ -16,14 +16,19 @@ limitations under the License.
 
 local net = require('net')
 
+local LineEmitter = require('line-emitter').LineEmitter
+
 -- Simple test TCP servers which responds to commands with a pre-defined
 -- response.
 function runTestTCPServer(port, host, commandMap, callback)
+  local lineEmitter = LineEmitter:new()
   local server
 
   server = net.createServer(function(client)
-    client:on('data', function(data)
-      if (commandMap[data]) then
+    client:pipe(lineEmitter)
+
+    lineEmitter:on('data', function(data)
+      if commandMap[data] then
         client:write(commandMap[data])
         client:destroy()
       else
