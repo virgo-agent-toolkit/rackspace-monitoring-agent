@@ -53,7 +53,6 @@ function mkdirp(lpath, mode, callback)
             callback(err)
             return
           end
-          -- TOOD: isDir()
           if (stats.is_directory) then
             callback()
             return
