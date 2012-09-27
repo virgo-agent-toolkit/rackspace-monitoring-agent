@@ -49,6 +49,7 @@ function mkdirp(lpath, mode, callback)
 
         if err.code == "EEXIST" then
           callback()
+          return
         end
 
         fs.stat(dir, function(err2, stats)
