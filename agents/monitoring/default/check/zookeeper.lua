@@ -55,7 +55,12 @@ function ZooKeeperCheck:_parseResponse(data)
   lines = data:gmatch('([^\n]*)\n')
   for line in lines do
     item = self:_parseLine(line)
-    mapItem = METRICS_MAP[item['key']]
+
+    if item then
+      mapItem = METRICS_MAP[item['key']]
+    else
+      mapItem = nil
+    end
 
     if mapItem ~= nil then
       result[item['key']] = {name = mapItem['alias'], type = mapItem['type'],
