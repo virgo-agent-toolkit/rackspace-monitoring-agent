@@ -19,7 +19,8 @@ exports['test_apache'] = function(test, asserts)
 
   function reqCallback(req, res)
     if not response then
-      local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/apache_server_status.txt')
+      local filePath = path.join(process.cwd(), 'agents', 'monitoring', 'tests',
+                                 'fixtures', 'checks', 'apache_server_status.txt')
       response = fs.readFileSync(filePath)
     end
     res:writeHead(200, {
@@ -50,6 +51,7 @@ exports['test_apache'] = function(test, asserts)
     if server then
       server:close()
     end
+    asserts.equals(err, nil)
     test.done()
   end)
 end
