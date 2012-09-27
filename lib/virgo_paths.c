@@ -20,8 +20,13 @@
 #include "virgo_paths.h"
 #include "virgo_error.h"
 #include "virgo_versions.h"
+#include "virgo_portable.h"
 #include "virgo__types.h"
 #include "uv.h"
+
+#ifdef _WIN32
+#include <Shlobj.h>
+#endif
 
 virgo_error_t*
 virgo__path_current_executable_path(virgo_t *v, char *buffer, size_t buffer_len) {
@@ -29,77 +34,103 @@ virgo__path_current_executable_path(virgo_t *v, char *buffer, size_t buffer_len)
   return VIRGO_SUCCESS;
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
+
+static virgo_error_t*
+ join_path_with_name(REFKNOWNFOLDERID location, const char *addition,  char *buffer, size_t buffer_len)
+{
+  wchar_t* tmp = NULL;
+  char buf[MAX_PATH];
+
+  HRESULT rv = SHGetKnownFolderPath(location, 0, NULL, &tmp);
+  if (rv != S_OK) {
+    return virgo_error_os_create(VIRGO_EINVAL, rv, "Failed to get folder with SHGetKnownFolderPath");
+  }
+
+  WideCharToMultiByte(CP_UTF8, 0, tmp, -1, buf, sizeof(buf), 0, NULL);
+  CoTaskMemFree(tmp);
+  snprintf(buffer, buffer_len, "%s"SEP"%s"SEP"%s", buf, VIRGO_DEFAULT_NAME, addition);
+  return VIRGO_SUCCESS;
+}
+#endif
 
 virgo_error_t*
 virgo__path_bundle_dir(virgo_t *v, char *buffer, size_t buffer_len) {
   if (v->lua_bundle_path) {
     strncpy(buffer, v->lua_bundle_path, buffer_len);
   } else {
+#ifndef _WIN32
     strncpy(buffer, VIRGO_DEFAULT_BUNDLE_UNIX_DIRECTORY, buffer_len);
+#else
+    return join_path_with_name(&FOLDERID_LocalAppData, "bundle", buffer, buffer_len);
+#endif
   }
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_exe_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_EXE_UNIX_DIRECTORY, buffer_len);
   return VIRGO_SUCCESS;
+#else
+  return join_path_with_name(&FOLDERID_LocalAppData, "exe", buffer, buffer_len);
+#endif
 }
 
 virgo_error_t*
 virgo__path_persistent_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_PERSISTENT_UNIX_DIRECTORY, buffer_len);
   return VIRGO_SUCCESS;
+#else
+  return join_path_with_name(&FOLDERID_LocalAppData, "state", buffer, buffer_len);
+#endif
 }
 
 virgo_error_t*
 virgo__path_tmp_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  strncpy(buffer, VIRGO_DEFAULT_TMP_UNIX_DIRECTORY, buffer_len);
+  char *tmp;
+  virgo_error_t* err = virgo__temp_dir_get(&tmp);
+
+  if (err) {
+    return err;
+  }
+
+  strncpy(buffer, tmp, buffer_len);
+  free(tmp);
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_library_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_LIBRARY_UNIX_DIRECTORY, buffer_len);
+#else
+  return join_path_with_name(&FOLDERID_LocalAppData, "library", buffer, buffer_len);
+#endif
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_runtime_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_RUNTIME_UNIX_DIRECTORY, buffer_len);
+#else
+  return join_path_with_name(&FOLDERID_LocalAppData, "runtime", buffer, buffer_len);
+#endif
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
 virgo__path_config_dir(virgo_t *v, char *buffer, size_t buffer_len) {
+#ifndef _WIN32
   strncpy(buffer, VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY, buffer_len);
-  return VIRGO_SUCCESS;
-}
-
+#else
+  return join_path_with_name(&FOLDERID_ProgramData, "config", buffer, buffer_len);
 #endif
-
-#ifdef _WIN32
-
-virgo_error_t*
-virgo__path_bundle_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  strncpy(buffer, "C:/temp/", buffer_len);
   return VIRGO_SUCCESS;
 }
-
-virgo_error_t*
-virgo__path_persistent_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  strncpy(buffer, "C:/temp/", buffer_len);
-  return VIRGO_SUCCESS;
-}
-
-virgo_error_t*
-virgo__path_tmp_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  strncpy(buffer, "C:/temp/", buffer_len);
-  return VIRGO_SUCCESS;
-}
-
-#endif
 
 static int
 is_bundle_file(const char *name) {
@@ -114,7 +145,7 @@ is_exe_file(const char *name) {
 virgo_error_t*
 virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
   virgo_error_t *err = VIRGO_SUCCESS;
-  char path[PATH_MAX];
+  char path[VIRGO_PATH_MAX];
 
   /* Fetch the BUNDLE directory */
   err = virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR, path, sizeof(path));
@@ -137,14 +168,18 @@ virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
 
 default_bundle:
   /* use the default path */
+#ifdef _WIN32
+  return join_path_with_name(&FOLDERID_ProgramFiles, VIRGO_DEFAULT_ZIP_FILENAME, buffer, buffer_len);
+#else
   strncpy(buffer, VIRGO_DEFAULT_ZIP_UNIX_PATH, buffer_len);
   return VIRGO_SUCCESS;
+#endif
 }
 
 virgo_error_t*
 virgo__path_exe_file(virgo_t* v, char *buffer, size_t buffer_len) {
   virgo_error_t *err;
-  char path[PATH_MAX];
+  char path[VIRGO_PATH_MAX];
 
   err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR, path, sizeof(path));
   if (err) {
