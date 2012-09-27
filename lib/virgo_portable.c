@@ -145,7 +145,7 @@ virgo__temp_dir_get(const char **temp_dir)
     value = getenv(try_envs[i]);
     if (value) {
       size_t len = strlen(value);
-      if (len && (len < VIRGO_PATH_MAX) && test_tempdir(value)) {
+      if (len && (len < VIRGO_PATH_MAX) && !test_tempdir(value)) {
         dir = value;
         goto end;
       }
@@ -154,14 +154,14 @@ virgo__temp_dir_get(const char **temp_dir)
 
 #ifdef WIN32
   /* Next, on Win32, try the C:\TEMP directory. */
-  if (test_tempdir("C:\\TEMP")) {
+  if (!test_tempdir("C:\\TEMP")) {
     dir = "C:\\TEMP";
     goto end;
   }
 #endif
 #ifdef NETWARE
   /* Next, on NetWare, try the SYS:/TMP directory. */
-  if (test_tempdir("SYS:/TMP")) {
+  if (!test_tempdir("SYS:/TMP")) {
     dir = "SYS:/TMP";
     goto end;
   }
@@ -169,7 +169,7 @@ virgo__temp_dir_get(const char **temp_dir)
 
   /* Next, try a set of hard-coded paths. */
   for (i = 0; i < (sizeof(try_dirs) / sizeof(const char *)); i++) {
-    if (test_tempdir(try_dirs[i])) {
+    if (!test_tempdir(try_dirs[i])) {
       dir = try_dirs[i];
       goto end;
     }
@@ -180,7 +180,7 @@ virgo__temp_dir_get(const char **temp_dir)
   * If we have it, use the POSIX definition of where 
   * the tmpdir should be 
   */
-  if (test_tempdir(P_tmpdir)) {
+  if (!test_tempdir(P_tmpdir)) {
     dir = P_tmpdir;
     goto end;
   }
