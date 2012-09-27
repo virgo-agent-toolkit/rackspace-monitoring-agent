@@ -47,6 +47,10 @@ function mkdirp(lpath, mode, callback)
           return
         end
 
+        if err.code == "EEXIST" then
+          callback()
+        end
+
         fs.stat(dir, function(err2, stats)
           if (err2) then
             -- Okay, so the path didn't exist, but our first mkdir failed, so return the original error.
