@@ -33,7 +33,7 @@ typedef enum {
 
 #ifdef _WIN32
   #ifndef SEP
-    #define SEP "\\\\"
+    #define SEP "\\"
   #endif
 #else
   #ifndef SEP

@@ -69,10 +69,6 @@
   "/usr/lib/" \
   VIRGO_DEFAULT_NAME
 
-#define VIRGO_DEFAULT_TMP_UNIX_DIRECTORY \
-  "/tmp/" \
-  VIRGO_DEFAULT_NAME
-
 #define VIRGO_DEFAULT_ZIP_FILENAME \
   "monitoring.zip"
 
