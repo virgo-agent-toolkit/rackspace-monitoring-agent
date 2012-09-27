@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 local net = require('net')
+local http = require('http')
 
 local LineEmitter = require('line-emitter').LineEmitter
 
@@ -42,6 +43,18 @@ function runTestTCPServer(port, host, commandMap, callback)
   end)
 end
 
+-- Simple test HTTP Server
+function runTestHTTPServer(port, host, reqCallback, callback)
+  local server
+  server = http.createServer(function(req, res)
+    reqCallback(req, res)
+  end)
+  server:listen(port, host, function(err)
+    callback(err, server)
+  end)
+end
+
 local exports = {}
 exports.runTestTCPServer = runTestTCPServer
+exports.runTestHTTPServer = runTestHTTPServer
 return exports
