@@ -33,7 +33,7 @@ typedef enum {
 
 #ifdef _WIN32
   #ifndef SEP
-    #define SEP "\\\\"
+    #define SEP "\\"
   #endif
 #else
   #ifndef SEP
@@ -43,5 +43,13 @@ typedef enum {
 
 virgo_error_t*
 virgo__paths_get(virgo_t *v, virgo_path_e type, char *buffer, size_t buffer_len);
+
+#ifdef MAX_PATH
+#define VIRGO_PATH_MAX MAX_PATH
+#endif
+
+#ifdef PATH_MAX
+#define VIRGO_PATH_MAX PATH_MAX
+#endif
 
 #endif

@@ -75,7 +75,7 @@ virgo_conf_args(virgo_t *v, int argc, char** argv)
 {
   virgo_error_t *err;
   const char *arg;
-  char path[PATH_MAX];
+  char path[VIRGO_PATH_MAX];
   short forced_zip = FALSE;
 
   v->argc = argc;
