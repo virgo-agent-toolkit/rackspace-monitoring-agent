@@ -30,9 +30,10 @@ local misc = require('../util/misc')
 local vtime = require('virgo-time')
 
 local ConnectionStream = Emitter:extend()
-function ConnectionStream:initialize(id, token, options)
+function ConnectionStream:initialize(id, token, guid, options)
   self._id = id
   self._token = token
+  self._guid = guid
   self._clients = {}
   self._unauthedClients = {}
   self._delays = {}
@@ -227,6 +228,7 @@ function ConnectionStream:createConnection(options, callback)
   local opts = misc.merge({
     id = self._id,
     token = self._token,
+    guid = self._guid,
     timeout = consts.CONNECT_TIMEOUT
   }, options)
 
