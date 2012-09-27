@@ -41,7 +41,7 @@ logging_log_internal(lua_State *L, int loglevel, int stroff) {
 
 static int
 logging_log(lua_State *L) {
-  int loglevel =  luaL_checkinteger(L, 1);
+  int loglevel = luaL_checkinteger(L, 1);
   return logging_log_internal(L, loglevel, 2);
 }
 
@@ -81,7 +81,7 @@ static int
 logging_set_level(lua_State *L) {
   int loglevel = 0;
   virgo_t *v = virgo__lua_context(L);
-  loglevel =  luaL_checkinteger(L, 1);
+  loglevel = luaL_checkinteger(L, 1);
 
   if (loglevel < VIRGO_LOG_NOTHING || loglevel > VIRGO_LOG_EVERYTHING) {
     return luaL_error(L, "invalid log level: %d (min:%d max:%d)",
