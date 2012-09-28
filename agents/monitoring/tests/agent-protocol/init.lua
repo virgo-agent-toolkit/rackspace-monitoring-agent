@@ -29,21 +29,22 @@ local exports = {}
 
 exports['test_completion_key'] = function(test, asserts)
   local sock = Emitter:new()
-  local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
-  asserts.equals('MYID:1', conn:_completionKey('1'))
+  local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', 'GUID', sock)
+  asserts.equals('GUID:1', conn:_completionKey('1'))
   asserts.equals('hello:1', conn:_completionKey('hello', '1'))
   test.done()
 end
 
 exports['test_bad_version_hello_gives_err'] = function(test, asserts)
-  local sock = Emitter:new(), conn
+  local sock = Emitter:new()
   local data = fixtures['invalid-version']['handshake.hello.response']
+  local conn
 
   sock.write = function()
     sock:emit('data', data .. "\n")
   end
 
-  conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+  conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', 'GUID', sock)
   conn:on('error', function (err)
     asserts.equal(err.message, 'Version mismatch: message_version=1 response_version=2147483647')
   end)
@@ -58,14 +59,15 @@ end
 
 function test_hello_response_error_handling(fixture, checkCb)
   return function(test, asserts)
-    local sock = Emitter:new(), conn
+    local sock = Emitter:new()
     local data = fixtures[fixture]['handshake.hello.response']
+    local conn
 
     sock.write = function()
       sock:emit('data', data .. "\n")
     end
 
-    conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+    conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', 'GUID', sock)
     conn:on('error', checkCb(test, asserts))
 
     conn:startHandshake(function(err, msg)
@@ -100,7 +102,7 @@ exports['test_unexpected_response_and_hello_timeout'] = function(test, asserts)
     sock:emit('data', data .. "\n")
   end
 
-  local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+  local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', 'GUID', sock)
   conn.HANDSHAKE_TIMEOUT = 30
   conn:on('error', function (err)
     p(err)
@@ -115,12 +117,12 @@ end
 
 
 exports['test_fragmented_message'] = function(test, asserts)
-  local sock = Emitter:new(), conn
+  local sock = Emitter:new()
+  local conn
   local data = fixtures['handshake.hello.request']
-  conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
+  conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', 'GUID', sock)
   conn:on('message', function(msg)
     asserts.equals(msg.target, 'endpoint')
-    asserts.equals(msg.source, 'agentA')
     asserts.equals(msg.id, 0)
     asserts.equals(msg.params.token, 'MYTOKEN')
     test.done()
@@ -131,19 +133,20 @@ exports['test_fragmented_message'] = function(test, asserts)
 end
 
 exports['test_multiple_messages_in_a_single_chunk'] = function(test, asserts)
-  local sock = Emitter:new(), conn
+  local sock = Emitter:new()
   local messagesEmitted = 0
+  local conn
 
-    conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', sock)
-    conn:on('message', function(msg)
-      messagesEmitted = messagesEmitted + 1
+  conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', 'GUID', sock)
+  conn:on('message', function(msg)
+    messagesEmitted = messagesEmitted + 1
 
-      if messagesEmitted == 2 then
-        test.done()
-      end
-    end)
+    if messagesEmitted == 2 then
+      test.done()
+    end
+  end)
 
-    sock:emit('data', '{"v": "1", "id": 0, "target": "endpoint", "source": "X", "method": "handshake.hello", "params": { "token": "MYTOKEN", "agent_id": "MYUID" }}\n{"v": "1", "id": 0, "target": "endpoint", "source": "X", "method": "handshake.hello", "params": { "token": "MYTOKEN", "agent_id": "MYUID" }}\n')
+  sock:emit('data', '{"v": "1", "id": 0, "target": "endpoint", "source": "X", "method": "handshake.hello", "params": { "token": "MYTOKEN", "agent_id": "MYUID" }}\n{"v": "1", "id": 0, "target": "endpoint", "source": "X", "method": "handshake.hello", "params": { "token": "MYTOKEN", "agent_id": "MYUID" }}\n')
 end
 
 return exports

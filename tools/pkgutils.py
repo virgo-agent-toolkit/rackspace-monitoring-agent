@@ -35,14 +35,17 @@ def pkg_dir():
         dist = platform.dist()
         # Lower case everyting (looking at you Ubuntu)
         dist = tuple([x.lower() for x in dist])
-        addon = "-%s-%s" % dist[:2]
+        dist = "%s-%s" % dist[:2]
+        return "%s-%s" % (dist, machine)
+
     return "%s-%s%s" % (system, machine, addon)
 
 
 def sh(cmd):
     print cmd
-    if subprocess.call(cmd, shell=True) != 0:
-        print "commit error"
+    rv = subprocess.call(cmd, shell=True)
+    if rv != 0:
+        print "Exit Code: %s" % (rv)
         sys.exit(1)
 
 
