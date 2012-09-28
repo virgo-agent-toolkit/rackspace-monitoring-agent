@@ -147,6 +147,7 @@ virgo__lua_init(virgo_t *v)
 
   virgo__set_virgo_key(L, "os", VIRGO_OS);
   virgo__set_virgo_key(L, "version", VIRGO_VERSION);
+  virgo__set_virgo_key(L, "platform", VIRGO_PLATFORM);
   virgo__set_virgo_key(L, "default_name", VIRGO_DEFAULT_NAME);
   virgo__set_virgo_key(L, "default_config_filename", VIRGO_DEFAULT_CONFIG_FILENAME);
 
