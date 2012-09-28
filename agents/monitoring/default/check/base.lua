@@ -117,6 +117,43 @@ function ChildCheck:initialize(checkType, params)
 end
 
 --[[
+Add a metric to CheckResult object with proper logging and error handling
+--]]
+function ChildCheck:_addMetric(checkResult, metricName, metricDimension, metricType, metricValue)
+  local internalMetricType, msg
+
+  local function matcher(v)
+    return v == metricType
+  end
+
+  if tableContains(matcher, VALID_METRIC_TYPES) then
+    internalMetricType = metricType
+  else
+    internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
+  end
+
+  if not internalMetricType then
+    msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
+    self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
+    self:_setError(checkResult, msg)
+    return
+  end
+
+  local status, err = pcall(function()
+    checkResult:addMetric(metricName, metricDimension, internalMetricType,
+                          metricValue)
+  end)
+  if err then
+    self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
+                                   tostring(err)))
+  else
+    self._metricCount = self._metricCount + 1
+    self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
+               tostring(metricDimension), metricName, metricType, metricValue))
+  end
+end
+
+--[[
 Parse a line output by a plugin and mutate CheckResult object (set status
 or add a metric).
 --]]
@@ -146,22 +183,11 @@ function ChildCheck:_handleLine(checkResult, line)
     state = splitString[1]
 
     if state == 'ok' or state == 'warn' or state == 'err' then
-      -- Assume this is an old Cloudkick agent plugin which also outputs plugin
-      -- state which is ignored by the new agent. In Cloud monitoring alarm
-      -- criteria is used to determine check state. We include the parsed state
-      -- as a string metric as a convenience.
-      local res, err = pcall(function()
-        checkResult:addMetric('legacy_state', nil, 'string', state)
-      end)
-
-      if err then
-        self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
-                                       tostring(err)))
-      else
-        self._metricCount = self._metricCount + 1
-        self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
-                   'nil', 'legacy_state', 'string', state))
-      end
+      -- Assume this is an old Cloudkick agent plugin which also outputs plugin state,
+      -- formatted like so: "status ok Everything is normal"
+      -- We parse and set the status message here, and additionally inclue state as a 
+      -- string metric. This is purely a compatability convenience.
+      self:_addMetric(checkResult, 'legacy_state', nil, 'string', state)
       table.remove(splitString, 1)
       status = table.concat(splitString, ' ')
     else
@@ -222,23 +248,6 @@ function ChildCheck:_handleLine(checkResult, line)
       metricDimension = nil
     end
 
-    local function matcher(v)
-      return v == metricType
-    end
-
-    if tableContains(matcher, VALID_METRIC_TYPES) then
-      internalMetricType = metricType
-    else
-      internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
-    end
-
-    if not internalMetricType then
-      msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
-      self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
-      self:_setError(checkResult, msg)
-      return
-    end
-
     if metricType ~= 'string' and partsCount ~= 3 then
       -- Only values for string metrics can contain spaces
       local msg = fmt('Invalid value "%s" for a non-string metric', metricValue)
@@ -246,20 +255,9 @@ function ChildCheck:_handleLine(checkResult, line)
       self:_setError(checkResult, msg)
       return
     end
+    
+    self:_addMetric(checkResult, metricName, metricDimension, metricType, metricValue)
 
-    local status, err = pcall(function()
-      checkResult:addMetric(metricName, metricDimension, internalMetricType,
-                            metricValue)
-    end)
-
-    if err then
-      self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
-                                     tostring(err)))
-    else
-      self._metricCount = self._metricCount + 1
-      self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
-                 tostring(metricDimension), metricName, metricType, metricValue))
-    end
   else
     msg = fmt('Unrecognized line "%s"', line)
     self._log(logging.WARNING, msg)
