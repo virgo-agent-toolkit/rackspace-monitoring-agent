@@ -364,6 +364,7 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = 
     asserts.equals(result:getStatus(), 'Service is not responding')
     asserts.equals(result:getState(), 'available')
 
+    asserts.dequals(metrics['none']['legacy_state'], {t = 'string', v = 'err'})
     asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
     asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
     test.done()
@@ -384,6 +385,7 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = 
     asserts.equals(result:getStatus(), '')
     asserts.equals(result:getState(), 'available')
 
+    asserts.dequals(metrics['none']['legacy_state'], {t = 'string', v = 'warn'})
     asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
     asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
     test.done()

@@ -148,7 +148,20 @@ function ChildCheck:_handleLine(checkResult, line)
     if state == 'ok' or state == 'warn' or state == 'err' then
       -- Assume this is an old Cloudkick agent plugin which also outputs plugin
       -- state which is ignored by the new agent. In Cloud monitoring alarm
-      -- criteria is used to determine check state.
+      -- criteria is used to determine check state. We include the parsed state
+      -- as a string metric as a convenience.
+      local res, err = pcall(function()
+        checkResult:addMetric('legacy_state', nil, 'string', state)
+      end)
+
+      if err then
+        self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
+                                       tostring(err)))
+      else
+        self._metricCount = self._metricCount + 1
+        self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
+                   'nil', 'legacy_state', 'string', state))
+      end
       table.remove(splitString, 1)
       status = table.concat(splitString, ' ')
     else
