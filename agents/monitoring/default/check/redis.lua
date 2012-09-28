@@ -24,6 +24,7 @@ local async = require('async')
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local split = require('../util/misc').split
+local fireOnce = require('../util/misc').fireOnce
 
 local METRICS_MAP = {
   redis_version = { type = 'string', alias = 'version' },
@@ -96,16 +97,7 @@ function RedisCheck:run(callback)
 
   async.series({
     function(callback)
-      local called = false
-
-      function wrappedCallback(err)
-        if called then
-          return
-        end
-
-        called = true
-        callback(err)
-      end
+      local wrappedCallback = fireOnce(callback)
 
       -- Connect
       client = net.createConnection(self._port, self._host, wrappedCallback)

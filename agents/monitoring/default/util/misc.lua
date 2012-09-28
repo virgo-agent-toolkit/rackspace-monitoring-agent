@@ -169,6 +169,16 @@ function lastIndexOf(str, pat)
   return lastIndex
 end
 
+function fireOnce(callback)
+  local called = false
+
+  return function(...)
+    if not called then
+      called = true
+      callback(unpack({...}))
+    end
+  end
+end
 
 --[[ Exports ]]--
 local exports = {}
@@ -181,4 +191,5 @@ exports.tableContains = tableContains
 exports.trim = trim
 exports.writePid = writePid
 exports.lastIndexOf = lastIndexOf
+exports.fireOnce = fireOnce
 return exports

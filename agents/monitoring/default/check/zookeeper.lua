@@ -20,6 +20,7 @@ local net = require('net')
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local split = require('../util/misc').split
+local fireOnce = require('../util/misc').fireOnce
 
 local METRICS_MAP = {
   zk_version = { type = 'string', alias = 'version' },
@@ -100,15 +101,7 @@ function ZooKeeperCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   local client
   local called = false
-
-  function wrappedCallback(checkResult)
-    if called then
-      return
-    end
-
-    called = true
-    callback(checkResult)
-  end
+  local wrappedCallback = fireOnce(callback)
 
   client = net.createConnection(self._port, self._host, function(err)
     local buffer = ''
@@ -124,7 +117,6 @@ function ZooKeeperCheck:run(callback)
     end)
 
     client:on('end', function()
-    print('innnnnnnnnnn')
       local result = self:_parseResponse(buffer)
       local i = 0
 
