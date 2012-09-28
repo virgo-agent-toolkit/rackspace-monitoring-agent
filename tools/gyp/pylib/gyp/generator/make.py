@@ -1995,14 +1995,16 @@ def GenerateOutput(target_list, target_dicts, data, params):
         'link_commands': LINK_COMMANDS_ANDROID,
     })
   elif flavor == 'solaris':
+    flock_command = './gyp-mac-tool flock'
     header_params.update({
-        'flock': './gyp-sun-tool flock',
+        'flock': flock_command,
         'flock_index': 2,
         'extra_commands': SHARED_HEADER_SUN_COMMANDS,
     })
   elif flavor == 'freebsd':
+    flock_command = 'lockf'
     header_params.update({
-        'flock': 'lockf',
+        'flock': flock_command,
     })
   header_params.update(RunSystemTests(flavor))
 

@@ -27,6 +27,11 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
