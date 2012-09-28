@@ -163,4 +163,42 @@ exports['test_redis_error_missing_password'] = function(test, asserts)
   end)
 end
 
+exports['test_redis_error_invalid_password'] = function(test, asserts)
+  local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8586, password='invalid'}})
+  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/redis_invalid_password.txt')
+  local commandMap = {}
+  local server = nil
+
+  commandMap['AUTH invalid\r'] = fs.readFileSync(filePath)
+
+  async.series({
+    function(callback)
+      testUtil.runTestTCPServer(8586, '127.0.0.1', commandMap, function(err, _server)
+        server = _server
+        callback(err)
+      end)
+    end,
+
+    function(callback)
+      check:run(function(result)
+        local metrics = result:getMetrics()['none']
+
+        asserts.equal(result:getState(), 'unavailable')
+        asserts.equal(result:getStatus(), 'Could not authenticate. Invalid password.')
+
+        callback()
+      end)
+    end
+  },
+
+  function(err)
+    if server then
+      server:close()
+    end
+
+    asserts.equals(err, nil)
+    test.done()
+  end)
+end
+
 return exports

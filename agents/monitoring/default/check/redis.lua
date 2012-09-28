@@ -112,18 +112,32 @@ function RedisCheck:run(callback)
     end,
 
     function(callback)
+      local buffer = ''
       -- Try to authenticate if password is provided
       if not self._password then
         callback()
         return
       end
 
-      -- TODO: Auth
-      -- client:write('AUTH ' .. self._password .. '\n')
+      client:on('data', function(data)
+        buffer = buffer .. data
+
+        if buffer:lower():find('ok') then
+          callback()
+        elseif buffer:lower():find('-err invalid password') then
+          callback(Error:new('Could not authenticate. Invalid password.'))
+        end
+      end)
+
+      client:write('AUTH ' .. self._password .. '\r\n')
     end,
 
     function(callback)
       local buffer = ''
+
+      client:removeListener('data')
+      client:removeListener('end')
+
       -- Retrieve stats
       client:on('data', function(data)
         buffer = buffer .. data
@@ -132,8 +146,13 @@ function RedisCheck:run(callback)
       client:on('end', function()
         local result
 
-        if buffer:lower():find('operation not permitted') then
+        if buffer:lower():find('-err operation not permitted') then
           callback(Error:new('Could not authenticate. Missing password?'))
+          return
+        end
+
+        if buffer:lower():find('-err invalid password') then
+          callback(Error:new('Could not authenticate. Invalid password.'))
           return
         end
 
