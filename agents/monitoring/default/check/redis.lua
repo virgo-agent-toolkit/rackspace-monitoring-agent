@@ -17,6 +17,7 @@ limitations under the License.
 local table = require('table')
 local timer = require('timer')
 local net = require('net')
+local Error = require('core').Error
 
 local async = require('async')
 
@@ -129,7 +130,14 @@ function RedisCheck:run(callback)
       end)
 
       client:on('end', function()
-        local result = self:_parseResponse(buffer)
+        local result
+
+        if buffer:lower():find('operation not permitted') then
+          callback(Error:new('Could not authenticate. Missing password?'))
+          return
+        end
+
+        result = self:_parseResponse(buffer)
 
         for k, v in pairs(result) do
           checkResult:addMetric(v['name'], nil, v['type'], v['value'])

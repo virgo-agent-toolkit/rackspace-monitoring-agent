@@ -110,19 +110,55 @@ exports['test_redis_2.6_success_result_parsing'] = function(test, asserts)
   end)
 end
 
-
 exports['test_redis_success_with_auth'] = function(test, asserts)
   -- TODO
   test.done()
 end
 
-
-exports['test_redis_connection_error'] = function(test, asserts)
+exports['test_redis_error_connection'] = function(test, asserts)
   local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8113}})
 
   check:run(function(result)
     asserts.equal(result:getState(), 'unavailable')
     asserts.equal(result:getStatus(), 'ECONNREFUSED, connection refused')
+    test.done()
+  end)
+end
+
+exports['test_redis_error_missing_password'] = function(test, asserts)
+  local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8586}})
+  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/redis_operation_not_permitted.txt')
+  local commandMap = {}
+  local server = nil
+
+  commandMap['INFO\r'] = fs.readFileSync(filePath)
+
+  async.series({
+    function(callback)
+      testUtil.runTestTCPServer(8586, '127.0.0.1', commandMap, function(err, _server)
+        server = _server
+        callback(err)
+      end)
+    end,
+
+    function(callback)
+      check:run(function(result)
+        local metrics = result:getMetrics()['none']
+
+        asserts.equal(result:getState(), 'unavailable')
+        asserts.equal(result:getStatus(), 'Could not authenticate. Missing password?')
+
+        callback()
+      end)
+    end
+  },
+
+  function(err)
+    if server then
+      server:close()
+    end
+
+    asserts.equals(err, nil)
     test.done()
   end)
 end
