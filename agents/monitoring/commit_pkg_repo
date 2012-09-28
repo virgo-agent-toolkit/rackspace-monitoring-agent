@@ -20,6 +20,12 @@ if len(args) != 1:
     parser.print_usage()
     sys.exit(1)
 
+pkg = pkg_type()
+
+if pkg == None:
+    print "No packages available for this platform"
+    sys.exit(0)
+
 f = open(os.path.join(out, 'VERSION'))
 version = f.readlines()[0].strip()
 f.close()
