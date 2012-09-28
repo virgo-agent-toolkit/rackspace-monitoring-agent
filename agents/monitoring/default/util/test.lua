@@ -30,7 +30,6 @@ function runTestTCPServer(port, host, commandMap, callback)
     lineEmitter:on('data', function(data)
       if commandMap[data] then
         client:write(commandMap[data])
-        client:destroy()
       else
         client:destroy()
       end

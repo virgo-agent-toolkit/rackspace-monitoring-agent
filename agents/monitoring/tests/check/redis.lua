@@ -110,9 +110,48 @@ exports['test_redis_2.6_success_result_parsing'] = function(test, asserts)
   end)
 end
 
-exports['test_redis_success_with_auth'] = function(test, asserts)
-  -- TODO
-  test.done()
+exports['test_redis_2.4_success_with_auth'] = function(test, asserts)
+  local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8585, password='valid'}})
+  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/redis_2.4_response.txt')
+  local commandMap = {}
+  local server = nil
+
+  commandMap['AUTH valid\r'] = '+OK'
+  commandMap['INFO\r'] = fs.readFileSync(filePath)
+
+  async.series({
+    function(callback)
+      testUtil.runTestTCPServer(8585, '127.0.0.1', commandMap, function(err, _server)
+        server = _server
+        callback(err)
+      end)
+    end,
+
+    function(callback)
+      check:run(function(result)
+        local metrics = result:getMetrics()['none']
+
+        asserts.equal(result:getState(), 'available')
+
+        asserts.ok(metrics['redis_version']['v']:find('2.4') ~= nil)
+        asserts.equal(metrics['redis_version']['t'], 'string')
+        asserts.equal(metrics['used_memory']['v'], '7126416')
+        asserts.equal(metrics['used_memory']['t'], 'uint64')
+        asserts.equal(metrics['total_connections_received']['v'], '1')
+        asserts.equal(metrics['total_connections_received']['t'], 'gauge')
+        callback()
+      end)
+    end
+  },
+
+  function(err)
+    if server then
+      server:close()
+    end
+
+    asserts.equals(err, nil)
+    test.done()
+  end)
 end
 
 exports['test_redis_error_connection'] = function(test, asserts)

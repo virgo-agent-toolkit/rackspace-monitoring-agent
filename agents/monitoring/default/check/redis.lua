@@ -122,7 +122,7 @@ function RedisCheck:run(callback)
       client:on('data', function(data)
         buffer = buffer .. data
 
-        if buffer:lower():find('ok') then
+        if buffer:lower():find('+ok') then
           callback()
         elseif buffer:lower():find('-err invalid password') then
           callback(Error:new('Could not authenticate. Invalid password.'))
