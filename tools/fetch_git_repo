@@ -23,9 +23,17 @@ def get_update_existing(source):
 
 
 def is_git_repo(dest):
-    cmd = "git rev-parse --resolve-git-dir %s/.git HEAD" % (dest)
+    old = os.getcwd()
+    try:
+        os.chdir(dest)
+    except:
+        os.chdir(old)
+        return False
+    print "cd %s" % (dest)
+    cmd = "git rev-parse HEAD"
     print cmd
     rv = subprocess.call(cmd, shell=True)
+    os.chdir(old)
     if rv == 0:
         return True
     return False
