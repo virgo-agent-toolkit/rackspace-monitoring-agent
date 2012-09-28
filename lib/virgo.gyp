@@ -44,6 +44,7 @@
 
       'defines': [
         'VIRGO_OS="<(OS)"',
+        'VIRGO_PLATFORM="<!(../tools/virgo_platform.py)"',
         'VIRGO_VERSION="<!(git --git-dir ../.git rev-parse HEAD)"',
       ],
 
