@@ -1,13 +1,26 @@
 #!/usr/bin/env python
 
+from __future__ import with_statement
 import os
 import sys
 import subprocess
+import contextlib
 
 from pkgutils import system_info, git_describe, sh
 from optparse import OptionParser
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+@contextlib.contextmanager
+def chdir(dirname=None):
+    curdir = os.getcwd()
+    try:
+        if dirname is not None:
+            os.chdir(dirname)
+        yield
+    finally:
+        os.chdir(curdir)
 
 
 def git_clone(source):
@@ -23,19 +36,16 @@ def get_update_existing(source):
 
 
 def is_git_repo(dest):
-    old = os.getcwd()
     try:
-        os.chdir(dest)
-    except:
-        os.chdir(old)
-        return False
-    print "cd %s" % (dest)
-    cmd = "git rev-parse HEAD"
-    print cmd
-    rv = subprocess.call(cmd, shell=True)
-    os.chdir(old)
-    if rv == 0:
-        return True
+        with chdir(dest):
+            print "cd '%s'" % (dest)
+            cmd = "git rev-parse HEAD"
+            print cmd
+            rv = subprocess.call(cmd, shell=True)
+            if rv == 0:
+                return True
+    except OSError, e:
+        pass
     return False
 
 
@@ -56,11 +66,11 @@ if __name__ == "__main__":
     dest = args[1]
 
     if is_git_repo(dest):
-        os.chdir(dest)
-        print "cd '%s'" % (dest)
-        get_update_existing(source)
+        with chdir(dest):
+            print "cd '%s'" % (dest)
+            get_update_existing(source)
     else:
         ensure_dir(dest)
-        os.chdir(dest)
-        print "cd '%s'" % (dest)
-        git_clone(source)
+        with chdir(dest):
+            print "cd '%s'" % (dest)
+            git_clone(source)
