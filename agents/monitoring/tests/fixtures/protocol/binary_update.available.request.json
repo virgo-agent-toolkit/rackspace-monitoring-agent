@@ -1,0 +1,7 @@
+{
+  "v": "1",
+  "id": 5,
+  "source": "agentA",
+  "target": "endpoint",
+  "method": "binary_update.available"
+}

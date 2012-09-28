@@ -22,6 +22,8 @@ local errors = require('./errors')
 local ResponseTimeoutError = require('../errors').ResponseTimeoutError
 local JSON = require('json')
 local fmt = require('string').format
+local http = require('http')
+
 local logging = require('logging')
 local msg = require ('./messages')
 local table = require('table')
@@ -45,22 +47,32 @@ local requests = {}
 
 requests['handshake.hello'] = function(self, agentId, token, callback)
   local m = msg.HandshakeHello:new(token, agentId)
-  self:_send(m:serialize(self._msgid), self.HANDSHAKE_TIMEOUT, 200, callback)
+  self:_send(m, callback, self.HANDSHAKE_TIMEOUT)
 end
 
 requests['heartbeat.post'] = function(self, timestamp, callback)
   local m = msg.Heartbeat:new(timestamp)
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
+  self:_send(m, callback)
 end
 
 requests['check_schedule.get'] = function(self, callback)
   local m = msg.Manifest:new()
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
+  self:_send(m, callback)
 end
 
 requests['check_metrics.post'] = function(self, check, checkResults, callback)
   local m = msg.MetricsRequest:new(check, checkResults)
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
+  self:_send(m, callback)
+end
+
+requests['binary_update.get_version'] = function(self, callback)
+  local m = msg.BinaryUpdateRequest:new()
+  self:_send(m, callback)
+end
+
+requests['bundle_update.get_version'] = function(self, callback)
+  local m = msg.BundleUpdateRequest:new()
+  self:_send(m, callback)
 end
 
 --[[ Reponse Functions ]]--
@@ -68,18 +80,18 @@ local responses = {}
 
 responses['check_schedule.changed'] = function(self, replyTo, callback)
   local m = msg.ScheduleChangeAck:new(replyTo)
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
+  self:_send(m, callback)
 end
 
 responses['system.info'] = function(self, request, callback)
   local m = msg.SystemInfoResponse:new(request)
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
+  self:_send(m, callback)
 end
 
 responses['host_info.get'] = function(self, request, callback)
   local info = hostInfo.create(request.params.type)
   local m = msg.HostInfoResponse:new(request, info:serialize())
-  self:_send(m:serialize(self._msgid), nil, 200, callback)
+  self:_send(m, callback)
 end
 
 responses['check.test'] = function(self, request, callback)
@@ -92,11 +104,22 @@ responses['check.test'] = function(self, request, callback)
   checkParams.period = 30
   check.test(checkParams, function(err, ch, results)
     local m = msg.CheckTestResponse:new(request, results)
-    self:_send(m:serialize(self._msgid), nil, 200, callback)
+    self:_send(m, callback)
   end)
 end
 
+responses['binary_update.available'] = function(self, replyTo, callback)
+  local m = msg.Response:new(replyTo)
+  self:_send(m, callback)
+end
+
+responses['bundle_update.available'] = function(self, replyTo, callback)
+  local m = msg.Response:new(replyTo)
+  self:_send(m, callback)
+end
+
 function AgentProtocolConnection:initialize(log, myid, token, guid, conn)
+
   assert(conn ~= nil)
   assert(myid ~= nil)
 
@@ -156,17 +179,18 @@ function AgentProtocolConnection:_onData(data)
   local obj, status, line
 
   self._buf = self._buf .. data
-
   line = self:_popLine()
-  while line do
-    status, obj = pcall(JSON.parse, line)
 
+  while line do
+    self._log(logging.DEBUG, 'got line: ' .. line)
+
+    status, obj = pcall(JSON.parse, line)
     if not status then
       self._log(logging.ERROR, fmt('Failed to parse incoming line: line="%s",err=%s', line, obj))
     else
       self:_processMessage(obj)
     end
-
+    
     line = self:_popLine()
   end
 end
@@ -212,16 +236,14 @@ function AgentProtocolConnection:_completionKey(...)
   return source .. ':' .. msgid
 end
 
-function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
+function AgentProtocolConnection:_send(msg, callback, timeout)
+  msg = msg:serialize(self._msgid)
+
   msg.target = 'endpoint'
   msg.source = self._guid
   local msg_str = JSON.stringify(msg)
   local data = msg_str .. '\n'
   local key = self:_completionKey(msg.target, msg.id)
-
-  self._log(logging.DEBUG, fmt('SEND: %s', msg_str))
-
-  if not expectedCode then expectedCode = 200 end
 
   if timeout then
     self:_setCommandTimeoutHandler(key, timeout, callback)
@@ -231,7 +253,7 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
   -- a response so we don't expect a reply. Don't
   -- create a completion in this case.
   if (msg.method == nil) then
-    callback()
+    if callback then callback() end
   else
     self._completions[key] = function(err, resp)
       local result = nil
@@ -262,6 +284,7 @@ function AgentProtocolConnection:_send(msg, timeout, expectedCode, callback)
     end
   end
 
+  self._log(logging.DEBUG, fmt('SENDING: (%s) => %s', key, data))
   self._conn:write(data)
   self._msgid = self._msgid + 1
 end
