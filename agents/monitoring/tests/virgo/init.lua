@@ -87,4 +87,14 @@ exports['test_bundle_path'] = function(test, asserts)
   test.done()
 end
 
+exports['test_virgo_items'] = function(test, asserts)
+  asserts.ok(virgo.os)
+  asserts.ok(virgo.version)
+  asserts.ok(virgo.platform)
+  asserts.ok(virgo.default_name)
+  asserts.ok(virgo.default_config_filename)
+
+  test.done()
+end
+
 return exports
