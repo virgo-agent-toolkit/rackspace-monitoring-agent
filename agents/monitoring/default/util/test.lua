@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 local net = require('net')
+local timer = require('timer')
 
 local LineEmitter = require('line-emitter').LineEmitter
 
@@ -30,6 +31,9 @@ function runTestTCPServer(port, host, commandMap, callback)
     lineEmitter:on('data', function(data)
       if commandMap[data] then
         client:write(commandMap[data])
+        timer.setTimeout(2000, function()
+          client:destroy()
+        end)
       else
         client:destroy()
       end
