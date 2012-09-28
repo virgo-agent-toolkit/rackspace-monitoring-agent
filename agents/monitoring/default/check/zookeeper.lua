@@ -47,6 +47,7 @@ function ZooKeeperCheck:initialize(params)
 
   self._host = params.details.host and params.details.host or 'localhost'
   self._port = params.details.port and params.details.port or 2181
+  self._timeout = params.details.timeout and params.details.timeout or 5000
 end
 
 function ZooKeeperCheck:_parseResponse(data)
@@ -98,13 +99,23 @@ end
 function ZooKeeperCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   local client
+  local called = false
+
+  function wrappedCallback(checkResult)
+    if called then
+      return
+    end
+
+    called = true
+    callback(checkResult)
+  end
 
   client = net.createConnection(self._port, self._host, function(err)
     local buffer = ''
 
     if err then
       checkResult:setError(err.message)
-      callback(checkResult)
+      wrappedCallback(checkResult)
       return
     end
 
@@ -113,6 +124,7 @@ function ZooKeeperCheck:run(callback)
     end)
 
     client:on('end', function()
+    print('innnnnnnnnnn')
       local result = self:_parseResponse(buffer)
       local i = 0
 
@@ -126,15 +138,23 @@ function ZooKeeperCheck:run(callback)
         checkResult:setError('Empty response or running ZooKeeper < 3.4.0')
       end
 
-      callback(checkResult)
+      wrappedCallback(checkResult)
     end)
 
     client:write('mntr\n')
+    client:shutdown()
   end)
+
+  client:setTimeout(self._timeout)
 
   client:on('error', function(err)
     checkResult:setError(err.message)
-    callback(checkResult)
+    wrappedCallback(checkResult)
+  end)
+
+  client:on('timeout', function()
+    checkResult:setError('Connection timed out in ' .. self._timeout .. 'ms')
+    wrappedCallback(checkResult)
   end)
 end
 

@@ -48,6 +48,7 @@ function RedisCheck:initialize(params)
   self._host = params.details.host and params.details.host or 'localhost'
   self._port = params.details.port and params.details.port or 6379
   self._password = params.details.password and params.details.password or nil
+  self._timeout = params.details.timeout and params.details.timeout or 5000
 end
 
 function RedisCheck:_parseResponse(data)
@@ -108,7 +109,11 @@ function RedisCheck:run(callback)
 
       -- Connect
       client = net.createConnection(self._port, self._host, wrappedCallback)
+      client:setTimeout(self._timeout)
       client:on('error', wrappedCallback)
+      client:on('timeout', function()
+        wrappedCallback(Error:new('Connection timed out in ' .. self._timeout .. 'ms'))
+      end)
     end,
 
     function(callback)
@@ -167,6 +172,7 @@ function RedisCheck:run(callback)
 
       client:write('INFO\r\n')
       client:write('QUIT\r\n')
+      client:shutdown()
     end
   },
 
