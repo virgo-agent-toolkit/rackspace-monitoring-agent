@@ -46,8 +46,8 @@ exports['test_redis_2.4_success_result_parsing'] = function(test, asserts)
 
         asserts.equal(result:getState(), 'available')
 
-        asserts.ok(metrics['redis_version']['v']:find('2.4') ~= nil)
-        asserts.equal(metrics['redis_version']['t'], 'string')
+        asserts.ok(metrics['version']['v']:find('2.4') ~= nil)
+        asserts.equal(metrics['version']['t'], 'string')
         asserts.equal(metrics['used_memory']['v'], '7126416')
         asserts.equal(metrics['used_memory']['t'], 'uint64')
         asserts.equal(metrics['total_connections_received']['v'], '1')
@@ -89,8 +89,8 @@ exports['test_redis_2.6_success_result_parsing'] = function(test, asserts)
 
         asserts.equal(result:getState(), 'available')
 
-        asserts.ok(metrics['redis_version']['v']:find('2.5') ~= nil)
-        asserts.equal(metrics['redis_version']['t'], 'string')
+        asserts.ok(metrics['version']['v']:find('2.5') ~= nil)
+        asserts.equal(metrics['version']['t'], 'string')
         asserts.equal(metrics['used_memory']['v'], '528992')
         asserts.equal(metrics['used_memory']['t'], 'uint64')
         asserts.equal(metrics['total_connections_received']['v'], '1')
@@ -133,8 +133,8 @@ exports['test_redis_2.4_success_with_auth'] = function(test, asserts)
 
         asserts.equal(result:getState(), 'available')
 
-        asserts.ok(metrics['redis_version']['v']:find('2.4') ~= nil)
-        asserts.equal(metrics['redis_version']['t'], 'string')
+        asserts.ok(metrics['version']['v']:find('2.4') ~= nil)
+        asserts.equal(metrics['version']['t'], 'string')
         asserts.equal(metrics['used_memory']['v'], '7126416')
         asserts.equal(metrics['used_memory']['t'], 'uint64')
         asserts.equal(metrics['total_connections_received']['v'], '1')

@@ -26,7 +26,7 @@ local CheckResult = require('./base').CheckResult
 local split = require('../util/misc').split
 
 local METRICS_MAP = {
-  redis_version = { type = 'string' },
+  redis_version = { type = 'string', alias = 'version' },
   uptime_in_seconds = { type = 'uint32' },
   connected_clients = { type = 'uint32' },
   blocked_clients = { type = 'uint32' },
