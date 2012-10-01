@@ -1,0 +1,10 @@
+{
+  "v": "1",
+  "id": 9,
+  "source": "agentA",
+  "target": "endpoint",
+  "error": null,
+  "result": {
+    "version": "1.0.2.19"
+  }
+}
