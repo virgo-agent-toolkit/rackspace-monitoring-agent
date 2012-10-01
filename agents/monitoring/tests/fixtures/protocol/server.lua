@@ -16,12 +16,6 @@ local path = require('path')
 local fmt = require('string').format
 local os = require('os')
 
-if os.type() == "win32" then
-  path = path.nt
-else
-  path = path.posix
-end
-
 local ports = {50041, 50051, 50061}
 
 local opts = {}
@@ -125,7 +119,7 @@ local http_responder = function(log, client, server)
       parts[#parts + 1] = part
     end
     -- join path on the / or \\ 
-    file_path = path:join(__dirname, unpack(parts))
+    file_path = path.join(__dirname, unpack(parts))
 
     fs.readFile(file_path, function(err, data)
       if err then 
