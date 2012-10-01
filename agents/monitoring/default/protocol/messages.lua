@@ -71,6 +71,17 @@ function Request:serialize(msgId)
   }
 end
 
+local BundleUpdate = Request:extend()
+function BundleUpdate:initialize()
+  Request.initialize(self)
+  self.method = 'bundle_update.get_version'
+end
+
+local BinaryUpdate = Request:extend()
+function BinaryUpdate:initialize()
+  Request.initialize(self)
+  self.method = 'binary_update.get_version'
+end
 --[[ Handshake.Hello ]]--
 
 local HandshakeHello = Request:extend()
@@ -171,7 +182,6 @@ function ScheduleChangeAck:serialize(msgId)
   return Response.serialize(self, msgId)
 end
 
-
 --[[ HostInfoResponse ]]--
 local HostInfoResponse = Response:extend()
 function HostInfoResponse:initialize(replyTo, info)
@@ -203,6 +213,8 @@ exports.Response = Response
 exports.HandshakeHello = HandshakeHello
 exports.Heartbeat = Heartbeat
 exports.Manifest = Manifest
+exports.BinaryUpdateRequest = BinaryUpdate
+exports.BundleUpdateRequest = BundleUpdate
 exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse
 exports.ScheduleChangeAck = ScheduleChangeAck

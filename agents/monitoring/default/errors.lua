@@ -15,31 +15,10 @@ limitations under the License.
 --]]
 local Error = require('core').Error
 
---[[ UserResponseError --]]
-local UserResponseError = Error:extend()
-function UserResponseError:initialize(message)
-  Error.initialize(self)
-  self.message = message
-end
-
---[[ AuthTimeoutError --]]
-local AuthTimeoutError = Error:extend()
-function AuthTimeoutError:initialize(message)
-  Error.initialize(self)
-  self.message = message
-end
-
---[[ ResponseTimeoutError --]]
-local ResponseTimeoutError = Error:extend()
-function ResponseTimeoutError:initialize(message)
-  Error.initialize(self)
-  self.message = message
-end
-
---[[ Exports ]]--
-
-local exports = {}
-exports.UserResponseError = UserResponseError
-exports.AuthTimeoutError = AuthTimeoutError
-exports.ResponseTimeoutError = ResponseTimeoutError
-return exports
+return {
+	Error = Error,
+	UserResponseError = Error:extend(),
+	AuthTimeoutError = Error:extend(),
+	ResponseTimeoutError = Error:extend(),
+	InvalidSignatureError = Error:extend()
+}

@@ -47,6 +47,7 @@ exports['test_paths'] = function(test, asserts)
     virgo_paths.get(virgo_paths.VIRGO_PATH_LIBRARY_DIR)
   }
 
+
   function iter(path, callback)
     fs.stat(path, function(err, stats)
       if err then
