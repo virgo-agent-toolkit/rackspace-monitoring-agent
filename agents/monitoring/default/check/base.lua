@@ -143,6 +143,7 @@ function ChildCheck:_addMetric(checkResult, metricName, metricDimension, metricT
     checkResult:addMetric(metricName, metricDimension, internalMetricType,
                           metricValue)
   end)
+
   if err then
     self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
                                    tostring(err)))
