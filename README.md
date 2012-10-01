@@ -67,8 +67,8 @@ The monitoring agent comes with an example fixture server. This will
 send the fixtures found in `agents/monitoring/tests/fixtures/` back and
 forth between a running agent. You can run a server and agent like this:
 
-     python agents/monitoring/runner server_fixture
-     python agents/monitoring/runner agent_fixture
+     python agents/monitoring/runner.py server_fixture
+     python agents/monitoring/runner.py agent_fixture
 
 If you want to have the fixtures server listen on something other than
 `127.0.0.1` provide the environment variable `LISTEN_IP="0.0.0.0"`.
