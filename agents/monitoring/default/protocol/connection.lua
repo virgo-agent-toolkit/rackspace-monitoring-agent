@@ -65,12 +65,12 @@ requests['check_metrics.post'] = function(self, check, checkResults, callback)
   self:_send(m, callback)
 end
 
-requests['binary_update.get_version'] = function(self, callback)
+requests['binary_upgrade.get_version'] = function(self, callback)
   local m = msg.BinaryUpdateRequest:new()
   self:_send(m, callback)
 end
 
-requests['bundle_update.get_version'] = function(self, callback)
+requests['bundle_upgrade.get_version'] = function(self, callback)
   local m = msg.BundleUpdateRequest:new()
   self:_send(m, callback)
 end
@@ -108,12 +108,12 @@ responses['check.test'] = function(self, request, callback)
   end)
 end
 
-responses['binary_update.available'] = function(self, replyTo, callback)
+responses['binary_upgrade.available'] = function(self, replyTo, callback)
   local m = msg.Response:new(replyTo)
   self:_send(m, callback)
 end
 
-responses['bundle_update.available'] = function(self, replyTo, callback)
+responses['bundle_upgrade.available'] = function(self, replyTo, callback)
   local m = msg.Response:new(replyTo)
   self:_send(m, callback)
 end
