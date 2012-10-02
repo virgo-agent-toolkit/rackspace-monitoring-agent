@@ -74,13 +74,13 @@ end
 local BundleUpdate = Request:extend()
 function BundleUpdate:initialize()
   Request.initialize(self)
-  self.method = 'bundle_update.get_version'
+  self.method = 'bundle_upgrade.get_version'
 end
 
 local BinaryUpdate = Request:extend()
 function BinaryUpdate:initialize()
   Request.initialize(self)
-  self.method = 'binary_update.get_version'
+  self.method = 'binary_upgrade.get_version'
 end
 --[[ Handshake.Hello ]]--
 
