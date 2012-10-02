@@ -14,7 +14,7 @@ function LoadAverageCheck:run(callback)
 
   if err == true then
     for key, value in pairs(load) do
-      checkResult:addMetric(key, 'load', 'double', value)
+      checkResult:addMetric(key, nil, 'double', value)
     end
   else
     checkResult:setError(load)
