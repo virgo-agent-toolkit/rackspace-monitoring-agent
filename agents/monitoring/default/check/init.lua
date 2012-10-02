@@ -20,6 +20,7 @@ local CheckResult = require('./base').CheckResult
 local ApacheCheck = require('./apache').ApacheCheck
 local CpuCheck = require('./cpu').CpuCheck
 local DiskCheck = require('./disk').DiskCheck
+local FileSystemCheck = require('./filesystem').FileSystemCheck
 local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
 local MySQLCheck = require('./mysql').MySQLCheck
@@ -44,6 +45,8 @@ function create(checkData)
     return MemoryCheck:new(obj)
   elseif checkType == 'agent.disk' then
     return DiskCheck:new(obj)
+  elseif checkType == 'agent.filesystem' then
+    return FileSystemCheck:new(obj)
   elseif checkType == 'agent.memory' then
     return MemoryCheck:new(obj)
   elseif checkType == 'agent.network' then
@@ -89,6 +92,7 @@ exports.CheckResult = CheckResult
 
 exports.CpuCheck = CpuCheck
 exports.DiskCheck = DiskCheck
+exports.FileSystemCheck = FileSystemCheck
 exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
 exports.MySQLCheck = MySQLCheck
