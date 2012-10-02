@@ -1,7 +1,7 @@
 {
   "v": "1",
-  "id": 5,
+  "id": 8,
   "source": "agentA",
   "target": "endpoint",
-  "method": "binary_update.available"
+  "method": "bundle_upgrade.available"
 }

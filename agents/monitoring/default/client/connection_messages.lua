@@ -186,9 +186,9 @@ function ConnectionMessages:getUpdate(method, client)
   extension = ""
   download_attempts = 2
 
-  if method == "bundle_update.available" then
+  if method == "bundle_upgrade.available" then
     update_type = "bundle"
-  elseif method == "binary_update.available" then
+  elseif method == "binary_upgrade.available" then
     update_type = "binary"
     extension = ".zip"
   end
@@ -218,7 +218,7 @@ function ConnectionMessages:getUpdate(method, client)
       end)
     end,
     function(callback)
-      client.protocol:request(update_type ..'_update.get_version', callback)
+      client.protocol:request(update_type ..'_upgrade.get_version', callback)
     end,
     function(res, callback)
       version = res.result.version
@@ -315,7 +315,7 @@ function ConnectionMessages:onMessage(client, msg)
       return
     end
 
-    if method == 'binary_update.available' or method == 'bundle_update.available' then
+    if method == 'binary_upgrade.available' or method == 'bundle_upgrade.available' then
       return self:getUpdate(method, client)
     end
 

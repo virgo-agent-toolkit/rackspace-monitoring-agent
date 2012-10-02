@@ -3,5 +3,5 @@
   "id": 9,
   "source": "agentA",
   "target": "endpoint",
-  "method": "bundle_update.get_version" 
+  "method": "bundle_upgrade.get_version" 
 }

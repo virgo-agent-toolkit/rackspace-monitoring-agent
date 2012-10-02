@@ -35,7 +35,7 @@ set_option(opts, "destroy_connection_jitter", 60000)
 set_option(opts, "destroy_connection_base", 60000)
 set_option(opts, "listen_ip", '127.0.0.1')
 set_option(opts, "perform_client_disconnect", 'true')
-set_option(opts, "send_download_update", 1000)
+set_option(opts, "send_download_upgrade", 1000)
 
 set_option(opts, "rate_limit", 3000)
 set_option(opts, "rate_limit_reset", 86400) -- Reset limit in 24 hours
@@ -100,8 +100,8 @@ local TIMEOUTS = {}
 TIMEOUTS[opts.send_schedule_changed_initial] = function(log, client)
   send_request(log, client, 'check_schedule.changed.request')
 end
-TIMEOUTS[opts.send_download_update] = function(log, client)
-  send_request(log, client, 'bundle_update.available.request')
+TIMEOUTS[opts.send_download_upgrade] = function(log, client)
+  send_request(log, client, 'bundle_upgrade.available.request')
 end
 TIMEOUTS[opts.rate_limit_reset] = function()
   client.rate_limit = opts.rate_limit
