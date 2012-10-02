@@ -16,6 +16,18 @@ exports['test_filesystem_check'] = function(test, asserts)
     asserts.not_nil(metrics['files']['v'])
     asserts.not_nil(metrics['free_files']['v'])
 
+    asserts.equal(metrics['total']['t'], 'int64')
+    asserts.equal(metrics['free']['t'], 'int64')
+    asserts.equal(metrics['used']['t'], 'int64')
+    asserts.equal(metrics['avail']['t'], 'int64')
+    asserts.equal(metrics['files']['t'], 'int64')
+    asserts.equal(metrics['free_files']['t'], 'int64')
+
+    asserts.ok(tonumber(metrics['free']['v']) <= tonumber(metrics['total']['v']))
+    asserts.ok(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
+    asserts.equal(tonumber(metrics['free']['v']) + tonumber(metrics['used']['v']),
+                 tonumber(metrics['total']['v']))
+
     test.done()
   end)
 end
