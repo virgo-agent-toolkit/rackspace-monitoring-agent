@@ -15,6 +15,8 @@ limitations under the License.
 --]]
 
 local logging = require('logging')
+local debugm = require('debug')
+local fmt = require('string').format
 
 local Entry = {}
 
@@ -55,36 +57,9 @@ function Entry.run()
   end)
 
   if err == false then
-    local lookup_err, original_path
-    lookup_err, original_path = pcall(lookup_path, msg)
-    if original_path then
-      msg = original_path .. ' -> ' .. msg
-    else
-      logging.debug("couldn't look up the original path for " .. mod .. original_path)
-    end
     logging.error(msg)
     process.exit(1)
   end
 end
 
-function lookup_path(file_path)
-  local mapping = require('./path_mapping')
-  
-  local delim = ".lua"
-
-  -- NOTE- not very robust, but lua error messages here start with the 
-  -- lua path ending with a .lua.  Relative imports would be broken
-  local top_level_error_path = file_path:find("(" .. delim .. ")")
-  if not top_level_error_path then 
-    return 
-  end
-
-  local lua_module = file_path:sub(0, top_level_error_path + #delim -1)
-
-  local original_path = mapping[lua_module]
-  if original_path then
-    return original_path
-  end
-
-end
 return Entry

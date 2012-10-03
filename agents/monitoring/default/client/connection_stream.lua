@@ -18,6 +18,7 @@ local Emitter = require('core').Emitter
 local math = require('math')
 local timer = require('timer')
 local fmt = require('string').format
+local table = require('table')
 
 local async = require('async')
 
@@ -65,11 +66,10 @@ function ConnectionStream:createConnections(addresses, callback)
     function(callback)
       local iter = function(address, callback)
         local split, client, options
-        split = misc.splitAddress(address)
         options = misc.merge({
-          host = split[1],
-          port = split[2],
-          datacenter = address
+          host = address[1],
+          port = address[2],
+          datacenter = table.concat(address, ':')
         }, self._options)
         self:createConnection(options, callback)
       end
@@ -231,6 +231,8 @@ function ConnectionStream:createConnection(options, callback)
     guid = self._guid,
     timeout = consts.CONNECT_TIMEOUT
   }, options)
+
+  p(options)
 
   local client = AgentClient:new(opts, self._scheduler)
   client:on('error', function(errorMessage)

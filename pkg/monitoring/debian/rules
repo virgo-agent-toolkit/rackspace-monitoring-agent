@@ -7,6 +7,7 @@ BINDIR=$(DESTDIR)/usr/bin
 SHAREDIR=$(DESTDIR)/usr/share/$(NAME)
 INITDIR=$(DESTDIR)/etc/init
 INITDDIR=$(DESTDIR)/etc/init.d
+PERSISTENT_DIR=$(DESTDIR)/var/lib/$(NAME)
 
 clean:
 	dh_testdir
@@ -24,9 +25,10 @@ install: build
 	dh_testdir
 	dh_testroot
 	dh_prep
-	dh_installdirs
+	dh_installdirs 
 	DESTDIR=$(DESTDIR) $(MAKE) install
 	install -d $(INITDIR)
+	install -d $(PERSISTENT_DIR)
 	install -o root -g root -m 644 pkg/monitoring/debian/package.upstart $(INITDIR)/$(NAME).conf
 	install -d $(INITDDIR)
 	install -o root -g root -m 755 pkg/monitoring/debian/package.init $(INITDDIR)/$(NAME)

@@ -7,6 +7,7 @@ local logging = require('logging')
 local loggingUtil = require ('../util/logging')
 local path = require('path')
 local util = require('../util/misc')
+local client_https = require('../protocol/https')
 local table = require('table')
 local os = require('os')
 local https = require('https')
@@ -72,70 +73,6 @@ function ConnectionMessages:fetchManifest(client)
   end
 end
 
-function ConnectionMessages:httpGet(client, path, file_path, retries, callback)
-  -- Does a HTTP GET over to the clients endpoint streaming the body to file_path attempting
-  -- retries number of times
-
-  local function ensure_retries(err, res)
-    if not err then
-      if callback then callback() end
-      return
-    end
-    
-    local status = res and res.status_code or "?"
-    local msg = fmt('download failed for %s with status: %s and error: %s', path, status, tostring(err))
-    client:log(logging.WARNING, msg)
-
-    if retries > 0 then
-      client:log(logging.DEBUG, 'retrying download '.. retries .. ' more times.')
-      return self:httpGet(client, path, file_path, retries-1, callback)
-    end
-    callback(err)
-  end
-
-  local function _get()
-
-    local options = {
-      host = client._host,
-      port = client._port,
-      path = path,
-      method = 'GET'
-    }
-
-    util.merge(options, client._tls_options)
-
-    local req = https.request(options, function(res)
-      if res.status_code >= 400 then
-        print(res.status_code)
-        return ensure_retries(errors.Error:new("bad status"), res)
-      end
-
-      local stream = fs.createWriteStream(file_path)
-      stream:on('end', function()
-        if callback then
-          callback()
-          callback = nil
-        end
-      end)
-      stream:on('error', function(err)
-        ensure_retries(err, res)
-      end)
-
-      res:pipe(stream)
-      res:on('end', function(d)
-        stream:finish(d)
-      end)
-    end)
-    req:on('error', function(err)
-      ensure_retries(err, res)
-    end)
-    req:done()
-  end
-
-  status, err = pcall(_get)
-  if err then ensure_retries(err) end
-end
-
 function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
 
   local parallel = {
@@ -180,7 +117,8 @@ function ConnectionMessages:getUpdate(method, client)
   local dir, filename, version, extension, AbortDownloadError, temp_dir, unverified_dir, update_type, download_attempts
 
   AbortDownloadError = errors.Error:extend()
-  temp_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_TMP_DIR)
+  temp_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
+
   unverified_dir = path.join(temp_dir, 'unverified')
   filename = virgo.default_name
   extension = ""
@@ -196,16 +134,8 @@ function ConnectionMessages:getUpdate(method, client)
   local function get_path(arg)
     local sig = arg and arg.sig and '.sig' or ""
     local verified = arg and arg.verified
+    local _dir = verified and temp_dir or unverified_dir
     local name = filename..'-'..version..extension..sig
-
-    local _dir = unverified_dir
-    if verified then
-      if update_type == "binary" then
-        _dir = temp_dir
-      else 
-        _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
-      end
-    end
     return path.join(_dir, name)
   end
 
@@ -251,10 +181,12 @@ function ConnectionMessages:getUpdate(method, client)
 
       async.parallel({
         function(callback)
-          self:httpGet(client, uri_path, get_path(), download_attempts, callback)
+          local options = util.merge({method="GET", path=uri_path}, client._tls_options)
+          client_https(options, get_path(), nil, callback)
         end,
         function(callback)
-          self:httpGet(client, uri_path..'.sig', get_path{sig=true}, download_attempts, callback)
+          local options = util.merge({method="GET", path=uri_path..'.sig'}, client._tls_options)
+          client_https(options, get_path{sig=true}, nil, callback)
         end
       }, callback)
     end,

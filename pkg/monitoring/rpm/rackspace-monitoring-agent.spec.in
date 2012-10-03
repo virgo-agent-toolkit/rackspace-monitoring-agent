@@ -38,6 +38,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
 install -m 644 pkg/monitoring/systemd/rackspace-monitoring-agent.service $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
 install -d $RPM_BUILD_ROOT/%{_initrddir}
+install -d $RPM_BUILD_ROOT/%{_sharedstatedir}/%{name}
 install -m 755 pkg/monitoring/sysv-redhat/rackspace-monitoring-agent $RPM_BUILD_ROOT/%{_initrddir}/
 
 %check
