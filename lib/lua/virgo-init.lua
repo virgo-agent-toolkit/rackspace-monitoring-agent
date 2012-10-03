@@ -166,6 +166,17 @@ hide("exitProcess")
 
 local vfs = LVFS.open()
 
+local path_mapping = {}
+if vfs:exists('/path_mapping.lua') then 
+  local mapping_string = vfs:read('/path_mapping.lua')
+  path_mapping = loadstring(mapping_string, '/path_mapping.lua')()
+end
+
+function original_path(filepath)
+  local ensure_slash = path.posix:join('/', filepath)
+  return path_mapping[ensure_slash] or filepath
+end
+
 -- Replace print
 function print(...)
   local n = select('#', ...)
@@ -202,7 +213,6 @@ function debug(...)
 
   printStderr(table.concat(arguments, "\t") .. "\n")
 end
-
 
 -- Add global access to the environment variables using a dynamic table
 process.env = setmetatable({}, {
@@ -274,7 +284,7 @@ local function myloadfile(filepath, cache)
   local code = vfs:read(filepath)
 
   -- TODO: find out why inlining assert here breaks the require test
-  local fn, err = loadstring(code, '@' .. filepath)
+  local fn, err = loadstring(code, '@' .. original_path(filepath))
   assert(fn, err)
   local dirname = path.posix:dirname(filepath)
   local realRequire = require
