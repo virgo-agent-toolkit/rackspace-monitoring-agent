@@ -134,6 +134,17 @@ The entry point to the agent defaults to
 
 This example would run `agents/monitoring/tests/init.lua`.
 
+### Making a new release
+
+Virgo version numbers are managed using git tagging. To make a new version
+create an annotated tag:
+
+    git tag -a 0.1.1 -m 'release v0.1.1'
+
+Then push the tag to your git repository
+
+    git push --tags
+
 Distro Packages
 ===============
 
