@@ -35,7 +35,7 @@ local fmt = require('string').format
 
 local AgentClient = Emitter:extend()
 
-local HEARTBEAT_INTERVAL = 5 * 60 * 1000 -- ms
+local INITIAL_SOCKET_TIMEOUT = 5 * 60 * 1000 -- ms
 
 function AgentClient:initialize(options, scheduler)
 
@@ -94,8 +94,15 @@ function AgentClient:log(priority, ...)
   self._log(priority, unpack({...}))
 end
 
-function AgentClient:_socketTimeout()
-  return misc.calcJitter(HEARTBEAT_INTERVAL, consts.SOCKET_TIMEOUT)
+function AgentClient:setSocketTimeout()
+  local timeout
+  local interval = self._heartbeat_interval or INITIAL_SOCKET_TIMEOUT
+
+  self._log(logging.DEBUG, fmt('Using timeout %sms', interval))
+
+  self._sock.socket:setTimeout(interval, function()
+    self:emit('timeout')
+  end)
 end
 
 function AgentClient:connect()
@@ -130,14 +137,14 @@ function AgentClient:connect()
         self._heartbeat_interval = msg.result.heartbeat_interval
         self._entity_id = msg.result.entity_id
 
+        self:setSocketTimeout()
+
         self:emit('handshake_success', msg.result)
       end
     end)
   end)
-  self._log(logging.DEBUG, fmt('Using timeout %sms', self:_socketTimeout()))
-  self._sock.socket:setTimeout(self:_socketTimeout(), function()
-    self:emit('timeout')
-  end)
+
+  self:setSocketTimeout()
   self._sock:on('error', function(err)
     self._log(logging.ERROR, fmt('Failed to connect: %s', JSON.stringify(err)))
     self:emit('error', err)
