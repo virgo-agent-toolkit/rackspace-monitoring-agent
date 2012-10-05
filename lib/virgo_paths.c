@@ -15,6 +15,9 @@
  *
  */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "virgo.h"
 #include "virgo_brand.h"
 #include "virgo_paths.h"
@@ -90,7 +93,7 @@ virgo__path_persistent_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 
 virgo_error_t*
 virgo__path_tmp_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  char *tmp;
+  const char *tmp;
   virgo_error_t* err = virgo__temp_dir_get(&tmp);
 
   if (err) {
