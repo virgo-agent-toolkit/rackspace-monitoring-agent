@@ -37,7 +37,7 @@ function FileSystemCheck:run(callback)
   local s = sigar:new()
   local fses = s:filesystems()
   local checkResult = CheckResult:new(self, {})
-  local fs, info, usage, value, used_percent
+  local fs, info, usage, value, used_percent, free_percent
 
   for i=1, #fses do
     fs = fses[i]
