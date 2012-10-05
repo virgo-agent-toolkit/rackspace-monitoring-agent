@@ -1,3 +1,5 @@
+local math = require('math')
+
 local FileSystemCheck = require('monitoring/default/check').FileSystemCheck
 
 local exports = {}
@@ -27,6 +29,11 @@ exports['test_filesystem_check'] = function(test, asserts)
     asserts.ok(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
     asserts.equal(tonumber(metrics['free']['v']) + tonumber(metrics['used']['v']),
                  tonumber(metrics['total']['v']))
+
+    asserts.equal(math.floor((tonumber(metrics['avail']['v']) / tonumber(metrics['total']['v'])) * 100),
+                 math.floor(tonumber(metrics['free_percent']['v'])))
+    asserts.equal(math.floor((tonumber(metrics['used']['v']) / tonumber(metrics['total']['v'])) * 100),
+                 math.floor(tonumber(metrics['used_percent']['v'])))
 
     test.done()
   end)

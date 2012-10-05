@@ -37,7 +37,7 @@ function FileSystemCheck:run(callback)
   local s = sigar:new()
   local fses = s:filesystems()
   local checkResult = CheckResult:new(self, {})
-  local fs, info, usage
+  local fs, info, usage, value, used_percent
 
   for i=1, #fses do
     fs = fses[i]
@@ -48,8 +48,17 @@ function FileSystemCheck:run(callback)
 
     if name and usage then
       for _, key in pairs(METRICS) do
-        checkResult:addMetric(key, name, nil, usage[key])
+        value = usage[key]
+        checkResult:addMetric(key, name, nil, value)
       end
+    end
+
+    if usage and usage['total'] > 0 then
+      free_percent = (usage['avail'] / usage['total']) * 100
+      used_percent = (usage['used'] / usage['total']) * 100
+
+      checkResult:addMetric('free_percent', name, nil, free_percent)
+      checkResult:addMetric('used_percent', name, nil, used_percent)
     end
   end
 
