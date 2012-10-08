@@ -43,7 +43,8 @@ exports['test_reconnects'] = function(test, asserts)
 
   local options = {
     datacenter = 'test',
-    tls = { rejectUnauthorized = false }
+    tls = { rejectUnauthorized = false },
+    stateDirectory = './tests'
   }
   local client = ConnectionStream:new('id', 'token', 'guid', options)
 

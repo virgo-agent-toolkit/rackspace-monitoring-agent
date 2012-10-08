@@ -28,6 +28,7 @@ local logging = require('logging')
 local consts = require('../util/constants')
 local misc = require('../util/misc')
 local vtime = require('virgo-time')
+local path = require('path')
 
 local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token, guid, options)
@@ -52,7 +53,8 @@ established.
 function ConnectionStream:createConnections(addresses, callback)
   async.series({
     function(callback)
-      self._scheduler = Scheduler:new('scheduler.state', {}, callback)
+      self._stateFile = path.join(self._options.stateDirectory, 'scheduler.state')
+      self._scheduler = Scheduler:new(self._stateFile, {}, callback)
       self._scheduler:on('check', function(check, checkResult)
         self:_sendMetrics(check, checkResult)
       end)
