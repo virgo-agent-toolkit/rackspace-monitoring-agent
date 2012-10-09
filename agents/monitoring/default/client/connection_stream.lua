@@ -132,11 +132,11 @@ options - passed to ConnectionStream:reconnect
 callback - Callback called with (err)
 ]]--
 function ConnectionStream:restart(client, options, callback)
-  if client:isRestarted() then
+  if client:isReconnecting() then
     return
   end
 
-  client:setRestarted()
+  client:setReconnecting()
   client:destroy()
 
   -- Find a new client to handle time sync

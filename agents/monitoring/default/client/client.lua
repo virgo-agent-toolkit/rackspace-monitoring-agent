@@ -51,7 +51,7 @@ function AgentClient:initialize(options, scheduler)
   self._host = options.host
   self._port = options.port
   self._timeout = options.timeout or 5000
-  self._restarted = false
+  self._reconnecting = false
 
   if DATACENTER_COUNT[options.datacenter] then
     DATACENTER_COUNT[options.datacenter] = DATACENTER_COUNT[options.datacenter] + 1
@@ -172,13 +172,13 @@ function AgentClient:isDestroyed()
   return self._destroyed
 end
 
-function AgentClient:setRestarted()
-  self._restarted = true
+function AgentClient:setReconnecting()
+  self._reconnecting = true
 end
 
 
-function AgentClient:isRestarted()
-  return self._restarted
+function AgentClient:isReconnecting()
+  return self._reconnecting
 end
 
 function AgentClient:startHeartbeatInterval()
