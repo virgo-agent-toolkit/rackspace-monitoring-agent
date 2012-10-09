@@ -191,7 +191,7 @@ function AgentClient:startHeartbeatInterval()
 
     this._log(logging.DEBUG, fmt('Starting heartbeat interval, interval=%dms', this._heartbeat_interval))
 
-    this._heartbeatTimeout = timer.setTimeout(timeout, function()
+    function timerCb()
       local timestamp = Timer.now()
       local send_timestamp = vtime.raw()
 
@@ -200,7 +200,7 @@ function AgentClient:startHeartbeatInterval()
       end
 
       this._log(logging.DEBUG, fmt('Sending heartbeat (timestamp=%d,sent_heartbeat_count=%d,got_pong_count=%d)',
-                                    send_timestamp, this._sent_heartbeat_count, this._got_pong_count))
+                               send_timestamp, this._sent_heartbeat_count, this._got_pong_count))
       this._sent_heartbeat_count = this._sent_heartbeat_count + 1
       this.protocol:request('heartbeat.post', send_timestamp, function(err, msg)
         if this:isDestroyed() then
@@ -234,7 +234,9 @@ function AgentClient:startHeartbeatInterval()
 
         startInterval(this)
       end)
-    end)
+    end
+
+    this._heartbeatTimeout = timer.setTimeout(timeout, timerCb)
    end
 
    startInterval(self)
