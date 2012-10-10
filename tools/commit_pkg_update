@@ -10,7 +10,7 @@ root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 out = os.path.join(root, 'out')
 
 def git_add_commit(dest, branch):
-    sh("cd %s && git checkout -B '%s'" % (dest, branch))
+    sh("cd %s && git checkout -b '%s'" % (dest, branch))
     sh("cd %s && git add ." % dest)
     sh("cd %s && git commit -m '%s'" % (dest, 'Release'))
     sh("cd %s && git push origin '%s'" % (dest, branch))
