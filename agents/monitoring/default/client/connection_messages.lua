@@ -280,7 +280,7 @@ function ConnectionMessages:getUpdate(method, client)
       client:log(logging.INFO, msg)
       return
     end
-    
+
     if instanceof(err, AbortDownloadError) then
       return client:log(logging.DEBUG, 'already downloaded update, not doing so again')
     end
