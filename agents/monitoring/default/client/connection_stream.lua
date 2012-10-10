@@ -132,6 +132,12 @@ options - passed to ConnectionStream:reconnect
 callback - Callback called with (err)
 ]]--
 function ConnectionStream:restart(client, options, callback)
+  if client:isDestroyed() then
+    return
+  end
+
+  client:destroy()
+
   -- Find a new client to handle time sync
   if self._activeTimeSyncClient == client then
     self._attachTimeSyncEvent(self:getClient())
@@ -148,7 +154,6 @@ function ConnectionStream:restart(client, options, callback)
      return
   end
 
-  client:destroy()
   self:reconnect(options, callback)
 end
 
