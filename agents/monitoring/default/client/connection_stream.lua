@@ -255,13 +255,13 @@ function ConnectionStream:createConnection(options, callback)
   end)
 
   client:on('timeout', function()
-    logging.debugf('%s:%d -> Client Timeout', opts.host, opts.port)
+    client:log(logging.DEBUG, 'Client Timeout')
     self:restart(client, opts, callback)
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
-    logging.debugf('%s:%d -> Remote endpoint closed the connection', opts.host, opts.port)
+    client:log(logging.DEBUG, 'Remote endpoint closed the connection')
     self:restart(client, opts, callback)
   end)
 
