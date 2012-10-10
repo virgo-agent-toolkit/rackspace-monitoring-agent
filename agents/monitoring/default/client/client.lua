@@ -37,9 +37,12 @@ local AgentClient = Emitter:extend()
 
 local HEARTBEAT_INTERVAL = 5 * 60 * 1000 -- ms
 
+local DATACENTER_COUNT = {}
+
 function AgentClient:initialize(options, scheduler)
 
   self.protocol = nil
+  self._destroyed = false
   self._datacenter = options.datacenter
   self._id = options.id
   self._token = options.token
@@ -48,6 +51,12 @@ function AgentClient:initialize(options, scheduler)
   self._host = options.host
   self._port = options.port
   self._timeout = options.timeout or 5000
+
+  if DATACENTER_COUNT[options.datacenter] then
+    DATACENTER_COUNT[options.datacenter] = DATACENTER_COUNT[options.datacenter] + 1
+  else
+    DATACENTER_COUNT[options.datacenter] = 1
+  end
 
   self._tls_options = options.tls or {
     rejectUnauthorized = true,
@@ -61,7 +70,10 @@ function AgentClient:initialize(options, scheduler)
   self._got_pong_count = 0
   self._latency = nil
 
-  self._log = loggingUtil.makeLogger(fmt('%s:%s', self._host, self._port))
+  self._log = loggingUtil.makeLogger(fmt('%s:%s (connID=%d)',
+                                     self._host,
+                                     self._port,
+                                     DATACENTER_COUNT[options.datacenter]))
 end
 
 function AgentClient:getDatacenter()
@@ -151,20 +163,40 @@ function AgentClient:getLatency()
   return self._latency
 end
 
+function AgentClient:setDestroyed()
+  self._destroyed = true
+end
+
+function AgentClient:isDestroyed()
+  return self._destroyed
+end
+
 function AgentClient:startHeartbeatInterval()
   function startInterval(this)
     local timeout = misc.calcJitter(this._heartbeat_interval, consts.HEARTBEAT_INTERVAL_JITTER)
 
+    if this:isDestroyed() then
+      return
+    end
+
     this._log(logging.DEBUG, fmt('Starting heartbeat interval, interval=%dms', this._heartbeat_interval))
 
-    this._heartbeatTimeout = timer.setTimeout(timeout, function()
+    function timerCb()
       local timestamp = Timer.now()
       local send_timestamp = vtime.raw()
 
+      if this:isDestroyed() then
+        return
+      end
+
       this._log(logging.DEBUG, fmt('Sending heartbeat (timestamp=%d,sent_heartbeat_count=%d,got_pong_count=%d)',
-                                    send_timestamp, this._sent_heartbeat_count, this._got_pong_count))
+                               send_timestamp, this._sent_heartbeat_count, this._got_pong_count))
       this._sent_heartbeat_count = this._sent_heartbeat_count + 1
       this.protocol:request('heartbeat.post', send_timestamp, function(err, msg)
+        if this:isDestroyed() then
+          return
+        end
+
         if err then
           this:emit('error', err)
           this._log(logging.DEBUG, 'Got an error while sending heartbeat: ' .. tostring(err))
@@ -192,7 +224,9 @@ function AgentClient:startHeartbeatInterval()
 
         startInterval(this)
       end)
-    end)
+    end
+
+    this._heartbeatTimeout = timer.setTimeout(timeout, timerCb)
    end
 
    startInterval(self)
@@ -207,6 +241,7 @@ function AgentClient:clearHeartbeatInterval()
 end
 
 function AgentClient:destroy()
+  self:setDestroyed()
   self:clearHeartbeatInterval()
 
   if self._sock then
