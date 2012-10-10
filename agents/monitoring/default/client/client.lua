@@ -48,8 +48,9 @@ function AgentClient:initialize(options, scheduler)
   self._token = options.token
   self._guid = options.guid
   self._target = 'endpoint'
-  self._host = options.host
+  self._ip = options.ip
   self._port = options.port
+  self._host = options.host
   self._timeout = options.timeout or 5000
 
   if DATACENTER_COUNT[options.datacenter] then
@@ -70,9 +71,10 @@ function AgentClient:initialize(options, scheduler)
   self._got_pong_count = 0
   self._latency = nil
 
-  self._log = loggingUtil.makeLogger(fmt('%s:%s (connID=%d)',
-                                     self._host,
+  self._log = loggingUtil.makeLogger(fmt('%s:%s (hostname=%s connID=%d)',
+                                     self._ip,
                                      self._port,
+                                     self._host,
                                      DATACENTER_COUNT[options.datacenter]))
 end
 
@@ -113,7 +115,7 @@ end
 function AgentClient:connect()
   -- Create connection timeout
   self._log(logging.DEBUG, 'Connecting...')
-  self._sock = tls.connect(self._port, self._host, self._tls_options, function(err, cleartext)
+  self._sock = tls.connect(self._port, self._ip, self._tls_options, function(err, cleartext)
     -- Log
     self._log(logging.INFO, 'Connected')
     self:emit('connect')
