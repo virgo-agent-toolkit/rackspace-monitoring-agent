@@ -20,6 +20,7 @@ local timer = require('timer')
 local fmt = require('string').format
 
 local async = require('async')
+local dns = require('dns')
 
 local Scheduler = require('../schedule').Scheduler
 local AgentClient = require('./client').AgentClient
@@ -51,6 +52,24 @@ callback - Callback called with (err) when all the connections have been
 established.
 --]]
 function ConnectionStream:createConnections(addresses, callback)
+  local iter = function(address, callback)
+    local split, client, options, ip
+    split = misc.splitAddress(address)
+    dns.lookup(split[1], function(err, ip)
+      if (err) then
+        callback(err)
+        return
+      end
+      options = misc.merge({
+        ip = ip,
+        host = split[1],
+        port = split[2],
+        datacenter = address
+      }, self._options)
+      self:createConnection(options, callback)
+    end)
+  end
+
   async.series({
     function(callback)
       self._stateFile = path.join(self._options.stateDirectory, 'scheduler.state')
@@ -65,16 +84,6 @@ function ConnectionStream:createConnections(addresses, callback)
     end,
     -- connect
     function(callback)
-      local iter = function(address, callback)
-        local split, client, options
-        split = misc.splitAddress(address)
-        options = misc.merge({
-          host = split[1],
-          port = split[2],
-          datacenter = address
-        }, self._options)
-        self:createConnection(options, callback)
-      end
       async.forEach(addresses, iter, callback)
     end
   }, callback)
@@ -242,8 +251,9 @@ function ConnectionStream:createConnection(options, callback)
   local client = AgentClient:new(opts, self._scheduler)
   client:on('error', function(errorMessage)
     local err = {}
-    err.host = opts.host
+    err.ip = opts.ip
     err.port = opts.port
+    err.host = opts.host
     err.datacenter = opts.datacenter
     err.message = errorMessage
 
@@ -255,13 +265,13 @@ function ConnectionStream:createConnection(options, callback)
   end)
 
   client:on('timeout', function()
-    logging.debugf('%s:%d -> Client Timeout', opts.host, opts.port)
+    client:log(logging.DEBUG, 'Client Timeout')
     self:restart(client, opts, callback)
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
-    logging.debugf('%s:%d -> Remote endpoint closed the connection', opts.host, opts.port)
+    client:log(logging.DEBUG, 'Remote endpoint closed the connection')
     self:restart(client, opts, callback)
   end)
 
