@@ -150,7 +150,19 @@ int main(int argc, char* argv[])
   /* Setup Lua Contexts for Luvit and Libuv runloop */
   err = virgo_init(v);
   if (err) {
-    handle_error("Error in init", err);
+    if (err->err == VIRGO_EHELPREQ) {
+      show_help();
+      virgo_error_clear(err);
+      return 0;
+    }
+    else if (err->err == VIRGO_EVERSIONREQ) {
+      show_version(v);
+      virgo_error_clear(err);
+      return 0;
+    }
+    else {
+      handle_error("Error in init", err);
+    }
     return EXIT_FAILURE;
   }
 
@@ -163,19 +175,7 @@ int main(int argc, char* argv[])
   /* Enter Luvit and Execute */
   err = virgo_run(v);
   if (err) {
-    if (err->err == VIRGO_EHELPREQ) {
-      show_help();
-      virgo_error_clear(err);
-      return 0;
-    }
-    else if (err->err == VIRGO_EVERSIONREQ) {
-      show_version(v);
-      virgo_error_clear(err);
-      return 0;
-    }
-    else {
-      handle_error("Runtime Error", err);
-    }
+    handle_error("Runtime Error", err);
     return EXIT_FAILURE;
   }
 
