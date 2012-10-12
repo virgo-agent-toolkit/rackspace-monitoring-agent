@@ -31,7 +31,7 @@
 
 static char**
 copy_args(virgo_t *v, const char *bundle_path) {
-  int i, index = 0;
+  int i, index = 1;
   char **args;
 
   args = malloc((v->argc + 10) * sizeof(char*));
@@ -55,10 +55,11 @@ copy_args(virgo_t *v, const char *bundle_path) {
 extern char **environ;
 
 static virgo_error_t*
-virgo__exec(virgo_t *v, const char *exe_path, const char *bundle_path) {
+virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
   char **args = copy_args(v, bundle_path);
   int rc;
 
+  args[0] = exe_path;
   rc = execve(exe_path, args, environ);
   if (rc < 0) { /* on success, does not execute */
     return virgo_error_createf(VIRGO_ENOFILE, "execve failed errno=%i", errno);
