@@ -103,8 +103,8 @@ function ConnectionStream:_setDelay(datacenter)
   local delay
 
   if previousDelay == nil then
-    self._delays[datacenter] = 0
-    previousDelay = 0
+    self._delays[datacenter] = consts.DATACENTER_FIRST_RECONNECT_DELAY
+    previousDelay = consts.DATACENTER_FIRST_RECONNECT_DELAY
   end
 
   delay = math.min(previousDelay, maxDelay) + (jitter * math.random())
