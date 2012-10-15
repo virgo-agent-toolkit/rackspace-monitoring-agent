@@ -115,7 +115,7 @@ static int test_tempdir(const char *temp_dir)
 }
 
 virgo_error_t*
-virgo__temp_dir_get(const char **temp_dir)
+virgo__temp_dir_get(char **temp_dir)
 {
   const char *try_dirs[] = { "/tmp", "/usr/tmp", "/var/tmp" };
   const char *try_envs[] = { "TMPDIR", "TMP", "TEMP"};

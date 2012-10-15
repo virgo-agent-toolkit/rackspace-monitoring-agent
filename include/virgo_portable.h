@@ -48,7 +48,7 @@ int virgo_asprintf(char **outstr, const char *fmt, ...);
 
 char* virgo_basename(char *name);
 
-virgo_error_t* virgo__temp_dir_get(const char **temp_dir);
+virgo_error_t* virgo__temp_dir_get(char **temp_dir);
 
 
 /* Function annotation attribute to declare a function takes a format string, 

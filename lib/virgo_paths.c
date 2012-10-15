@@ -93,7 +93,7 @@ virgo__path_persistent_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 
 virgo_error_t*
 virgo__path_tmp_dir(virgo_t *v, char *buffer, size_t buffer_len) {
-  const char *tmp;
+  char *tmp;
   virgo_error_t* err = virgo__temp_dir_get(&tmp);
 
   if (err) {
