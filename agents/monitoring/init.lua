@@ -39,7 +39,7 @@ local argv = require("options")
   .alias({['U'] = 'username'})
   .describe("K", "apikey")
   .alias({['K'] = 'apikey'})
-  .argv("idonhe:x:p:c:s:n:k:u")
+  .argv("idonhU:K:e:x:p:c:s:n:k:u")
 
 function Entry.run()
   local mod = argv.args.e and argv.args.e or 'default'
