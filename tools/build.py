@@ -62,9 +62,9 @@ def test_cmd(additional=""):
 
 def test(stdout=None, entry="tests"):
     if sys.platform != "win32":
-        agent_tests = os.path.join(paths.root, 'out', paths.BUILDTYPE, 'monitoring-test.zip')
+        agent_tests = os.path.join(paths.root, 'out', paths.BUILDTYPE, 'monitoring.zip')
     else:
-        agent_tests = os.path.join(paths.root, paths.BUILDTYPE, 'monitoring-test.zip')
+        agent_tests = os.path.join(paths.root, paths.BUILDTYPE, 'monitoring.zip')
 
     cmd = test_cmd("--zip %s -e %s -o" % (agent_tests, entry))
     print cmd
