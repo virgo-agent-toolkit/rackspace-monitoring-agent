@@ -48,15 +48,9 @@ exports['test_reconnects'] = function(test, asserts)
     tls = { rejectUnauthorized = false },
     stateDirectory = './tests',
     host = "127.0.0.1",
-<<<<<<< HEAD
     port = 50061,
     tls = { rejectUnauthorized = false }
   }
-=======
-    port = 50061
-  }
-
->>>>>>> 8ba3a29... temp
   local client = ConnectionStream:new('id', 'token', 'guid', options)
 
   local errorCount = 0

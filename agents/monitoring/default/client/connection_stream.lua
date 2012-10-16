@@ -51,21 +51,10 @@ addresses - An Array of ip:port pairs
 callback - Callback called with (err) when all the connections have been
 established.
 --]]
-<<<<<<< HEAD
-function ConnectionStream:createConnections(addresses, callback)
-  local iter = function(address, callback)
-=======
 function ConnectionStream:createConnections(endpoints, callback)
   
   local iter = function(endpoint, callback)
->>>>>>> cbdc0b2... Many bug fixes and clenaup
-    local split, client, options, ip
-<<<<<<< HEAD
-    split = misc.splitAddress(address)
-    dns.lookup(split[1], function(err, ip)
-=======
     dns.lookup(endpoint.host, function(err, ip)
->>>>>>> 8ba3a29... temp
       if (err) then
         callback(err)
         return
@@ -74,8 +63,8 @@ function ConnectionStream:createConnections(endpoints, callback)
         host = endpoint.host,
         port = endpoint.port,
         ip = ip,
-        datacenter = address,
         id = self._id,
+        datacenter = tostring(endpoint),
         token = self._token,
         guid = self._guid,
         timeout = consts.CONNECT_TIMEOUT
@@ -98,24 +87,7 @@ function ConnectionStream:createConnections(endpoints, callback)
     end,
     -- connect
     function(callback)
-<<<<<<< HEAD
-      local iter = function(endpoint, callback)
-        local options
-        options = misc.merge({
-          host = endpoint.host,
-          port = endpoint.port,
-          datacenter = tostring(endpoint),
-          id = self._id,
-          token = self._token,
-          guid = self._guid,
-          timeout = consts.CONNECT_TIMEOUT
-        }, self._options)
-        self:_createConnection(options, callback)
-      end
-      async.forEach(addresses, iter, callback)
-=======
       async.forEach(endpoints, iter, callback)
->>>>>>> cbdc0b2... Many bug fixes and clenaup
     end
   }, callback)
 end
@@ -229,16 +201,6 @@ client - client that needs restarting
 options - passed to ConnectionStream:reconnect
 callback - Callback called with (err)
 ]]--
-<<<<<<< HEAD
-=======
-function ConnectionStream:_restart(client, options, callback)
-  if client:isDestroyed() then
-    return
-  end
-
-  client:destroy()
->>>>>>> cbdc0b2... Many bug fixes and clenaup
-
 function ConnectionStream:_restart(client, options, callback)
   -- Find a new client to handle time sync
   if self._activeTimeSyncClient == client then

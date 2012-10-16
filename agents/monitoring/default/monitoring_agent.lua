@@ -326,12 +326,7 @@ function MonitoringAgent:_loadEndpoints(callback)
 end
 
 function MonitoringAgent:_queryForEndpoints(domains, callback)
-<<<<<<< HEAD
-  local endpoints = ''
   function iter(domain, callback)
-=======
-  local function iter(domain, callback)
->>>>>>> cbdc0b2... Many bug fixes and clenaup
     dns.resolve(domain, 'SRV', function(err, results)
       if err then
         logging.error('Could not lookup SRV record from ' .. domain)

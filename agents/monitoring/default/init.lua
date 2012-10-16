@@ -19,10 +19,6 @@ local Setup = require('./setup').Setup
 local constants = require('./util/constants')
 
 local function main(argv)
-
-local table = require('table')
-
-local function main(argv)
   argv = argv and argv or {}
   local options = {}
 
