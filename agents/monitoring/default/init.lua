@@ -19,6 +19,8 @@ local MonitoringAgent = require('./monitoring_agent').MonitoringAgent
 local Setup = require('./setup').Setup
 
 local function main(argv)
+
+local table = require('table')
   argv = argv and argv or {}
   local options = {}
 
@@ -35,9 +37,10 @@ local function main(argv)
   end
 
   if argv.i then
+    local caCertsDebug = require('./certs').caCertsDebug
     options.tls = {
       rejectUnauthorized = true,
-      ca = require('./certs').caCertsDebug
+      ca = caCertsDebug
     }
   end
 
@@ -50,6 +53,13 @@ local function main(argv)
 
   Setup:new(argv, options.configFile, agent):run()
 
+  if argv.u then
+    options.configFile = options.configFile or constants.DEFAULT_CONFIG_PATH
+    local setup = Setup:new(argv, options.configFile, agent)
+    setup:run()
+  else
+    agent:start(options)
+  end
 end
 
 return {
