@@ -12,6 +12,7 @@ exports.HEARTBEAT_INTERVAL_JITTER = 7000
 exports.RATE_LIMIT_SLEEP = 5000
 exports.RATE_LIMIT_RETURN_CODE = 2
 
+exports.DATACENTER_FIRST_RECONNECT_DELAY = 30 * 1000 -- initial datacenter delay
 exports.DATACENTER_MAX_DELAY = 5 * 60 * 1000 -- max connection delay
 exports.DATACENTER_MAX_DELAY_JITTER = 7000
 
