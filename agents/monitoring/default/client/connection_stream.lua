@@ -51,20 +51,23 @@ addresses - An Array of ip:port pairs
 callback - Callback called with (err) when all the connections have been
 established.
 --]]
-function ConnectionStream:createConnections(addresses, callback)
-  local iter = function(address, callback)
-    local split, client, options, ip
-    split = misc.splitAddress(address)
-    dns.lookup(split[1], function(err, ip)
+function ConnectionStream:createConnections(endpoints, callback)
+  
+  local iter = function(endpoint, callback)
+    dns.lookup(endpoint.host, function(err, ip)
       if (err) then
         callback(err)
         return
       end
       options = misc.merge({
+        host = endpoint.host,
+        port = endpoint.port,
         ip = ip,
-        host = split[1],
-        port = split[2],
-        datacenter = address
+        id = self._id,
+        datacenter = tostring(endpoint),
+        token = self._token,
+        guid = self._guid,
+        timeout = consts.CONNECT_TIMEOUT
       }, self._options)
       self:createConnection(options, callback)
     end)
@@ -84,9 +87,70 @@ function ConnectionStream:createConnections(addresses, callback)
     end,
     -- connect
     function(callback)
-      async.forEach(addresses, iter, callback)
+      async.forEach(endpoints, iter, callback)
     end
   }, callback)
+end
+
+--[[
+Create and establish a connection to the endpoint.
+
+datacenter - Datacenter name / host alias.
+host - Hostname.
+port - Port.
+callback - Callback called with (err)
+]]--
+function ConnectionStream:_createConnection(options, callback)
+  local client = AgentClient:new(options, self._scheduler)
+  client:on('error', function(errorMessage)
+    local err = {}
+    err.host = options.host
+    err.port = options.port
+    err.datacenter = options.datacenter
+    err.message = errorMessage
+
+    self:_restart(client, options, callback)
+
+    if err then
+      self:emit('error', err)
+    end
+  end)
+
+  client:on('timeout', function()
+    logging.debugf('%s:%d -> Client Timeout', options.host, options.port)
+
+    self:_restart(client, options, callback)
+  end)
+
+  client:on('end', function()
+    self:emit('client_end', client)
+    logging.debugf('%s:%d -> Remote endpoint closed the connection', options.host, options.port)
+    self:_restart(client, options, callback)
+  end)
+
+  client:on('handshake_success', function(data)
+    self:_promoteClient(client)
+    self._delays[options.datacenter] = 0
+    client:startHeartbeatInterval()
+    self:emit('handshake_success')
+    self._messages:emit('handshake_success', client, data)
+  end)
+
+  client:on('message', function(msg)
+    self._messages:emit('message', client, msg)
+  end)
+
+  client:connect()
+  client.datacenter = options.datacenter
+  self._unauthedClients[options.datacenter] = client
+
+  client:on('connect', function()
+    self:emit('connect', client)
+  end)
+
+  callback()
+
+  return client
 end
 
 function ConnectionStream:_sendMetrics(check, checkResults)
@@ -126,7 +190,7 @@ function ConnectionStream:reconnect(options, callback)
   logging.infof('%s %s:%d -> Retrying connection in %dms', datacenter, options.host, options.port, delay)
   timer.setTimeout(delay, function()
     self:emit('reconnect', options)
-    self:createConnection(options, callback)
+    self:_createConnection(options, callback)
   end)
 end
 
@@ -137,13 +201,7 @@ client - client that needs restarting
 options - passed to ConnectionStream:reconnect
 callback - Callback called with (err)
 ]]--
-function ConnectionStream:restart(client, options, callback)
-  if client:isDestroyed() then
-    return
-  end
-
-  client:destroy()
-
+function ConnectionStream:_restart(client, options, callback)
   -- Find a new client to handle time sync
   if self._activeTimeSyncClient == client then
     self._attachTimeSyncEvent(self:getClient())
@@ -254,7 +312,7 @@ function ConnectionStream:createConnection(options, callback)
     err.datacenter = opts.datacenter
     err.message = errorMessage
 
-    self:restart(client, opts, callback)
+    self:_restart(client, opts, callback)
 
     if err then
       self:emit('error', err)
@@ -263,13 +321,13 @@ function ConnectionStream:createConnection(options, callback)
 
   client:on('timeout', function()
     client:log(logging.DEBUG, 'Client Timeout')
-    self:restart(client, opts, callback)
+    self:_restart(client, opts, callback)
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
     client:log(logging.DEBUG, 'Remote endpoint closed the connection')
-    self:restart(client, opts, callback)
+    self:_restart(client, opts, callback)
   end)
 
   client:on('handshake_success', function(data)
