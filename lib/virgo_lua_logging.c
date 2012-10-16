@@ -24,7 +24,7 @@
 
 
 static int
-logging_log_internal(lua_State *L, int loglevel, int stroff) {
+logging_log_internal(lua_State *L, virgo_log_level_e loglevel, int stroff) {
   const char *msg;
   virgo_t *v = virgo__lua_context(L);
 
