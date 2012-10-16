@@ -51,11 +51,21 @@ addresses - An Array of ip:port pairs
 callback - Callback called with (err) when all the connections have been
 established.
 --]]
+<<<<<<< HEAD
 function ConnectionStream:createConnections(addresses, callback)
   local iter = function(address, callback)
+=======
+function ConnectionStream:createConnections(endpoints, callback)
+  
+  local iter = function(endpoint, callback)
+>>>>>>> cbdc0b2... Many bug fixes and clenaup
     local split, client, options, ip
+<<<<<<< HEAD
     split = misc.splitAddress(address)
     dns.lookup(split[1], function(err, ip)
+=======
+    dns.lookup(endpoint.host, function(err, ip)
+>>>>>>> 8ba3a29... temp
       if (err) then
         callback(err)
         return
@@ -89,14 +99,12 @@ function ConnectionStream:createConnections(addresses, callback)
     -- connect
     function(callback)
 <<<<<<< HEAD
-=======
-      local iter = function(address, callback)
-        local split, options
-        split = misc.splitAddress(address)
+      local iter = function(endpoint, callback)
+        local options
         options = misc.merge({
-          host = split[1],
-          port = split[2],
-          datacenter = address,
+          host = endpoint.host,
+          port = endpoint.port,
+          datacenter = tostring(endpoint),
           id = self._id,
           token = self._token,
           guid = self._guid,
@@ -104,8 +112,10 @@ function ConnectionStream:createConnections(addresses, callback)
         }, self._options)
         self:_createConnection(options, callback)
       end
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
       async.forEach(addresses, iter, callback)
+=======
+      async.forEach(endpoints, iter, callback)
+>>>>>>> cbdc0b2... Many bug fixes and clenaup
     end
   }, callback)
 end
@@ -119,10 +129,6 @@ port - Port.
 callback - Callback called with (err)
 ]]--
 function ConnectionStream:_createConnection(options, callback)
-<<<<<<< HEAD
-=======
-
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   local client = AgentClient:new(options, self._scheduler)
   client:on('error', function(errorMessage)
     local err = {}
@@ -131,11 +137,7 @@ function ConnectionStream:_createConnection(options, callback)
     err.datacenter = options.datacenter
     err.message = errorMessage
 
-<<<<<<< HEAD
     self:_restart(client, options, callback)
-=======
-    self:restart(client, options, callback)
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 
     if err then
       self:emit('error', err)
@@ -144,21 +146,14 @@ function ConnectionStream:_createConnection(options, callback)
 
   client:on('timeout', function()
     logging.debugf('%s:%d -> Client Timeout', options.host, options.port)
-<<<<<<< HEAD
+
     self:_restart(client, options, callback)
-=======
-    self:restart(client, options, callback)
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
     logging.debugf('%s:%d -> Remote endpoint closed the connection', options.host, options.port)
-<<<<<<< HEAD
     self:_restart(client, options, callback)
-=======
-    self:restart(client, options, callback)
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   end)
 
   client:on('handshake_success', function(data)
@@ -235,16 +230,16 @@ options - passed to ConnectionStream:reconnect
 callback - Callback called with (err)
 ]]--
 <<<<<<< HEAD
-function ConnectionStream:restart(client, options, callback)
+=======
+function ConnectionStream:_restart(client, options, callback)
   if client:isDestroyed() then
     return
   end
 
   client:destroy()
+>>>>>>> cbdc0b2... Many bug fixes and clenaup
 
-=======
 function ConnectionStream:_restart(client, options, callback)
->>>>>>> be7b677... Now using a new Endpoint table.
   -- Find a new client to handle time sync
   if self._activeTimeSyncClient == client then
     self._attachTimeSyncEvent(self:getClient())
@@ -330,8 +325,6 @@ function ConnectionStream:_promoteClient(client)
   self:emit('promote')
 end
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 --[[
 Create and establish a connection to the endpoint.
 
@@ -357,7 +350,7 @@ function ConnectionStream:createConnection(options, callback)
     err.datacenter = opts.datacenter
     err.message = errorMessage
 
-    self:restart(client, opts, callback)
+    self:_restart(client, opts, callback)
 
     if err then
       self:emit('error', err)
@@ -366,13 +359,13 @@ function ConnectionStream:createConnection(options, callback)
 
   client:on('timeout', function()
     client:log(logging.DEBUG, 'Client Timeout')
-    self:restart(client, opts, callback)
+    self:_restart(client, opts, callback)
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
     client:log(logging.DEBUG, 'Remote endpoint closed the connection')
-    self:restart(client, opts, callback)
+    self:_restart(client, opts, callback)
   end)
 
   client:on('handshake_success', function(data)
@@ -400,10 +393,6 @@ function ConnectionStream:createConnection(options, callback)
   return client
 end
 
-=======
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
-=======
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 local exports = {}
 exports.ConnectionStream = ConnectionStream
 return exports

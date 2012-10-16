@@ -14,20 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-
-<<<<<<< HEAD
 local MonitoringAgent = require('./monitoring_agent').MonitoringAgent
 local Setup = require('./setup').Setup
+local constants = require('./util/constants')
 
 local function main(argv)
 
 local table = require('table')
-=======
-local MonitoringAgent = require('./monitoring_agent')
-local Setup = require('./setup').Setup
 
 local function main(argv)
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   argv = argv and argv or {}
   local options = {}
 
@@ -35,9 +30,7 @@ local function main(argv)
     options.stateDirectory = argv.s
   end
 
-  if argv.c then
-    options.configFile = argv.c or constants.DEFAULT_CONFIG_PATH
-  end
+  options.configFile = argv.c or constants.DEFAULT_CONFIG_PATH
 
   if argv.p then
     options.pidFile = argv.p
@@ -59,7 +52,7 @@ local function main(argv)
 
   Setup:new(argv, options.configFile, agent):run()
 
-<<<<<<< HEAD
+
   if argv.u then
     options.configFile = options.configFile or constants.DEFAULT_CONFIG_PATH
     local setup = Setup:new(argv, options.configFile, agent)
@@ -67,8 +60,6 @@ local function main(argv)
   else
     agent:start(options)
   end
-=======
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 end
 
 return {

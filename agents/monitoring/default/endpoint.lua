@@ -15,12 +15,26 @@ limitations under the License.
 --]]
 local Object = require('core').Object
 local fmt = require('string').format
+local misc = require('./util/misc')
+local logging = require('./util/logging')
 
 local Endpoint = Object:extend()
 
 function Endpoint:initialize(host, port)
-  self.host = host
-  self.port = port
+  if host and port then
+    self.host = host
+    self.port = port
+  else
+    ip_and_port = misc.splitAddress(host)
+    self.host = ip_and_port[1]
+    self.port = ip_and_port[2]
+  end
+
+  if not self.host or not self.port then
+    logging.error("No endpoint could be found")
+    process.exit(1)
+  end
+
 end
 
 function Endpoint.meta.__tostring(table)

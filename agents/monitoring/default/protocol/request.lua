@@ -29,33 +29,82 @@ local exports = {}
 
 local Request = Object:extend()
 
+--[[
+  options = {
+    host/port OR monitoring_endpoints
+    path = "string",
+    method = "METHOD"
+    upload = nil or '/some/path'
+    download = nil or '/some/path'
+    retries = nil or 3 or #monitoring_endpoints
+  }
+]]--
 function makeRequest(...)
   return Request:new(...):request()
 end
 
-function Request:initialize(options, download_path, upload_path, callback, retries)
-  callback = misc.fireOnce(callback)
+function Request:initialize(options, callback)
+  self.callback = misc.fireOnce(callback)
 
   if not options.method then
-    return callback(errors.Error('I need a http method'))
+    return self.callback(errors.Error('I need a http method'))
   end
 
+  -- shallow copy on endpoints to not permute the clients acutal endpoints
+  if options.monitoring_endpoints then
+    options.monitoring_endpoints = misc.merge({}, monitoring_endpoints)
+  end
   -- endpoints are ip:port - we normally have multiples and its stupid to put this logic everywhere
   self.options = options
-  retries = retries or self:set_host_and_port() or 3
+  self.retries = self:_set_host_and_port() or options.retries or 3
 
   if not options.host or not options.port then
-    return callback(errors.Error('call with options.port and options.host or options.monitoring_endpoints'))
+    return self.callback(errors.Error('call with options.port and options.host or options.monitoring_endpoints'))
   end
 
-  self.download_path = download_path
-  self.upload_path = upload_path
-  self.retries = retries
-  self.callback = callback
-  self.headers_set = false
+  self.download = options.download
+  self.upload = options.upload
+  self.options.__headers_set = false
 end
 
-function Request:set_host_and_port()
+function Request:request()
+  if not self.options.__headers_set then
+    return self:_set_headers(function(err)
+      if err then
+        return self.callback(err)
+      end
+      self:request()
+    end)
+  end
+
+  logging.debug('sending request')
+
+  local req = https.request(self.options, function(res)
+    self:_handle_response(res)
+  end)
+
+  req:on('error', function(err)
+    self:_ensure_retries(err)
+  end)
+
+  if not self.upload_path then
+    return req:done()
+  end
+
+  local data = fs.createReadStream(self.upload_path)
+  data:on('data', function(d)
+    req:write(d)
+  end)
+  data:on('end', function(d)
+    req:done(d)
+  end)
+  data:on('error', function(err)
+    req:done()
+    self.callback(err)
+  end)
+end
+
+function Request:_set_host_and_port()
   -- endpoints are ip:port - we normally have multiples
   -- grab one- set retries to the remaining number
   -- get a host if multiples were passed in
@@ -82,7 +131,7 @@ function Request:_set_headers(callback)
   local _callback = function(...)
     -- merge the headers into our options
     self.options.headers = misc.merge(headers, self.options.headers)
-    self.headers_set = true
+    self.options.__headers_set = true
     callback(...)
   end
 
@@ -105,17 +154,17 @@ function Request:_set_headers(callback)
   end)
 end
 
-function Request:write_stream(res)
+function Request:_write_stream(res)
   loggind.debug('writing stream to disk: '.. self.download_path)
 
   local stream = fs.createWriteStream(self.download_path)
 
   stream:on('end', function()
-    self:ensure_retries(nil, res)
+    self:_ensure_retries(nil, res)
   end)
 
   stream:on('error', function(err)
-    self:ensure_retries(err, res)
+    self:_ensure_retries(err, res)
   end)
 
   res:on('end', function(d)
@@ -125,7 +174,7 @@ function Request:write_stream(res)
   res:pipe(stream)
 end
 
-function Request:ensure_retries(err, res)
+function Request:_ensure_retries(err, res)
   if not err then
     return self.callback(err, res)
   end
@@ -142,22 +191,22 @@ function Request:ensure_retries(err, res)
     logging.debug('retrying download '.. self.retries .. ' more times.')
 
     -- try a different data center if possible
-    self:set_host_and_port()
+    self:_set_host_and_port()
     return self:request()
   end
   
   self.callback(err)
 end
 
-function Request:handle_response(res)
+function Request:_handle_response(res)
   logging.debug('res')
 
   if res.status_code >= 400 then
-    return self:ensure_retries(errors.Error:new("bad status"), res)
+    return self:_ensure_retries(errors.Error:new("bad status"), res)
   end
 
   if self.download_path then
-    return self:write_stream(res)
+    return self:_write_stream(res)
   end
 
   local buf = ""
@@ -167,45 +216,9 @@ function Request:handle_response(res)
 
   res:on('end', function()
     logging.debug('got response: ' .. buf)
-    self:ensure_retries(nil, res)
+    self:_ensure_retries(nil, res)
   end)
 end
 
-function Request:request()
-  if not self.headers_set then
-    return self:_set_headers(function(err)
-      if err then
-        return self.callback(err)
-      end
-      self:request()
-    end)
-  end
 
-  logging.debug('sending request')
-
-  local req = https.request(self.options, function(res) 
-    self:handle_response(res) 
-  end)
-
-  req:on('error', function(err)
-    ensure_retries(err)
-  end)
-
-  if not self.upload_path then
-    return req:done()
-  end
-
-  local data = fs.createReadStream(self.upload_path)
-  data:on('data', function(d)
-    req:write(d)
-  end)
-  data:on('end', function(d)
-    req:done(d)
-  end)
-  data:on('error', function(err)
-    req:done()
-    self.callback(err)
-  end)
-end
-
-return makeRequest
+return {makeRequest=makeRequest, Request=Request}

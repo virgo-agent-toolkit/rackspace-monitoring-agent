@@ -89,6 +89,7 @@ function Setup:run(callback)
   local agentToken, client
 
   hostname = os.hostname()
+
   self:_out('')
   self:_out('Setup Settings:')
   self:_out(fmt('  Hostname: %s', hostname))

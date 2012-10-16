@@ -23,11 +23,8 @@ local fs = require('fs')
 local os = require('os')
 local path = require('path')
 local table = require('table')
-<<<<<<< HEAD
-=======
-local Object = require('core').Object
+
 local fmt = require('string').format
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 local Emitter = require('core').Emitter
 
 local async = require('async')
@@ -41,10 +38,8 @@ local fsutil = require('./util/fs')
 local UUID = require('./util/uuid')
 local logging = require('logging')
 local vtime = require('virgo-time')
-<<<<<<< HEAD
+
 local Endpoint = require('./endpoint').Endpoint
-=======
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 local ConnectionStream = require('./client/connection_stream').ConnectionStream
 local CrashReportSubmitter = require('./crashreport').CrashReportSubmitter
 
@@ -106,11 +101,7 @@ function MonitoringAgent:loadStates(callback)
 end
 
 function MonitoringAgent:connect(callback)
-<<<<<<< HEAD
   local endpoints = self._config['monitoring_endpoints']
-=======
-  local endpoints = misc.split(self._config['monitoring_endpoints'], '[^,]+')
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   if #endpoints <= 0 then
     logging.error('no endpoints')
     timer.setTimeout(misc.calcJitter(constants.SRV_RECORD_FAILURE_DELAY, constants.SRV_RECORD_FAILURE_DELAY_JITTER), function()
@@ -131,7 +122,6 @@ function MonitoringAgent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
-<<<<<<< HEAD
 function MonitoringAgent:getStreams()
   return self._streams
 end
@@ -143,8 +133,6 @@ end
 function MonitoringAgent:setConfig(config)
   self._config = config
 end
-=======
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 
 function MonitoringAgent:_verifyState(callback)
 
@@ -173,10 +161,6 @@ function MonitoringAgent:_verifyState(callback)
             timer.setTimeout(5000, getSystemId)
             return
           end
-<<<<<<< HEAD
-=======
-          p(monitoring_id)
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
           self._config['monitoring_id'] = monitoring_id
           self:_savePersistentVariable('monitoring_id', monitoring_id, callback)
         end
@@ -201,9 +185,6 @@ function MonitoringAgent:_verifyState(callback)
   }, callback)
 end
 
-<<<<<<< HEAD
-function MonitoringAgent:_sendCrashReports(callback)
-=======
 function MonitoringAgent:getStreams()
   return self._streams
 end
@@ -218,16 +199,17 @@ end
 
 function MonitoringAgent:_sendCrashReports(callback)
   local crashReports = {}
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   local productName = virgo.default_name:gsub('%-', '%%%-')
 
+  -- backend doesn't yet support crash reports
+  if true then return callback() end
+  
   -- TODO: crash report support on !Linux platforms.
   if os.type() ~= 'Linux' then
     callback()
     return
   end
 
-<<<<<<< HEAD
   local function send(file, callback)
     async.series({
       function(callback)
@@ -292,6 +274,39 @@ function MonitoringAgent:_loadEndpoints(callback)
   end
 
   local ip_and_port
+  local endpoints_found = {}
+
+  for _, address in ipairs(endpoints) do
+    table.insert(endpoints_found, Endpoint:new(address))
+  end
+
+  config['monitoring_endpoints'] = endpoints_found
+  callback(nil, endpoints_found)
+end
+
+function MonitoringAgent:_loadEndpoints(callback)
+  local config = self._config
+  local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
+  local endpoints = config['monitoring_endpoints']
+
+  if queries and not endpoints then
+    queries = misc.split(queries, '[^,]+')
+
+    return self:_queryForEndpoints(queries, function(err, endpoints)
+      config['monitoring_endpoints'] = endpoints
+      callback(err, endpoints)
+    end)
+  end
+
+  -- split address,address,address
+  endpoints = misc.split(endpoints, '[^,]+')
+
+  if #endpoints == 0 then
+    logging.error("at least one endpoint needs to be specified")
+    process.exit(1)
+  end
+
+  local ip_and_port
   local Endpoints = {}
 
   for _, address in ipairs(endpoints) do
@@ -311,99 +326,22 @@ function MonitoringAgent:_loadEndpoints(callback)
 end
 
 function MonitoringAgent:_queryForEndpoints(domains, callback)
-=======
-  local function submitCrashReport(filename, callback)
-    filename = "/tmp/" .. filename
-    local crs = CrashReportSubmitter:new(filename, constants.CRASH_REPORT_URL)
-    crs:run(function (err)
-      if (err) then
-        callback(err)
-        return
-      end
-      fs.unlink(filename, callback)
-    end)
-  end
-
-  async.series({
-    function(callback)
-      fs.readdir("/tmp", function (err, files)
-        if err then
-          callback(err)
-          return
-        end
-
-        for index,value in ipairs(files) do
-          if string.find(value, productName .. "%-crash%-report-.+.dmp") ~= nil then
-            logging.info('Found previous crash report /tmp/' .. value)
-            table.insert(crashReports, value)
-          end
-        end
-        callback()
-      end)
-    end,
-    function(callback)
-      async.forEachSeries(crashReports, submitCrashReport, callback)
-    end
-  }, callback)
-end
-
-function MonitoringAgent:_loadEndpoints(callback)
-  local endpoints
-  local query_endpoints
-
-  if not self._config['monitoring_query_endpoints'] then
-    self._config['monitoring_query_endpoints'] = table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
-  end
-
-  if self._config['monitoring_query_endpoints'] and
-     self._config['monitoring_endpoints'] == nil then
-    -- Verify that the endpoint addresses are specified in the correct format
-    query_endpoints = misc.split(self._config['monitoring_query_endpoints'], '[^,]+')
-    logging.debug("querying for endpoints: ".. self._config['monitoring_query_endpoints'])
-    self:_queryForEndpoints(query_endpoints, function(err, endpoints)
-      if err then
-        callback(err)
-        return
-      end
-      self._config['monitoring_endpoints'] = endpoints
-      callback()
-    end)
-  else
-    -- Verify that the endpoint addresses are specified in the correct format
-    endpoints = misc.split(self._config['monitoring_endpoints'], '[^,]+')
-    if #endpoints == 0 then
-      logging.error("at least one endpoint needs to be specified")
-      process.exit(1)
-    end
-    for i, address in ipairs(endpoints) do
-      if misc.splitAddress(address) == nil then
-        logging.error("endpoint needs to be specified in the following format ip:port")
-        process.exit(1)
-      end
-    end
-    callback()
-  end
-end
-
-function MonitoringAgent:_queryForEndpoints(domains, callback)
+<<<<<<< HEAD
   local endpoints = ''
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   function iter(domain, callback)
+=======
+  local function iter(domain, callback)
+>>>>>>> cbdc0b2... Many bug fixes and clenaup
     dns.resolve(domain, 'SRV', function(err, results)
       if err then
         logging.error('Could not lookup SRV record from ' .. domain)
-<<<<<<< HEAD
-        -- WHY don't we die here?
-=======
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
         callback()
         return
       end
       callback(nil, results)
     end)
   end
-<<<<<<< HEAD
-  local endpoints = {}
+  local endpoints_found = {}
   async.map(domains, iter, function(err, results)
     local endpoint, _
     for _, endpoint in pairs(results) do
@@ -412,20 +350,9 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
       -- get anem and port
       endpoint = Endpoint:new(endpoint.name, endpoint.port)
       logging.info('found endpoint: ' .. tostring(endpoint))
-      table.insert(endpoints, endpoint)
-=======
-  async.map(domains, iter, function(err, results)
-    local i, v, serverPort
-    for i, v in pairs(results) do
-      serverPort = results[i][1].name .. ':' .. results[i][1].port
-      endpoints = endpoints .. serverPort
-      logging.info('found endpoint: ' .. serverPort)
-      if i ~= #results then
-        endpoints = endpoints .. ','
-      end
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
+      table.insert(endpoints_found, endpoint)
     end
-    callback(nil, endpoints)
+    callback(nil, endpoints_found)
   end)
 end
 
@@ -468,8 +395,5 @@ function MonitoringAgent:_getPersistentVariable(variable, callback)
   end)
 end
 
-<<<<<<< HEAD
 return { MonitoringAgent = MonitoringAgent }
-=======
-return MonitoringAgent
->>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
+
