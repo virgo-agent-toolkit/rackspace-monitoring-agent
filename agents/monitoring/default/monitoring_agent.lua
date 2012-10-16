@@ -306,23 +306,15 @@ function MonitoringAgent:_loadEndpoints(callback)
     process.exit(1)
   end
 
-  local ip_and_port
-  local Endpoints = {}
+  local address
+  local new_endpoints = {}
 
   for _, address in ipairs(endpoints) do
-    -- split ip:port 
-    ip_and_port = misc.splitAddress(address)
-
-    if not ip_and_port then
-      logging.error("endpoint needs to be specified in the following format ip:port")
-      process.exit(1)
-    end
-
-    table.insert(Endpoints, Endpoint:new(unpack(ip_and_port)))
+    table.insert(new_endpoints, Endpoint:new(address))
   end
 
-  config['monitoring_endpoints'] = Endpoints
-  callback(nil, Endpoints)
+  config['monitoring_endpoints'] = new_endpoints
+  callback(nil, new_endpoints)
 end
 
 function MonitoringAgent:_queryForEndpoints(domains, callback)
