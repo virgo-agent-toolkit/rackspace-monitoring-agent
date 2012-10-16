@@ -251,10 +251,12 @@ function ConnectionMessages:getUpdate(method, client)
 
       async.parallel({
         function(callback)
-          self:httpGet(client, uri_path, get_path(), download_attempts, callback)
+          local options = util.merge({method="GET", path=uri_path}, client._tls_options)
+          client_https(options, get_path(), nil, callback)
         end,
         function(callback)
-          self:httpGet(client, uri_path..'.sig', get_path{sig=true}, download_attempts, callback)
+          local options = util.merge({method="GET", path=uri_path..'.sig'}, client._tls_options)
+          client_https(options, get_path{sig=true}, nil, callback)
         end
       }, callback)
     end,

@@ -61,10 +61,14 @@ function ConnectionStream:createConnections(addresses, callback)
         return
       end
       options = misc.merge({
+        host = endpoint.host,
+        port = endpoint.port,
         ip = ip,
-        host = split[1],
-        port = split[2],
-        datacenter = address
+        datacenter = address,
+        id = self._id,
+        token = self._token,
+        guid = self._guid,
+        timeout = consts.CONNECT_TIMEOUT
       }, self._options)
       self:createConnection(options, callback)
     end)
@@ -87,6 +91,66 @@ function ConnectionStream:createConnections(addresses, callback)
       async.forEach(addresses, iter, callback)
     end
   }, callback)
+end
+
+--[[
+Create and establish a connection to the endpoint.
+
+datacenter - Datacenter name / host alias.
+host - Hostname.
+port - Port.
+callback - Callback called with (err)
+]]--
+function ConnectionStream:_createConnection(options, callback)
+  local client = AgentClient:new(options, self._scheduler)
+  client:on('error', function(errorMessage)
+    local err = {}
+    err.host = options.host
+    err.port = options.port
+    err.datacenter = options.datacenter
+    err.message = errorMessage
+
+    self:_restart(client, options, callback)
+
+    if err then
+      self:emit('error', err)
+    end
+  end)
+
+  client:on('timeout', function()
+    logging.debugf('%s:%d -> Client Timeout', options.host, options.port)
+    self:_restart(client, options, callback)
+  end)
+
+  client:on('end', function()
+    self:emit('client_end', client)
+    logging.debugf('%s:%d -> Remote endpoint closed the connection', options.host, options.port)
+    self:_restart(client, options, callback)
+  end)
+
+  client:on('handshake_success', function(data)
+    self:_promoteClient(client)
+    self._delays[options.datacenter] = 0
+    client:startHeartbeatInterval()
+    self:emit('handshake_success')
+    self._messages:emit('handshake_success', client, data)
+  end)
+
+  client:on('message', function(msg)
+    self._messages:emit('message', client, msg)
+  end)
+
+  client:connect()
+  client.datacenter = options.datacenter
+  self._unauthedClients[options.datacenter] = client
+
+  client:on('connect', function()
+    self:emit('connect', client)
+  end)
+
+  callback()
+
+  return client
 end
 
 function ConnectionStream:_sendMetrics(check, checkResults)
@@ -126,7 +190,7 @@ function ConnectionStream:reconnect(options, callback)
   logging.infof('%s %s:%d -> Retrying connection in %dms', datacenter, options.host, options.port, delay)
   timer.setTimeout(delay, function()
     self:emit('reconnect', options)
-    self:createConnection(options, callback)
+    self:_createConnection(options, callback)
   end)
 end
 
@@ -137,6 +201,7 @@ client - client that needs restarting
 options - passed to ConnectionStream:reconnect
 callback - Callback called with (err)
 ]]--
+<<<<<<< HEAD
 function ConnectionStream:restart(client, options, callback)
   if client:isDestroyed() then
     return
@@ -144,6 +209,9 @@ function ConnectionStream:restart(client, options, callback)
 
   client:destroy()
 
+=======
+function ConnectionStream:_restart(client, options, callback)
+>>>>>>> be7b677... Now using a new Endpoint table.
   -- Find a new client to handle time sync
   if self._activeTimeSyncClient == client then
     self._attachTimeSyncEvent(self:getClient())
@@ -229,6 +297,7 @@ function ConnectionStream:_promoteClient(client)
   self:emit('promote')
 end
 
+<<<<<<< HEAD
 --[[
 Create and establish a connection to the endpoint.
 
@@ -297,6 +366,8 @@ function ConnectionStream:createConnection(options, callback)
   return client
 end
 
+=======
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 local exports = {}
 exports.ConnectionStream = ConnectionStream
 return exports
