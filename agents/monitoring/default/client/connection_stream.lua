@@ -88,6 +88,23 @@ function ConnectionStream:createConnections(addresses, callback)
     end,
     -- connect
     function(callback)
+<<<<<<< HEAD
+=======
+      local iter = function(address, callback)
+        local split, options
+        split = misc.splitAddress(address)
+        options = misc.merge({
+          host = split[1],
+          port = split[2],
+          datacenter = address,
+          id = self._id,
+          token = self._token,
+          guid = self._guid,
+          timeout = consts.CONNECT_TIMEOUT
+        }, self._options)
+        self:_createConnection(options, callback)
+      end
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
       async.forEach(addresses, iter, callback)
     end
   }, callback)
@@ -102,6 +119,10 @@ port - Port.
 callback - Callback called with (err)
 ]]--
 function ConnectionStream:_createConnection(options, callback)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   local client = AgentClient:new(options, self._scheduler)
   client:on('error', function(errorMessage)
     local err = {}
@@ -110,7 +131,11 @@ function ConnectionStream:_createConnection(options, callback)
     err.datacenter = options.datacenter
     err.message = errorMessage
 
+<<<<<<< HEAD
     self:_restart(client, options, callback)
+=======
+    self:restart(client, options, callback)
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 
     if err then
       self:emit('error', err)
@@ -119,13 +144,21 @@ function ConnectionStream:_createConnection(options, callback)
 
   client:on('timeout', function()
     logging.debugf('%s:%d -> Client Timeout', options.host, options.port)
+<<<<<<< HEAD
     self:_restart(client, options, callback)
+=======
+    self:restart(client, options, callback)
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
     logging.debugf('%s:%d -> Remote endpoint closed the connection', options.host, options.port)
+<<<<<<< HEAD
     self:_restart(client, options, callback)
+=======
+    self:restart(client, options, callback)
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   end)
 
   client:on('handshake_success', function(data)
@@ -298,6 +331,7 @@ function ConnectionStream:_promoteClient(client)
 end
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 --[[
 Create and establish a connection to the endpoint.
 
@@ -366,6 +400,8 @@ function ConnectionStream:createConnection(options, callback)
   return client
 end
 
+=======
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 =======
 >>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 local exports = {}

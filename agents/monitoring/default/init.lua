@@ -15,12 +15,19 @@ limitations under the License.
 --]]
 
 
+<<<<<<< HEAD
 local MonitoringAgent = require('./monitoring_agent').MonitoringAgent
 local Setup = require('./setup').Setup
 
 local function main(argv)
 
 local table = require('table')
+=======
+local MonitoringAgent = require('./monitoring_agent')
+local Setup = require('./setup').Setup
+
+local function main(argv)
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
   argv = argv and argv or {}
   local options = {}
 
@@ -37,10 +44,9 @@ local table = require('table')
   end
 
   if argv.i then
-    local caCertsDebug = require('./certs').caCertsDebug
     options.tls = {
       rejectUnauthorized = true,
-      ca = caCertsDebug
+      ca = require('./certs').caCertsDebug
     }
   end
 
@@ -53,6 +59,7 @@ local table = require('table')
 
   Setup:new(argv, options.configFile, agent):run()
 
+<<<<<<< HEAD
   if argv.u then
     options.configFile = options.configFile or constants.DEFAULT_CONFIG_PATH
     local setup = Setup:new(argv, options.configFile, agent)
@@ -60,6 +67,8 @@ local table = require('table')
   else
     agent:start(options)
   end
+=======
+>>>>>>> 4704712... Moved agents/monitoring/default/init.lua -> agents/monitoring/default/monitoring_agent.lua
 end
 
 return {
