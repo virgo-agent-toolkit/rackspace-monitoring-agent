@@ -97,19 +97,16 @@ function ConnectionStream:_sendMetrics(check, checkResults)
 end
 
 function ConnectionStream:_setDelay(datacenter)
-  local maxDelay = consts.DATACENTER_MAX_DELAY
-  local jitter = consts.DATACENTER_MAX_DELAY_JITTER
   local previousDelay = self._delays[datacenter]
-  local delay
 
   if previousDelay == nil then
-    self._delays[datacenter] = consts.DATACENTER_FIRST_RECONNECT_DELAY
-    previousDelay = consts.DATACENTER_FIRST_RECONNECT_DELAY
+    previousDelay = misc.calcJitter(consts.DATACENTER_FIRST_RECONNECT_DELAY,
+                                    consts.DATACENTER_FIRST_RECONNECT_DELAY_JITTER)
   end
 
-  delay = math.min(previousDelay, maxDelay) + (jitter * math.random())
+  local delay = math.min(previousDelay, consts.DATACENTER_RECONNECT_DELAY)
+  delay = misc.calcJitter(delay, consts.DATACENTER_RECONNECT_DELAY_JITTER)
   self._delays[datacenter] = delay
-
   return delay
 end
 
