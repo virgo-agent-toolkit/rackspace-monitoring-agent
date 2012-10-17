@@ -54,7 +54,7 @@ show_help()
          "  -b, --bundle-dir val  Force the bundle directory.\n"
          "  -e val                Entry module.\n"
          "  -o                    Do not attempt upgrade.\n"
-         "  -l, --logfile val     Path and filename of logfile.\n"
+         "  -l, --logfile val     Log to specified file path.\n"
 #ifndef _WIN32
          "  -p, --pidfile val     Path and filename to pidfile.\n"
 #endif
