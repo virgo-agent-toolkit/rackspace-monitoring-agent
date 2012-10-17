@@ -46,12 +46,12 @@ static void
 show_help()
 {
   /* TODO: improve for windows */
-  printf("Usage: monitoring-agent [options] [--setup] \n"
+  printf("Usage: rackspace-monitoring-agent [options] [--setup] \n"
          "\n"
          "Options:\n"
-         "  -v, --version         print monitoring-agent's version\n"
+         "  -v, --version         Print monitoring-agent's version.\n"
          "  -c, --config val      Set configuration file path. Default: /etc/rackspace-monitoring-agent.cfg\n"
-         "  -b, --bundle-dir val  Force the bundle directory."
+         "  -b, --bundle-dir val  Force the bundle directory.\n"
          "  -e val                Entry module.\n"
          "  -o                    Do not attempt upgrade.\n"
          "  -l, --logfile val     Path and filename of logfile.\n"
@@ -62,7 +62,7 @@ show_help()
          "  --setup               Initial setup wizard.\n"
          "    --username          Rackspace Cloud username for setup.\n"
          "    --apikey            Rackspace Cloud API Key or Password for setup.\n"
-         "  -d, --debug           Log at debug level\n"
+         "  -d, --debug           Log at debug level.\n"
          "  -i, --insecure        Use insecure SSL CA cert (for testing/debugging).\n"
          "  -D, --detach          Detach the process and run the agent in the background.\n"
          "\n"
