@@ -52,7 +52,7 @@ show_help()
          "  -v, --version         Print monitoring-agent's version.\n"
          "  -c, --config val      Set configuration file path. Default: /etc/rackspace-monitoring-agent.cfg\n"
          "  -b, --bundle-dir val  Force the bundle directory.\n"
-         "  -e val                Entry module.\n"
+         "  -e val                Enter at module specified.\n"
          "  -o                    Do not attempt upgrade.\n"
          "  -l, --logfile val     Log to specified file path.\n"
 #ifndef _WIN32
