@@ -17,7 +17,7 @@ local fsutil = require('../util/fs')
 local crypto = require('_crypto')
 local errors = require('../errors')
 local instanceof = require('core').instanceof
-
+local request = require('../protocol/request')
 -- Connection Messages
 
 local ConnectionMessages = Emitter:extend()
@@ -70,70 +70,6 @@ function ConnectionMessages:fetchManifest(client)
     self._timer = process.nextTick(run)
     self._lastFetchTime = os.time()
   end
-end
-
-function ConnectionMessages:httpGet(client, path, file_path, retries, callback)
-  -- Does a HTTP GET over to the clients endpoint streaming the body to file_path attempting
-  -- retries number of times
-
-  local function ensure_retries(err, res)
-    if not err then
-      if callback then callback() end
-      return
-    end
-    
-    local status = res and res.status_code or "?"
-    local msg = fmt('download failed for %s with status: %s and error: %s', path, status, tostring(err))
-    client:log(logging.WARNING, msg)
-
-    if retries > 0 then
-      client:log(logging.DEBUG, 'retrying download '.. retries .. ' more times.')
-      return self:httpGet(client, path, file_path, retries-1, callback)
-    end
-    callback(err)
-  end
-
-  local function _get()
-
-    local options = {
-      host = client._host,
-      port = client._port,
-      path = path,
-      method = 'GET'
-    }
-
-    util.merge(options, client._tls_options)
-
-    local req = https.request(options, function(res)
-      if res.status_code >= 400 then
-        print(res.status_code)
-        return ensure_retries(errors.Error:new("bad status"), res)
-      end
-
-      local stream = fs.createWriteStream(file_path)
-      stream:on('end', function()
-        if callback then
-          callback()
-          callback = nil
-        end
-      end)
-      stream:on('error', function(err)
-        ensure_retries(err, res)
-      end)
-
-      res:pipe(stream)
-      res:on('end', function(d)
-        stream:finish(d)
-      end)
-    end)
-    req:on('error', function(err)
-      ensure_retries(err, res)
-    end)
-    req:done()
-  end
-
-  status, err = pcall(_get)
-  if err then ensure_retries(err) end
 end
 
 function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
@@ -251,10 +187,26 @@ function ConnectionMessages:getUpdate(method, client)
 
       async.parallel({
         function(callback)
-          self:httpGet(client, uri_path, get_path(), download_attempts, callback)
+          local options = {
+            method = 'GET',
+            path = uri_path,
+            download = get_path(),
+            host = client._host,
+            port = client._port,
+            tls = client._tls_options
+          }
+          request.makeRequest(options, callback)
         end,
         function(callback)
-          self:httpGet(client, uri_path..'.sig', get_path{sig=true}, download_attempts, callback)
+          local options = {
+            method = 'GET',
+            path = uri_path ..'.sig',
+            download = get_path{sig=true},
+            host = client._host,
+            port = client._port,
+            tls = client._tls_options
+          }
+          request.makeRequest(options, callback)
         end
       }, callback)
     end,

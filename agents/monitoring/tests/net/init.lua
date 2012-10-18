@@ -1,9 +1,11 @@
+local table = require('table')
 local async = require('async')
 local ConnectionStream = require('monitoring/default/client/connection_stream').ConnectionStream
 local helper = require('../helper')
 local timer = require('timer')
 local fixtures = require('../fixtures')
 local constants = require('constants')
+local Endpoint = require('../../default/endpoint').Endpoint
 
 local exports = {}
 local child
@@ -44,7 +46,10 @@ exports['test_reconnects'] = function(test, asserts)
   local options = {
     datacenter = 'test',
     tls = { rejectUnauthorized = false },
-    stateDirectory = './tests'
+    stateDirectory = './tests',
+    host = "127.0.0.1",
+    port = 50061,
+    tls = { rejectUnauthorized = false }
   }
   local client = ConnectionStream:new('id', 'token', 'guid', options)
 
@@ -67,7 +72,12 @@ exports['test_reconnects'] = function(test, asserts)
     start_server,
     function(callback)
       client:on('handshake_success', counterTrigger(3, callback))
-      client:createConnections(fixtures.TESTING_AGENT_ENDPOINTS, function() end)
+      local endpoints = {}
+      for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+        -- split ip:port 
+        table.insert(endpoints, Endpoint:new(address))
+      end
+      client:createConnections(endpoints, function() end)
     end,
     function(callback)
       stop_server(function()
