@@ -112,6 +112,14 @@ function Setup:run(callback)
       self:saveTest(callback)
     end,
     function(callback)
+      if (self._username == nil and self._apikey ~= nil)
+         or (self._username ~= nil and self._apikey == nil) then
+        callback(errors.UserResponseError:new('Username and password/apikey must be provided together.'))
+      else
+        callback()
+      end
+    end,
+    function(callback)
       if self._username == nil then
         ask('Username:', callback)
       else
@@ -128,13 +136,6 @@ function Setup:run(callback)
       else
         callback(nil, self._username, self._apikey)
       end
-    end,
-    function(username, apikey, callback)
-      if (self._username == nil and self._apikey ~= nil)
-         or (self._username ~= nil and self._apikey == nil) then
-        callback(errors.UserResponseError:new('Username and password/apikey must be provided together.'))
-      end
-      callback(nil, username, token)
     end,
     -- fetch all tokens
     function(username, token, callback)
