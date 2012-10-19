@@ -139,13 +139,11 @@ function AgentClient:connect()
     -- begin handshake
     self.protocol:startHandshake(function(err, msg)
       if err then
-        self:emit('error', err)
-      else
-        self._heartbeat_interval = msg.result.heartbeat_interval
-        self._entity_id = msg.result.entity_id
-
-        self:emit('handshake_success', msg.result)
+        return
       end
+      self._heartbeat_interval = msg.result.heartbeat_interval
+      self._entity_id = msg.result.entity_id
+      self:emit('handshake_success', msg.result)
     end)
   end)
   self._log(logging.DEBUG, fmt('Using timeout %sms', self:_socketTimeout()))
