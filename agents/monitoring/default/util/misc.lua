@@ -180,6 +180,66 @@ function fireOnce(callback)
   end
 end
 
+function isNaN(a)
+  return tonumber(a) == nil
+end
+
+--[[
+Compare version strings.
+Returns: -1, 0, or 1, if a < b, a == b, or a > b
+]]
+function compareVersions(a, b)
+  local aParts, bParts, pattern, aItem, bItem
+
+  if a == b then
+    return 0
+  end
+
+  if not a then
+    return -1
+  end
+
+  if not b then
+    return 1
+  end
+
+  pattern = '[0-9a-zA-Z]+'
+  aParts = split(a, pattern)
+  bParts = split(b, pattern)
+
+  aItem = table.remove(aParts, 1)
+  bItem = table.remove(bParts, 1)
+
+  while aItem and bItem do
+    if not isNaN(aItem) and not isNaN(bItem) then
+      if aItem < bItem then
+        return -1
+      end
+      if aItem > bItem then
+        return 1
+      end
+    else
+      if isNaN(aItem) then
+        return -1
+      end
+      if isNaN(bItem) then
+        return 1
+      end
+    end
+    aItem = table.remove(aParts, 1)
+    bItem = table.remove(bParts, 1)
+  end
+
+  if aItem then
+    return 1
+  elseif bItem then
+    return -1
+  end
+
+  return 0
+end
+
+
 --[[ Exports ]]--
 local exports = {}
 exports.calcJitter = calcJitter
@@ -192,4 +252,5 @@ exports.trim = trim
 exports.writePid = writePid
 exports.lastIndexOf = lastIndexOf
 exports.fireOnce = fireOnce
+exports.compareVersions = compareVersions
 return exports

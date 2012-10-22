@@ -31,6 +31,8 @@ local table = require('table')
 local caCerts = require('../certs').caCerts
 local vtime = require('virgo-time')
 
+local ConnectionStateMachine = require('./connection_statemachine').ConnectionStateMachine
+
 local fmt = require('string').format
 
 local AgentClient = Emitter:extend()
@@ -39,9 +41,10 @@ local HEARTBEAT_INTERVAL = 5 * 60 * 1000 -- ms
 
 local DATACENTER_COUNT = {}
 
-function AgentClient:initialize(options, scheduler)
+function AgentClient:initialize(options, scheduler, connectionStream)
 
   self.protocol = nil
+  self._connectionStream = connectionStream
   self._destroyed = false
   self._datacenter = options.datacenter
   self._id = options.id
@@ -53,11 +56,12 @@ function AgentClient:initialize(options, scheduler)
   self._host = options.host
   self._timeout = options.timeout or 5000
 
-  if DATACENTER_COUNT[options.datacenter] then
-    DATACENTER_COUNT[options.datacenter] = DATACENTER_COUNT[options.datacenter] + 1
-  else
-    DATACENTER_COUNT[options.datacenter] = 1
-  end
+  self._machine = ConnectionStateMachine:new(connectionStream)
+  self._machine:on('respawn', function()
+    self:emit('respawn')
+  end)
+
+  self:_incrementDatacenterCount()
 
   self._tls_options = options.tls or {
     rejectUnauthorized = true,
@@ -65,7 +69,6 @@ function AgentClient:initialize(options, scheduler)
   }
 
   self._scheduler = scheduler
-
   self._heartbeat_interval = nil
   self._sent_heartbeat_count = 0
   self._got_pong_count = 0
@@ -78,8 +81,24 @@ function AgentClient:initialize(options, scheduler)
                                      DATACENTER_COUNT[options.datacenter]))
 end
 
+function AgentClient:_incrementDatacenterCount()
+  if DATACENTER_COUNT[self._datacenter] then
+    DATACENTER_COUNT[self._datacenter] = DATACENTER_COUNT[self._datacenter] + 1
+  else
+    DATACENTER_COUNT[self._datacenter] = 1
+  end
+end
+
 function AgentClient:getDatacenter()
   return self._datacenter
+end
+
+function AgentClient:setDatacenter(datacenter)
+  self._datacenter = datacenter
+end
+
+function AgentClient:getMachine()
+  return self._machine
 end
 
 function AgentClient:scheduleManifest(manifest)
@@ -241,11 +260,13 @@ function AgentClient:clearHeartbeatInterval()
 end
 
 function AgentClient:destroy()
+  if self:isDestroyed() then
+    return
+  end
+  self:getMachine():react(self, 'done')
   self:setDestroyed()
-  self:clearHeartbeatInterval()
-
   if self._sock then
-    self._log(logging.DEBUG, 'Closing socket')
+    self:log(logging.DEBUG, 'Closing socket')
     self._sock:destroy()
   end
 end

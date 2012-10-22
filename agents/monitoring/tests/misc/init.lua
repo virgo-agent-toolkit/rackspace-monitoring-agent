@@ -22,6 +22,7 @@ local Uuid = require('monitoring/default/util/uuid')
 local splitAddress = require('monitoring/default/util/misc').splitAddress
 local writePid = require('monitoring/default/util/misc').writePid
 local lastIndexOf = require('monitoring/default/util/misc').lastIndexOf
+local compareVersions = require('monitoring/default/util/misc').compareVersions
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
@@ -71,6 +72,17 @@ exports['test_lastIndexOf'] = function(test, asserts)
   asserts.equals(lastIndexOf('foo', 'bar'), nil)
   asserts.equals(lastIndexOf('foo', 'foo'), 1)
   asserts.equals(lastIndexOf('.test.foo.bar', '%.'), 10)
+  test.done()
+end
+
+exports['test_versions'] = function(test, asserts)
+  asserts.equals(compareVersions('0.0.0', '0.0.0'), 0)
+  asserts.equals(compareVersions('0.0.1', '0.0.0'), 1)
+  asserts.equals(compareVersions('1.0.0', '1.0.0'), 0)
+  asserts.equals(compareVersions('1.0.0', '1.0.25'), -1)
+  asserts.equals(compareVersions('1.0.25.25', '1.0.25'), 1)
+  asserts.equals(compareVersions('1.0.0', '1.0.25.1'), -1)
+  asserts.equals(compareVersions('9.0.0', '1.0.0'), 1)
   test.done()
 end
 
