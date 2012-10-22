@@ -41,21 +41,12 @@ local function main(argv)
 
   local agent = MonitoringAgent:new(options)
 
-  -- setup will exit and not fall through
   if not argv.u then
     return agent:start(options)
   end
 
+  -- setup will exit and not fall through
   Setup:new(argv, options.configFile, agent):run()
-
-
-  if argv.u then
-    options.configFile = options.configFile or constants.DEFAULT_CONFIG_PATH
-    local setup = Setup:new(argv, options.configFile, agent)
-    setup:run()
-  else
-    agent:start(options)
-  end
 end
 
 return {
