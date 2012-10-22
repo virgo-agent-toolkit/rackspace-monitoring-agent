@@ -66,12 +66,12 @@ requests['check_metrics.post'] = function(self, check, checkResults, callback)
 end
 
 requests['binary_upgrade.get_version'] = function(self, callback)
-  local m = msg.BinaryUpdateRequest:new()
+  local m = msg.BinaryUpgradeRequest:new()
   self:_send(m, callback)
 end
 
 requests['bundle_upgrade.get_version'] = function(self, callback)
-  local m = msg.BundleUpdateRequest:new()
+  local m = msg.BundleUpgradeRequest:new()
   self:_send(m, callback)
 end
 
@@ -190,7 +190,7 @@ function AgentProtocolConnection:_onData(data)
     else
       self:_processMessage(obj)
     end
-    
+
     line = self:_popLine()
   end
 end

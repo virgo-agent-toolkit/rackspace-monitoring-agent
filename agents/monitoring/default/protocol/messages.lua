@@ -71,14 +71,14 @@ function Request:serialize(msgId)
   }
 end
 
-local BundleUpdate = Request:extend()
-function BundleUpdate:initialize()
+local BundleUpgrade = Request:extend()
+function BundleUpgrade:initialize()
   Request.initialize(self)
   self.method = 'bundle_upgrade.get_version'
 end
 
-local BinaryUpdate = Request:extend()
-function BinaryUpdate:initialize()
+local BinaryUpgrade = Request:extend()
+function BinaryUpgrade:initialize()
   Request.initialize(self)
   self.method = 'binary_upgrade.get_version'
 end
@@ -213,8 +213,8 @@ exports.Response = Response
 exports.HandshakeHello = HandshakeHello
 exports.Heartbeat = Heartbeat
 exports.Manifest = Manifest
-exports.BinaryUpdateRequest = BinaryUpdate
-exports.BundleUpdateRequest = BundleUpdate
+exports.BinaryUpgradeRequest = BinaryUpgrade
+exports.BundleUpgradeRequest = BundleUpgrade
 exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse
 exports.ScheduleChangeAck = ScheduleChangeAck
