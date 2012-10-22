@@ -5,6 +5,7 @@
       'lib/lua',
       'deps/luvit/lib/luvit',
       'modules/async',
+      'modules/luvit-hsm',
       'modules/bourbon',
       'modules/options',
       'modules/luvit-keystone-client',
