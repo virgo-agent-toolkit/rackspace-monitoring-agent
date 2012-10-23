@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 static char**
 copy_args(virgo_t *v, const char *bundle_path) {
