@@ -207,6 +207,13 @@ function ConnectionStream:_restart(client, options, callback)
     self._attachTimeSyncEvent(self:getClient())
   end
 
+  -- Destroy the client that is being restarted
+  if client:isDestroyed() then
+    return
+  end
+
+  client:destroy()
+
   -- The error we hit was rateLimit related.
   -- Shut down the agent.
   if client.rateLimitReached then
