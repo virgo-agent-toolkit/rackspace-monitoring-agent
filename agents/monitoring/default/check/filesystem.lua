@@ -34,7 +34,7 @@ function FileSystemCheck:initialize(params)
     params.details = {}
   end
 
-  self.mount_point = params.details.target or nil
+  self.mount_point = params.details.target and params.details.target or nil
 end
 
 -- Dimension key is the mount point name, e.g. /, /home
