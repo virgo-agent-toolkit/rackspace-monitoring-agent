@@ -27,6 +27,7 @@ function MemoryCheck:run(callback)
   -- Perform Check
   local s = sigar:new()
   local meminfo = s:mem()
+  local swapinfo = s:swap()
   local checkResult = CheckResult:new(self, {})
   local percent_metrics = {
     'used_percent',
@@ -40,6 +41,13 @@ function MemoryCheck:run(callback)
     'actual_free',
     'used'
   }
+  local swap_metrics = {
+    'total',
+    'used',
+    'free',
+    'page_in',
+    'page_out'
+  }
 
   for _, key in pairs(percent_metrics) do
     checkResult:addMetric(key, nil, nil, meminfo[key])
@@ -48,6 +56,15 @@ function MemoryCheck:run(callback)
   for _, key in pairs(metrics) do
     checkResult:addMetric(key, nil, 'gauge', meminfo[key])
   end
+
+  for _, key in pairs(swap_metrics) do
+    checkResult:addMetric('swap_' .. key, nil, 'gauge', swapinfo[key])
+  end
+
+  local used_percent = (swapinfo['used'] / swapinfo['total']) * 100
+  local free_percent = (swapinfo['free'] / swapinfo['total']) * 100
+  checkResult:addMetric('swap_used_percent', nil, 'gauge', used_percent)
+  checkResult:addMetric('swap_free_percent', nil, 'gauge', free_percent)
 
   -- Return Result
   self._lastResult = checkResult
