@@ -29,6 +29,12 @@ local METRICS = {
 
 function FileSystemCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.filesystem', params)
+
+  if params.details == nil then
+    params.details = {}
+  end
+
+  self.mount_point = params.details.target or nil
 end
 
 -- Dimension key is the mount point name, e.g. /, /home
@@ -38,32 +44,46 @@ function FileSystemCheck:run(callback)
   local fses = s:filesystems()
   local checkResult = CheckResult:new(self, {})
   local fs, info, usage, value, used_percent, free_percent
+  local found = false
+
+  if self.mount_point == nil then
+    checkResult:setError('Missing target parameter')
+    callback(checkResult)
+    return
+  end
 
   for i=1, #fses do
     fs = fses[i]
     info = fs:info()
-    usage = fs:usage()
 
-    name = info['dir_name']
+    -- Search for the mount point we want. TODO: modify sigar bindings to
+    -- let us do a lookup from this.
+    if info['dir_name'] == self.mount_point then
+      found = true
+      usage = fs:usage()
 
-    if name and usage then
-      for _, key in pairs(METRICS) do
-        value = usage[key]
-        checkResult:addMetric(key, name, nil, value)
+      if usage then
+        for _, key in pairs(METRICS) do
+          value = usage[key]
+          checkResult:addMetric(key, nil, nil, value)
+        end
       end
-    end
 
-    if usage and usage['total'] > 0 then
-      free_percent = (usage['avail'] / usage['total']) * 100
-      used_percent = (usage['used'] / usage['total']) * 100
+      if usage and usage['total'] > 0 then
+        free_percent = (usage['avail'] / usage['total']) * 100
+        used_percent = (usage['used'] / usage['total']) * 100
 
-      checkResult:addMetric('free_percent', name, nil, free_percent)
-      checkResult:addMetric('used_percent', name, nil, used_percent)
+        checkResult:addMetric('free_percent', nil, nil, free_percent)
+        checkResult:addMetric('used_percent', nil, nil, used_percent)
+      end
+
+      -- Return Result
+      callback(checkResult)
+      return
     end
   end
 
-  -- Return Result
-  self._lastResult = checkResult
+  checkResult:setError(fmt('No filesystem mounted at %s', self.mount_point))
   callback(checkResult)
 end
 
