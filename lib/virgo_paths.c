@@ -63,7 +63,7 @@ virgo__path_bundle_dir(virgo_t *v, char *buffer, size_t buffer_len) {
     strncpy(buffer, v->lua_bundle_path, buffer_len);
   } else {
 #ifndef _WIN32
-    strncpy(buffer, VIRGO_DEFAULT_BUNDLE_UNIX_DIRECTORY, buffer_len);
+    strncpy(buffer, VIRGO_DEFAULT_BUNDLE_DIR_UNIX, buffer_len);
 #else
     return join_path_with_name(&FOLDERID_LocalAppData, "bundle", buffer, buffer_len);
 #endif
@@ -74,7 +74,7 @@ virgo__path_bundle_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 virgo_error_t*
 virgo__path_exe_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 #ifndef _WIN32
-  strncpy(buffer, VIRGO_DEFAULT_EXE_UNIX_DIRECTORY, buffer_len);
+  strncpy(buffer, VIRGO_DEFAULT_EXE_DIR_UNIX, buffer_len);
   return VIRGO_SUCCESS;
 #else
   return join_path_with_name(&FOLDERID_LocalAppData, "exe", buffer, buffer_len);
@@ -84,7 +84,7 @@ virgo__path_exe_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 virgo_error_t*
 virgo__path_persistent_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 #ifndef _WIN32
-  strncpy(buffer, VIRGO_DEFAULT_PERSISTENT_UNIX_DIRECTORY, buffer_len);
+  strncpy(buffer, VIRGO_DEFAULT_PERSISTENT_DIR_UNIX, buffer_len);
   return VIRGO_SUCCESS;
 #else
   return join_path_with_name(&FOLDERID_LocalAppData, "state", buffer, buffer_len);
@@ -108,7 +108,7 @@ virgo__path_tmp_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 virgo_error_t*
 virgo__path_library_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 #ifndef _WIN32
-  strncpy(buffer, VIRGO_DEFAULT_LIBRARY_UNIX_DIRECTORY, buffer_len);
+  strncpy(buffer, VIRGO_DEFAULT_LIBRARY_DIR_UNIX, buffer_len);
 #else
   return join_path_with_name(&FOLDERID_LocalAppData, "library", buffer, buffer_len);
 #endif
@@ -118,7 +118,7 @@ virgo__path_library_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 virgo_error_t*
 virgo__path_runtime_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 #ifndef _WIN32
-  strncpy(buffer, VIRGO_DEFAULT_RUNTIME_UNIX_DIRECTORY, buffer_len);
+  strncpy(buffer, VIRGO_DEFAULT_RUNTIME_DIR_UNIX, buffer_len);
 #else
   return join_path_with_name(&FOLDERID_LocalAppData, "runtime", buffer, buffer_len);
 #endif
@@ -128,7 +128,7 @@ virgo__path_runtime_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 virgo_error_t*
 virgo__path_config_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 #ifndef _WIN32
-  strncpy(buffer, VIRGO_DEFAULT_CONFIG_UNIX_DIRECTORY, buffer_len);
+  strncpy(buffer, VIRGO_DEFAULT_CONFIG_DIR_UNIX, buffer_len);
 #else
   return join_path_with_name(&FOLDERID_ProgramData, "config", buffer, buffer_len);
 #endif
