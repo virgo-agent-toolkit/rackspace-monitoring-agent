@@ -116,6 +116,7 @@ end
 local MemoryInfo = HostInfo:extend()
 function MemoryInfo:initialize()
   HostInfo.initialize(self)
+  local swapinfo = sigarCtx:swap()
   local data = sigarCtx:mem()
   local data_fields = {
     'actual_free',
@@ -127,9 +128,21 @@ function MemoryInfo:initialize()
     'used',
     'used_percent'
   }
+  local swap_metrics = {
+    'total',
+    'used',
+    'free',
+    'page_in',
+    'page_out'
+  }
   if data then
     for k, v in pairs(data_fields) do
       self._params[v] = data[v]
+    end
+  end
+  if swapinfo then
+    for _, key in pairs(swap_metrics) do
+      checkResult:addMetric('swap_' .. key, nil, 'gauge', swapinfo[key])
     end
   end
 end
