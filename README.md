@@ -73,6 +73,17 @@ forth between a running agent. You can run a server and agent like this:
 If you want to have the fixtures server listen on something other than
 `127.0.0.1` provide the environment variable `LISTEN_IP="0.0.0.0"`.
 
+Building for Rackspace Cloud Monitoring
+=======================================
+
+Rackspace customers: Virgo is the open source project for the Rackspace
+Cloud Monitoring agent. Feel free to build your own copy from this
+source.
+
+But! Please don't contact Rackspace Support about issues you encounter
+with your custom build. We can't support every change people may make
+and master might not be fully tested.
+
 Building on RHEL 5.x
 ====================
 
