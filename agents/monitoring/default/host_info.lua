@@ -60,8 +60,6 @@ function CPUInfo:initialize()
       'wait'
     }
     local info_fields = {
-      'cache_size',
-      'cores_per_socket',
       'mhz',
       'model',
       'total_cores',
@@ -87,12 +85,9 @@ function DiskInfo:initialize()
   HostInfo.initialize(self)
   local disks = sigarCtx:disks()
   local usage_fields = {
-    'queue',
     'read_bytes',
     'reads',
     'rtime',
-    'service_time',
-    'snaptime',
     'time',
     'write_bytes',
     'writes',
@@ -162,10 +157,8 @@ function NetworkInfo:initialize()
       'address',
       'address6',
       'broadcast',
-      'destination',
       'flags',
       'hwaddr',
-      'metric',
       'mtu',
       'name',
       'netmask',
@@ -177,7 +170,6 @@ function NetworkInfo:initialize()
       'rx_errors',
       'rx_overruns',
       'rx_dropped',
-      'rx_frame',
       'tx_packets',
       'tx_bytes',
       'tx_errors',
@@ -185,7 +177,6 @@ function NetworkInfo:initialize()
       'tx_dropped',
       'tx_collisions',
       'tx_carrier',
-      'speed'
     }
 
     if info then
@@ -246,10 +237,8 @@ function ProcessInfo:initialize()
       local proc_fields = {
         'name',
         'ppid',
-        'tty',
         'priority',
         'nice',
-        'processor',
         'threads'
       }
       for _, v in pairs(proc_fields) do
@@ -290,7 +279,6 @@ function FilesystemInfo:initialize()
       local info_fields = {
         'dir_name',
         'dev_name',
-        'type_name',
         'sys_type_name',
         'options',
       }
@@ -325,11 +313,7 @@ function SystemInfo:initialize()
   local obj = {name = sysinfo.name, arch = sysinfo.arch,
                version = sysinfo.version, vendor = sysinfo.vendor,
                vendor_version = sysinfo.vendor_version,
-               description = sysinfo.description}
-
-  if sysinfo.vendor_code_name ~= nil then
-    obj.vendor_code_name = sysinfo.vendor_code_name
-  end
+               vendor_name = sysinfo.vendor_name or sysinfo.vendor_version}
 
   table.insert(self._params, obj)
 end
