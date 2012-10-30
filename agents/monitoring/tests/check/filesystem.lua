@@ -48,4 +48,13 @@ exports['test_filesystem_check_nonexistent_mount_point'] = function(test, assert
   end)
 end
 
+exports['test_filesystem_check_no_mount_point'] = function(test, asserts)
+  local check = FileSystemCheck:new({id='foo', period=30})
+  check:run(function(result)
+    asserts.equal(result:getState(), 'unavailable')
+    asserts.equal(result:getStatus(), 'Missing target parameter')
+    test.done()
+  end)
+end
+
 return exports
