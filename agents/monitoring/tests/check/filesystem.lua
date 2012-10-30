@@ -5,11 +5,11 @@ local FileSystemCheck = require('monitoring/default/check').FileSystemCheck
 local exports = {}
 
 exports['test_filesystem_check'] = function(test, asserts)
-  local check = FileSystemCheck:new({id='foo', period=30})
+  local check = FileSystemCheck:new({id='foo', period=30, details={target='/'}})
   asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local util = require('utils')
-    local metrics = result:getMetrics()['/']
+    local metrics = result:getMetrics()['none']
 
     asserts.not_nil(metrics['total']['v'])
     asserts.not_nil(metrics['free']['v'])
@@ -35,6 +35,24 @@ exports['test_filesystem_check'] = function(test, asserts)
     asserts.equal(math.floor((tonumber(metrics['used']['v']) / tonumber(metrics['total']['v'])) * 100),
                  math.floor(tonumber(metrics['used_percent']['v'])))
 
+    test.done()
+  end)
+end
+
+exports['test_filesystem_check_nonexistent_mount_point'] = function(test, asserts)
+  local check = FileSystemCheck:new({id='foo', period=30, details={target='does-not-exist'}})
+  check:run(function(result)
+    asserts.equal(result:getState(), 'unavailable')
+    asserts.equal(result:getStatus(), 'No filesystem mounted at does-not-exist')
+    test.done()
+  end)
+end
+
+exports['test_filesystem_check_no_mount_point'] = function(test, asserts)
+  local check = FileSystemCheck:new({id='foo', period=30})
+  check:run(function(result)
+    asserts.equal(result:getState(), 'unavailable')
+    asserts.equal(result:getStatus(), 'Missing target parameter')
     test.done()
   end)
 end
