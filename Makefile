@@ -16,7 +16,7 @@ sig_files = $(zip_files:%.zip=%.zip.sig)
 	-ln -fs out/${BUILDTYPE}/$@ $@
 
 all: out/Makefile
-	$(MAKE) -C out V=1 BUILDTYPE=$(BUILDTYPE) -j4
+	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/${BUILDTYPE}/monitoring-agent monitoring-agent
 	$(MAKE) $(sig_files) $(zip_files)
 
