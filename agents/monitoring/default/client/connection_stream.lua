@@ -57,8 +57,8 @@ end
 
 function ConnectionStream:_onUpgrade()
   local client = self:getClient()
-  local bundleVersion = version.bundleVersion
-  local processVersion = version.processVersion
+  local bundleVersion = version.bundle
+  local processVersion = version.process
 
   if not client then
     return
