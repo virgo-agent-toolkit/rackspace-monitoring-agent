@@ -1,0 +1,23 @@
+digraph finite_state_machine {
+  pad=0.2;
+  edge [colorscheme=blues9, color=9, fontcolor=9, fontsize=12, fontname="Consolas"];
+  node [colorscheme=blues9, color=9, fontcolor=9, fontsize=12, fontname="Consolas"];
+
+
+  Default -> Default [ label = "" ];
+  Default -> Handshake [ label = "state=connect" ];
+  Default -> Deactivate [ label = "state=done" ];
+
+  Handshake -> Deactivate [ label = "state=done" ];
+  Handshake -> TimeSync [ label = "" ];
+
+  TimeSync -> Deactivate [ label = "state=done" ];
+  TimeSync -> Running [ label = "" ];
+
+  Running -> Running [ label = "" ];
+  Running -> Deactivate [ label = "state=done" ];
+
+  Deactivate -> TimeSyncDeactivate [ label = "" ];
+  TimeSyncDeactivate -> Respawn [ label = "" ];
+  Respawn -> Done;
+}
