@@ -181,8 +181,8 @@ function MonitoringAgent:_verifyState(callback)
       logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
                       self._config['monitoring_id'],
                       self._config['monitoring_guid'],
-                      version.bundle,
-                      version.process)
+                      version.process,
+                      version.bundle)
       callback()
     end
   }, callback)
