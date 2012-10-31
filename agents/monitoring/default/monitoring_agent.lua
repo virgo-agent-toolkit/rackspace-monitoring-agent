@@ -42,7 +42,7 @@ local vtime = require('virgo-time')
 local Endpoint = require('./endpoint').Endpoint
 local ConnectionStream = require('./client/connection_stream').ConnectionStream
 local CrashReportSubmitter = require('./crashreport').CrashReportSubmitter
-
+local version = require('./util/version')
 
 local MonitoringAgent = Emitter:extend()
 
@@ -178,8 +178,11 @@ function MonitoringAgent:_verifyState(callback)
     end,
     -- log
     function(callback)
-      logging.debug('Using monitoring_id ' .. self._config['monitoring_id'])
-      logging.debug('Using monitoring_guid ' .. self._config['monitoring_guid'])
+      logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
+                      self._config['monitoring_id'],
+                      self._config['monitoring_guid'],
+                      version.process,
+                      version.bundle)
       callback()
     end
   }, callback)
