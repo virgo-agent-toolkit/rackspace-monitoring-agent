@@ -148,7 +148,7 @@ Then push the tag to your git repository
 State Machine Diagram
 =====================
 
-![](contrib/fsm.png)
+![FSM](https://raw.github.com/racker/virgo/master/contrib/fsm.png)
 
 The textual representation of the dot file is generated with Graph-Easy.
 
