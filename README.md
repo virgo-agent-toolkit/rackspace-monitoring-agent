@@ -145,6 +145,19 @@ Then push the tag to your git repository
 
     git push --tags
 
+State Machine Diagram
+=====================
+
+![](contrib/fsm.png)
+
+The textual representation of the dot file is generated with Graph-Easy.
+
+https://github.com/ironcamel/Graph-Easy
+
+Command:
+
+    graph-easy --input=contrib/fsm.gv --output=contrib/fsm.txt --as_ascii
+
 Distro Packages
 ===============
 
