@@ -186,10 +186,6 @@ function ConnectionStream:_createConnection(options)
     err.message = errorMessage
 
     client:destroy()
-
-    if err then
-      self:emit('error', err)
-    end
   end)
 
   client:on('respawn', function()
