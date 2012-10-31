@@ -46,16 +46,19 @@ exports['test_reconnects'] = function(test, asserts)
   local options = {
     datacenter = 'test',
     tls = { rejectUnauthorized = false },
-    stateDirectory = './tests',
-    host = "127.0.0.1",
-    port = 50061,
-    tls = { rejectUnauthorized = false }
+    stateDirectory = './tests'
   }
   local client = ConnectionStream:new('id', 'token', 'guid', options)
 
-  local errorCount = 0
-  client:on('error', function(err)
-    errorCount = errorCount + 1
+  local clientEnd = 0
+  local reconnect = 0
+
+  client:on('client_end', function(err)
+    clientEnd = clientEnd + 1
+  end)
+
+  client:on('reconnect', function(err)
+    reconnect = reconnect + 1
   end)
 
   function counterTrigger(trigger, callback)
@@ -90,7 +93,8 @@ exports['test_reconnects'] = function(test, asserts)
       end)
     end,
   }, function()
-    asserts.ok(errorCount > 0)
+    asserts.ok(clientEnd > 0)
+    asserts.ok(reconnect > 0)
     test.done()
   end)
 end

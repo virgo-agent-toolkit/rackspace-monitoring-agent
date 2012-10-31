@@ -74,12 +74,14 @@ end
 local BundleUpgrade = Request:extend()
 function BundleUpgrade:initialize()
   Request.initialize(self)
+  self.params.noop = 1
   self.method = 'bundle_upgrade.get_version'
 end
 
 local BinaryUpgrade = Request:extend()
 function BinaryUpgrade:initialize()
   Request.initialize(self)
+  self.params.noop = 1
   self.method = 'binary_upgrade.get_version'
 end
 --[[ Handshake.Hello ]]--

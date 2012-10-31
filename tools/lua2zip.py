@@ -33,6 +33,7 @@ def main():
     async_lua = os.path.join('modules', 'async')
     bourbon_lua = os.path.join('modules', 'bourbon')
     options_lua = os.path.join('modules', 'options')
+    hsm_lua = os.path.join('modules', 'luvit-hsm')
     traceroute_lua = os.path.join('modules', 'traceroute')
     line_emitter_lua = os.path.join('modules', 'line-emitter')
     rackspace_monitoring_client_lua = os.path.join('modules', 'luvit-rackspace-monitoring-client')
@@ -50,6 +51,8 @@ def main():
             generate_bundle_map('modules/bourbon', 'modules/bourbon'),
         options_lua:
             generate_bundle_map('modules/options', 'modules/options'),
+        hsm_lua:
+            generate_bundle_map('modules/hsm', 'modules/luvit-hsm'),
         traceroute_lua:
             generate_bundle_map('modules/traceroute', 'modules/traceroute'),
         line_emitter_lua:

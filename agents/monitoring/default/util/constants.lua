@@ -9,6 +9,9 @@ exports.CONNECT_TIMEOUT = 6000
 exports.SOCKET_TIMEOUT = 10000
 exports.HEARTBEAT_INTERVAL_JITTER = 7000
 
+exports.UPGRADE_INTERVAL = 86400000 -- 24hrs
+exports.UPGRADE_INTERVAL_JITTER = 3600000 -- 1 hr
+
 exports.RATE_LIMIT_SLEEP = 5000
 exports.RATE_LIMIT_RETURN_CODE = 2
 
@@ -46,6 +49,7 @@ local RUNTIME_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_RUNTIME_DIR)
 exports.DEFAULT_PERSISTENT_VARIABLE_PATH = path.join(PERSISTENT_DIR, 'variables')
 exports.DEFAULT_CONFIG_PATH = path.join(CONFIG_DIR, 'rackspace-monitoring-agent.cfg')
 exports.DEFAULT_STATE_PATH = path.join(RUNTIME_DIR, 'states')
+exports.DEFAULT_DOWNLOAD_PATH = path.join(RUNTIME_DIR, 'downloads')
 
 -- Custom plugins related settings
 

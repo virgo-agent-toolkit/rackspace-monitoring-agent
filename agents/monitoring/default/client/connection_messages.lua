@@ -7,6 +7,7 @@ local logging = require('logging')
 local loggingUtil = require ('../util/logging')
 local path = require('path')
 local util = require('../util/misc')
+local consts = require('../util/constants')
 local table = require('table')
 local os = require('os')
 local https = require('https')
@@ -18,8 +19,8 @@ local crypto = require('_crypto')
 local errors = require('../errors')
 local instanceof = require('core').instanceof
 local request = require('../protocol/request')
--- Connection Messages
 
+-- Connection Messages
 local ConnectionMessages = Emitter:extend()
 function ConnectionMessages:initialize(connectionStream)
   self._connectionStream = connectionStream
@@ -112,12 +113,12 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
   end)
 end
 
-function ConnectionMessages:getUpdate(method, client)
+function ConnectionMessages:getUpgrade(method, client)
   local dir, filename, version, extension, AbortDownloadError, temp_dir, unverified_dir, update_type, download_attempts
 
   AbortDownloadError = errors.Error:extend()
-  temp_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_TMP_DIR)
-  unverified_dir = path.join(temp_dir, 'unverified')
+  temp_dir = consts.DEFAULT_DOWNLOAD_PATH
+  unverified_dir = path.join(consts.DEFAULT_DOWNLOAD_PATH, 'unverified')
   filename = virgo.default_name
   extension = ""
   download_attempts = 2
@@ -137,7 +138,7 @@ function ConnectionMessages:getUpdate(method, client)
     local _dir = unverified_dir
     if verified then
       if update_type == "binary" then
-        _dir = temp_dir
+        _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_EXE_DIR)
       else 
         _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
       end
@@ -268,7 +269,7 @@ function ConnectionMessages:onMessage(client, msg)
     end
 
     if method == 'binary_upgrade.available' or method == 'bundle_upgrade.available' then
-      return self:getUpdate(method, client)
+      return self:getUpgrade(method, client)
     end
 
     client:log(logging.DEBUG, fmt('No handler for method: %s', method))

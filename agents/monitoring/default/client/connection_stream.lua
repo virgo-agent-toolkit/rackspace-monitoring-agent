@@ -22,14 +22,18 @@ local fmt = require('string').format
 local async = require('async')
 local dns = require('dns')
 
+local ConnectionMessages = require('./connection_messages').ConnectionMessages
+local UpgradePollEmitter = require('./upgrade').UpgradePollEmitter
+
 local Scheduler = require('../schedule').Scheduler
 local AgentClient = require('./client').AgentClient
-local ConnectionMessages = require('./connection_messages').ConnectionMessages
 local logging = require('logging')
 local consts = require('../util/constants')
 local misc = require('../util/misc')
 local vtime = require('virgo-time')
 local path = require('path')
+local utils = require('utils')
+local version = require('../util/version')
 
 local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token, guid, options)
@@ -42,6 +46,70 @@ function ConnectionStream:initialize(id, token, guid, options)
   self._messages = ConnectionMessages:new(self)
   self._activeTimeSyncClient = nil
   self._options = options or {}
+
+  self._upgrade = UpgradePollEmitter:new()
+  self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
+end
+
+function ConnectionStream:getUpgrade()
+  return self._upgrade
+end
+
+function ConnectionStream:_onUpgrade()
+  local client = self:getClient()
+  local bundleVersion = version.bundleVersion
+  local processVersion = version.processVersion
+
+  if not client then
+    return
+  end
+
+  function updateGenerator(client, name, version, callback)
+    client.protocol:request(name, function(err, msg)
+        if err then
+          logging.errorf(name .. ' failed: %s', err.message)
+          callback(err)
+          return
+        end
+        if misc.compareVersions(msg.result.version, version) > 0 then
+          self._messages:getUpgrade(name, client);
+          callback(nil, msg.result.version)
+        else
+          callback()
+        end
+    end)
+  end
+
+  async.parallel({
+    function(callback)
+      updateGenerator(client, 'binary_upgrade.get_version', processVersion, function(err, version)
+        if err then
+          callback(err)
+          return
+        end
+
+        if version then
+          logging.infof('Found binary upgrade to version %s', version)
+        end
+
+        callback()
+      end)
+    end,
+    function(callback)
+      updateGenerator(client, 'bundle_upgrade.get_version', bundleVersion, function(err, version)
+        if err then
+          callback(err)
+          return
+        end
+
+        if version then
+          logging.infof('Found bundle upgrade to version %s', version)
+        end
+
+        callback()
+      end)
+    end
+  })
 end
 
 --[[
@@ -52,14 +120,13 @@ callback - Callback called with (err) when all the connections have been
 established.
 --]]
 function ConnectionStream:createConnections(endpoints, callback)
-  
   local iter = function(endpoint, callback)
     dns.lookup(endpoint.host, function(err, ip)
       if (err) then
         callback(err)
         return
       end
-      options = misc.merge({
+      local options = misc.merge({
         host = endpoint.host,
         port = endpoint.port,
         ip = ip,
@@ -69,7 +136,9 @@ function ConnectionStream:createConnections(endpoints, callback)
         guid = self._guid,
         timeout = consts.CONNECT_TIMEOUT
       }, self._options)
-      self:createConnection(options, callback)
+
+      self:createConnection(options)
+      callback()
     end)
   end
 
@@ -92,6 +161,12 @@ function ConnectionStream:createConnections(endpoints, callback)
   }, callback)
 end
 
+function ConnectionStream:clearDelay(datacenter)
+  if self._delays[datacenter] then
+    self._delays[datacenter] = nil
+  end
+end
+
 --[[
 Create and establish a connection to the endpoint.
 
@@ -100,55 +175,56 @@ host - Hostname.
 port - Port.
 callback - Callback called with (err)
 ]]--
-function ConnectionStream:_createConnection(options, callback)
-  local client = AgentClient:new(options, self._scheduler)
+function ConnectionStream:_createConnection(options)
+  local client = AgentClient:new(options, self._scheduler, self)
   client:on('error', function(errorMessage)
     local err = {}
+    err.ip = options.ip
     err.host = options.host
     err.port = options.port
     err.datacenter = options.datacenter
     err.message = errorMessage
 
-    self:_restart(client, options, callback)
+    client:destroy()
 
     if err then
       self:emit('error', err)
     end
   end)
 
-  client:on('timeout', function()
-    logging.debugf('%s:%d -> Client Timeout', options.host, options.port)
+  client:on('respawn', function()
+    client:log(logging.DEBUG, 'Respawning client')
+    self:_restart(client, options)
+  end)
 
-    self:_restart(client, options, callback)
+  client:on('timeout', function()
+    client:log(logging.DEBUG, 'Client Timeout')
+    client:destroy()
+  end)
+
+  client:on('connect', function()
+    client:getMachine():react(client, 'connect')
   end)
 
   client:on('end', function()
     self:emit('client_end', client)
-    logging.debugf('%s:%d -> Remote endpoint closed the connection', options.host, options.port)
-    self:_restart(client, options, callback)
+    client:log(logging.DEBUG, 'Remote endpoint closed the connection')
+    client:destroy()
   end)
 
   client:on('handshake_success', function(data)
-    self:_promoteClient(client)
-    self._delays[options.datacenter] = 0
-    client:startHeartbeatInterval()
     self:emit('handshake_success')
+    client:getMachine():react(client, 'handshake_success')
     self._messages:emit('handshake_success', client, data)
   end)
 
   client:on('message', function(msg)
     self._messages:emit('message', client, msg)
+    client:getMachine():react(client, 'message', msg)
   end)
 
-  client:connect()
-  client.datacenter = options.datacenter
-  self._unauthedClients[options.datacenter] = client
-
-  client:on('connect', function()
-    self:emit('connect', client)
-  end)
-
-  callback()
+  client:setDatacenter(options.datacenter)
+  self._unauthedClients[client:getDatacenter()] = client
 
   return client
 end
@@ -183,14 +259,15 @@ options - datacenter, host, port
   port - Port.
 callback - Callback called with (err)
 ]]--
-function ConnectionStream:reconnect(options, callback)
+function ConnectionStream:reconnect(options)
   local datacenter = options.datacenter
   local delay = self:_setDelay(datacenter)
 
-  logging.infof('%s %s:%d -> Retrying connection in %dms', datacenter, options.host, options.port, delay)
+  logging.infof('%s %s:%d -> Retrying connection in %dms', 
+                datacenter, options.host, options.port, delay)
+  self:emit('reconnect', options)
   timer.setTimeout(delay, function()
-    self:emit('reconnect', options)
-    self:_createConnection(options, callback)
+    self:createConnection(options)
   end)
 end
 
@@ -202,18 +279,6 @@ options - passed to ConnectionStream:reconnect
 callback - Callback called with (err)
 ]]--
 function ConnectionStream:_restart(client, options, callback)
-  -- Find a new client to handle time sync
-  if self._activeTimeSyncClient == client then
-    self._attachTimeSyncEvent(self:getClient())
-  end
-
-  -- Destroy the client that is being restarted
-  if client:isDestroyed() then
-    return
-  end
-
-  client:destroy()
-
   -- The error we hit was rateLimit related.
   -- Shut down the agent.
   if client.rateLimitReached then
@@ -256,6 +321,19 @@ function ConnectionStream:getClient()
   return client
 end
 
+function ConnectionStream:isTimeSyncActive()
+  return self._activeTimeSyncClient ~= nil
+end
+
+function ConnectionStream:getActiveTimeSyncClient()
+  return self._activeTimeSyncClient
+end
+
+function ConnectionStream:setActiveTimeSyncClient(client)
+  self._activeTimeSyncClient = client
+  self:_attachTimeSyncEvent(client)
+end
+
 --[[
 The algorithm for syncing time follows:
 
@@ -267,14 +345,8 @@ Note: Promoted clients have been handshake accepted to the endpoint.
 ]]--
 function ConnectionStream:_attachTimeSyncEvent(client)
   if not client then
-    self._activeTimeSyncClient = nil
     return
   end
-  if self._activeTimeSyncClient then
-    -- client already attached
-    return
-  end
-  self._activeTimeSyncClient = client
   client:on('time_sync', function(timeObj)
     vtime.timesync(timeObj.agent_send_timestamp, timeObj.server_receive_timestamp,
                    timeObj.server_response_timestamp, timeObj.agent_recv_timestamp)
@@ -285,12 +357,11 @@ end
 Move an unauthenticated client to the list of clients that have been authenticated.
 client - the client.
 ]]--
-function ConnectionStream:_promoteClient(client)
+function ConnectionStream:promoteClient(client)
   local datacenter = client:getDatacenter()
   client:log(logging.INFO, fmt('Connection has been authenticated to %s', datacenter))
   self._clients[datacenter] = client
   self._unauthedClients[datacenter] = nil
-  self:_attachTimeSyncEvent(client)
   self:emit('promote')
 end
 
@@ -302,7 +373,7 @@ host - Hostname.
 port - Port.
 callback - Callback called with (err)
 ]]--
-function ConnectionStream:createConnection(options, callback)
+function ConnectionStream:createConnection(options)
   local opts = misc.merge({
     id = self._id,
     token = self._token,
@@ -310,55 +381,8 @@ function ConnectionStream:createConnection(options, callback)
     timeout = consts.CONNECT_TIMEOUT
   }, options)
 
-  local client = AgentClient:new(opts, self._scheduler)
-  client:on('error', function(errorMessage)
-    local err = {}
-    err.ip = opts.ip
-    err.port = opts.port
-    err.host = opts.host
-    err.datacenter = opts.datacenter
-    err.message = errorMessage
-
-    self:_restart(client, opts, callback)
-
-    if err then
-      self:emit('error', err)
-    end
-  end)
-
-  client:on('timeout', function()
-    client:log(logging.DEBUG, 'Client Timeout')
-    self:_restart(client, opts, callback)
-  end)
-
-  client:on('end', function()
-    self:emit('client_end', client)
-    client:log(logging.DEBUG, 'Remote endpoint closed the connection')
-    self:_restart(client, opts, callback)
-  end)
-
-  client:on('handshake_success', function(data)
-    self:_promoteClient(client)
-    self._delays[options.datacenter] = 0
-    client:startHeartbeatInterval()
-    self:emit('handshake_success')
-    self._messages:emit('handshake_success', client, data)
-  end)
-
-  client:on('message', function(msg)
-    self._messages:emit('message', client, msg)
-  end)
-
+  local client = self:_createConnection(options)
   client:connect()
-  client.datacenter = opts.datacenter
-  self._unauthedClients[opts.datacenter] = client
-
-  client:on('connect', function()
-    self:emit('connect', client)
-  end)
-
-  callback()
-
   return client
 end
 
