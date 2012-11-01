@@ -27,7 +27,7 @@ function DiskCheck:initialize(params)
     params.details = {}
   end
 
-  self.dev_name = params.details.target and params.details.target or nil
+  self.dev_name = params.details.target
 end
 
 -- Dimension key is the mount point name, e.g. /, /home
