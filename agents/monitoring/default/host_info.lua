@@ -131,13 +131,13 @@ function MemoryInfo:initialize()
     'page_out'
   }
   if data then
-    for k, v in pairs(data_fields) do
+    for _, v in pairs(data_fields) do
       self._params[v] = data[v]
     end
   end
   if swapinfo then
-    for _, key in pairs(swap_metrics) do
-      checkResult:addMetric('swap_' .. key, nil, 'gauge', swapinfo[key])
+    for _, k in pairs(swap_metrics) do
+      self._params[k] = swapinfo[k]
     end
   end
 end
