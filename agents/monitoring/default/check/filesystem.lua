@@ -17,6 +17,7 @@ local fmt = require('string').format
 
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
+local table = require('table')
 
 local FileSystemCheck = BaseCheck:extend()
 
@@ -37,6 +38,19 @@ function FileSystemCheck:initialize(params)
   end
 
   self.mount_point = params.details.target and params.details.target or nil
+end
+
+function FileSystemCheck:getTargets(callback)
+  local s = sigar:new()
+  local fses = s:filesystems()
+  local info, fs
+  local targets = {}
+  for i=1, #fses do
+    fs = fses[i]
+    info = fs:info()
+    table.insert(targets, info['dir_name'])
+  end
+  callback(nil, targets)
 end
 
 -- Dimension key is the mount point name, e.g. /, /home
