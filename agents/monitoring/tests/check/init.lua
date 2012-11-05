@@ -129,8 +129,32 @@ exports['test_cpu_check_percentages'] = function(test, asserts)
   end)
 end
 
-exports['test_network_check'] = function(test, asserts)
+exports['test_network_check_no_target'] = function(test, asserts)
   local check = NetworkCheck:new({id='foo', period=30})
+  asserts.ok(check._lastResult == nil)
+  check:run(function(results)
+    asserts.ok(results ~= nil)
+    asserts.equal(results:getState(), 'unavailable')
+    asserts.equal(results:getStatus(), 'Missing target parameter; give me an interface.')
+    test.done()
+  end)
+end
+
+exports['test_network_check_target_does_not_exist'] = function(test, asserts)
+  local check = NetworkCheck:new({id='foo', period=30, details={target='asdf'}})
+  asserts.ok(check._lastResult == nil)
+  check:run(function(results)
+    asserts.ok(results ~= nil)
+    asserts.equal(results:getState(), 'unavailable')
+    asserts.equal(results:getStatus(), 'No such interface: asdf')
+    test.done()
+  end)
+end
+
+exports['test_network_check'] = function(test, asserts)
+  local targets = {Linux='lo', Darwin='lo0'}
+  local target = targets[os.type()] or "add a target for this os"
+  local check = NetworkCheck:new({id='foo', period=30, details={target=target}})
   asserts.ok(check._lastResult == nil)
   check:run(function(results)
     asserts.ok(results ~= nil)
