@@ -20,9 +20,9 @@ local NetworkCheck = BaseCheck:extend()
 
 function NetworkCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.network', params)
-end
 
--- Dimension is is the interface name, e.g. eth0, lo0, etc
+  self.interface_name = params.details and params.details.target
+end
 
 function NetworkCheck:run(callback)
   -- Perform Check
@@ -31,14 +31,26 @@ function NetworkCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   local usage
 
-  for i=1, #netifs do
-    local usage = netifs[i]:usage()
-    local info = netifs[i]:info()
+  if not self.interface_name then
+    checkResult:setError('Missing target parameter; give me an interface.')
+    return callback(checkResult)
+  end
 
-    if usage then
-      for key, value in pairs(usage) do
-        checkResult:addMetric(key, info.name, 'gauge', value)
-      end
+  local interface = nil
+  for i=1, #netifs do
+    local name = netifs[i]:info().name
+    if name == self.interface_name then
+      interface = netifs[i]
+      break
+    end
+  end
+
+  if not interface then
+    checkResult:setError('No such interface: ' .. self.interface_name)
+  else
+    local usage = interface:usage()
+    for key, value in pairs(usage) do
+      checkResult:addMetric(key, self.interface_name, 'gauge', value)
     end
   end
 
