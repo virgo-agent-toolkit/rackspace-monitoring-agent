@@ -94,6 +94,16 @@ responses['host_info.get'] = function(self, request, callback)
   self:_send(m, callback)
 end
 
+responses['check.targets'] = function(self, request, callback)
+  if not request.params.type then
+    return
+  end
+  check.targets(request.params.type, function(err, targets)
+    local m = msg.CheckTargetsResponse:new(request, targets)
+    self:_send(m, callback)
+  end)
+end
+
 responses['check.test'] = function(self, request, callback)
   local status, checkParams = pcall(function()
     return JSON.parse(request.params.checkParams)

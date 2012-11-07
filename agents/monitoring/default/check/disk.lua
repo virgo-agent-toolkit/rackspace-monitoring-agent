@@ -17,6 +17,7 @@ local fmt = require('string').format
 
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
+local table = require('table')
 
 local DiskCheck = BaseCheck:extend()
 
@@ -28,6 +29,16 @@ function DiskCheck:initialize(params)
   end
 
   self.dev_name = params.details.target
+end
+
+function DiskCheck:getTargets(callback)
+  local s = sigar:new()
+  local disks = s:disks()
+  local targets = {}
+  for i=1, #disks do
+    table.insert(targets, disks[i]:name())
+  end
+  callback(nil, targets)
 end
 
 -- Dimension key is the mount point name, e.g. /, /home

@@ -86,6 +86,26 @@ function test(checkParams, callback)
   end
 end
 
+-- Fetch Targets
+function targets(checkType, callback)
+  if type(checkType) ~= 'string' then
+    callback(Error:new('checkParams is not a string'))
+    return
+  end
+  local checkParams = {
+    id = 'targetRequest',
+    period = 0,
+    details = {},
+    type = checkType
+  }
+  local check = create(checkParams)
+  if check then
+    check:getTargets(callback)
+  else
+    callback(Error:new('Invalid check type'))
+  end
+end
+
 local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
@@ -104,4 +124,5 @@ exports.RedisCheck = RedisCheck
 
 exports.create = create
 exports.test = test
+exports.targets = targets
 return exports

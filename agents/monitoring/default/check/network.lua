@@ -16,13 +16,27 @@ limitations under the License.
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 
+local table = require('table')
+
 local NetworkCheck = BaseCheck:extend()
 
 function NetworkCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.network', params)
-
   self.interface_name = params.details and params.details.target
 end
+
+function NetworkCheck:getTargets(callback)
+  local s = sigar:new()
+  local netifs = s:netifs()
+  local targets = {}
+  for i=1, #netifs do
+    local info = netifs[i]:info()
+    table.insert(targets, info.name)
+  end
+  callback(nil, targets)
+end
+
+-- Dimension is is the interface name, e.g. eth0, lo0, etc
 
 function NetworkCheck:run(callback)
   -- Perform Check
