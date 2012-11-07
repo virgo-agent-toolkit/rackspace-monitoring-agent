@@ -61,6 +61,19 @@ function BaseCheck:getType()
   return self._type
 end
 
+--[[
+  Get targets for a specific check.
+
+  callback(err, targets)
+    If targets is nil then there are no targets available for the check.
+    If targets is an empty array, then we could not find any targets.
+]]--
+function BaseCheck:getTargets(callback)
+  if callback then
+    callback()
+  end
+end
+
 function BaseCheck:getNextRun()
   if self._lastResult then
     return self._lastResult._nextRun
