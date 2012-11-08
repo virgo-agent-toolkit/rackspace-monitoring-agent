@@ -46,7 +46,7 @@ local function main(argv)
   end
 
   -- setup will exit and not fall through
-  Setup:new(argv, options.configFile, agent):run()
+  agent:start(options)
 end
 
 return {

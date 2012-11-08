@@ -20,6 +20,7 @@ local fs = require('fs')
 
 local logging = require('logging')
 local errors = require('../errors')
+local Error = require('core').Error
 local misc = require('../util/misc')
 
 local fmt = require('string').format
@@ -31,55 +32,56 @@ local Request = Object:extend()
 
 --[[
   options = {
-    host/port OR monitoring_endpoints
+    host/port OR endpoints [{Endpoint1, Endpoint2, ...}]
     path = "string",
     method = "METHOD"
     upload = nil or '/some/path'
     download = nil or '/some/path'
-    retries = nil or 3 or #monitoring_endpoints
+    attempts = "INT" or #endpoints
   }
 ]]--
-function makeRequest(...)
-  return Request:new(...):request()
+
+local function makeRequest(...)
+  local req = Request:new(...)
+  req:set_headers()
+  req:request()
+  return req
 end
 
 function Request:initialize(options, callback)
   self.callback = misc.fireOnce(callback)
 
   if not options.method then
-    return self.callback(errors.Error('I need a http method'))
+    return self.callback(Error:new('I need a http method'))
   end
 
-  -- shallow copy on endpoints to not permute the clients acutal endpoints
-  if options.monitoring_endpoints then
-    options.monitoring_endpoints = misc.merge({}, monitoring_endpoints)
+  if options.endpoints then
+    self.endpoints = misc.merge({}, options.endpoints)
+  else
+    self.endpoints = {{host=options.host, port=options.port}}
   end
-  -- endpoints are ip:port - we normally have multiples and its stupid to put this logic everywhere
-  self.options = options
-  self.retries = self:_set_host_and_port() or options.retries or 3
-
-  if not options.host or not options.port then
-    return self.callback(errors.Error('call with options.port and options.host or options.monitoring_endpoints'))
-  end
-
+  self.attempts = options.attempts or #self.endpoints
   self.download = options.download
   self.upload = options.upload
-  self.options.__headers_set = false
+
+  options.endpoints = nil;
+  options.attempts = nil
+  options.download = nil
+  options.upload = nil
+
+  self.options = options
+
+  if not self:_cycle_endpoint() then
+    return self.callback(Error:new('call with options.port and options.host or options.endpoints'))
+  end
 end
 
 function Request:request()
-  if not self.options.__headers_set then
-    return self:_set_headers(function(err)
-      if err then
-        return self.callback(err)
-      end
-      self:request()
-    end)
-  end
+  logging.debug('sending request to '..self.options.host..':'.. self.options.port)
 
-  logging.debug('sending request')
+  local options = misc.merge({}, self.options)
 
-  local req = https.request(self.options, function(res)
+  local req = https.request(options, function(res)
     self:_handle_response(res)
   end)
 
@@ -87,77 +89,54 @@ function Request:request()
     self:_ensure_retries(err)
   end)
 
-  if not self.upload_path then
+  if not self.upload then
     return req:done()
   end
 
-  local data = fs.createReadStream(self.upload_path)
-  data:on('data', function(d)
-    req:write(d)
+  local data = fs.createReadStream(self.upload)
+  data:on('data', function(chunk)
+    req:write(chunk)
   end)
   data:on('end', function(d)
     req:done(d)
   end)
   data:on('error', function(err)
     req:done()
-    self.callback(err)
+    self._ensure_retries(err)
   end)
 end
 
-function Request:_set_host_and_port()
-  -- endpoints are ip:port - we normally have multiples
-  -- grab one- set retries to the remaining number
-  -- get a host if multiples were passed in
-  local retries, address
+function Request:_cycle_endpoint()
+  local position, endpoint
 
-  if not self.options.monitoring_endpoints or 
-    #self.options.monitoring_endpoints < 1 then
-    return
+  while self.attempts > 0 do
+    position = #self.endpoints % self.attempts
+    endpoint = self.endpoints[position+1]
+    self.attempts = self.attempts - 1
+    if endpoint and endpoint.host and endpoint.port then
+      self.options.host = endpoint.host
+      self.options.port = endpoint.port
+      return true
+    end
   end
 
-  retries = #self.options.monitoring_endpoints
-  address = table.remove(self.options.monitoring_endpoints)
-  self.options.host = address[0]
-  self.options.port = address[1]
-
-  return retries
-
+  return false
 end
 
-function Request:_set_headers(callback)
+function Request:set_headers(callback)
   local method = self.options.method:upper()
   local headers = {}
-
-  local _callback = function(...)
-    -- merge the headers into our options
-    self.options.headers = misc.merge(headers, self.options.headers)
-    self.options.__headers_set = true
-    callback(...)
-  end
 
   -- set defaults
   headers['Content-Length'] = 0
   headers["Content-Type"] = "application/text"
-  if method == 'GET' or not self.upload_path then
-    return _callback()
-  end
-
-  -- set type on anything not a GET (including DELETE)
-  fs.stat(self.upload_path, function(err, stats)
-    if err then 
-      logging.error("couldn't stat file: " .. self.upload_path .. ' because ' .. tostring(err))
-      return _callback(err)
-    end
-    headers["Content-Type"] = "application/octet-stream"
-    headers['Content-Length'] = stats.size
-    return _callback()
-  end)
+  self.options.headers = misc.merge(headers, self.options.headers)
 end
 
 function Request:_write_stream(res)
-  loggind.debug('writing stream to disk: '.. self.download_path)
+  logging.debug('writing stream to disk: '.. self.download)
 
-  local stream = fs.createWriteStream(self.download_path)
+  local stream = fs.createWriteStream(self.download)
 
   stream:on('end', function()
     self:_ensure_retries(nil, res)
@@ -178,34 +157,27 @@ function Request:_ensure_retries(err, res)
   if not err then
     return self.callback(err, res)
   end
-  
+
   local status = res and res.status_code or "?"
-  
-  local msg = fmt('%s request failed for %s with status: %s and error: %s', self.options.method or "?", 
-              self.download_path or self.upload_path or "?", status, tostring(err))
+
+  local msg = fmt('%s to %s:%s failed for %s with status: %s and error: %s.', (self.options.method or "?"),
+              self.options.host, self.options.port, (self.download or self.upload or "?"), status, tostring(err))
 
   logging.warn(msg)
 
-  if self.retries > 0 then
-    self.retries = self.retries - 1
-    logging.debug('retrying download '.. self.retries .. ' more times.')
+  logging.debug('retrying download '.. self.attempts .. ' more times.')
 
-    -- try a different data center if possible
-    self:_set_host_and_port()
-    return self:request()
+  if not self:_cycle_endpoint() then
+    return self.callback(err)
   end
-  
-  self.callback(err)
+
+  self:request()
 end
 
 function Request:_handle_response(res)
   logging.debug('res')
 
-  if res.status_code >= 400 then
-    return self:_ensure_retries(errors.Error:new("bad status"), res)
-  end
-
-  if self.download_path then
+  if self.download then
     return self:_write_stream(res)
   end
 
@@ -215,10 +187,14 @@ function Request:_handle_response(res)
   end)
 
   res:on('end', function()
-    logging.debug('got response: ' .. buf)
+    if res.status_code >= 400 then
+      return self:_ensure_retries(Error:new(buf), res)
+    end
+
     self:_ensure_retries(nil, res)
   end)
 end
 
 local exports = {makeRequest=makeRequest, Request=Request}
+
 return exports
