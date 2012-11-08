@@ -113,8 +113,8 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
   end)
 end
 
-function ConnectionMessages:getUpgrade(method, client)
-  local dir, filename, version, extension, AbortDownloadError, temp_dir, unverified_dir, upgrade_type, download_attempts
+function ConnectionMessages:getUpgrade(upgrade_type, client)
+  local dir, filename, version, extension, AbortDownloadError, temp_dir, unverified_dir, download_attempts
 
   AbortDownloadError = errors.Error:extend()
   temp_dir = consts.DEFAULT_DOWNLOAD_PATH
@@ -123,10 +123,12 @@ function ConnectionMessages:getUpgrade(method, client)
   extension = ""
   download_attempts = 2
 
-  if method == "bundle_upgrade.available" then
-    upgrade_type = "bundle"
-  elseif method == "binary_upgrade.available" then
-    upgrade_type = "binary"
+  if upgrade_type ~= "bundle" or upgrade_type ~= "binary" then
+    client:log(logging.ERROR, fmt('Invalid upgrade_type specified: %s', tostring(upgrade_type)))
+    return
+  end
+
+  if upgrade_type == "bundle" then
     extension = ".zip"
   end
 
@@ -267,8 +269,10 @@ function ConnectionMessages:onMessage(client, msg)
       return
     end
 
-    if method == 'binary_upgrade.available' or method == 'bundle_upgrade.available' then
-      return self:getUpgrade(method, client)
+    if method == 'binary_upgrade.available' then
+      return self:getUpgrade('binary', client)
+    elseif method == 'bundle_upgrade.available' then
+      return self:getUpgrade('bundle', client)
     end
 
     client:log(logging.DEBUG, fmt('No handler for method: %s', method))
