@@ -113,8 +113,8 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
   end)
 end
 
-function ConnectionMessages:getUpgrade(method, client)
-  local dir, filename, version, extension, AbortDownloadError, temp_dir, unverified_dir, update_type, download_attempts
+function ConnectionMessages:getUpgrade(upgrade_type, client)
+  local dir, filename, version, extension, AbortDownloadError, temp_dir, unverified_dir, download_attempts
 
   AbortDownloadError = errors.Error:extend()
   temp_dir = consts.DEFAULT_DOWNLOAD_PATH
@@ -123,10 +123,12 @@ function ConnectionMessages:getUpgrade(method, client)
   extension = ""
   download_attempts = 2
 
-  if method == "bundle_upgrade.available" then
-    update_type = "bundle"
-  elseif method == "binary_upgrade.available" then
-    update_type = "binary"
+  if upgrade_type ~= "bundle" or upgrade_type ~= "binary" then
+    client:log(logging.ERROR, fmt('Invalid upgrade_type specified: %s', tostring(upgrade_type)))
+    return
+  end
+
+  if upgrade_type == "bundle" then
     extension = ".zip"
   end
 
@@ -137,7 +139,7 @@ function ConnectionMessages:getUpgrade(method, client)
 
     local _dir = unverified_dir
     if verified then
-      if update_type == "binary" then
+      if upgrade_type == "binary" then
         _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_EXE_DIR)
       else 
         _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
@@ -155,7 +157,7 @@ function ConnectionMessages:getUpgrade(method, client)
       end)
     end,
     function(callback)
-      client.protocol:request(update_type ..'_upgrade.get_version', callback)
+      client.protocol:request(upgrade_type ..'_upgrade.get_version', callback)
     end,
     function(res, callback)
       version = res.result.version
@@ -179,12 +181,12 @@ function ConnectionMessages:getUpgrade(method, client)
         return callback(AbortDownloadError:new())
       end
       
-      local uri_path = fmt('/upgrades/%s/%s', update_type, version)
-      if update_type == 'binary' then 
+      local uri_path = fmt('/upgrades/%s/%s', upgrade_type, version)
+      if upgrade_type == 'binary' then 
         uri_path = uri_path .. '/' .. virgo.platform
       end
 
-      client:log(logging.INFO, fmt('fetching version %s and its sig for %s', version, update_type))
+      client:log(logging.INFO, fmt('fetching version %s and its sig for %s', version, upgrade_type))
 
       async.parallel({
         function(callback)
@@ -267,8 +269,10 @@ function ConnectionMessages:onMessage(client, msg)
       return
     end
 
-    if method == 'binary_upgrade.available' or method == 'bundle_upgrade.available' then
-      return self:getUpgrade(method, client)
+    if method == 'binary_upgrade.available' then
+      return self:getUpgrade('binary', client)
+    elseif method == 'bundle_upgrade.available' then
+      return self:getUpgrade('bundle', client)
     end
 
     client:log(logging.DEBUG, fmt('No handler for method: %s', method))
