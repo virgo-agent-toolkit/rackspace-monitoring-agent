@@ -218,7 +218,7 @@ function MonitoringAgent:_sendCrashReports(callback)
       function(callback)
         fs.stat(file, function(err, stats)
           if err then
-            logging.error("couldn't stat file: " .. self.upload .. ' because ' .. tostring(err))
+            logging.errorf("couldn't stat file: %s  because %s.", self.upload, tostring(err))
             return callback(err)
           end
           mtime = stats.mtime
@@ -248,12 +248,12 @@ function MonitoringAgent:_sendCrashReports(callback)
         request.makeRequest(options, callback)
       end,
       function(callback)
-        logging.info('Upload crash dump, now unlinking: ' .. file)
+        logging.infof('Upload crash dump, now unlinking: %s', file)
         fs.unlink(file, callback)
       end
       }, function(err, res)
       if err then
-        logging.error('Error uploading crash report: ' .. file .. ' because '.. tostring(err))
+        logging.errorf('Error uploading crash report: %s because %s', file, tostring(err))
       end
       callback()
     end)
@@ -269,7 +269,7 @@ function MonitoringAgent:_sendCrashReports(callback)
     local reports = {}
     for _, file in ipairs(files) do
       if string.find(file, productName .. "%-crash%-report-.+.dmp") ~= nil then
-        logging.info('Found previous crash report'.. dump_dir .. '/' .. file)
+        logging.infof('Found previous crash report %s/%s', dump_dir, file)
         table.insert(reports, path.join(dump_dir, file))
       end
     end
@@ -290,7 +290,7 @@ function MonitoringAgent:loadEndpoints(callback)
 
     for _, ep in pairs(endpoints) do
       if not ep.host or not ep.port then
-        logging.error(fmt("Invalid endpoint: %s, %s", ep.host or "", ep.port or  ""))
+        logging.errorf("Invalid endpoint: %s, %s", ep.host or "", ep.port or  "")
         process.exit(1)
       end
     end
@@ -323,7 +323,7 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
   function iter(domain, callback)
     dns.resolve(domain, 'SRV', function(err, results)
       if err then
-        logging.error('Could not lookup SRV record from ' .. domain)
+        logging.errorf('Could not lookup SRV record from %s', domain)
         callback()
         return
       end
@@ -338,7 +338,7 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
       endpoint = endpoint[1]
       -- get anem and port
       endpoint = Endpoint:new(endpoint.name, endpoint.port)
-      logging.info('found endpoint: ' .. tostring(endpoint))
+      logging.infof('found endpoint: %s', tostring(endpoint))
       table.insert(endpoints, endpoint)
     end
     callback(nil, endpoints)

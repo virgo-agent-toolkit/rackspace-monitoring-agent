@@ -31,13 +31,17 @@ local exports = {}
 local Request = Object:extend()
 
 --[[
+  Attempts to upload or download a file over https to options.host:options.port OR
+  for endpoints in options.endpoints.  Will try options.attempts number of times, or
+  for each endpoint if not specified.
+
   options = {
     host/port OR endpoints [{Endpoint1, Endpoint2, ...}]
     path = "string",
     method = "METHOD"
     upload = nil or '/some/path'
     download = nil or '/some/path'
-    attempts = "INT" or #endpoints
+    attempts = int or #endpoints
   }
 ]]--
 
@@ -77,7 +81,7 @@ function Request:initialize(options, callback)
 end
 
 function Request:request()
-  logging.debug('sending request to '..self.options.host..':'.. self.options.port)
+  logging.debugf('sending request to %s:%s', self.options.host, self.options.port)
 
   local options = misc.merge({}, self.options)
 
@@ -134,7 +138,7 @@ function Request:set_headers(callback)
 end
 
 function Request:_write_stream(res)
-  logging.debug('writing stream to disk: '.. self.download)
+  logging.debugf('writing stream to disk: %s.', self.download)
 
   local stream = fs.createWriteStream(self.download)
 
@@ -165,7 +169,7 @@ function Request:_ensure_retries(err, res)
 
   logging.warn(msg)
 
-  logging.debug('retrying download '.. self.attempts .. ' more times.')
+  logging.debugf('retrying download %d more times.', self.attempts)
 
   if not self:_cycle_endpoint() then
     return self.callback(err)
