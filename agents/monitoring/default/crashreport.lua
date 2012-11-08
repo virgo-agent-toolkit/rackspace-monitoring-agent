@@ -14,83 +14,106 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local Object = require('core').Object
-local logging = require('logging')
-local https = require('https')
-local url = require('url')
+
 local fs = require('fs')
+local os = require('os')
+local table = require('table')
+local string = require('string')
+local path = require('path')
 
-local CrashReportSubmitter = Object:extend()
+local Object = require('core').Object
+local async = require('async')
+local misc = require('./util/misc')
 
-function CrashReportSubmitter:initialize(filename, url)
-  self._path = filename
-  self._url = url
+local logging = require('logging')
+local request = require('./protocol/request')
+
+local CrashReporter = Object:extend()
+
+function CrashReporter:initialize(binary, bundley, platform, dump_dir, endpoints)
+  self.binay = binary
+  self.bundle = bundle
+  self.platform = platform
+  self.dump_dir = dump_dir
+  self.endpoints = endpoints
 end
 
-function once(callback)
-  local called = false
-  return function(err)
-    if called == false then
-      called = true
-      callback(err)
-    end
-  end
-end
+function CrashReporter:submit(callback)
+  local productName = virgo.default_name:gsub('%-', '%%%-')
 
-function CrashReportSubmitter:run(callback)
-  local headers = {}
-  local parsed = url.parse(self._url)
-
-  callback = once(callback)
-
-  logging.infof('Uploading %s to %s', self._path, self._url)
-
-  headers = {}
-  headers['Content-Type'] = 'application/octet-stream'
-
-  local options = {
-    host = parsed.hostname,
-    port = tonumber(parsed.port),
-    path = parsed.pathname,
-    headers = headers,
-    method = 'POST'
-  }
-
-  client = https.request(options, function(res)
-    local data = ''
-    logging.info('Crash Upload Status Code: '.. res.status_code)
-    res:on('data', function(chunk)
-      data = data .. chunk
-    end)
-    res:on('end', function()
-      logging.info('Crash Upload Response: '.. data)
-      callback()
-    end)
-  end)
-
-  client:on('error', function(err)
-    logging.info('Failed to upload crash report: %s', err)
-    callback(err)
-  end)
-
-  local stream = fs.createReadStream(self._path)
-  stream:on('data', function(chunk)
-    client:write(chunk)
-  end)
-
-  stream:on('error', function(err)
-    logging.info('Failed to upload crash report: %s', err)
-    client:done()
-    callback(err)
-  end)
-
-  stream:on('close', function()
-    client:done()
+  -- TODO: crash report support on !Linux platforms.
+  if os.type() ~= 'Linux' then
     callback()
+    return
+  end
+
+  local function send_and_delete(file, callback)
+    local mtime
+    local options = {headers={}}
+
+    async.series({
+      function(callback)
+        fs.stat(file, function(err, stats)
+          if err then
+            logging.errorf("couldn't stat file: %s  because %s.", self.upload, tostring(err))
+            return callback(err)
+          end
+          mtime = stats.mtime
+          options.headers["Content-Type"] = "application/octet-stream"
+          options.headers['Content-Length'] = stats.size
+          callback()
+        end)
+      end,
+      function(callback)
+        local querytable = {
+          binary_version = self.binary,
+          bundle_version = self.bundle,
+          platform = self.platform,
+          time = mtime
+        }
+        --TODO: add to luvit querstring.stringify like nodes
+        local querystring = ""
+        for key,value in pairs(querytable) do
+          querystring = string.format('%s%s=%s&', querystring, key, value)
+        end
+        options = misc.merge({
+          method = "POST",
+          path = string.format("/agent-crash-report?%s", querystring),
+          endpoints = self.endpoints,
+          upload = file
+        }, self._options, options)
+        request.makeRequest(options, callback)
+      end,
+      function(callback)
+        logging.infof('Upload crash dump, now unlinking: %s', file)
+        fs.unlink(file, callback)
+      end
+      }, function(err, res)
+      if err then
+        logging.errorf('Error uploading crash report: %s because %s', file, tostring(err))
+      end
+      callback(err)
+    end)
+  end
+
+  fs.readdir(self.dump_dir, function (err, files)
+    if err then
+      return callback(err)
+    end
+
+    local reports = {}
+    for _, file in ipairs(files) do
+      if string.find(file, productName .. "%-crash%-report-.+.dmp") ~= nil then
+        logging.infof('Found previous crash report %s/%s', self.dump_dir, file)
+        table.insert(reports, path.join(self.dump_dir, file))
+      end
+    end
+
+    async.forEach(reports, send_and_delete, callback)
   end)
 end
 
 local exports = {}
-exports.CrashReportSubmitter = CrashReportSubmitter
+exports.CrashReporter = CrashReporter
 return exports
 

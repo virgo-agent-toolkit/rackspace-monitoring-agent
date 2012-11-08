@@ -39,10 +39,9 @@ local UUID = require('./util/uuid')
 local version = require('./util/version')
 local logging = require('logging')
 local vtime = require('virgo-time')
-local request = require('./protocol/request')
 local Endpoint = require('./endpoint').Endpoint
 local ConnectionStream = require('./client/connection_stream').ConnectionStream
-
+local CrashReporter = require('./crashreport').CrashReporter
 local MonitoringAgent = Emitter:extend()
 
 function MonitoringAgent:initialize(options)
@@ -67,7 +66,12 @@ function MonitoringAgent:start(options)
       self:loadEndpoints(callback)
     end,
     function(callback)
-      self:_sendCrashReports(callback)
+      local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
+      local endpoints = self._config['monitoring_endpoints']
+      local reporter = CrashReporter:new(version.process, version.bundle, virgo.platform, dump_dir, endpoints)
+      reporter:submit(function(err, res)
+        callback()
+      end)
     end,
     function(callback)
       misc.writePid(options.pidFile, callback)
@@ -200,85 +204,6 @@ function MonitoringAgent:_verifyState(callback)
   }, callback)
 end
 
-
-function MonitoringAgent:_sendCrashReports(callback)
-  local productName = virgo.default_name:gsub('%-', '%%%-')
-
-  -- TODO: crash report support on !Linux platforms.
-  if os.type() ~= 'Linux' then
-    callback()
-    return
-  end
-
-  local function send_and_delete(file, callback)
-    local mtime
-    local options = {headers={}}
-
-    async.series({
-      function(callback)
-        fs.stat(file, function(err, stats)
-          if err then
-            logging.errorf("couldn't stat file: %s  because %s.", self.upload, tostring(err))
-            return callback(err)
-          end
-          mtime = stats.mtime
-          options.headers["Content-Type"] = "application/octet-stream"
-          options.headers['Content-Length'] = stats.size
-          callback()
-        end)
-      end,
-      function(callback)
-        local querytable = {
-          binary_version = version.process,
-          bundle_version = version.bundle,
-          platform = virgo.platform,
-          time = mtime
-        }
-        --TODO: add to luvit querstring.stringify like nodes
-        local querystring = ""
-        for key,value in pairs(querytable) do
-          querystring = fmt('%s%s=%s&', querystring, key, value)
-        end
-        options = misc.merge({
-          method = "POST",
-          path = fmt("/agent-crash-report?%s", querystring),
-          endpoints = self._config['monitoring_endpoints'],
-          upload = file
-        }, self._options, options)
-        request.makeRequest(options, callback)
-      end,
-      function(callback)
-        logging.infof('Upload crash dump, now unlinking: %s', file)
-        fs.unlink(file, callback)
-      end
-      }, function(err, res)
-      if err then
-        logging.errorf('Error uploading crash report: %s because %s', file, tostring(err))
-      end
-      callback()
-    end)
-  end
-
-  local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
-
-  fs.readdir(dump_dir, function (err, files)
-    if err then
-      return callback(err)
-    end
-
-    local reports = {}
-    for _, file in ipairs(files) do
-      if string.find(file, productName .. "%-crash%-report-.+.dmp") ~= nil then
-        logging.infof('Found previous crash report %s/%s', dump_dir, file)
-        table.insert(reports, path.join(dump_dir, file))
-      end
-    end
-
-    async.forEach(reports, send_and_delete, function(err, res)
-      callback()
-    end)
-  end)
-end
 
 function MonitoringAgent:loadEndpoints(callback)
   local config = self._config
