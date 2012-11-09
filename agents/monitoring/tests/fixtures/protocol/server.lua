@@ -110,7 +110,32 @@ local http_responder = function(log, client, server)
 
   http.onClient(server, client, function(req, res)
     local part, parts, file_path
+
+    local _reply_http = function(status, data)
+      status = status or 200
+      data = data and tostring(data) or "hello"
+      res:writeHead(status, {
+        ["Content-Type"] = "text/plain",
+        ["Content-Length"] = #data
+      })
+      log('sending reply to POST: '.. data)
+      res:finish(data)
+    end
+
     res.should_keep_alive = false
+
+    if req.method == 'POST' then
+      local recieved = 0
+      req:on('data', function(d)
+        recieved =  recieved + #d
+      end)
+      req:on('end', function()
+        _reply_http(204, fmt('got %d bytes', recieved))
+      end)
+
+      return
+    end
+
     -- path on disk
     file_path = fmt("static_files%s", req.url)
     -- split path on / 
@@ -122,21 +147,14 @@ local http_responder = function(log, client, server)
     file_path = path.join(__dirname, unpack(parts))
 
     fs.readFile(file_path, function(err, data)
+      local status = 200
       if err then 
-        err = tostring(err)
         log('got err:' .. err)
-        res:writeHead(500, {
-          ["Content-Type"] = "text/plain",
-          ["Content-Length"] = #err
-        })
-        return res:finish(err)
+        data = err
+        status = 500
       end
 
-      res:writeHead(200, {
-       ["Content-Type"] = "text/plain",
-       ["Content-Length"] = #data
-      })
-      res:finish(data)
+      return _reply_http(status, data)    
     end)
   end)
 end

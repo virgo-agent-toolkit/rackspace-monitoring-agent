@@ -82,7 +82,7 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
       stream:on('data', function(d)
         hash:update(d)
       end)
-      stream:on('end', function() 
+      stream:on('end', function()
         callback(nil, hash)
       end)
       stream:on('error', callback)
@@ -101,7 +101,7 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
     local pub_data = res.pub_data[1]
     local key = crypto.pkey.from_pem(pub_data)
 
-    if not key then 
+    if not key then
       return callback(errors.InvalidSignatureError:new('invalid key file'))
     end
 
@@ -141,7 +141,7 @@ function ConnectionMessages:getUpgrade(upgrade_type, client)
     if verified then
       if upgrade_type == "binary" then
         _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_EXE_DIR)
-      else 
+      else
         _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
       end
     end
@@ -180,36 +180,32 @@ function ConnectionMessages:getUpgrade(upgrade_type, client)
       if sig[1] == true and update[1] == true then
         return callback(AbortDownloadError:new())
       end
-      
+
       local uri_path = fmt('/upgrades/%s/%s', upgrade_type, version)
-      if upgrade_type == 'binary' then 
+      if upgrade_type == 'binary' then
         uri_path = uri_path .. '/' .. virgo.platform
       end
 
       client:log(logging.INFO, fmt('fetching version %s and its sig for %s', version, upgrade_type))
 
+      local options = {
+        method = 'GET',
+        host = client._host,
+        port = client._port,
+        tls = client._tls_options
+      }
       async.parallel({
         function(callback)
-          local options = {
-            method = 'GET',
+          request.makeRequest(misc.merge({
             path = uri_path,
             download = get_path(),
-            host = client._host,
-            port = client._port,
-            tls = client._tls_options
-          }
-          request.makeRequest(options, callback)
+          }, options), callback)
         end,
         function(callback)
-          local options = {
-            method = 'GET',
+          request.makeRequest(misc.merge({
             path = uri_path ..'.sig',
             download = get_path{sig=true},
-            host = client._host,
-            port = client._port,
-            tls = client._tls_options
-          }
-          request.makeRequest(options, callback)
+          }, options), callback)
         end
       }, callback)
     end,
@@ -220,17 +216,17 @@ function ConnectionMessages:getUpgrade(upgrade_type, client)
   function(res, callback)
 
     async.parallel({
-      function(callback) 
+      function(callback)
         fs.rename(get_path(), get_path{verified=true}, callback)
       end,
       function(callback)
         fs.rename(get_path{sig=true}, get_path{sig=true, verified=true}, callback)
       end
       }, callback)
-  end}, 
+  end},
   function(err, res)
     if not err then
-      local msg = 'An update to the Rackspace Cloud Monitoring Agent has been downloaded to ' .. 
+      local msg = 'An update to the Rackspace Cloud Monitoring Agent has been downloaded to ' ..
       get_path{verified=true} .. 'and is ready to use. Please restart the agent.'
       client:log(logging.INFO, msg)
       return
