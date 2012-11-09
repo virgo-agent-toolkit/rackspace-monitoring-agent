@@ -23,10 +23,10 @@ local fs = require('fs')
 local os = require('os')
 local path = require('path')
 local table = require('table')
+local Object = require('core').Object
 
 local fmt = require('string').format
 local Emitter = require('core').Emitter
-
 local async = require('async')
 local sigarCtx = require('./sigar').ctx
 
@@ -36,14 +36,12 @@ local States = require('./states')
 local stateFile = require('./state_file')
 local fsutil = require('./util/fs')
 local UUID = require('./util/uuid')
+local version = require('./util/version')
 local logging = require('logging')
 local vtime = require('virgo-time')
-
 local Endpoint = require('./endpoint').Endpoint
 local ConnectionStream = require('./client/connection_stream').ConnectionStream
-local CrashReportSubmitter = require('./crashreport').CrashReportSubmitter
-local version = require('./util/version')
-
+local CrashReporter = require('./crashreport').CrashReporter
 local MonitoringAgent = Emitter:extend()
 
 function MonitoringAgent:initialize(options)
@@ -65,7 +63,15 @@ function MonitoringAgent:start(options)
 
   async.series({
     function(callback)
-      self:_sendCrashReports(callback)
+      self:loadEndpoints(callback)
+    end,
+    function(callback)
+      local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
+      local endpoints = self._config['monitoring_endpoints']
+      local reporter = CrashReporter:new(version.process, version.bundle, virgo.platform, dump_dir, endpoints)
+      reporter:submit(function(err, res)
+        callback()
+      end)
     end,
     function(callback)
       misc.writePid(options.pidFile, callback)
@@ -93,15 +99,13 @@ function MonitoringAgent:loadStates(callback)
     -- Verify
     function(callback)
       self:_verifyState(callback)
-    end,
-    function(callback)
-      self:_loadEndpoints(callback)
     end
   }, callback)
 end
 
 function MonitoringAgent:connect(callback)
   local endpoints = self._config['monitoring_endpoints']
+
   if #endpoints <= 0 then
     logging.error('no endpoints')
     timer.setTimeout(misc.calcJitter(constants.SRV_RECORD_FAILURE_DELAY, constants.SRV_RECORD_FAILURE_DELAY_JITTER), function()
@@ -120,6 +124,18 @@ function MonitoringAgent:connect(callback)
     self:emit('promote')
   end)
   self._streams:createConnections(endpoints, callback)
+end
+
+function MonitoringAgent:getStreams()
+  return self._streams
+end
+
+function MonitoringAgent:getConfig()
+  return self._config
+end
+
+function MonitoringAgent:setConfig(config)
+  self._config = config
 end
 
 function MonitoringAgent:getStreams()
@@ -188,86 +204,29 @@ function MonitoringAgent:_verifyState(callback)
   }, callback)
 end
 
-function MonitoringAgent:getStreams()
-  return self._streams
-end
 
-function MonitoringAgent:getConfig()
-  return self._config
-end
-
-function MonitoringAgent:setConfig(config)
-  self._config = config
-end
-
-function MonitoringAgent:_sendCrashReports(callback)
-  local crashReports = {}
-  local productName = virgo.default_name:gsub('%-', '%%%-')
-
-  -- backend doesn't yet support crash reports
-  if true then return callback() end
-  
-  -- TODO: crash report support on !Linux platforms.
-  if os.type() ~= 'Linux' then
-    callback()
-    return
-  end
-
-  local function send(file, callback)
-    async.series({
-      function(callback)
-        local options = {
-          method = "POST",
-          path = "/agent-crash-report"
-        }
-        self:https(options, nil, file, callback)
-      end,
-      function(callback)
-        fs.unlink(file, callback)
-      end
-      }, function(err, res)
-      if err then
-        logging.error('Error uploading crash report: ' .. file .. ' because '.. tostring(err))
-      end
-      callback()
-    end)
-  end
-
-  local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
-
-  fs.readdir(dump_dir, function (err, files)
-    if err then
-      return callback(err)
-    end
-
-    local reports = {}
-    for _, file in ipairs(files) do
-      if string.find(file, productName .. "%-crash%-report-.+.dmp") ~= nil then
-        logging.info('Found previous crash report'.. dump_dir .. '/' .. file)
-        table.insert(reports, path.join(dump_dir, file))
-      end
-    end
-
-    async.forEachSeries(reports, send, function(err, res)
-      callback()
-    end)
-  end)
-end
-
-function MonitoringAgent:_loadEndpoints(callback)
+function MonitoringAgent:loadEndpoints(callback)
   local config = self._config
   local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
   local endpoints = config['monitoring_endpoints']
 
-  if queries and not endpoints then
-    queries = misc.split(queries, '[^,]+')
+  local function _callback(err, endpoints)
+    if err then return callback(err) end
 
-    return self:_queryForEndpoints(queries, function(err, endpoints)
-      config['monitoring_endpoints'] = endpoints
-      callback(err, endpoints)
-    end)
+    for _, ep in pairs(endpoints) do
+      if not ep.host or not ep.port then
+        logging.errorf("Invalid endpoint: %s, %s", ep.host or "", ep.port or  "")
+        process.exit(1)
+      end
+    end
+    config['monitoring_endpoints'] = endpoints
+    callback(nil, endpoints)
   end
 
+  if queries and not endpoints then
+    local domains = misc.split(queries, '[^,]+')
+    return self:_queryForEndpoints(domains, _callback)
+  end
   -- split address,address,address
   endpoints = misc.split(endpoints, '[^,]+')
 
@@ -276,62 +235,27 @@ function MonitoringAgent:_loadEndpoints(callback)
     process.exit(1)
   end
 
-  local ip_and_port
-  local endpoints_found = {}
-
-  for _, address in ipairs(endpoints) do
-    table.insert(endpoints_found, Endpoint:new(address))
-  end
-
-  config['monitoring_endpoints'] = endpoints_found
-  callback(nil, endpoints_found)
-end
-
-function MonitoringAgent:_loadEndpoints(callback)
-  local config = self._config
-  local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
-  local endpoints = config['monitoring_endpoints']
-
-  if queries and not endpoints then
-    queries = misc.split(queries, '[^,]+')
-
-    return self:_queryForEndpoints(queries, function(err, endpoints)
-      config['monitoring_endpoints'] = endpoints
-      callback(err, endpoints)
-    end)
-  end
-
-  -- split address,address,address
-  endpoints = misc.split(endpoints, '[^,]+')
-
-  if #endpoints == 0 then
-    logging.error("at least one endpoint needs to be specified")
-    process.exit(1)
-  end
-
-  local address
   local new_endpoints = {}
 
   for _, address in ipairs(endpoints) do
     table.insert(new_endpoints, Endpoint:new(address))
   end
 
-  config['monitoring_endpoints'] = new_endpoints
-  callback(nil, new_endpoints)
+  return _callback(nil, new_endpoints)
 end
 
 function MonitoringAgent:_queryForEndpoints(domains, callback)
   function iter(domain, callback)
     dns.resolve(domain, 'SRV', function(err, results)
       if err then
-        logging.error('Could not lookup SRV record from ' .. domain)
+        logging.errorf('Could not lookup SRV record from %s', domain)
         callback()
         return
       end
       callback(nil, results)
     end)
   end
-  local endpoints_found = {}
+  local endpoints = {}
   async.map(domains, iter, function(err, results)
     local endpoint, _
     for _, endpoint in pairs(results) do
@@ -339,10 +263,10 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
       endpoint = endpoint[1]
       -- get anem and port
       endpoint = Endpoint:new(endpoint.name, endpoint.port)
-      logging.info('found endpoint: ' .. tostring(endpoint))
-      table.insert(endpoints_found, endpoint)
+      logging.infof('found endpoint: %s', tostring(endpoint))
+      table.insert(endpoints, endpoint)
     end
-    callback(nil, endpoints_found)
+    callback(nil, endpoints)
   end)
 end
 
@@ -386,4 +310,3 @@ function MonitoringAgent:_getPersistentVariable(variable, callback)
 end
 
 return { MonitoringAgent = MonitoringAgent }
-

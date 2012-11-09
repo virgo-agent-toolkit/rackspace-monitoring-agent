@@ -206,6 +206,9 @@ function Setup:run(callback)
       self:_out('')
       async.series({
         function(callback)
+          self._agent:loadEndpoints(callback)
+        end,
+        function(callback)
           self._agent:loadStates(callback)
         end,
         function(callback)

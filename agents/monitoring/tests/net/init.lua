@@ -45,9 +45,12 @@ exports['test_reconnects'] = function(test, asserts)
 
   local options = {
     datacenter = 'test',
-    tls = { rejectUnauthorized = false },
-    stateDirectory = './tests'
+    stateDirectory = './tests',
+    host = "127.0.0.1",
+    port = 50061,
+    tls = { rejectUnauthorized = false }
   }
+
   local client = ConnectionStream:new('id', 'token', 'guid', options)
 
   local clientEnd = 0
@@ -77,7 +80,7 @@ exports['test_reconnects'] = function(test, asserts)
       client:on('handshake_success', counterTrigger(3, callback))
       local endpoints = {}
       for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
-        -- split ip:port 
+        -- split ip:port
         table.insert(endpoints, Endpoint:new(address))
       end
       client:createConnections(endpoints, function() end)
