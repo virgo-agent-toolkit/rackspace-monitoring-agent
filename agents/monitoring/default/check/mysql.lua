@@ -31,7 +31,7 @@ function MySQLCheck:initialize(params)
   self.mysql_password = params.details.password and params.details.password or nil
   self.mysql_username = params.details.username and params.details.username or nil
   self.mysql_host = params.details.host and params.details.host or '127.0.0.1'
-  self.mysql_port = params.details.port and params.details.port or 3306
+  self.mysql_port = params.details.port and tonumber(params.details.port) or 3306
 
 end
 
