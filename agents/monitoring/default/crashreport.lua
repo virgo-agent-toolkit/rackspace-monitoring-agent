@@ -41,12 +41,6 @@ end
 function CrashReporter:submit(callback)
   local productName = virgo.default_name:gsub('%-', '%%%-')
 
-  -- TODO: crash report support on !Linux platforms.
-  if os.type() ~= 'Linux' then
-    callback()
-    return
-  end
-
   local function send_and_delete(file, callback)
     local mtime
     local options = {headers={}}
