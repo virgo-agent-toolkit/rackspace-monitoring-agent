@@ -72,7 +72,6 @@ local stdout = process.stdout
 
 -- clear some globals
 -- This will break lua code written for other lua runtimes
-_G.io = nil
 _G.os = nil
 _G.math = nil
 _G.string = nil
@@ -86,6 +85,8 @@ _G.dofile = nil
 _G.print = utils.print
 _G.p = utils.prettyPrint
 _G.debug = utils.debug
+_G.debugger = require('virgo-debugger').install(_G.io)
+_G.io = nil
 
 process.version = VERSION
 process.versions = {
@@ -167,7 +168,7 @@ hide("exitProcess")
 local vfs = LVFS.open()
 
 local path_mapping = {}
-if vfs:exists('/path_mapping.lua') then 
+if vfs:exists('/path_mapping.lua') then
   local mapping_string = vfs:read('/path_mapping.lua')
   path_mapping = loadstring(mapping_string, '/path_mapping.lua')()
 end
