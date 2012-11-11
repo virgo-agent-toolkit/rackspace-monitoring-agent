@@ -139,7 +139,7 @@ function MemoryInfo:initialize()
   end
   if swapinfo then
     for _, k in pairs(swap_metrics) do
-      self._params[k] = swapinfo[k]
+      self._params['swap_' .. k] = swapinfo[k]
     end
   end
 end
