@@ -20,7 +20,7 @@
 #ifndef _virgo__util_h_
 #define _virgo__util_h_
 
-void virgo__crash_reporter_init();
+void virgo__crash_reporter_init(virgo_t **v);
 void virgo__crash_reporter_destroy();
 
 const char* virgo__argv_get_value(virgo_t *v,
