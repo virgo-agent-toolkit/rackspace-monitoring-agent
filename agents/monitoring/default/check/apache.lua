@@ -148,6 +148,7 @@ function ApacheCheck:_parse(data, checkResult)
 end
 
 function ApacheCheck:run(callback)
+  callback = misc.fireOnce(callback)
   local checkResult = CheckResult:new(self, {})
   local protocol = self._parsed.protocol == 'http' and http or https
   local req = protocol.request(self._parsed, function(res)
@@ -164,6 +165,10 @@ function ApacheCheck:run(callback)
       checkResult:setError(err.message)
       callback(checkResult)
     end)
+  end)
+  req:on('error', function(err)
+    checkResult:setError(err.message)
+    callback(checkResult)
   end)
   req:done()
 end
