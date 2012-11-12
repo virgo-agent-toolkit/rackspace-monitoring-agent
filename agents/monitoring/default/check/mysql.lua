@@ -97,8 +97,8 @@ end
 
 -- List of MySQL Stats that we export, along with their metric type.
 local stat_map = {
-  Aborted_clients = { type = 'uint64', alias = 'aborted_clients' },
-  Connections = { type = 'gauge', alias = 'connections' },
+  Aborted_clients = { type = 'uint64', alias = 'core.aborted_clients' },
+  Connections = { type = 'gauge', alias = 'core.connections' },
 
   Innodb_buffer_pool_pages_dirty = { type = 'uint64', alias = 'innodb.buffer_pool_pages_dirty' },
   Innodb_buffer_pool_pages_free = { type = 'uint64', alias = 'innodb.buffer_pool_pages_free'},
@@ -112,13 +112,13 @@ local stat_map = {
   Innodb_rows_read = { type = 'gauge', alias = 'innodb.rows_read'},
   Innodb_rows_updated = { type = 'gauge', alias = 'innodb.rows_updated'},
 
-  Queries = { type = 'gauge', alias = 'queries'},
+  Queries = { type = 'gauge', alias = 'core.queries'},
 
   Threads_connected = { type = 'uint64', alias = 'threads.connected'},
   Threads_created = { type = 'uint64', alias = 'threads.created'},
   Threads_running = { type = 'uint64', alias = 'threads.running'},
 
-  Uptime = { type = 'uint64', alias = 'uptime'},
+  Uptime = { type = 'uint64', alias = 'core.uptime'},
 
   Qcache_free_blocks = { type = 'uint64', alias = 'qcache.free_blocks'},
   Qcache_free_memory = { type = 'uint64', alias = 'qcache.free_memory'},
