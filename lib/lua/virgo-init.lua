@@ -86,6 +86,7 @@ _G.print = utils.print
 _G.p = utils.prettyPrint
 _G.debug = utils.debug
 _G.debugger = require('virgo-debugger').install(_G.io)
+_G.dump_lua = require('virgo-debugger').dump_lua
 _G.io = nil
 
 process.version = VERSION
