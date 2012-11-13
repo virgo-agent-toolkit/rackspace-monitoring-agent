@@ -123,9 +123,11 @@ exports['test_upgrades'] = function(test, asserts)
       client:createConnections(endpoints, function() end)
     end,
     function(callback)
-      callback = misc.nCallbacks(callback, 2)
+      callback = misc.nCallbacks(callback, 4)
       client:on('binary_upgrade.found', callback)
       client:on('bundle_upgrade.found', callback)
+      client:on('bundle_upgrade.error', callback)
+      client:on('binary_upgrade.error', callback)
       client:getUpgrade():forceUpgradeCheck()
     end
   }, function()

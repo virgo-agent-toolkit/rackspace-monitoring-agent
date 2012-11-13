@@ -254,6 +254,15 @@ function compareVersions(a, b)
 end
 
 
+function propogateEvents(toClass, fromClass, eventNames)
+  for _, v in pairs(eventNames) do
+    fromClass:on(v, function(...)
+      toClass:emit(v, ...)
+    end)
+  end
+end
+
+
 --[[ Exports ]]--
 local exports = {}
 exports.calcJitter = calcJitter
@@ -268,4 +277,5 @@ exports.lastIndexOf = lastIndexOf
 exports.fireOnce = fireOnce
 exports.nCallbacks = nCallbacks
 exports.compareVersions = compareVersions
+exports.propogateEvents = propogateEvents
 return exports
