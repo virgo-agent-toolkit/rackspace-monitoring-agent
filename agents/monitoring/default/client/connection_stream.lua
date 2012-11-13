@@ -91,6 +91,7 @@ function ConnectionStream:_onUpgrade()
         if version then
           logging.infof('Found binary upgrade to version %s', version)
         end
+        self:emit('binary_upgrade.found', version)
 
         callback()
       end)
@@ -105,6 +106,7 @@ function ConnectionStream:_onUpgrade()
         if version then
           logging.infof('Found bundle upgrade to version %s', version)
         end
+        self:emit('bundle_upgrade.found', version)
 
         callback()
       end)
