@@ -123,14 +123,11 @@ exports['test_upgrades'] = function(test, asserts)
   async.series({
     start_server,
     function(callback)
-      client = ConnectionStream:new('id', 'token', 'guid', options)
-      client:createConnections(endpoints, function() end)
-      callback()
-    end,
-    function(callback)
       callback = misc.nCallbacks(callback, 2)
+      client = ConnectionStream:new('id', 'token', 'guid', options)
       client:on('binary_upgrade.found', callback)
       client:on('bundle_upgrade.found', callback)
+      client:createConnections(endpoints, function() end)
       client:getUpgrade():forceUpgradeCheck()
     end,
   }, function()
