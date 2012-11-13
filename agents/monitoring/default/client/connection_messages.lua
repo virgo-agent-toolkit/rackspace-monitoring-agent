@@ -123,7 +123,7 @@ function ConnectionMessages:getUpgrade(upgrade_type, client)
   extension = ""
   download_attempts = 2
 
-  if upgrade_type ~= "bundle" or upgrade_type ~= "binary" then
+  if upgrade_type ~= "bundle" and upgrade_type ~= "binary" then
     client:log(logging.ERROR, fmt('Invalid upgrade_type specified: %s', tostring(upgrade_type)))
     return
   end

@@ -64,7 +64,7 @@ function ConnectionStream:_onUpgrade()
     return
   end
 
-  function updateGenerator(client, name, version, callback)
+  function updateGenerator(client, name, upgrade_type, version, callback)
     client.protocol:request(name, function(err, msg)
         if err then
           logging.errorf(name .. ' failed: %s', err.message)
@@ -72,7 +72,7 @@ function ConnectionStream:_onUpgrade()
           return
         end
         if misc.compareVersions(msg.result.version, version) > 0 then
-          self._messages:getUpgrade(name, client);
+          self._messages:getUpgrade(upgrade_type, client)
           callback(nil, msg.result.version)
         else
           callback()
@@ -82,7 +82,7 @@ function ConnectionStream:_onUpgrade()
 
   async.parallel({
     function(callback)
-      updateGenerator(client, 'binary_upgrade.get_version', processVersion, function(err, version)
+      updateGenerator(client, 'binary_upgrade.get_version', 'binary', processVersion, function(err, version)
         if err then
           callback(err)
           return
@@ -97,7 +97,7 @@ function ConnectionStream:_onUpgrade()
       end)
     end,
     function(callback)
-      updateGenerator(client, 'bundle_upgrade.get_version', bundleVersion, function(err, version)
+      updateGenerator(client, 'bundle_upgrade.get_version', 'bundle', bundleVersion, function(err, version)
         if err then
           callback(err)
           return
