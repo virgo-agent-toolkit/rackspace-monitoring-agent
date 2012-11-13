@@ -72,31 +72,21 @@ exports['test_reconnects'] = function(test, asserts)
     reconnect = reconnect + 1
   end)
 
-  function counterTrigger(trigger, callback)
-    local counter = 0
-    return function()
-      counter = counter + 1
-      if counter == trigger then
-        callback()
-      end
-    end
-  end
-
   async.series({
     start_server,
     function(callback)
-      client:on('handshake_success', counterTrigger(3, callback))
+      client:on('handshake_success', misc.nCallbacks(callback, 3))
       local endpoints = get_endpoints()
       client:createConnections(endpoints, function() end)
     end,
     function(callback)
       stop_server(function()
-        client:on('reconnect', counterTrigger(3, callback))
+        client:on('reconnect', misc.nCallbacks(callback, 3))
       end)
     end,
     function(callback)
       start_server(function()
-        client:on('handshake_success', counterTrigger(3, callback))
+        client:on('handshake_success', misc.nCallbacks(callback, 3))
       end)
     end,
   }, function()
@@ -123,13 +113,17 @@ exports['test_upgrades'] = function(test, asserts)
   async.series({
     start_server,
     function(callback)
-      callback = misc.nCallbacks(callback, 2)
+      callback = misc.nCallbacks(callback, 3)
       client = ConnectionStream:new('id', 'token', 'guid', options)
+      client:on('handshake_success', callback)
+      client:createConnections(endpoints, function() end)
+    end,
+    function(callback)
+      callback = misc.nCallbacks(callback, 2)
       client:on('binary_upgrade.found', callback)
       client:on('bundle_upgrade.found', callback)
-      client:createConnections(endpoints, function() end)
       client:getUpgrade():forceUpgradeCheck()
-    end,
+    end
   }, function()
     stop_server()
     test.done()
