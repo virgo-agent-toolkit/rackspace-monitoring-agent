@@ -6,7 +6,9 @@ local helper = require('../helper')
 local timer = require('timer')
 local fixtures = require('../fixtures')
 local constants = require('constants')
+local consts = require('../../default/util/constants')
 local Endpoint = require('../../default/endpoint').Endpoint
+local path = require('path')
 
 local exports = {}
 local child
@@ -100,6 +102,9 @@ end
 exports['test_upgrades'] = function(test, asserts)
   local options, client, endpoints
 
+  -- Override the default download path
+  consts.DEFAULT_DOWNLOAD_PATH = path.join('.', 'tmp')
+
   options = {
     datacenter = 'test',
     stateDirectory = './tests',
@@ -113,9 +118,8 @@ exports['test_upgrades'] = function(test, asserts)
   async.series({
     start_server,
     function(callback)
-      callback = misc.nCallbacks(callback, 3)
       client = ConnectionStream:new('id', 'token', 'guid', options)
-      client:on('handshake_success', callback)
+      client:on('handshake_success', misc.nCallbacks(callback, 3))
       client:createConnections(endpoints, function() end)
     end,
     function(callback)
