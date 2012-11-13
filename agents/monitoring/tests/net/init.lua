@@ -107,20 +107,6 @@ exports['test_reconnects'] = function(test, asserts)
   end)
 end
 
-local function nCallbacks(callback, count)
-  local n, triggered = 0, false
-  return function()
-    if triggered then
-      return
-    end
-    n = n + 1
-    if count == n then
-      triggered = true
-      callback()
-    end
-  end
-end
-
 exports['test_upgrades'] = function(test, asserts)
   local options, client, endpoints
 
@@ -142,7 +128,7 @@ exports['test_upgrades'] = function(test, asserts)
       callback()
     end,
     function(callback)
-      callback = nCallbacks(callback, 2)
+      callback = misc.nCallbacks(callback, 2)
       client:on('binary_upgrade.found', callback)
       client:on('bundle_upgrade.found', callback)
       client:getUpgrade():forceUpgradeCheck()
