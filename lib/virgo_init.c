@@ -49,7 +49,7 @@ static int global_virgo_init = 0;
 
 #ifndef __linux__
 
-void virgo__crash_reporter_init()
+void virgo__crash_reporter_init(virgo_t **p_v)
 {
 
 }
@@ -62,12 +62,10 @@ void virgo__crash_reporter_destroy()
 #endif
 
 static void
-virgo__global_init() {
+virgo__global_init(virgo_t **p_v) {
 #if !defined(OPENSSL_NO_COMP)
   STACK_OF(SSL_COMP)* comp_methods;
 #endif
-
-  virgo__crash_reporter_init();
 
   if (global_virgo_init++) {
     return;
@@ -108,13 +106,15 @@ virgo_create(virgo_t **p_v, const char *default_module)
 {
   virgo_t *v = NULL;
 
-  virgo__global_init();
+  virgo__global_init(&v);
 
   v = calloc(1, sizeof(virgo_t));
   v->lua_default_module = strdup(default_module);
   v->log_level = VIRGO_LOG_EVERYTHING;
   v->try_upgrade = TRUE;
   *p_v = v;
+
+  virgo__crash_reporter_init(&v);
 
   return VIRGO_SUCCESS;
 }
