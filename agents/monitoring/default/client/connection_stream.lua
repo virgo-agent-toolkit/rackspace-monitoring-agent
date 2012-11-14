@@ -302,15 +302,18 @@ function ConnectionStream:_restart(client, options, callback)
 end
 
 function ConnectionStream:shutdown(msg)
-  for k, v in pairs(self._clients) do
-    v:destroy()
-  end
-
+  self:done()
   -- Sleep to keep from busy restarting on upstart/systemd/etc
   timer.setTimeout(consts.RATE_LIMIT_SLEEP, function()
     logging.error(msg)
     process.exit(consts.RATE_LIMIT_RETURN_CODE)
   end)
+end
+
+function ConnectionStream:done()
+  for k, v in pairs(self._clients) do
+    v:destroy()
+  end
 end
 
 function ConnectionStream:getClient()
