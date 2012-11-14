@@ -179,8 +179,7 @@ local function getvalue(level, name)
   return resolve_attrs()
 end
 
-
-local function capture_vars(level)
+local function capture_vars(level, __no_meta_table, __no_environment, __no_globals)
   level = level + 1
   -- captures all variables in scope which is
   --useful for evaling user input in the given stack frame
@@ -203,10 +202,14 @@ local function capture_vars(level)
       end
       i = i + 1
     end
-    vars.__ENVIRONMENT__ = getfenv(func)
+    if not __no_environment then
+      vars.__ENVIRONMENT__ = getfenv(func)
+    end
   end
 
-  vars.__GLOBALS__ = getfenv(0)
+  if not __no_globals then
+    vars.__GLOBALS__ = getfenv(0)
+  end
 
   i = 1
   while true do
@@ -220,6 +223,10 @@ local function capture_vars(level)
   end
 
   vars.__VARSLEVEL__ = level
+
+  if __no_meta_table then
+    return vars
+  end
 
   if func then
     --Do not do this until finished filling the vars table
@@ -644,6 +651,27 @@ function Debugger:hook(event, line)
 end
 
 return {
+  ['dump_lua'] = function()
+    local JSON = require('json')
+    local stack = {}
+    local _, lvl = unpack(get_lvl(1))
+    local function dump(o)
+      return utils.dump(o, 0, true)
+    end
+    for i=2,lvl do
+      local vars = capture_vars(i, true, true, true)
+      vars.__LOCALS__ = nil
+      vars.__UPVALUES__ = nil
+      table.insert(stack, dump(vars))
+    end
+
+    local lua_dump = {}
+    lua_dump.stack = stack
+    lua_dump.tb = dump(debug.traceback("", 2))
+    virgo["config"]["monitoring_token"] = "******"
+    lua_dump.virgo = dump(virgo)
+    return JSON.stringify(lua_dump)
+  end,
   ['install'] = function(io)
     debugger = Debugger:new(io)
     return function()
