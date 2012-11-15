@@ -105,7 +105,7 @@ function AgentClient:scheduleManifest(manifest)
   local checks = self:_createChecks(manifest)
   self._scheduler:rebuild(checks, function()
     self._log(logging.DEBUG, 'Reloaded manifest')
-    self._scheduler:start()
+    self._scheduler:rebuild(checks)
   end)
 end
 
