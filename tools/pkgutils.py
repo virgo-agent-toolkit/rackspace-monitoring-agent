@@ -35,6 +35,13 @@ def pkg_dir():
         dist = platform.dist()
         # Lower case everyting (looking at you Ubuntu)
         dist = tuple([x.lower() for x in dist])
+
+        # Treat all redhat 5.* versions the same
+        # redhat-5.5 becomes redhat-5
+        if (dist[0] == "redhat" or dist[0] == "centos"):
+            major = dist[1].split(".")[0]
+            dist = (dist[0], major)
+
         dist = "%s-%s" % dist[:2]
         return "%s-%s" % (dist, machine)
 
