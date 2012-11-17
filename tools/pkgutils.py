@@ -38,7 +38,7 @@ def pkg_dir():
 
         # Treat all redhat 5.* versions the same
         # redhat-5.5 becomes redhat-5
-        if (dist[0] == "redhat"):
+        if (dist[0] == "redhat" or dist[0] == "centos"):
             major = dist[1].split(".")[0]
             dist = (dist[0], major)
 
