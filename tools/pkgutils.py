@@ -10,7 +10,7 @@ import subprocess
 # TODO: Windows does MSI?
 
 deb = ['debian', 'ubuntu']
-rpm = ['redhat', 'fedora', 'suse', 'opensuse']
+rpm = ['redhat', 'fedora', 'suse', 'opensuse', 'centos']
 
 dist = platform.dist()[0].lower()
 
@@ -40,7 +40,17 @@ def pkg_dir():
         # redhat-5.5 becomes redhat-5
         if (dist[0] == "redhat" or dist[0] == "centos"):
             major = dist[1].split(".")[0]
-            dist = (dist[0], major)
+            distro = dist[0]
+
+            # http://bugs.centos.org/view.php?id=5197
+            # CentOS 5.7 identifies as redhat
+            if int(major) <= 5 and distro == "redhat":
+                f = open('/etc/redhat-release')
+                new_dist = f.read().lower().split(" ")[0]
+                if new_dist == "centos":
+                    distro = "centos"
+
+            dist = (distro, major)
 
         dist = "%s-%s" % dist[:2]
         return "%s-%s" % (dist, machine)
