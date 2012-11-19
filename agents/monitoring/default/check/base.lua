@@ -26,7 +26,6 @@ local os = require('os')
 local table = require('table')
 local timer = require('timer')
 local vtime = require('virgo-time')
-local utils = require('utils')
 
 local constants = require('../util/constants')
 local loggingUtil = require('../util/logging')
@@ -46,10 +45,7 @@ local VALID_STATES = {'available', 'unavailable'}
 function BaseCheck:initialize(checkType, params)
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
-  self._firstRun = true
-  self._timer = nil
   self._type = checkType
-  self._log = loggingUtil.makeLogger(fmt('Check (%s)', checkType))
 
   self._lastResult = nil
 end
@@ -78,6 +74,14 @@ function BaseCheck:getTargets(callback)
   end
 end
 
+function BaseCheck:getNextRun()
+  if self._lastResult then
+    return self._lastResult._nextRun
+  else
+    return os.time()
+  end
+end
+
 --[[
 Retreieve the summary information of the check.
 
@@ -101,79 +105,11 @@ function BaseCheck:toString()
   return fmt('%s (id=%s, period=%ss)', self._type, self.id, self.period)
 end
 
-function BaseCheck:_runCheck()
-  local fired = false
-  local timeout_timer
-
-  self._timer = nil
-  self:emit('run', self)
-
-  function emitCompleted(checkResult)
-    if fired then
-      return
-    end
-    fired = true
-    self:schedule()
-    timer.clearTimer(timeout_timer)
-    process.nextTick(function()
-      self:emit('completed', self, checkResult)
-    end)
-  end
-
-  timeout_timer = timer.setTimeout((self.period * 1000), function()
-    local cr = CheckResult:new(self)
-    self:emit('timeout', self)
-    cr:setStatus('Timeout in Run Check')
-    emitCompleted(cr)
-  end)
-
-  local status, err = pcall(function()
-    self:run(function(checkResult)
-      self._log(logging.INFO, fmt('check completed %s', self:getSummary()))
-      emitCompleted(checkResult)
-    end)
-  end)
-
-  if not status then
-    local msg
-    local cr = CheckResult:new(self)
-    if type(err) == 'string' then
-      msg = err
-    else
-      msg = tostring(err)
-    end
-    cr:setStatus(msg)
-    emitCompleted(cr)
-  end
-end
-
-function BaseCheck:schedule()
-  if self._timer then
-    return
-  end
-  if self._firstRun then
-    self._firstRun = false
-    process.nextTick(function()
-      self:_runCheck()
-    end)
-    return
-  end
-  self._log(logging.INFO, fmt('%s scheduled for %ss', self:toString(), self.period))
-  self._timer = timer.setTimeout(self.period * 1000, utils.bind(BaseCheck._runCheck, self))
-end
-
-function BaseCheck:clearSchedule()
-  if not self._timer then
-    return
-  end
-  timer.clearTimer(self._timer)
-  self._timer = nil
-end
-
 function BaseCheck:serialize()
   return {
     id = self.id,
-    period = self.period
+    period = self.period,
+    nextrun = self:getNextRun()
   }
 end
 
@@ -190,6 +126,7 @@ function ChildCheck:initialize(checkType, params)
     params.details = {}
   end
   self._params = params
+
 end
 
 --[[
@@ -498,8 +435,8 @@ function CheckResult:initialize(check, options)
   self._metrics = {}
   self._state = 'available'
   self._status = nil
-  self._check = check
   self:setTimestamp(self._options.timestamp)
+  self._nextRun = os.time() + check.period
   self._timestamp = vtime.now()
 end
 
