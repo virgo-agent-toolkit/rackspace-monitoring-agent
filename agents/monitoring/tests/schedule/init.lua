@@ -84,17 +84,18 @@ local checks7 = {
       process.nextTick(callback)
     end,
     function(callback)
+      local count = 0
+      callback = misc.fireOnce(callback)
       scheduler:rebuild(checks3)
-      timer.setTimeout(2000, function()
-        -- they all should have run.
-        asserts.equals(scheduler._runCount, 5)
-        local lastRun = scheduler._runCount
-        asserts.equals(scheduler:numChecks(), 3)
-        scheduler:rebuild(checks4);
-        callback()
+      scheduler:on('check.completed', function()
+        count = count + 1
+        if count == 3 then
+          callback()
+        end
       end)
     end
   }, function(err)
+    asserts.equals(scheduler:numChecks(), 3)
     scheduler:stop()
     asserts.ok(err == nil)
     test.done()
