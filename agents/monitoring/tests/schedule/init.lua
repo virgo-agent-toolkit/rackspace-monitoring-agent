@@ -18,23 +18,31 @@ local path = require('path')
 local async = require('async')
 local utils = require('utils')
 local timer = require('timer')
+local string = require('string')
 
 local Scheduler = require('monitoring/default/schedule').Scheduler
 local BaseCheck = require('monitoring/default/check/base').BaseCheck
 local NullCheck = require('monitoring/default/check/null').NullCheck
 local misc = require('monitoring/default/util/misc')
-local tmp = path.join('tests', 'tmp')
 
 local exports = {}
 
-local checks = {
-  BaseCheck:new('test', {id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
-  BaseCheck:new('test', {id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
-  BaseCheck:new('test', {id='ch0003', state='OK', period=1, path=path.join(tmp, '0003.chk')}),
-  BaseCheck:new('test', {id='ch0004', state='OK', period=1, path=path.join(tmp, '0004.chk')}),
-}
+local function make_check(...)
+  local args = unpack({...})
+  local check_path = path.join(TEST_DIR, string.format("%s.chk", args.check_path or args.id))
+  local period = args.period or 1
+  local state = args.state or 'OK'
+  return BaseCheck:new('test', {["id"]=id, ["state"]=state, ["period"]=period, ["path"]=check_path})
+end
 
 exports['test_scheduler_scans'] = function(test, asserts)
+  local checks = {
+    make_check{id='ch0001'},
+    make_check{id='ch0002'},
+    make_check{id='ch0003'},
+    make_check{id='ch0004'},
+  }
+
   local scheduler = Scheduler:new(checks)
 
   async.waterfall({
@@ -56,37 +64,24 @@ end
 
 exports['test_scheduler_adds'] = function(test, asserts)
   local scheduler
-local checks2 = {
-  BaseCheck:new('test', {id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
-}
-local checks3 = {
-  BaseCheck:new('test', {id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
-  BaseCheck:new('test', {id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
-}
-local checks4 = {
-  BaseCheck:new('test', {id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
-}
-local checks5 = {
-  BaseCheck:new('test', {id='ch0002', state='OK', period=1, path=path.join(tmp, '0002.chk')}),
-}
-local checks6 = {
-  BaseCheck:new('test', {id='ch0001', state='OK', period=1, path=path.join(tmp, '0001.chk')}),
-}
-local checks7 = {
-  BaseCheck:new('test', {id='ch0001', state='OK', period=2, path=path.join(tmp, '0002.chk')}),
-}
-
+  local checks = {
+    make_check{id='ch0001'}
+  }
+  local new_checks = {
+    make_check{id='ch0001'},
+    make_check{id='ch0002'}
+  }
 
   async.waterfall({
     function(callback)
-      scheduler = Scheduler:new(checks2)
+      scheduler = Scheduler:new(checks)
       scheduler:start()
       process.nextTick(callback)
     end,
     function(callback)
       local count = 0
       callback = misc.fireOnce(callback)
-      scheduler:rebuild(checks3)
+      scheduler:rebuild(new_checks)
       scheduler:on('check.completed', function()
         count = count + 1
         if count == 3 then
@@ -95,7 +90,7 @@ local checks7 = {
       end)
     end
   }, function(err)
-    asserts.equals(scheduler:numChecks(), 3)
+    asserts.equals(scheduler:numChecks(), 2)
     scheduler:stop()
     asserts.ok(err == nil)
     test.done()
@@ -117,7 +112,7 @@ exports['test_scheduler_timeout'] = function(test, asserts)
   checks[1]:on('timeout', done)
   scheduler = Scheduler:new(checks)
   scheduler:start()
-  
+
 end
 
 return exports
