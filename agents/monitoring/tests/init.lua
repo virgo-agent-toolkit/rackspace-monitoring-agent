@@ -28,15 +28,16 @@ local exports = {}
 
 local failed = 0
 
-local tmp_dir = path.join('tests', 'tmp')
+_G['TEST_DIR'] = path.join(process.cwd(), 'tests', 'tmp')
+
 local function remove_tmp(callback)
-  fs.readdir(tmp_dir, function(err, files)
+  fs.readdir(TEST_DIR, function(err, files)
     if (files ~= nil) then
       for i, v in ipairs(files) do
-        fs.unlinkSync(path.join(tmp_dir, v))
+        fs.unlinkSync(path.join(TEST_DIR, v))
       end
     end
-    fs.rmdir(tmp_dir, callback)
+    fs.rmdir(TEST_DIR, callback)
   end)
 end
 
@@ -82,7 +83,7 @@ exports.run = function()
   -- bug that causes us to exit the loop early
   process.exitCode = 1
 
-  fs.mkdir(tmp_dir, "0755", function()
+  fs.mkdir(TEST_DIR, "0755", function()
     async.forEachSeries(TESTS_TO_RUN, runit, function(err)
       if err then
         p(err)
