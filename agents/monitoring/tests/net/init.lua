@@ -10,37 +10,6 @@ local Endpoint = require('../../default/endpoint').Endpoint
 local exports = {}
 local child
 
-local function start_server(callback)
-  local data = ''
-  child = helper.runner('server_fixture_blocking')
-  child.stderr:on('data', function(d)
-    callback(d)
-    callback = nil
-  end)
-  child.stdout:on('data', function(chunk)
-    data = data .. chunk
-    if data:find('TLS fixture server listening on port 50061') and callback then
-      callback()
-      callback = nil
-      return
-    end
-  end)
-end
-
-local function stop_server(callback)
-  if child then
-    child:kill(constants.SIGUSR1) -- USR1
-    child = nil
-  end
-  if callback then
-    callback()
-  end
-end
-
-process:on('exit', function()
-  stop_server()
-end)
-
 exports['test_reconnects'] = function(test, asserts)
 
   local options = {
@@ -75,7 +44,9 @@ exports['test_reconnects'] = function(test, asserts)
   end
 
   async.series({
-    start_server,
+    function(callback)
+      child = helper.start_server(callback)
+    end,
     function(callback)
       client:on('handshake_success', counterTrigger(3, callback))
       local endpoints = {}
@@ -86,16 +57,16 @@ exports['test_reconnects'] = function(test, asserts)
       client:createConnections(endpoints, function() end)
     end,
     function(callback)
-      stop_server(function()
-        client:on('reconnect', counterTrigger(3, callback))
-      end)
+      helper.stop_server(child)
+      client:on('reconnect', counterTrigger(3, callback))
     end,
     function(callback)
-      start_server(function()
+      child = helper.start_server(function()
         client:on('handshake_success', counterTrigger(3, callback))
       end)
     end,
   }, function()
+    helper.stop_server(child)
     asserts.ok(clientEnd > 0)
     asserts.ok(reconnect > 0)
     test.done()
