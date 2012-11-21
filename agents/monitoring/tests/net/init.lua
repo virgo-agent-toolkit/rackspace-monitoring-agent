@@ -13,16 +13,6 @@ local path = require('path')
 local exports = {}
 local child
 
-function counterTrigger(trigger, callback)
-  local counter = 0
-  return function()
-    counter = counter + 1
-    if counter == trigger then
-      callback()
-    end
-  end
-end
-
 exports['test_reconnects'] = function(test, asserts)
 
   local options = {
@@ -46,6 +36,12 @@ exports['test_reconnects'] = function(test, asserts)
     reconnect = reconnect + 1
   end)
 
+  local endpoints = {}
+  for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+    -- split ip:port
+    table.insert(endpoints, Endpoint:new(address))
+  end
+
   async.series({
     function(callback)
       child = helper.start_server(callback)
@@ -61,11 +57,11 @@ exports['test_reconnects'] = function(test, asserts)
     end,
     function(callback)
       helper.stop_server(child)
-      client:on('reconnect', counterTrigger(3, callback))
+      client:on('reconnect', misc.nCallbacks(callback, 3))
     end,
     function(callback)
       child = helper.start_server(function()
-        client:on('handshake_success', counterTrigger(3, callback))
+        client:on('handshake_success', misc.nCallbacks(callback, 3))
       end)
     end,
   }, function()
@@ -90,7 +86,11 @@ exports['test_upgrades'] = function(test, asserts)
     tls = { rejectUnauthorized = false }
   }
 
-  endpoints = get_endpoints()
+  local endpoints = {}
+  for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+    -- split ip:port
+    table.insert(endpoints, Endpoint:new(address))
+  end
 
   async.series({
     function(callback)
