@@ -9,46 +9,11 @@ local async = require('async')
 
 local helper = require('../helper')
 local fixtures = require('../fixtures')
-local constants = require('constants')
 local Endpoint = require('../../default/endpoint').Endpoint
 local CrashReporter = require('../../default/crashreport').CrashReporter
 
 local exports = {}
 local child
-
-local function start_server(callback)
-  local data = ''
-  child = helper.runner('server_fixture_blocking')
-  child.stderr:on('data', function(d)
-    if callback then
-      callback(d)
-      callback = nil
-    end
-  end)
-  child.stdout:on('data', function(chunk)
-    data = data .. chunk
-    if data:find('TLS fixture server listening on port 50061') and callback then
-      if callback then
-        callback()
-        callback = nil
-      end
-    end
-  end)
-end
-
-local function stop_server(callback)
-  if child then
-    child:kill(constants.SIGUSR1) -- USR1
-    child = nil
-  end
-  if callback then
-    callback()
-  end
-end
-
-process:on('exit', function()
-  stop_server()
-end)
 
 exports['test_makes_dump'] = function(test, asserts)
 
@@ -60,27 +25,20 @@ exports['test_makes_dump'] = function(test, asserts)
     tls = { rejectUnauthorized = false }
   }
 
-  local dump_dir
-  if os.type() == 'win32' then
-    dump_dir = 'c:/Temp'
-  else
-    dump_dir = "/tmp"
-  end
-
-  local dump_file = 'rackspace-monitoring-agent-crash-report-unit-test.dmp'
-  local dump_path = path.join(dump_dir, dump_file)
+  local dump_path = path.join(TEST_DIR, 'rackspace-monitoring-agent-crash-report-unit-test.dmp')
 
   async.series({
     function(callback)
       fs.writeFile(dump_path, "harro\n", callback)
     end,
-    start_server,
+    function(callback)
+      child = helper.start_server(callback)
+    end,
     function(callback)
       local endpoints = {Endpoint:new(options.host, options.port)}
-      local reporter = CrashReporter:new("1.0", "1.0", "test", dump_dir, endpoints)
+      local reporter = CrashReporter:new("1.0", "1.0", "test", TEST_DIR, endpoints)
       reporter:submit(callback)
     end,
-    stop_server,
     function(callback)
       fs.exists(dump_path, function(err, res)
         if err then return callback(err) end
@@ -89,6 +47,7 @@ exports['test_makes_dump'] = function(test, asserts)
       end)
     end
   }, function(err)
+    helper.stop_server(child)
     asserts.ok(err==nil, tostring(err))
     test.done()
   end)

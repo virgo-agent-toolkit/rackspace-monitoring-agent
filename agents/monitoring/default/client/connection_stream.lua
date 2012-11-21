@@ -45,6 +45,10 @@ function ConnectionStream:initialize(id, token, guid, options)
   self._delays = {}
   self._activeTimeSyncClient = nil
   self._options = options or {}
+  self._scheduler = Scheduler:new()
+  self._scheduler:on('check.completed', function(check, checkResult)
+    self:_sendMetrics(check, checkResult)
+  end)
 
   local _reemit_names = {
     'bundle_upgrade.success',
@@ -155,17 +159,6 @@ function ConnectionStream:createConnections(endpoints, callback)
   end
 
   async.series({
-    function(callback)
-      self._stateFile = path.join(self._options.stateDirectory, 'scheduler.state')
-      self._scheduler = Scheduler:new(self._stateFile, {}, callback)
-      self._scheduler:on('check', function(check, checkResult)
-        self:_sendMetrics(check, checkResult)
-      end)
-    end,
-    function(callback)
-      self._scheduler:start()
-      callback()
-    end,
     -- connect
     function(callback)
       async.forEach(endpoints, iter, callback)
