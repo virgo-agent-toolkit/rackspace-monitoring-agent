@@ -13,6 +13,16 @@ local path = require('path')
 local exports = {}
 local child
 
+function counterTrigger(trigger, callback)
+  local counter = 0
+  return function()
+    counter = counter + 1
+    if counter == trigger then
+      callback()
+    end
+  end
+end
+
 exports['test_reconnects'] = function(test, asserts)
 
   local options = {
