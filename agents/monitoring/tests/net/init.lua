@@ -42,7 +42,11 @@ exports['test_reconnects'] = function(test, asserts)
     end,
     function(callback)
       client:on('handshake_success', misc.nCallbacks(callback, 3))
-      local endpoints = get_endpoints()
+      local endpoints = {}
+      for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+        -- split ip:port
+        table.insert(endpoints, Endpoint:new(address))
+      end
       client:createConnections(endpoints, function() end)
     end,
     function(callback)
