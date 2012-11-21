@@ -79,7 +79,9 @@ exports['test_upgrades'] = function(test, asserts)
   endpoints = get_endpoints()
 
   async.series({
-    start_server,
+    function(callback)
+      child = helper.start_server(callback)
+    end,
     function(callback)
       client = ConnectionStream:new('id', 'token', 'guid', options)
       client:on('handshake_success', misc.nCallbacks(callback, 3))
@@ -94,8 +96,8 @@ exports['test_upgrades'] = function(test, asserts)
       client:getUpgrade():forceUpgradeCheck()
     end
   }, function()
+    helper.stop_server(child)
     client:done()
-    stop_server()
     test.done()
   end)
 end
