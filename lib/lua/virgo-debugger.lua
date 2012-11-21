@@ -425,9 +425,13 @@ Debugger.switch = {
 }
 
 function Debugger:set_hook()
+  if self.hooked then
+    return
+  end
+  self.hooked = true
+  local that = self
   debug.sethook(function(...)
-    self:hook(...)
-    self.hooked = true
+    that:hook(...)
   end, "crl")
 end
 
