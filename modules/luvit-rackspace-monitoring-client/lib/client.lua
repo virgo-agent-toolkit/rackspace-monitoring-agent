@@ -29,16 +29,19 @@ local errors = require('./errors')
 
 local KeystoneClient = require('keystone').Client
 
-local MAAS_CLIENT_KEYSTONE_URL
+local MAAS_CLIENT_US_KEYSTONE_URL
+local MAAS_CLIENT_UK_KEYSTONE_URL
 local MAAS_CLIENT_DEFAULT_HOST
 local MAAS_CLIENT_DEFAULT_VERSION
 
 if process.env.STAGING then
-  MAAS_CLIENT_KEYSTONE_URL = 'https://staging.identity.api.rackspacecloud.com/v2.0'
+  MAAS_CLIENT_US_KEYSTONE_URL = 'https://staging.identity.api.rackspacecloud.com/v2.0'
+  MAAS_CLIENT_UK_KEYSTONE_URL = 'https://lon.staging.identity.api.rackspacecloud.com/v2.0'
   MAAS_CLIENT_DEFAULT_HOST = 'staging.monitoring.api.rackspacecloud.com'
   MAAS_CLIENT_DEFAULT_VERSION = 'v1.0'
 else
-  MAAS_CLIENT_KEYSTONE_URL = 'https://identity.api.rackspacecloud.com/v2.0'
+  MAAS_CLIENT_US_KEYSTONE_URL = 'https://identity.api.rackspacecloud.com/v2.0'
+  MAAS_CLIENT_UK_KEYSTONE_URL = 'https://lon.identity.api.rackspacecloud.com/v2.0'
   MAAS_CLIENT_DEFAULT_HOST = 'monitoring.api.rackspacecloud.com'
   MAAS_CLIENT_DEFAULT_VERSION = 'v1.0'
 end
@@ -189,11 +192,16 @@ function Client:_init()
   end
 end
 
-function Client:auth(authUrl, username, keyOrPassword, callback)
-  local apiKeyClient = KeystoneClient:new(authUrl, { username = self.userId, apikey = keyOrPassword })
-  local passwordClient = KeystoneClient:new(authUrl, { username = self.userId, password = keyOrPassword })
+function Client:auth(authUrls, username, keyOrPassword, callback)
+  local apiClients = {}
   local errors = {}
   local responses = {}
+
+  -- for each endpoint we want a client that will attempt password auth, and one that will attempt API key auth
+  for i, url in ipairs(authUrls) do
+    table.insert(apiClients, KeystoneClient:new(url, { username = username, apiKey = keyOrPassword }))
+    table.insert(apiClients, KeystoneClient:new(url, { username = username, password = keyOrPassword }))
+  end
 
   function iterator(client, callback)
     client:tenantIdAndToken(function(err, obj)
@@ -207,7 +215,7 @@ function Client:auth(authUrl, username, keyOrPassword, callback)
     end)
   end
 
-  async.forEach({ apiKeyClient, passwordClient }, iterator, function()
+  async.forEach(apiClients, iterator, function()
     if #responses > 0 then
       callback(nil, responses[1])
     else
@@ -221,7 +229,7 @@ The request.
 callback.function(err, results)
 ]]--
 function Client:request(method, path, payload, expectedStatusCode, callback)
-  local authUrl = self.authUrl or MAAS_CLIENT_KEYSTONE_URL
+  local authUrls = self.authUrl and { self.authUrl } or { MAAS_CLIENT_US_KEYSTONE_URL, MAAS_CLIENT_UK_KEYSTONE_URL }
   local authPayload
   local results
 
@@ -231,7 +239,7 @@ function Client:request(method, path, payload, expectedStatusCode, callback)
         callback()
         return
       end
-      self:auth(authUrl, self.userId, self.key, function(err, obj)
+      self:auth(authUrls, self.userId, self.key, function(err, obj)
         if err then
           callback(err)
           return
