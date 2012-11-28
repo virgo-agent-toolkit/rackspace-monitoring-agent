@@ -199,7 +199,7 @@ function Client:auth(authUrls, username, keyOrPassword, callback)
 
   -- for each endpoint we want a client that will attempt password auth, and one that will attempt API key auth
   for i, url in ipairs(authUrls) do
-    table.insert(apiClients, KeystoneClient:new(url, { username = username, apiKey = keyOrPassword }))
+    table.insert(apiClients, KeystoneClient:new(url, { username = username, apikey = keyOrPassword }))
     table.insert(apiClients, KeystoneClient:new(url, { username = username, password = keyOrPassword }))
   end
 
