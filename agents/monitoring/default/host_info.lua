@@ -205,7 +205,6 @@ function ProcessInfo:initialize()
   for i=1, #procs do
     local pid = procs[i]
     local proc = sigarCtx:proc(pid)
-
     local obj = {}
     obj.pid = pid
 
@@ -263,6 +262,16 @@ function ProcessInfo:initialize()
       end
     end
 
+    t, msg = proc:cred()
+    if t then
+      local cred_fields = {
+        'user',
+        'group',
+      }
+      for _,v in pairs(cred_fields) do
+        obj['cred_' .. v] = t[v]
+      end
+    end
     table.insert(self._params, obj)
   end
 end
