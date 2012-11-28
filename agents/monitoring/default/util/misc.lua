@@ -254,8 +254,11 @@ function compareVersions(a, b)
 end
 
 
-function propogateEvents(toClass, fromClass, eventNames)
-  for _, v in pairs(eventNames) do
+function propogateEvents(fromClass, toClass, eventNames)
+  if not fromClass._reemit_names then
+    return
+  end
+  for _, v in pairs(fromClass._reemit_names) do
     fromClass:on(v, function(...)
       toClass:emit(v, ...)
     end)
