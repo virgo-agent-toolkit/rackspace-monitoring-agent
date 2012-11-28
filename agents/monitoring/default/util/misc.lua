@@ -254,7 +254,7 @@ function compareVersions(a, b)
 end
 
 
-function propogateEvents(fromClass, toClass, eventNames)
+function propagateEvents(fromClass, toClass, eventNames)
   if not fromClass._reemit_names then
     return
   end
@@ -280,5 +280,5 @@ exports.lastIndexOf = lastIndexOf
 exports.fireOnce = fireOnce
 exports.nCallbacks = nCallbacks
 exports.compareVersions = compareVersions
-exports.propogateEvents = propogateEvents
+exports.propagateEvents = propagateEvents
 return exports

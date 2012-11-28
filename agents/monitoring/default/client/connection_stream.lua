@@ -51,7 +51,7 @@ function ConnectionStream:initialize(id, token, guid, options)
   end)
 
   self._messages = ConnectionMessages:new(self)
-  misc.propogateEvents(self._messages, self)
+  misc.propagateEvents(self._messages, self)
 
   self._upgrade = UpgradePollEmitter:new()
   self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
