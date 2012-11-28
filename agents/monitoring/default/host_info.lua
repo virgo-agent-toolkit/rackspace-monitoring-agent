@@ -325,13 +325,20 @@ local WhoInfo = HostInfo:extend()
 function WhoInfo:initialize()
   HostInfo.initialize(self)
   local who = sigarCtx:who()
-  local obj = {}
+  local fields = {
+    'user',
+    'device',
+    'time',
+    'host'
+  }
 
   for i=1, #who do
-    table.insert(obj, who[i])
+    local obj = {}
+    for _, v in pairs(fields) do
+      obj[v] = who[i][v]
+    end
+    table.insert(self._params, obj)
   end
-
-  table.insert(self._params, obj)
 end
 
 
