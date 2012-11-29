@@ -497,7 +497,7 @@ function CheckResult:initialize(check, options)
   self._options = options or {}
   self._metrics = {}
   self._state = 'available'
-  self._status = nil
+  self._status = 'success'
   self._check = check
   self:setTimestamp(self._options.timestamp)
   self._timestamp = vtime.now()
