@@ -280,15 +280,6 @@ function ConnectionMessages:onMessage(client, msg)
   client.protocol:respond(method, msg, callback)
 end
 
-ConnectionMessages._reemit_names = {
-  'bundle_upgrade.success',
-  'binary_upgrade.success',
-  'bundle_upgrade.already_downloaded',
-  'binary_upgrade.already_downloaded',
-  'bundle_upgrade.error',
-  'binary_upgrade.error'
-}
-
 local exports = {}
 exports.ConnectionMessages = ConnectionMessages
 return exports

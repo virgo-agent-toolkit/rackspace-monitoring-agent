@@ -255,10 +255,7 @@ end
 
 
 function propagateEvents(fromClass, toClass, eventNames)
-  if not fromClass._reemit_names then
-    return
-  end
-  for _, v in pairs(fromClass._reemit_names) do
+  for _, v in pairs(eventNames) do
     fromClass:on(v, function(...)
       toClass:emit(v, ...)
     end)

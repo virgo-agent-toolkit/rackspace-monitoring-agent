@@ -50,8 +50,16 @@ function ConnectionStream:initialize(id, token, guid, options)
     self:_sendMetrics(check, checkResult)
   end)
 
+  local _event_names = {
+    'bundle_upgrade.success',
+    'binary_upgrade.success',
+    'bundle_upgrade.already_downloaded',
+    'binary_upgrade.already_downloaded',
+    'bundle_upgrade.error',
+    'binary_upgrade.error'
+  }
   self._messages = ConnectionMessages:new(self)
-  misc.propagateEvents(self._messages, self)
+  misc.propagateEvents(self._messages, self, _event_names)
 
   self._upgrade = UpgradePollEmitter:new()
   self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
