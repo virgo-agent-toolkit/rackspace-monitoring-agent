@@ -17,6 +17,12 @@ LOG=/var/log/rackspace-monitoring-agent.log
 
 test -f $DAEMON || exit 0
 
+# If upstart is installed, use it instead
+if [ -x /lib/init/upstart-job ]; then
+        /lib/init/upstart-job rackspace-monitoring-agent $@
+        exit $?
+fi
+
 . /lib/lsb/init-functions
 
 case "$1" in
