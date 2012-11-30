@@ -1,11 +1,14 @@
 local table = require('table')
 local async = require('async')
 local ConnectionStream = require('monitoring/default/client/connection_stream').ConnectionStream
+local misc = require('monitoring/default/util/misc')
 local helper = require('../helper')
 local timer = require('timer')
 local fixtures = require('../fixtures')
 local constants = require('constants')
+local consts = require('../../default/util/constants')
 local Endpoint = require('../../default/endpoint').Endpoint
+local path = require('path')
 
 local exports = {}
 local child
@@ -33,14 +36,10 @@ exports['test_reconnects'] = function(test, asserts)
     reconnect = reconnect + 1
   end)
 
-  function counterTrigger(trigger, callback)
-    local counter = 0
-    return function()
-      counter = counter + 1
-      if counter == trigger then
-        callback()
-      end
-    end
+  local endpoints = {}
+  for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+    -- split ip:port
+    table.insert(endpoints, Endpoint:new(address))
   end
 
   async.series({
@@ -48,7 +47,7 @@ exports['test_reconnects'] = function(test, asserts)
       child = helper.start_server(callback)
     end,
     function(callback)
-      client:on('handshake_success', counterTrigger(3, callback))
+      client:on('handshake_success', misc.nCallbacks(callback, 3))
       local endpoints = {}
       for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
         -- split ip:port
@@ -58,17 +57,61 @@ exports['test_reconnects'] = function(test, asserts)
     end,
     function(callback)
       helper.stop_server(child)
-      client:on('reconnect', counterTrigger(3, callback))
+      client:on('reconnect', misc.nCallbacks(callback, 3))
     end,
     function(callback)
       child = helper.start_server(function()
-        client:on('handshake_success', counterTrigger(3, callback))
+        client:on('handshake_success', misc.nCallbacks(callback, 3))
       end)
     end,
   }, function()
     helper.stop_server(child)
     asserts.ok(clientEnd > 0)
     asserts.ok(reconnect > 0)
+    test.done()
+  end)
+end
+
+exports['test_upgrades'] = function(test, asserts)
+  local options, client, endpoints
+
+  -- Override the default download path
+  consts.DEFAULT_DOWNLOAD_PATH = path.join('.', 'tmp')
+
+  options = {
+    datacenter = 'test',
+    stateDirectory = './tests',
+    host = "127.0.0.1",
+    port = 50061,
+    tls = { rejectUnauthorized = false }
+  }
+
+  local endpoints = {}
+  for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+    -- split ip:port
+    table.insert(endpoints, Endpoint:new(address))
+  end
+
+  async.series({
+    function(callback)
+      child = helper.start_server(callback)
+    end,
+    function(callback)
+      client = ConnectionStream:new('id', 'token', 'guid', options)
+      client:on('handshake_success', misc.nCallbacks(callback, 3))
+      client:createConnections(endpoints, function() end)
+    end,
+    function(callback)
+      callback = misc.nCallbacks(callback, 4)
+      client:on('binary_upgrade.found', callback)
+      client:on('bundle_upgrade.found', callback)
+      client:on('bundle_upgrade.error', callback)
+      client:on('binary_upgrade.error', callback)
+      client:getUpgrade():forceUpgradeCheck()
+    end
+  }, function()
+    helper.stop_server(child)
+    client:done()
     test.done()
   end)
 end

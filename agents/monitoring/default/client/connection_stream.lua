@@ -43,13 +43,23 @@ function ConnectionStream:initialize(id, token, guid, options)
   self._clients = {}
   self._unauthedClients = {}
   self._delays = {}
-  self._messages = ConnectionMessages:new(self)
   self._activeTimeSyncClient = nil
   self._options = options or {}
   self._scheduler = Scheduler:new()
   self._scheduler:on('check.completed', function(check, checkResult)
     self:_sendMetrics(check, checkResult)
   end)
+
+  local _event_names = {
+    'bundle_upgrade.success',
+    'binary_upgrade.success',
+    'bundle_upgrade.already_downloaded',
+    'binary_upgrade.already_downloaded',
+    'bundle_upgrade.error',
+    'binary_upgrade.error'
+  }
+  self._messages = ConnectionMessages:new(self)
+  misc.propagateEvents(self._messages, self, _event_names)
 
   self._upgrade = UpgradePollEmitter:new()
   self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
@@ -68,7 +78,7 @@ function ConnectionStream:_onUpgrade()
     return
   end
 
-  function updateGenerator(client, name, version, callback)
+  function updateGenerator(client, name, upgrade_type, version, callback)
     client.protocol:request(name, function(err, msg)
         if err then
           logging.errorf(name .. ' failed: %s', err.message)
@@ -76,7 +86,7 @@ function ConnectionStream:_onUpgrade()
           return
         end
         if misc.compareVersions(msg.result.version, version) > 0 then
-          self._messages:getUpgrade(name, client);
+          self._messages:getUpgrade(upgrade_type, client)
           callback(nil, msg.result.version)
         else
           callback()
@@ -86,7 +96,7 @@ function ConnectionStream:_onUpgrade()
 
   async.parallel({
     function(callback)
-      updateGenerator(client, 'binary_upgrade.get_version', processVersion, function(err, version)
+      updateGenerator(client, 'binary_upgrade.get_version', 'binary', processVersion, function(err, version)
         if err then
           callback(err)
           return
@@ -94,13 +104,14 @@ function ConnectionStream:_onUpgrade()
 
         if version then
           logging.infof('Found binary upgrade to version %s', version)
+          self:emit('binary_upgrade.found', version)
         end
 
         callback()
       end)
     end,
     function(callback)
-      updateGenerator(client, 'bundle_upgrade.get_version', bundleVersion, function(err, version)
+      updateGenerator(client, 'bundle_upgrade.get_version', 'bundle', bundleVersion, function(err, version)
         if err then
           callback(err)
           return
@@ -108,6 +119,7 @@ function ConnectionStream:_onUpgrade()
 
         if version then
           logging.infof('Found bundle upgrade to version %s', version)
+          self:emit('bundle_upgrade.found', version)
         end
 
         callback()
@@ -283,15 +295,18 @@ function ConnectionStream:_restart(client, options, callback)
 end
 
 function ConnectionStream:shutdown(msg)
-  for k, v in pairs(self._clients) do
-    v:destroy()
-  end
-
+  self:done()
   -- Sleep to keep from busy restarting on upstart/systemd/etc
   timer.setTimeout(consts.RATE_LIMIT_SLEEP, function()
     logging.error(msg)
     process.exit(consts.RATE_LIMIT_RETURN_CODE)
   end)
+end
+
+function ConnectionStream:done()
+  for k, v in pairs(self._clients) do
+    v:destroy()
+  end
 end
 
 function ConnectionStream:getClient()
