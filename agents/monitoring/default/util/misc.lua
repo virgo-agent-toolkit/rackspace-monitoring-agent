@@ -180,6 +180,20 @@ function fireOnce(callback)
   end
 end
 
+function nCallbacks(callback, count)
+  local n, triggered = 0, false
+  return function()
+    if triggered then
+      return
+    end
+    n = n + 1
+    if count == n then
+      triggered = true
+      callback()
+    end
+  end
+end
+
 function isNaN(a)
   return tonumber(a) == nil
 end
@@ -240,6 +254,15 @@ function compareVersions(a, b)
 end
 
 
+function propagateEvents(fromClass, toClass, eventNames)
+  for _, v in pairs(eventNames) do
+    fromClass:on(v, function(...)
+      toClass:emit(v, ...)
+    end)
+  end
+end
+
+
 --[[ Exports ]]--
 local exports = {}
 exports.calcJitter = calcJitter
@@ -252,5 +275,7 @@ exports.trim = trim
 exports.writePid = writePid
 exports.lastIndexOf = lastIndexOf
 exports.fireOnce = fireOnce
+exports.nCallbacks = nCallbacks
 exports.compareVersions = compareVersions
+exports.propagateEvents = propagateEvents
 return exports

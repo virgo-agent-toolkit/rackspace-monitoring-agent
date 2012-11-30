@@ -36,6 +36,10 @@ function UpgradePollEmitter:_emit()
   end)
 end
 
+function UpgradePollEmitter:forceUpgradeCheck()
+  self:_emit()
+end
+
 function UpgradePollEmitter:_registerTimeout(callback)
   if self.stopped then
     return

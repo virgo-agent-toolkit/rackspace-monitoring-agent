@@ -123,7 +123,7 @@ function ConnectionMessages:getUpgrade(upgrade_type, client)
   extension = ""
   download_attempts = 2
 
-  if upgrade_type ~= "bundle" or upgrade_type ~= "binary" then
+  if upgrade_type ~= "bundle" and upgrade_type ~= "binary" then
     client:log(logging.ERROR, fmt('Invalid upgrade_type specified: %s', tostring(upgrade_type)))
     return
   end
@@ -229,14 +229,17 @@ function ConnectionMessages:getUpgrade(upgrade_type, client)
       local msg = 'An update to the Rackspace Cloud Monitoring Agent has been downloaded to ' ..
       get_path{verified=true} .. 'and is ready to use. Please restart the agent.'
       client:log(logging.INFO, msg)
+      self:emit(upgrade_type .. '_upgrade.success')
       return
     end
 
     if instanceof(err, AbortDownloadError) then
+      self:emit(upgrade_type .. '_upgrade.already_downloaded')
       return client:log(logging.DEBUG, 'already downloaded update, not doing so again')
     end
 
-    client:log(logging.ERROR, fmt('COULD NOT DOWNLOAD UPDATE: %s', tostring(err)))
+    client:log(logging.ERROR, fmt('Error downloading update: %s', tostring(err)))
+    self:emit(upgrade_type .. '_upgrade.error', err)
   end)
 
 end
