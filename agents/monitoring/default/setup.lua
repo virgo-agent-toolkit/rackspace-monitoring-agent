@@ -235,18 +235,6 @@ function Setup:run(callback)
           end
 
           timer.setTimeout(constants.SETUP_AUTH_CHECK_INTERVAL, testAuth)
-        end,
-        function(callback)
-          -- TODO: detect Platform, iniit.d system, etc
-          self:_out('')
-          self:_out('Your Agent configuration is now complete.')
-          self:_out('')
-          self:_out('To start the Agent on your server, now run:')
-          self:_out('')
-          self:_out(fmt('    %s', self:_getOsStartString()))
-          self:_out('')
-          self:_out('')
-          callback()
         end
       }, callback)
     end
@@ -264,6 +252,16 @@ function Setup:run(callback)
         msg = JSON.stringify(err)
       end
       process.stdout:write(fmt('Error: %s\n', msg))
+    else
+      -- TODO: detect Platform, iniit.d system, etc
+      self:_out('')
+      self:_out('Your Agent configuration is now complete.')
+      self:_out('')
+      self:_out('To start the Agent on your server, now run:')
+      self:_out('')
+      self:_out(fmt('    %s', self:_getOsStartString()))
+      self:_out('')
+      self:_out('')
     end
     process.exit(0)
   end)
