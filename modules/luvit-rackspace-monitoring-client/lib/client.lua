@@ -171,7 +171,27 @@ function Client:initialize(userId, key, options)
 end
 
 function Client:_init()
-  self.entities.get = function(callback)
+  self.entities.create = function(params, callback)
+    self:request('POST', '/entities', params, 201, function(err, entityUrl)
+      if err then
+        callback(err)
+        return
+      end
+      callback(nil, string.match(entityUrl, 'entities/(.*)'))
+    end)
+  end
+
+  self.entities.update = function(id, params, callback)
+    self:request('PUT', fmt('/entities/%s', id), params, 204, function(err, entityUrl)
+      if err then
+        callback(err)
+        return
+      end
+      callback(nil, string.match(entityUrl, 'entities/(.*)'))
+    end)
+  end
+
+  self.entities.list = function(callback)
     self:requestPaginated('/entities', callback)
   end
 
