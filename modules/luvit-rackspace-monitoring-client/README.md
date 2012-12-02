@@ -7,7 +7,7 @@ complete... yet.
     local Client = require('rackspace-monitoring').Client
 
     local client = Client:new('username', 'token', nil)
-    client.entities.get(function(err, results)
+    client.entities.list(function(err, results)
       if err then
         p(err)
         return
