@@ -27,6 +27,7 @@ local async = require('async')
 local ask = require('./util/prompt').ask
 local errors = require('./errors')
 local constants = require('./util/constants')
+local sigarCtx = require('./sigar').ctx
 
 local maas = require('rackspace-monitoring')
 
@@ -40,6 +41,20 @@ function Setup:initialize(argv, configFile, agent)
   self._agent:on('promote', function()
     self._receivedPromotion = true
   end)
+  self._addresses = {}
+
+  -- build a "set" (table keyed by address) of local IP addresses
+  local netifs = sigarCtx:netifs()
+
+  for i=1,#netifs do
+    local info = netifs[i]:info()
+    if info['address'] then
+      self._addresses[info['address']] = true
+    end
+    if info['addres6'] then
+      self._addresses[info['address6']] = true
+    end
+  end
 end
 
 function Setup:saveTest(callback)
@@ -82,6 +97,48 @@ end
 
 function Setup:_getOsStartString()
   return 'service rackspace-monitoring-agent start'
+end
+
+function Setup:_isLocalEntity(entity)
+  if entity.label == os.hostname() then
+    return true
+  end
+
+  if entity.ip_addresses then
+    for k, address in pairs(entity.ip_addresses) do
+      -- TODO: we should really translate all v6 addresses to a standard form
+      -- for this comparison, currently there is a good chance of us missing a
+      -- v6 match
+      if self._addresses[address] then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+function Setup:_buildLocalEntity(agentId)
+  local addresses = {}
+  local netifs = sigarCtx:netifs()
+
+  for i=1,#netifs do
+    local info = netifs[i]:info()
+    if info.type ~= 'Local Loopback' then
+      if info['address'] then
+        addresses[info['name'] .. '_v4'] = info['address']
+      end
+      if info['addres6'] then
+        addresses[info['name'] .. '_v6'] = info['address6']
+      end
+    end
+  end
+
+  return {
+    label = agentId,
+    agent_id = agentId,
+    ip_addresses = addresses
+  }
 end
 
 function Setup:run(callback)
@@ -235,6 +292,63 @@ function Setup:run(callback)
           end
 
           timer.setTimeout(constants.SETUP_AUTH_CHECK_INTERVAL, testAuth)
+        end
+      }, callback)
+    end,
+
+    -- Bind to an entity
+    function(connections, callback)
+      self:_out('')
+      self:_out('In order to execute checks, the agent must be bound to a Cloud Monitoring Entity.')
+      self:_out('')
+      async.waterfall({
+        function(callback)
+          client.entities.list(callback)
+        end,
+        function(entities, callback)
+          local addresses = {}
+          local localEntities = {}
+
+          for i, entity in ipairs(entities.values) do
+            if self:_isLocalEntity(entity) then
+              table.insert(localEntities, entity)
+            end
+          end
+
+          self:_out('Please select the Entity that corresponds to this server:')
+
+          for i, entity in ipairs(localEntities) do
+            if entity.label then
+              self:_out(fmt('  %i. %s - %s', i, entity.label, entity.id))
+            else
+              self:_out(fmt('  %i. %s', i, entity.id))
+            end
+            if entity.ip_addresses then
+              for k, address in pairs(entity.ip_addresses) do
+                self:_out(fmt('       %s: %s', k, address))
+              end
+            end
+          end
+
+          self:_out(fmt('  %i. Create an new entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
+          self:_out('')
+
+          ask('Select Option (e.g., 1):', function(err, index)
+            if err then
+              callback(err)
+              return
+            end
+
+            local validatedIndex = tonumber(index)
+            if validatedIndex == #localEntities + 1 then
+              client.entities.create(self:_buildLocalEntity(hostname), callback)
+            elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
+              client.entities.update(localEntities[validatedIndex].id, { agent_id = hostname }, callback)
+            else
+              self:_out('Invalid selection')
+              callback()
+            end
+          end)
         end
       }, callback)
     end
