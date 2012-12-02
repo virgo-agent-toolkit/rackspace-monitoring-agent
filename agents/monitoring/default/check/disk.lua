@@ -41,7 +41,7 @@ function DiskCheck:getTargets(callback)
   callback(nil, targets)
 end
 
--- Dimension key is the mount point name, e.g. /, /home
+-- Dimension key is the block device name, e.g. /dev/sda1
 
 function DiskCheck:run(callback)
   -- Perform Check
