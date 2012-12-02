@@ -313,6 +313,10 @@ function Setup:run(callback)
             if self:_isLocalEntity(entity) then
               table.insert(localEntities, entity)
             end
+            if (entity.agent_id == hostname) then
+              self:_out(fmt('Agent already bound to entity with id=%s and label=%s', entity.id, entity.label))
+              callback(nil)
+            end
           end
 
           self:_out('Please select the Entity that corresponds to this server:')
