@@ -162,7 +162,8 @@ exports['test_network_check'] = function(test, asserts)
 end
 
 exports['test_disks_check'] = function(test, asserts)
-  local targets = DiskCheck:getTargets(function(targets)
+  DiskCheck:getTargets(function(err, targets)
+    asserts.equals(err, nil)
     local check = DiskCheck:new({id='foo', period=30, details={target=targets[1]}})
     check:run(function(results)
       asserts.ok(results ~= nil)
