@@ -310,12 +310,13 @@ function Setup:run(callback)
           local localEntities = {}
 
           for i, entity in ipairs(entities.values) do
-            if self:_isLocalEntity(entity) then
-              table.insert(localEntities, entity)
-            end
             if (entity.agent_id == hostname) then
               self:_out(fmt('Agent already bound to entity with id=%s and label=%s', entity.id, entity.label))
               callback(nil)
+              return
+            end
+            if self:_isLocalEntity(entity) then
+              table.insert(localEntities, entity)
             end
           end
 
