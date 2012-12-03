@@ -3,6 +3,7 @@ local Error = require('core').Error
 local table = require('table')
 local childprocess = require('childprocess')
 local net = require('net')
+local os = require('os')
 
 local LineEmitter = require('line-emitter').LineEmitter
 
@@ -53,10 +54,19 @@ end
 function Traceroute:_run(target)
   local args = {}
 
+  local platform = os.type()
+  local command = "traceroute"
+
   if self._addressType == 'ipv4' then
-    table.insert(args, '-4')
+    if platform == "Linux" then
+      table.insert(args, '-4')
+    end
   else
-    table.insert(args, '-6')
+    if platform == "Linux" then
+      table.insert(args, '-6')
+    elseif platform ~= "win32" then
+      command = "traceroute6"
+    end
   end
 
   table.insert(args, '-n')
@@ -65,7 +75,7 @@ function Traceroute:_run(target)
   table.insert(args, target)
   table.insert(args, self._packetLen)
 
-  local child = self:_spawn('traceroute', args)
+  local child = self:_spawn(command, args)
   local lineEmitter = LineEmitter:new()
   local emitter = Emitter:new()
   local stderrBuffer = ''
