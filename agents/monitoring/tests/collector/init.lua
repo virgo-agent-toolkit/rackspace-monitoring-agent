@@ -17,6 +17,7 @@ limitations under the License.
 local http = require('http')
 local JSON = require('json')
 local os = require('os')
+local childprocess = require('childprocess')
 
 local async = require('async')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -24,18 +25,59 @@ local LineEmitter = require('line-emitter').LineEmitter
 local run = require('monitoring/collector').run
 local request = require('monitoring/collector/http/utils').request
 local setTimeout = require('timer').setTimeout
+local misc = require('monitoring/default/util/misc')
 
 local exports = {}
+
+local function testForTraceroute(callback)
+  local tr = childprocess.spawn('traceroute')
+  local stderr = ""
+  local exit_code = nil
+
+  callback = misc.fireOnce(callback)
+
+  -- true if we take this long before hitting stderr or stdout
+  local function callTrueLater()
+    setTimeout(300, callback, true)
+  end
+
+  tr.stdout:on('data', callTrueLater)
+
+  tr.stderr:on('data', function(d)
+    stderr = stderr .. d
+    if stderr == "execvp(): No such file or directory\n" then
+      return callback(false)
+    end
+    -- normally exit fires before stderr
+    if exit_code then
+      return callback(true)
+    end
+  end)
+
+  -- no error message makes it to the Error:new() .. have to wait for stderr :(
+  tr:on('error', callTrueLater)
+
+  tr:on('exit', function(code)
+    exit_code = code
+    if exit_code == 0 then
+      return callback(true)
+    end
+
+    -- most likely we couldn't find it
+    if exit_code == 127 then
+      return callback(false)
+    end
+
+    callTrueLater()
+
+  end)
+
+end
 
 exports['test_traceroute'] = function(test, asserts)
   local collector
 
-  if os.type() ~= "Linux" then
-    test.skip("Unsupported Platform for Traceroute")
-    return
-  end
-
-  async.series({
+  local series = {
     function(callback)
       collector = run({p = 7889, h = '127.0.0.1'})
       setTimeout(500, callback)
@@ -122,12 +164,20 @@ exports['test_traceroute'] = function(test, asserts)
 
       client:done()
     end
-  },
+  }
 
-  function()
-    collector:stop()
-    test.done()
+  testForTraceroute(function(support)
+    if not support then
+      print('\nWARNING: no traceroute found')
+      return test.done()
+    end
+
+    async.series(series, function()
+      collector:stop()
+      test.done()
+    end)
   end)
+
 end
 
 return exports
