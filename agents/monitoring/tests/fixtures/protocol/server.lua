@@ -97,7 +97,7 @@ end
 TIMEOUTS[opts.send_download_upgrade] = function(log, client)
   send_request(log, client, 'bundle_upgrade.available.request')
 end
-TIMEOUTS[opts.rate_limit_reset] = function()
+TIMEOUTS[opts.rate_limit_reset] = function(log, client)
   client.rate_limit = opts.rate_limit
 end
 
@@ -149,7 +149,7 @@ local http_responder = function(log, client, server)
     fs.readFile(file_path, function(err, data)
       local status = 200
       if err then 
-        log('got err:' .. err)
+        log('got err:' .. tostring(err))
         data = err
         status = 500
       end
