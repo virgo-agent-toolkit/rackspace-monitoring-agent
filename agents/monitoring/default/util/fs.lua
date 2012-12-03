@@ -3,6 +3,8 @@ local fs = require('fs')
 local table = require('table')
 local async = require('async')
 
+local sigarutil = require('monitoring/default/util/sigar')
+
 local exports = {}
 
 -- TODO: move to utils
