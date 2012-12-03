@@ -22,7 +22,9 @@ local misc = require('./util/misc')
 local os = require('os')
 local table = require('table')
 local vtime = require('virgo-time')
+
 local sigarCtx = require('./sigar').ctx
+local sigarutil = require('monitoring/default/util/sigar')
 
 --[[ HostInfo ]]--
 local HostInfo = Object:extend()
@@ -85,7 +87,7 @@ end
 local DiskInfo = HostInfo:extend()
 function DiskInfo:initialize()
   HostInfo.initialize(self)
-  local disks = sigarCtx:disks()
+  local disks = sigarutil.diskTargets(sigarCtx)
   local usage_fields = {
     'read_bytes',
     'reads',
