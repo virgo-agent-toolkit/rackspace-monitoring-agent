@@ -309,6 +309,21 @@ function Setup:run(callback)
           local addresses = {}
           local localEntities = {}
 
+          function displayEntities()
+            for i, entity in ipairs(localEntities) do
+              if entity.label then
+                self:_out(fmt('  %i. %s - %s', i, entity.label, entity.id))
+              else
+                self:_out(fmt('  %i. %s', i, entity.id))
+              end
+              if entity.ip_addresses then
+                for k, address in pairs(entity.ip_addresses) do
+                  self:_out(fmt('       %s: %s', k, address))
+                end
+              end
+            end
+          end
+
           for i, entity in ipairs(entities.values) do
             if (entity.agent_id == hostname) then
               self:_out(fmt('Agent already bound to entity with id=%s and label=%s', entity.id, entity.label))
@@ -320,40 +335,35 @@ function Setup:run(callback)
             end
           end
 
-          self:_out('Please select the Entity that corresponds to this server:')
+          function entitySelection()
+            self:_out('Please select the Entity that corresponds to this server:')
+            displayEntities()
+            self:_out(fmt('  %i. Create an new entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
+            self:_out(fmt('  %i. Do not bind to entity', #localEntities + 2))
+            self:_out('')
 
-          for i, entity in ipairs(localEntities) do
-            if entity.label then
-              self:_out(fmt('  %i. %s - %s', i, entity.label, entity.id))
-            else
-              self:_out(fmt('  %i. %s', i, entity.id))
-            end
-            if entity.ip_addresses then
-              for k, address in pairs(entity.ip_addresses) do
-                self:_out(fmt('       %s: %s', k, address))
+            ask('Select Option (e.g., 1, 2):', function(err, index)
+              if err then
+                callback(err)
+                return
               end
-            end
+
+              local validatedIndex = tonumber(index)
+              if validatedIndex == #localEntities + 1 then
+                client.entities.create(self:_buildLocalEntity(hostname), callback)
+              elseif validatedIndex == #localEntities + 2 then
+                callback()
+              elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
+                client.entities.update(localEntities[validatedIndex].id, { agent_id = hostname }, callback)
+              else
+                self:_out('')
+                self:_out('Invalid selection')
+                entitySelection()
+              end
+            end)
           end
 
-          self:_out(fmt('  %i. Create an new entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
-          self:_out('')
-
-          ask('Select Option (e.g., 1):', function(err, index)
-            if err then
-              callback(err)
-              return
-            end
-
-            local validatedIndex = tonumber(index)
-            if validatedIndex == #localEntities + 1 then
-              client.entities.create(self:_buildLocalEntity(hostname), callback)
-            elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
-              client.entities.update(localEntities[validatedIndex].id, { agent_id = hostname }, callback)
-            else
-              self:_out('Invalid selection')
-              callback()
-            end
-          end)
+          entitySelection()
         end
       }, callback)
     end
