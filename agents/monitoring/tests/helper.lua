@@ -22,7 +22,6 @@ local function start_server(callback)
       callback()
     end
   end)
-
   return child
 end
 
@@ -32,6 +31,10 @@ local function stop_server(child)
 end
 
 process:on('exit', function()
+  stop_server(child)
+end)
+
+process:on("error", function(e)
   stop_server(child)
 end)
 
