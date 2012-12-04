@@ -25,6 +25,7 @@ local string = require('string')
 local table = require('table')
 local utils = require('utils')
 local Object = require('core').Object
+local fmt = string.format
 
 local debugger = nil
 
@@ -56,6 +57,10 @@ l = [[
 v = [[
 (v)  variables                        --list all reachable variables and thier values
 
+]],
+t = [[
+(t) trace                             --Show every function call
+The trace is buffered to a table.  Calling trace again will dump it.
 ]],
 lb = [[
 (lb) list breakpoints
@@ -289,6 +294,8 @@ function Debugger:initialize(io)
   self.breaks = {}
   self.stack_target = nil
   self.hooked = false
+  self.trace = false
+  self.traces = {}
 end
 
 function Debugger:read()
@@ -297,6 +304,11 @@ end
 
 function Debugger:write(...)
   return self.io.write(...)
+end
+
+function Debugger:dump_trace()
+  self:write(table.concat(self.traces, ""))
+  self.traces = {}
 end
 
 function Debugger:dump(...)
@@ -390,6 +402,15 @@ Debugger.switch = {
       Debugger:remove_breakpoint(file, line)
     end
     return OPS.nop
+  end,
+  ["t"] = function(Debugger, file, line)
+    if Debugger.trace then
+      Debugger.trace = false
+      Debugger:dump_trace()
+    else
+      Debugger.trace = true
+    end
+    return OPS.c
   end,
   ['x'] = function(Debugger, file, line, eval, lvl)
     local function reply(msg)
@@ -625,6 +646,10 @@ function Debugger:hook(event, line)
   lvl, self.lvl = unpack(get_lvl(1))
 
   file, line = unpack(getinfo(lvl+1))
+
+  if self.trace then
+    table.insert(self.traces, fmt("%s:%s\n", file, line))
+  end
 
   -- NOTE: dragons are here- should_break has side effects
   if not self:should_break(file, line, event) then

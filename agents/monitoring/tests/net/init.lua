@@ -18,8 +18,6 @@ exports['test_reconnects'] = function(test, asserts)
   local options = {
     datacenter = 'test',
     stateDirectory = './tests',
-    host = "127.0.0.1",
-    port = 50061,
     tls = { rejectUnauthorized = false }
   }
 
@@ -81,8 +79,6 @@ exports['test_upgrades'] = function(test, asserts)
   options = {
     datacenter = 'test',
     stateDirectory = './tests',
-    host = "127.0.0.1",
-    port = 50061,
     tls = { rejectUnauthorized = false }
   }
 

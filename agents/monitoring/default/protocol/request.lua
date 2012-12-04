@@ -68,7 +68,7 @@ function Request:initialize(options, callback)
   self.download = options.download
   self.upload = options.upload
 
-  options.endpoints = nil;
+  options.endpoints = nil
   options.attempts = nil
   options.download = nil
   options.upload = nil
@@ -159,7 +159,8 @@ end
 
 function Request:_ensure_retries(err, res)
   if not err then
-    return self.callback(err, res)
+    self.callback(err, res)
+    return
   end
 
   local status = res and res.status_code or "?"
@@ -169,19 +170,17 @@ function Request:_ensure_retries(err, res)
 
   logging.warn(msg)
 
-  logging.debugf('retrying download %d more times.', self.attempts)
-
   if not self:_cycle_endpoint() then
     return self.callback(err)
   end
+
+  logging.debugf('retrying download %d more times.', self.attempts)
 
   self:request()
 end
 
 function Request:_handle_response(res)
-  logging.debug('res')
-
-  if self.download then
+  if self.download and res.status_code >= 200 and res.status_code < 300 then
     return self:_write_stream(res)
   end
 
