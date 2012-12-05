@@ -13,10 +13,12 @@ local function start_server(callback)
   callback = misc.fireOnce(callback)
   child = runner('server_fixture_blocking')
   child.stderr:on('data', function(d)
+    p(d)
     callback(d)
   end)
 
   child.stdout:on('data', function(chunk)
+    p(chunk)
     data = data .. chunk
     if data:find('TLS fixture server listening on port 50061') then
       callback()
@@ -27,7 +29,9 @@ end
 
 local function stop_server(child)
   if not child then return end
-  child:kill(constants.SIGUSR1) -- USR1
+  pcall(function()
+    child:kill(constants.SIGUSR1) -- USR1
+  end)
 end
 
 process:on('exit', function()
