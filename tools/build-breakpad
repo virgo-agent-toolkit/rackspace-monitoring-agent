@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+import errno
+import subprocess
+
+from optparse import OptionParser
+
+import pkgutils
+
+build_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'out', 'Debug'))
+
+
+def main():
+    usage = "usage: %prog [destination path]"
+    parser = OptionParser(usage=usage)
+    (options, args) = parser.parse_args()
+
+    if len(args) != 1:
+        parser.print_usage()
+        sys.exit(1)
+
+    dest = os.path.join(args[0], pkgutils.pkg_dir())
+
+    try:
+        os.makedirs(dest)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            pass
+        else:
+            raise
+
+    symbol = open("%s/monitoring-agent.sym" % dest, 'wb')
+
+    p = subprocess.Popen(["%s/dump_syms" % build_dir, "monitoring-agent"],
+        cwd=build_dir, stdout=symbol)
+
+    retcode = p.wait()
+    symbol.close()
+
+    if retcode != 0:
+        raise OSError('Failed to run dump_syms: %s' % p.stderr.read())
+
+    print('all done')
+
+
+if __name__ == "__main__":
+    main()
