@@ -30,8 +30,8 @@ local request = require('./protocol/request')
 
 local CrashReporter = Object:extend()
 
-function CrashReporter:initialize(binary, bundley, platform, dump_dir, endpoints)
-  self.binay = binary
+function CrashReporter:initialize(binary, bundle, platform, dump_dir, endpoints)
+  self.binary = binary
   self.bundle = bundle
   self.platform = platform
   self.dump_dir = dump_dir
