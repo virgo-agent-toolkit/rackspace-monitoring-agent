@@ -44,7 +44,6 @@ function CrashReporter:submit(callback)
   local function send_and_delete(file, callback)
     local mtime
     local options = {headers={}}
-
     async.series({
       function(callback)
         fs.stat(file, function(err, stats)
@@ -70,13 +69,13 @@ function CrashReporter:submit(callback)
         for key,value in pairs(querytable) do
           querystring = string.format('%s%s=%s&', querystring, key, value)
         end
-        options = misc.merge({
+        local req_options = misc.merge({
           method = "POST",
           path = string.format("/agent-crash-report?%s", querystring),
           endpoints = self.endpoints,
           upload = file
         }, self._options, options)
-        request.makeRequest(options, callback)
+        request.makeRequest(req_options, callback)
       end,
       function(callback)
         logging.infof('Upload crash dump, now unlinking: %s', file)
