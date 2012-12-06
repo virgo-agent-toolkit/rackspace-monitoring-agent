@@ -115,13 +115,11 @@ end
 -- merge tables
 function merge(...)
   local args = {...}
-  local first = args[1]
-
-  for i, _ in ipairs(args) do
-    if i ~= 1 then
-      local t = args[i]
-      for k, _ in pairs(t) do
-        first[k] = t[k]
+  local first = args[1] or {}
+  for i,t in pairs(args) do
+    if i ~= 1 and t then
+      for k, v in pairs(t) do
+        first[k] = v
       end
     end
   end
