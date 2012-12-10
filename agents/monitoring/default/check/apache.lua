@@ -133,7 +133,7 @@ function ApacheCheck:_parseLine(line, checkResult)
   end
 
   if f == 'ReqPerSec' then
-    checkResult:setStatus(fmt('requests_per_second: %.2f', v))
+    checkResult:setStatus(fmt('Handling %.2f requests per second', v))
   end
 
   if f == 'Scoreboard' then
