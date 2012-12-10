@@ -41,9 +41,9 @@ exports['test_apache'] = function(test, asserts)
       ch:run(function(result)
         local metrics = result:getMetrics()['none']
         asserts.equal(result:getState(), 'available')
-        asserts.equal(metrics['ReqPerSec']['v'], '136.982')
-        asserts.equal(metrics['Uptime']['v'], '246417')
-        asserts.equal(metrics['Total_Accesses']['v'], '33754723')
+        asserts.equal(metrics['requests_per_second']['v'], '136.982')
+        asserts.equal(metrics['uptime']['v'], '246417')
+        asserts.equal(metrics['total_accesses']['v'], '33754723')
         callback()
       end)
     end
