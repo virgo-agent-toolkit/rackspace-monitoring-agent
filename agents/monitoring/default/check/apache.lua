@@ -91,40 +91,49 @@ function ApacheCheck:_parseLine(line, checkResult)
 
   local metrics = {
     ['Total_Accesses'] = {
-      ['type'] = 'gauge'
+      ['type'] = 'gauge',
+      ['name'] = 'total_accesses'
     },
     ['Total_kBytes'] = {
-      ['type'] = 'uint64'
+      ['type'] = 'uint64',
+      ['name'] = 'total_kbytes'
     },
     ['Uptime'] = {
-      ['type'] = 'uint64'
+      ['type'] = 'uint64',
+      ['name'] = 'uptime'
     },
     ['BytesPerSec'] = {
-      ['type'] = 'uint64'
+      ['type'] = 'uint64',
+      ['name'] = 'bytes_per_second'
     },
     ['BytesPerReq'] = {
-      ['type'] = 'uint64'
+      ['type'] = 'uint64',
+      ['name'] = 'bytes_per_request'
     },
     ['BusyWorkers'] = {
-      ['type'] = 'uint64'
+      ['type'] = 'uint64',
+      ['name'] = 'busy_workers'
     },
     ['IdleWorkers'] = {
-      ['type'] = 'uint64'
+      ['type'] = 'uint64',
+      ['name'] = 'idle_workers'
     },
     ['CPULoad'] = {
-      ['type'] = 'double'
+      ['type'] = 'double',
+      ['name'] = 'cpu_load'
     },
     ['ReqPerSec'] = {
-      ['type'] = 'double'
+      ['type'] = 'double',
+      ['name'] = 'requests_per_second'
     }
   }
 
   if metrics[f] then
-    checkResult:addMetric(f, nil, metrics[f].type, v)
+    checkResult:addMetric(metrics[f].name, nil, metrics[f].type, v)
   end
 
   if f == 'ReqPerSec' then
-    checkResult:setStatus(fmt('ReqPerSec: %.2f', v))
+    checkResult:setStatus(fmt('requests_per_second: %.2f', v))
   end
 
   if f == 'Scoreboard' then
