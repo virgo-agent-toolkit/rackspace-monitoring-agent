@@ -39,9 +39,13 @@ install -d $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
 install -m 644 pkg/monitoring/systemd/rackspace-monitoring-agent.service $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
 install -d $RPM_BUILD_ROOT/%{_initrddir}
 install -m 755 pkg/monitoring/sysv-redhat/rackspace-monitoring-agent $RPM_BUILD_ROOT/%{_initrddir}/
+# With the first RPM packages we accidently installed the configuration file as
+# an RPM owned "%file" but didn't mark it as a "%config" file. Now we can't
+# really go back on that. So, install an empty config file which will cause the
+# agent to complain about a missing monitoring_id on start
+touch $RPM_BUILD_ROOT/%{_sysconfdir}/rackspace-monitoring-agent.cfg
 
 %check
-
 make test
 
 
@@ -53,27 +57,27 @@ rm -rf $RPM_BUILD_ROOT
 # This adds the proper /etc/rc*.d links for the script
 /sbin/chkconfig --add rackspace-monitoring-agent
 
+# Restart agent on upgrade
+if [ "$1" = "2" ] ; then
+    /sbin/service rackspace-monitoring-agent stop  >/dev/null 2>&1 || :
+    /sbin/service rackspace-monitoring-agent start >/dev/null 2>&1 || :
+fi
 
 %preun
 # Uninstall the service links on uninstall
-if [ $1 -eq 0 ] ; then
-    /sbin/service rackspace-monitoring-agent stop >/dev/null 2>&1
+if [ "$1" = "0" ] ; then
+    /sbin/service rackspace-monitoring-agent stop >/dev/null 2>&1 || :
     /sbin/chkconfig --del rackspace-monitoring-agent
 fi
-# Restart agent on upgrade
-if [ "$1" -ge "1" ] ; then
-    /sbin/service rackspace-monitoring-agent condrestart >/dev/null 2>&1 || :
-fi
-
 
 %files
 %defattr(-,root,root,-)
 %doc README.md LICENSE.txt
 %{_bindir}/rackspace-monitoring-agent
-%{_sysconfdir}/rackspace-monitoring-agent.cfg
 %{_datadir}/rackspace-monitoring-agent/*
 %{_sysconfdir}/systemd/system/rackspace-monitoring-agent.service
 %{_initrddir}/rackspace-monitoring-agent
+%config(noreplace) %{_sysconfdir}/rackspace-monitoring-agent.cfg
 
 %changelog
 
