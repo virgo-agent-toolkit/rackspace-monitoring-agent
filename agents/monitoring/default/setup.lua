@@ -299,7 +299,7 @@ function Setup:run(callback)
     -- Bind to an entity
     function(connections, callback)
       self:_out('')
-      self:_out('In order to execute checks, the agent must be bound to a Cloud Monitoring Entity.')
+      self:_out('In order to execute checks, the agent must be associated with a Cloud Monitoring Entity.')
       self:_out('')
       async.waterfall({
         function(callback)
@@ -326,7 +326,7 @@ function Setup:run(callback)
 
           for i, entity in ipairs(entities.values) do
             if (entity.agent_id == hostname) then
-              self:_out(fmt('Agent already bound to entity with id=%s and label=%s', entity.id, entity.label))
+              self:_out(fmt('Agent already associated Entity with id=%s and label=%s', entity.id, entity.label))
               callback(nil)
               return
             end
@@ -338,8 +338,8 @@ function Setup:run(callback)
           function entitySelection()
             self:_out('Please select the Entity that corresponds to this server:')
             displayEntities()
-            self:_out(fmt('  %i. Create an new entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
-            self:_out(fmt('  %i. Do not bind to entity', #localEntities + 2))
+            self:_out(fmt('  %i. Create an new Entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
+            self:_out(fmt('  %i. Do not associate with an Entity', #localEntities + 2))
             self:_out('')
 
             ask('Select Option (e.g., 1, 2):', function(err, index)
