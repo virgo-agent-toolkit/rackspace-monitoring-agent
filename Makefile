@@ -55,7 +55,6 @@ install: all
 	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/rackspace-monitoring-agent
 	install out/${BUILDTYPE}/monitoring.zip ${SHAREDIR}
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
-	install -m 600 pkg/monitoring/rackspace-monitoring-agent.cfg ${ETCDIR}
 
 PKG_FULL_VERSION = $(shell python tools/version.py)
 PKG_VERSION = $(shell python tools/version.py tag)
