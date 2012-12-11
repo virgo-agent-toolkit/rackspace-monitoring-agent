@@ -1,2 +1,15 @@
 #!/bin/sh
 update-rc.d rackspace-monitoring-agent defaults 91 09
+
+case "$1" in
+    configure)
+         # Restart only if we find a config file in place
+         if [ -f /etc/rackspace-monitoring-agent.cfg ]; then
+              service rackspace-monitoring-agent stop || :
+              service rackspace-monitoring-agent start || :
+         fi
+        ;;
+    *)
+        echo "Unrecognized postinst argument '$1'"
+        ;;
+esac
