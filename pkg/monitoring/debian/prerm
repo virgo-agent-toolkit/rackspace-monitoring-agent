@@ -1,0 +1,10 @@
+#!/bin/sh
+case "$1" in
+    remove)
+        # Stop the agent if we are removing
+        service rackspace-monitoring-agent stop || :
+        ;;
+    *)
+        echo "Unrecognized prerm argument '$1'"
+        ;;
+esac
