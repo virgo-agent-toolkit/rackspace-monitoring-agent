@@ -27,10 +27,6 @@ local CpuCheck = BaseCheck:extend()
 
 local SAMPLE_RATE = 5000 -- Milliseconds to sample on initial run
 
-local function metricCpuKey(index)
-  return 'cpu' .. index
-end
-
 local function metricPercentKey(sigarMetric)
   return sigarMetric .. '_percent'
 end
@@ -131,25 +127,19 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
   metrics['usage_average'] = total / #cpuinfo
 
   -- find cpu with minimum and maximum usage usage
-  local cpu_max_index = 0
-  local cpu_min_index = 0
   local cpu_max_usage = 0
   local cpu_min_usage = 100
   for i = 1, #cpuinfo do
     local usage = percentages[i]['current_cpu_usage']
     if math.max(usage, cpu_max_usage) == usage then
       cpu_max_usage = usage
-      cpu_max_index = i - 1
     end
     if math.min(usage, cpu_min_usage) == usage then
       cpu_min_usage = usage
-      cpu_min_index = i - 1
     end
   end
   metrics['max_cpu_usage'] = cpu_max_usage
-  metrics['max_cpu_usage_name'] = metricCpuKey(cpu_max_index)
   metrics['min_cpu_usage'] = cpu_min_usage
-  metrics['min_cpu_usage_name'] = metricCpuKey(cpu_min_index)
 
   -- store run for next time
   self._previousCpuinfo = cpuinfo
