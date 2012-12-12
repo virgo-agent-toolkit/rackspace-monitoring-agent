@@ -43,6 +43,7 @@ def main():
     collector_lua = os.path.join('agents', 'monitoring', 'collector')
     crash_lua = os.path.join('agents', 'monitoring', 'crash')
     monitoring_tests = os.path.join('agents', 'monitoring', 'tests')
+    monitoring_init = os.path.join('agents', 'monitoring', 'init.lua')
 
     modules = {
         async_lua:
@@ -73,6 +74,8 @@ def main():
             generate_bundle_map('modules/monitoring/tests', 'agents/monitoring/tests'),
         crash_lua:
             generate_bundle_map('modules/monitoring/crash', 'agents/monitoring/crash'),
+        monitoring_init:
+            [{'os_filename': "agents/monitoring/init.lua", "bundle_filename": "init.lua"}]
     }
 
     target = sys.argv[1]
@@ -80,12 +83,12 @@ def main():
 
     z = VirgoZip(target, 'w', ZIP_DEFLATED)
     for source in sources:
-        if not os.path.isdir(source):
-            z.add(source, os.path.basename(source))
-            continue
-        if source in modules:
-            for mod_file in modules[source]:
-                z.add(mod_file['os_filename'], mod_file['bundle_filename'])
+        if source not in modules:
+            print("ERROR: unmapped file: ", source, target)
+            return exit(1)
+
+        for mod_file in modules[source]:
+            z.add(mod_file['os_filename'], mod_file['bundle_filename'])
 
     z.add_mapping_file()
     z.close()
