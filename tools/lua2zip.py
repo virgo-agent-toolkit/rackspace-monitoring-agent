@@ -75,7 +75,7 @@ def main():
         crash_lua:
             generate_bundle_map('modules/monitoring/crash', 'agents/monitoring/crash'),
         monitoring_init:
-	    [{'os_filename': "agents/monitoring/init.lua", "bundle_filename": "modules/monitoring/init.lua"}]
+            [{'os_filename': "agents/monitoring/init.lua", "bundle_filename": "init.lua"}]
     }
 
     target = sys.argv[1]
