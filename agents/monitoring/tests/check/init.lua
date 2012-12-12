@@ -120,8 +120,6 @@ exports['test_cpu_check_percentages'] = function(test, asserts)
     assertsIsPercentage(asserts, cpu[2].sys_percent_average)
     assertsIsPercentage(asserts, cpu[2].irq_percent_average)
     assertsIsPercentage(asserts, cpu[2].idle_percent_average)
-    asserts.ok(type(cpu[2].min_cpu_usage_name.v) == 'string')
-    asserts.ok(type(cpu[2].max_cpu_usage_name.v) == 'string')
     test.done()
   end)
 end
