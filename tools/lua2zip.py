@@ -83,12 +83,12 @@ def main():
 
     z = VirgoZip(target, 'w', ZIP_DEFLATED)
     for source in sources:
-        if source in modules:
-            for mod_file in modules[source]:
-                z.add(mod_file['os_filename'], mod_file['bundle_filename'])
-        else:
+        if source not in modules:
             print("ERROR: unmapped file: ", source, target)
-            exit(1)
+            return exit(1)
+
+        for mod_file in modules[source]:
+            z.add(mod_file['os_filename'], mod_file['bundle_filename'])
 
     z.add_mapping_file()
     z.close()
