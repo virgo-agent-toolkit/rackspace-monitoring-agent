@@ -61,8 +61,9 @@ function ConnectionStream:initialize(id, token, guid, options)
   self._messages = ConnectionMessages:new(self)
   misc.propagateEvents(self._messages, self, _event_names)
 
-  self._upgrade = UpgradePollEmitter:new()
-  self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
+  -- TODO: Re-enable upgrade polling once we track down the crasher
+  -- self._upgrade = UpgradePollEmitter:new()
+  -- self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
 end
 
 function ConnectionStream:getUpgrade()
