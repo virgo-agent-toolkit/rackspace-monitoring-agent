@@ -73,8 +73,10 @@ end
 exports['test_upgrades'] = function(test, asserts)
   local options, client, endpoints
 
-  test.skip("Skip upgrades test until it is reliable")
-  return nil
+  if true then
+    test.skip("Skip upgrades test until it is reliable")
+    return nil
+  end
 
   -- Override the default download path
   consts.DEFAULT_DOWNLOAD_PATH = path.join('.', 'tmp')
