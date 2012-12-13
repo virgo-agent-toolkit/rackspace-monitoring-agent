@@ -691,14 +691,16 @@ return {
       local vars = capture_vars(i, true, true, true)
       vars.__LOCALS__ = nil
       vars.__UPVALUES__ = nil
+      vars.__VARSLEVEL__ = nil
       table.insert(stack, dump(vars))
     end
 
     local lua_dump = {}
     lua_dump.stack = stack
-    lua_dump.tb = dump(debug.traceback("", 2))
+    lua_dump.tb = debug.traceback("", 2)
     virgo["config"]["monitoring_token"] = "******"
     lua_dump.virgo = dump(virgo)
+    lua_dump.globals = dump(getfenv(0))
     return JSON.stringify(lua_dump)
   end,
   ['install'] = function(io)
