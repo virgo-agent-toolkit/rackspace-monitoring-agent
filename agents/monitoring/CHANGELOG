@@ -1,0 +1,49 @@
+## rackspace-monitoring-agent-0.1.3-13
+
+- Fixes the status problem with checks
+
+## rackspace-monitoring-agent-0.1.3-7
+
+- Fix bug when using API key in setup
+
+## rackspace-monitoring-agent-0.1.3-6
+
+- UK Auth is now supported
+
+## rackspace-monitoring-agent-0.1.3-5
+
+- Add Fedora 16 and Fedora 17
+- Sign RHEL5 packages with a compatible key
+
+## rackspace-monitoring-agent-0.1.2-115
+
+- New Scheduler: Fixes for time related issues
+
+## rackspace-monitoring-agent-0.1.2-109
+
+- Support RHEL5, RHEL6, CentOS 5, CentOS 6 support
+- Include lua information in crash reports
+
+## rackspace-monitoring-agent-0.1.2-102
+
+- Mysql fixes
+- Apache fixes
+- Swap Info fixes
+- Added debugger
+- Targets Support
+
+## rackspace-monitoring-agent-0.1.2-79
+
+- target support for networks, disk
+- Fix a bug in gathering swapinfo for memory host_info
+- target discovery support for checks
+- add timestamp field to host_info body returns
+- bump sigar
+
+## rackspace-monitoring-agent-0.1.2-51
+
+- fix multiple reconnects
+- remove percent metrics from filesystem and memory checks
+- delete a number of metrics from host_info
+- add target to filesystem check
+- add swapinfo to memory checks
