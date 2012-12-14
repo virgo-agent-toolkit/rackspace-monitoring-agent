@@ -5,7 +5,10 @@ case "$1" in
     configure)
          # Restart only if we find a config file in place
          if [ -f /etc/rackspace-monitoring-agent.cfg ]; then
-              /etc/init.d/rackspace-monitoring-agent stop || :
+              # Try being nice, then try pkilling
+              /etc/init.d/rackspace-monitoring-agent stop || \
+                kill -9 `cat /var/run/rackspace-monitoring-agent.pid` || \
+                pkill -9 -x rackspace-monit || :
               /etc/init.d/rackspace-monitoring-agent start || :
          fi
         ;;
