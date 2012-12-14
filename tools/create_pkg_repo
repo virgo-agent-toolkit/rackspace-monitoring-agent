@@ -63,18 +63,23 @@ SignWith: D05AB914
 if __name__ == "__main__":
     pkg = pkg_type()
 
-    usage = "usage: %prog destination"
+    usage = "usage: %prog destination agent"
     parser = OptionParser(usage=usage)
     (options, args) = parser.parse_args()
 
-    if len(args) != 1:
+    if len(args) < 1 or len(args) > 2:
         parser.print_usage()
         sys.exit(1)
 
-    dest = args[0]
+    dest_root = args[0]
 
     dist = platform.dist()
-    dest = os.path.join(dest, pkg_dir())
+    dest = os.path.join(dest_root, pkg_dir())
+
+    if len(args) == 2:
+        agent = args[1]
+        # Copy the CHANGELOG to the repo root
+        shutil.copy(os.path.join('agents', agent, 'CHANGELOG'), dest_root)
 
     if pkg == 'rpm':
         src = os.path.join(out, 'rpmbuild')
