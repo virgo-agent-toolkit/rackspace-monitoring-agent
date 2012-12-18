@@ -229,7 +229,6 @@ function ChildCheck:_addMetric(checkResult, metricName, metricDimension, metricT
     self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
                                    tostring(err)))
   else
-    self._metricCount = self._metricCount + 1
     self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
                tostring(metricDimension), metricName, metricType, metricValue))
   end
