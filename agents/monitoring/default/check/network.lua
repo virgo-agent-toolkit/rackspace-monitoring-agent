@@ -64,7 +64,7 @@ function NetworkCheck:run(callback)
   else
     local usage = interface:usage()
     for key, value in pairs(usage) do
-      checkResult:addMetric(key, self.interface_name, 'gauge', value)
+      checkResult:addMetric(key, nil, 'gauge', value)
     end
   end
 
