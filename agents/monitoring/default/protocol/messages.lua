@@ -157,18 +157,18 @@ end
 
 --[[ Metrics Request ]]--
 local MetricsRequest = Request:extend()
-function MetricsRequest:initialize(check, checkResults)
+function MetricsRequest:initialize(check, checkResult)
   Request.initialize(self)
   self.check = check
-  self.checkResults = checkResults
+  self.checkResult = checkResult
   self.method = 'check_metrics.post'
 end
 
 function MetricsRequest:serialize(msgId)
-  self.params.state = self.checkResults:getState()
-  self.params.status = self.checkResults:getStatus()
-  self.params.metrics = self.checkResults:serialize()
-  self.params.timestamp = self.checkResults:getTimestamp()
+  self.params.state = self.checkResult:getState()
+  self.params.status = self.checkResult:getStatus()
+  self.params.metrics = self.checkResult:serialize()
+  self.params.timestamp = self.checkResult:getTimestamp()
   self.params.check_id = self.check.id
   self.params.check_type = self.check._type
   return Request.serialize(self, msgId)
