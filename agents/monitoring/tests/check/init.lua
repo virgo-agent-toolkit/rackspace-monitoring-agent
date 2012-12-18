@@ -476,11 +476,15 @@ exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
 
-  local check = PluginCheck:new({id='foo', period=30,
+  local counter = 0
+  local check = PluginCheck:new({id='foo', period=2,
                                  details={file='repeated_status_line.sh'}})
   asserts.ok(check._lastResult == nil)
-  check:run(function(result)
+
+  check:schedule()
+  check:on('completed', function(check, result)
     local metrics = result:getMetrics()
+    counter = counter + 1
 
     asserts.ok(result ~= nil)
     asserts.equals(result:getStatus(), 'First status line')
@@ -489,7 +493,11 @@ exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
 
     asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
     asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
-    test.done()
+
+    if counter == 3 then
+      check:clearSchedule()
+      test.done()
+    end
   end)
 end
 

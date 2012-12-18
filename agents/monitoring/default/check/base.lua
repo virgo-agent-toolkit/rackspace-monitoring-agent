@@ -187,10 +187,6 @@ local ChildCheck = BaseCheck:extend()
 function ChildCheck:initialize(checkType, params)
   BaseCheck.initialize(self, checkType, params)
   self._log = nil
-  self._gotStatusLine = false
-  self._gotStateLine = false
-  self._hasError = false
-  self._metricCount = 0
   if params.details == nil then
     params.details = {}
   end
@@ -200,7 +196,7 @@ end
 --[[
 Add a metric to CheckResult object with proper logging and error handling
 --]]
-function ChildCheck:_addMetric(checkResult, metricName, metricDimension, metricType, metricValue)
+function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension, metricType, metricValue)
   local internalMetricType, msg
 
   local function matcher(v)
@@ -216,7 +212,7 @@ function ChildCheck:_addMetric(checkResult, metricName, metricDimension, metricT
   if not internalMetricType then
     msg = fmt('Invalid type "%s" for metric "%s"', metricType, metricName)
     self._log(logging.WARNING, fmt('Invalid metric type (type=%s)', metricType))
-    self:_setError(checkResult, msg)
+    self:_setError(runCtx, checkResult, msg)
     return
   end
 
@@ -229,7 +225,6 @@ function ChildCheck:_addMetric(checkResult, metricName, metricDimension, metricT
     self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
                                    tostring(err)))
   else
-    self._metricCount = self._metricCount + 1
     self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
                tostring(metricDimension), metricName, metricType, metricValue))
   end
@@ -239,12 +234,12 @@ end
 Parse a line output by a plugin and mutate CheckResult object (set status
 or add a metric).
 --]]
-function ChildCheck:_handleLine(checkResult, line)
+function ChildCheck:_handleLine(runCtx, checkResult, line)
   local stateEndIndex, statusEndIndex, metricEndIndex, splitString, value, state
   local metricName, metricType, metricValue, dotIndex, internalMetricType, partsCount
   local msg
 
-  if self._hasError then
+  if runCtx.hasError then
     -- If a CheckResult already has an error set, all the lines which come after
     -- the error are ignored.
     return
@@ -255,7 +250,7 @@ function ChildCheck:_handleLine(checkResult, line)
   _, metricEndIndex = line:find('^metric')
 
   if statusEndIndex then
-    if self._gotStatusLine then
+    if runCtx.gotStatusLine then
       self._log(logging.WARNING, 'Duplicated status line, ignoring it...')
       return
     end
@@ -269,7 +264,7 @@ function ChildCheck:_handleLine(checkResult, line)
       -- formatted like so: "status ok Everything is normal"
       -- We parse and set the status message here, and additionally inclue state as a 
       -- string metric. This is purely a compatability convenience.
-      self:_addMetric(checkResult, 'legacy_state', nil, 'string', state)
+      self:_addMetric(runCtx, checkResult, 'legacy_state', nil, 'string', state)
       table.remove(splitString, 1)
       status = table.concat(splitString, ' ')
     else
@@ -277,10 +272,10 @@ function ChildCheck:_handleLine(checkResult, line)
     end
 
     self._log(logging.DEBUG, fmt('Setting check status string (status=%s)', status))
-    self._gotStatusLine = true
+    runCtx.gotStatusLine = true
     checkResult:setStatus(status)
   elseif stateEndIndex then
-    if self._gotStateLine then
+    if runCtx.gotStateLine then
       self._log(logging.WARNING, 'Duplicated state line, ignoring it...')
       return
     end
@@ -290,11 +285,11 @@ function ChildCheck:_handleLine(checkResult, line)
     if value ~= 'available' and value ~= 'unavailable' then
       msg = 'State line not in the following format: <available|unavailable>'
       self._log(logging.WARNING, fmt('Invalid state line (line=%s) - %s', line, msg))
-      self:_setError(checkResult, msg)
+      self:_setError(runCtx, checkResult, msg)
       return
     end
 
-    self._gotStateLine = true
+    runCtx.gotStateLine = true
     if value == 'available' then
       checkResult:setAvailable()
     else
@@ -308,7 +303,7 @@ function ChildCheck:_handleLine(checkResult, line)
     if partsCount < 3 then
       msg = 'Metric line not in the following format: metric <name> <type> <value>'
       self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
-      self:_setError(checkResult, msg)
+      self:_setError(runCtx, checkResult, msg)
       return
     end
 
@@ -334,16 +329,16 @@ function ChildCheck:_handleLine(checkResult, line)
       -- Only values for string metrics can contain spaces
       local msg = fmt('Invalid value "%s" for a non-string metric', metricValue)
       self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
-      self:_setError(checkResult, msg)
+      self:_setError(runCtx, checkResult, msg)
       return
     end
-    
-    self:_addMetric(checkResult, metricName, metricDimension, metricType, metricValue)
+
+    self:_addMetric(runCtx, checkResult, metricName, metricDimension, metricType, metricValue)
 
   else
     msg = fmt('Unrecognized line "%s"', line)
     self._log(logging.WARNING, msg)
-    self:_setError(checkResult, msg)
+    self:_setError(runCtx, checkResult, msg)
   end
 end
 
@@ -352,6 +347,8 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local stderrBuffer = ''
   local killed = false
   local lineEmitter = LineEmitter:new()
+  -- Context for _handleLine to store stuff between output lines
+  local runCtx = {}
 
   local child = childprocess.spawn(exePath,
                                    exeArgs,
@@ -370,7 +367,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   end)
 
   lineEmitter:on('data', function(line)
-    self:_handleLine(checkResult, line)
+    self:_handleLine(runCtx, checkResult, line)
   end)
 
   child.stdout:on('data', function(chunk)
@@ -407,12 +404,12 @@ end
 Set an error on the CheckResult object if and only if the error hasn't been
 set yet.
 --]]
-function ChildCheck:_setError(checkResult, message)
-  if self._hasError then
+function ChildCheck:_setError(runCtx, checkResult, message)
+  if runCtx.hasError then
     return
   end
 
-  self._hasError = true
+  runCtx.hasError = true
   checkResult:setError(message)
 end
 
