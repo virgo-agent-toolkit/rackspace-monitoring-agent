@@ -153,9 +153,11 @@ exports['test_network_check'] = function(test, asserts)
   asserts.ok(check._lastResult == nil)
   check:run(function(results)
     -- Verify that no dimension is used
-    asserts.ok(#results:getMetrics()['none'] > 0)
+    local metrics = results:getMetrics()['none']
 
-    asserts.equal(results:getState(), 'unavailable')
+    asserts.not_nil(metrics['rx_errors']['v'])
+
+    asserts.equal(results:getState(), 'available')
     asserts.ok(check._lastResult ~= nil)
     asserts.ok(#check._lastResult:serialize() > 0)
     test.done()
