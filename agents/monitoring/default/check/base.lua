@@ -108,7 +108,7 @@ function BaseCheck:_runCheck()
   self._timer = nil
   self:emit('run', self)
 
-  function emitCompleted(checkResult)
+  local function emitCompleted(checkResult)
     if fired then
       return
     end
