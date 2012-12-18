@@ -60,8 +60,8 @@ requests['check_schedule.get'] = function(self, callback)
   self:_send(m, callback)
 end
 
-requests['check_metrics.post'] = function(self, check, checkResults, callback)
-  local m = msg.MetricsRequest:new(check, checkResults)
+requests['check_metrics.post'] = function(self, check, checkResult, callback)
+  local m = msg.MetricsRequest:new(check, checkResult)
   self:_send(m, callback)
 end
 
