@@ -231,10 +231,10 @@ function ConnectionStream:_createConnection(options)
   return client
 end
 
-function ConnectionStream:_sendMetrics(check, checkResults)
+function ConnectionStream:_sendMetrics(check, checkResult)
   local client = self:getClient()
   if client then
-    client.protocol:request('check_metrics.post', check, checkResults)
+    client.protocol:request('check_metrics.post', check, checkResult)
   end
 end
 
