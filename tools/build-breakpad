@@ -2,9 +2,9 @@
 
 import os
 import sys
+import re
 import subprocess
 
-import pkgutils
 from optparse import OptionParser
 
 build_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'out', 'Debug'))
@@ -20,17 +20,25 @@ def main():
         sys.exit(1)
 
     dest = args[0]
+    print(build_dir)
 
-    symbol_file = open("%s/%s/monitoring-agent.sym" % (dest, pkgutils.pkg_dir()), 'wb')
+    p = subprocess.Popen(["%s/dump_syms" % (build_dir), "monitoring-agent"],
+        cwd=build_dir, stdout=subprocess.PIPE)
 
-    p = subprocess.Popen(["%s/dump_syms" % build_dir, "monitoring-agent"],
-        cwd=build_dir, stdout=symbol_file)
+    (stdout, stderr) = p.communicate()
 
-    retcode = p.wait()
-    symbol_file.close()
-
-    if retcode != 0:
+    if p.returncode != 0:
         raise OSError('Failed to run dump_syms: %s' % p.stderr.read())
+
+    head = stdout.split('\n', 1)[0]
+    groups = re.search(" ([A-Z0-9]{33}) monitoring-agent", head)
+    if not groups:
+        raise AttributeError('Failed to get digest from head of symbol file')
+    digest = groups.groups()[0]
+
+    symbol_file = open("%s/%s" % (dest, digest), 'wb')
+    symbol_file.write(stdout)
+    symbol_file.close()
 
     print('all done')
 
