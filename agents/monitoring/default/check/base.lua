@@ -103,25 +103,30 @@ end
 
 function BaseCheck:_runCheck()
   local fired = false
-  local timeout_timer
+  local timeoutTimer
 
   self._timer = nil
   self:emit('run', self)
 
-  function emitCompleted(checkResult)
+  local function emitCompleted(checkResult)
     if fired then
       return
     end
+
+    self._log(logging.DEBUG, fmt('re-schedueling check %s', self:getSummary()))
+
     fired = true
+    timer.clearTimer(timeoutTimer)
     self:schedule()
-    timer.clearTimer(timeout_timer)
     process.nextTick(function()
       self:emit('completed', self, checkResult)
     end)
   end
 
-  timeout_timer = timer.setTimeout((self.period * 1000), function()
+  timeoutTimer = timer.setTimeout((self.period * 1000), function()
     local cr = CheckResult:new(self)
+    self._log(logging.INFO, fmt('check timed out %s', self:getSummary()))
+
     self:emit('timeout', self)
     cr:setStatus('Timeout in Run Check')
     emitCompleted(cr)
