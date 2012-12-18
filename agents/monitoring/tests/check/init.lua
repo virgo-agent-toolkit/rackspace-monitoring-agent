@@ -383,6 +383,29 @@ exports['test_custom_plugin_all_types'] = function(test, asserts)
   end)
 end
 
+exports['test_custom_plugin_all_types_reschedueling'] = function(test, asserts)
+  -- Verify that custom plugin checks correctly re-schedule itself
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=2,
+                                details={file='plugin_1.sh'}})
+  local counter = 0
+  asserts.ok(check._lastResult == nil)
+
+  check:schedule()
+  check:on('completed', function(result)
+    counter = counter + 1
+
+    asserts.ok(result ~= nil)
+
+    if counter == 3 then
+      check:clearSchedule()
+      test.done()
+    end
+  end)
+end
+
 exports['test_custom_plugin_dimensions'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
