@@ -116,8 +116,8 @@ function BaseCheck:_runCheck()
     self._log(logging.DEBUG, fmt('re-schedueling check %s', self:getSummary()))
 
     fired = true
-    self:schedule()
     timer.clearTimer(timeoutTimer)
+    self:schedule()
     process.nextTick(function()
       self:emit('completed', self, checkResult)
     end)
