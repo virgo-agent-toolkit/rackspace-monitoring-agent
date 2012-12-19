@@ -46,7 +46,7 @@ function mkdirp(lpath, mode, callback)
   if os.type() == "win32" then
     -- Do not try to create a Windows Drive
     if tocreate[1]:match("^[%a]:$") then
-      table.remove(tocreate,1)
+      table.remove(tocreate, 1)
     end
   end
   async.forEachSeries(tocreate, function (dir, callback)
