@@ -151,17 +151,17 @@ exports['test_network_check'] = function(test, asserts)
   local target = targets[os.type()] or "add a target for this os"
   local check = NetworkCheck:new({id='foo', period=30, details={target=target}})
   asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    asserts.ok(result ~= nil)
-    -- Verify that no dimension is used
-    local metrics = result:getMetrics()['none']
+  check:run(function(results)
+    if os.type() ~= "win32" then
+      -- Verify that no dimension is used
+      local metrics = results:getMetrics()['none']
 
-    asserts.not_nil(metrics['rx_errors']['v'])
+      asserts.not_nil(metrics['rx_errors']['v'])
 
-    asserts.equal(result:getState(), 'available')
-    asserts.ok(check._lastResult ~= nil)
-    asserts.ok(#check._lastResult:serialize() > 0)
-
+      asserts.equal(results:getState(), 'available')
+      asserts.ok(check._lastResult ~= nil)
+      asserts.ok(#check._lastResult:serialize() > 0)
+	end
     test.done()
   end)
 end
