@@ -2,6 +2,7 @@ local path = require('path')
 local fs = require('fs')
 local table = require('table')
 local async = require('async')
+local os = require('os')
 
 local sigarutil = require('monitoring/default/util/sigar')
 
@@ -42,6 +43,12 @@ function mkdirp(lpath, mode, callback)
   end
 
   tocreate = reverse(tocreate)
+  if os.type() == "win32" then
+    -- Do not try to create a Windows Drive
+    if tocreate[1]:match("^[%a]:$") then
+	  table.remove(tocreate,1)
+	end
+  end
   async.forEachSeries(tocreate, function (dir, callback)
     fs.mkdir(dir, mode, function(err)
         if not err then
