@@ -32,8 +32,6 @@ local sigarCtx = require('./sigar').ctx
 
 local constants = require('./util/constants')
 local misc = require('./util/misc')
-local States = require('./states')
-local stateFile = require('./state_file')
 local fsutil = require('./util/fs')
 local UUID = require('./util/uuid')
 local version = require('./util/version')
@@ -50,7 +48,6 @@ function MonitoringAgent:initialize(options)
   end
   logging.debug('Using state directory ' .. options.stateDirectory)
   self._stateDirectory = options.stateDirectory
-  self._states = States:new(options.stateDirectory)
   self._config = virgo.config
   self._options = options
 end
@@ -77,9 +74,6 @@ function MonitoringAgent:start(options)
       misc.writePid(options.pidFile, callback)
     end,
     function(callback)
-      self:loadStates(callback)
-    end,
-    function(callback)
       self:connect(callback)
     end
   },
@@ -88,19 +82,6 @@ function MonitoringAgent:start(options)
       logging.error(err.message)
     end
   end)
-end
-
-function MonitoringAgent:loadStates(callback)
-  async.series({
-    -- Load the States
-    function(callback)
-      self._states:load(callback)
-    end,
-    -- Verify
-    function(callback)
-      self:_verifyState(callback)
-    end
-  }, callback)
 end
 
 function MonitoringAgent:connect(callback)
