@@ -44,12 +44,12 @@ int virgo_vasprintf(char **outstr, const char *fmt, va_list args)
     return sz;
   }
 
-  *outstr = malloc(sz + 1);
+  *outstr = calloc(1, sz + 1);
   if (*outstr == NULL) {
     return -1;
   }
 
-  return vsnprintf(*outstr, sz + 1, fmt, args);
+  return vsnprintf(*outstr, sz, fmt, args);
 }
 
 int virgo_asprintf(char **outstr, const char *fmt, ...)
@@ -82,10 +82,10 @@ static int test_tempdir(const char *temp_dir)
 {
   char *tpath = NULL;
   int fd = -1;
-  int rv = asprintf(&tpath, "%s/tmp.XXXXXX", temp_dir);
+  int rv = asprintf(&tpath, "%s"SEP"tmp.XXXXXX", temp_dir);
 
 #ifdef _WIN32
-  _mktemp_s(tpath, strlen(tpath));
+  _mktemp_s(tpath, rv+1);
   fd = open(tpath, O_CREAT|O_WRONLY);
 #else
   fd = mkstemp(tpath);
