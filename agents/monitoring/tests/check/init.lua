@@ -476,7 +476,7 @@ end
 
 exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local counter = 0
   local check = PluginCheck:new({id='foo', period=2,
@@ -505,7 +505,7 @@ end
 
 exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='partial_output_with_sleep.sh'}})
@@ -528,7 +528,7 @@ end
 
 exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_1.sh'}})
@@ -547,7 +547,7 @@ end
 
 exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_2.sh'}})
@@ -566,7 +566,7 @@ end
 
 exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_metric'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_3.sh'}})
@@ -585,7 +585,7 @@ end
 
 exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_4.sh'}})
