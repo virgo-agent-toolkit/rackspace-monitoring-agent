@@ -349,7 +349,10 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local lineEmitter = LineEmitter:new()
   -- Context for _handleLine to store stuff between output lines
   local runCtx = {}
-
+  p('CHILD CHECK RUNNING::: -------- ')
+  p(exePath)
+  p(exeArgs)
+  p('-------------------------------')
   local child = childprocess.spawn(exePath,
                                    exeArgs,
                                    { env = environ })
