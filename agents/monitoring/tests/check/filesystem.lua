@@ -1,11 +1,17 @@
 local math = require('math')
+local os = require('os')
 
 local FileSystemCheck = require('monitoring/default/check').FileSystemCheck
 
 local exports = {}
 
 exports['test_filesystem_check'] = function(test, asserts)
-  local check = FileSystemCheck:new({id='foo', period=30, details={target='/'}})
+  if os.type() == "win32" then
+    fs_target = 'C:\\'
+  else
+    fs_target = '/'
+  end
+  local check = FileSystemCheck:new({id='foo', period=30, details={target=fs_target}})
   asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local util = require('utils')
@@ -22,13 +28,18 @@ exports['test_filesystem_check'] = function(test, asserts)
     asserts.equal(metrics['free']['t'], 'int64')
     asserts.equal(metrics['used']['t'], 'int64')
     asserts.equal(metrics['avail']['t'], 'int64')
-    asserts.equal(metrics['files']['t'], 'int64')
-    asserts.equal(metrics['free_files']['t'], 'int64')
 
     asserts.ok(tonumber(metrics['free']['v']) <= tonumber(metrics['total']['v']))
-    asserts.ok(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
     asserts.equal(tonumber(metrics['free']['v']) + tonumber(metrics['used']['v']),
                  tonumber(metrics['total']['v']))
+
+    -- These metrics are unavailalbe on Win32, see:
+    -- http://www.hyperic.com/support/docs/sigar/org/hyperic/sigar/FileSystemUsage.html#getFiles()
+    if os.type() ~= "win32" then
+      asserts.equal(metrics['files']['t'], 'int64')
+      asserts.equal(metrics['free_files']['t'], 'int64')
+      asserts.ok(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
+    end
 
     test.done()
   end)

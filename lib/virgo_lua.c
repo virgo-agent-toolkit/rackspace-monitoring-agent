@@ -98,7 +98,7 @@ virgo__lua_win32_get_associated_exe(lua_State *L) {
   virgo_t* v = virgo__lua_context(L);
   const char *extension = luaL_checkstring(L, 1);
 
-  hr = AssocQueryString(0, ASSOCSTR_EXECUTABLE,
+  hr = AssocQueryString(ASSOCF_INIT_IGNOREUNKNOWN, ASSOCSTR_EXECUTABLE,
                         extension, "open",
                         exePath, &exePathLen);
   if (hr < 0) {
