@@ -27,7 +27,7 @@ local exports = {}
 
 exports['test_zookeeper_success_result_parsing'] = function(test, asserts)
   local check = ZooKeeperCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8585}})
-  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/zookeeper_response.txt')
+  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','zookeeper_response.txt')
   local commandMap = {}
   local server = nil
 
@@ -72,7 +72,7 @@ end
 
 exports['test_zookeeper_partially_broken_response'] = function(test, asserts)
   local check = ZooKeeperCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8585}})
-  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/zookeeper_response_broken.txt')
+  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','zookeeper_response_broken.txt')
   local commandMap = {}
   local server = nil
 

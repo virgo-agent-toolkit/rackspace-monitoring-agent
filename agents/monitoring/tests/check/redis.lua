@@ -26,7 +26,7 @@ local exports = {}
 
 exports['test_redis_2.4_success_result_parsing'] = function(test, asserts)
   local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8585}})
-  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/redis_2.4_response.txt')
+  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','redis_2.4_response.txt')
   local commandMap = {}
   local server = nil
 
@@ -69,7 +69,7 @@ end
 
 exports['test_redis_2.6_success_result_parsing'] = function(test, asserts)
   local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8586}})
-  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/redis_2.6_response.txt')
+  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','redis_2.6_response.txt')
   local commandMap = {}
   local server = nil
 
@@ -112,7 +112,7 @@ end
 
 exports['test_redis_2.4_success_with_auth'] = function(test, asserts)
   local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8585, password='valid'}})
-  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/redis_2.4_response.txt')
+  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','redis_2.4_response.txt')
   local commandMap = {}
   local server = nil
 
@@ -166,7 +166,7 @@ end
 
 exports['test_redis_error_missing_password'] = function(test, asserts)
   local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8586}})
-  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/redis_operation_not_permitted.txt')
+  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','redis_operation_not_permitted.txt')
   local commandMap = {}
   local server = nil
 
@@ -204,7 +204,7 @@ end
 
 exports['test_redis_error_invalid_password'] = function(test, asserts)
   local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8586, password='invalid'}})
-  local filePath = path.join(process.cwd(), '/agents/monitoring/tests/fixtures/checks/redis_invalid_password.txt')
+  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','redis_invalid_password.txt')
   local commandMap = {}
   local server = nil
 

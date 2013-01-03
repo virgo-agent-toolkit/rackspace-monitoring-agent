@@ -148,21 +148,23 @@ end
 
 exports['test_network_check'] = function(test, asserts)
   local targets = {Linux='lo', Darwin='lo0'}
-  local target = targets[os.type()] or "add a target for this os"
+  local target = targets[os.type()] or "unknown"
   local check = NetworkCheck:new({id='foo', period=30, details={target=target}})
   asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    asserts.ok(result ~= nil)
-    -- Verify that no dimension is used
-    local metrics = result:getMetrics()['none']
+  check:run(function(results)
+    if target ~= "unknown" then
+      -- Verify that no dimension is used
+      local metrics = results:getMetrics()['none']
 
-    asserts.not_nil(metrics['rx_errors']['v'])
+      asserts.not_nil(metrics['rx_errors']['v'])
 
-    asserts.equal(result:getState(), 'available')
-    asserts.ok(check._lastResult ~= nil)
-    asserts.ok(#check._lastResult:serialize() > 0)
-
-    test.done()
+      asserts.equal(results:getState(), 'available')
+      asserts.ok(check._lastResult ~= nil)
+      asserts.ok(#check._lastResult:serialize() > 0)
+      test.done()
+    else
+      test.skip("Unknown interface target for " .. os.type())
+    end
   end)
 end
 
@@ -474,7 +476,7 @@ end
 
 exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local counter = 0
   local check = PluginCheck:new({id='foo', period=2,
@@ -503,7 +505,7 @@ end
 
 exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='partial_output_with_sleep.sh'}})
@@ -526,7 +528,7 @@ end
 
 exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_1.sh'}})
@@ -545,7 +547,7 @@ end
 
 exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_2.sh'}})
@@ -564,7 +566,7 @@ end
 
 exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_metric'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_3.sh'}})
@@ -583,7 +585,7 @@ end
 
 exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
 
   local check = PluginCheck:new({id='foo', period=30,
                                  details={file='invalid_metric_lines_4.sh'}})
