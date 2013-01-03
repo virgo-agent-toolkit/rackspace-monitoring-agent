@@ -124,4 +124,14 @@ exports['test_mysql_row_parsing'] = function(test, asserts)
   end)
 end
 
+-- This will skip all the functions in the file but still call them individually
+if os.type() == "win32" then
+  for i,v in pairs(exports) do
+    p("Setting a skip " .. i .. " for " .. os.type())
+    exports[i] = function(test, asserts)
+      test.skip("Skipping " .. i .. " for " .. os.type())
+    end
+  end
+end
+
 return exports
