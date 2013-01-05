@@ -22,6 +22,7 @@
 
 void virgo__crash_reporter_init(virgo_t **v);
 void virgo__crash_reporter_destroy();
+void virgo__force_dump();
 
 const char* virgo__argv_get_value(virgo_t *v,
                             const char *short_opt,

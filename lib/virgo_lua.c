@@ -85,6 +85,53 @@ virgo__lua_force_crash(lua_State *L) {
   return 0;
 }
 
+static int
+virgo__lua_handle_crash(lua_State *L){
+  const char *lua_err;
+  const char *lua_tb;
+  char* lua_msg;
+  size_t nlen;
+  int rv;
+
+  /* grab the error for reporting to stderr*/
+  lua_err = lua_tostring(L, -1);
+  /* Push the exception into virgo for the dumper */
+  lua_getglobal(L, "virgo");
+  lua_insert(L, -2);
+  lua_setfield(L, -2, "exception");
+  lua_pop(L, 1);
+  /* do dump */
+  virgo__force_dump();
+
+  /* push a traceback onto the stack */
+  lua_getglobal(L, "require");
+  lua_pushliteral(L, "debug");
+  lua_call(L, 1, 1);
+  lua_getfield(L, -1, "traceback");
+  lua_pushliteral(L, "");
+  /* skip the current function in the traceback */
+  lua_pushnumber(L, 2);
+  rv = lua_pcall(L, 2, 1, 0);
+  if (rv != 0){
+    lua_pushstring(L, lua_err);
+    fprintf(stderr, "%s", "Warning: could not generate a lua traceback.");
+    return 1;
+  }
+  /* grab the traceback and concat it with the error string */
+  lua_tb = lua_tostring(L, -1);
+
+  nlen = strlen(lua_err) + strlen(lua_tb) + 1;
+  lua_msg = malloc(nlen);
+  lua_msg[0] = '\0';
+  strcat(lua_msg, lua_err);
+  strcat(lua_msg, lua_tb);
+  /* push the new error string back onto the stack */
+  lua_pushstring(L, lua_msg);
+
+  free((void*)lua_msg);
+  return 1;
+}
+
 
 #ifdef _WIN32
 
@@ -193,10 +240,17 @@ virgo__lua_run(virgo_t *v)
 
   lua_getfield(v->L, -1, "run");
   lua_pushstring(v->L, v->lua_default_module);
-  rv = lua_pcall(v->L, 1, 1, 0);
+
+  /* push on the error handler */
+  lua_pushcfunction(v->L, virgo__lua_handle_crash);
+  /* mv back before /virgo-init.run */
+  lua_insert(v->L, -3);
+  /* pcall virgo.run(default) with error handler handle_crash */
+  rv = lua_pcall(v->L, 1, 0, -3);
+
   if (rv != 0) {
     lua_err = lua_tostring(v->L, -1);
-    return virgo_error_createf(VIRGO_EINVAL, "Runtime error: %s", lua_err);
+    return virgo_error_createf(VIRGO_EINVAL, "\nLua Runtime Error: %s", lua_err);
   }
 
 #else

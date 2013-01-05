@@ -59,6 +59,11 @@ void virgo__crash_reporter_destroy()
 
 }
 
+void virgo__force_dump()
+{
+
+}
+
 #endif
 
 static void
