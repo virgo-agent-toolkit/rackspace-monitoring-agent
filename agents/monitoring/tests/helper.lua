@@ -42,9 +42,20 @@ process:on("error", function(e)
   stop_server(child)
 end)
 
+-- This will skip all the functions in an export list but still be able to call them individually
+local function skip_all(exports, reason)
+  for i,v in pairs(exports) do
+    p("Setting a skip " .. i .. " for " .. reason)
+    exports[i] = function(test, asserts)
+      test.skip("Skipping " .. i .. " for " .. reason)
+    end
+  end
+  return exports
+end
 
 local exports = {}
 exports.runner = runner
 exports.start_server = start_server
 exports.stop_server = stop_server
+exports.skip_all = skip_all
 return exports

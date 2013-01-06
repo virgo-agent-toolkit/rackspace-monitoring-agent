@@ -53,4 +53,8 @@ exports['test_makes_dump'] = function(test, asserts)
   end)
 end
 
+if os.type() == "win32" then
+  exports = helper.skip_all(exports, os.type())
+end
+
 return exports
