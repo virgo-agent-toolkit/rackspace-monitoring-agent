@@ -270,14 +270,13 @@ local function partialRealpath(filepath)
 end
 
 
-local function myloadfile(filepath, cache)
-  if cache == nil then cache = true end
+local function myloadfile(filepath)
 
   if not vfs:exists(filepath) then return end
   -- Not done by luvit, we don't have synlinks in the zip file.
   -- filepath = partialRealpath(filepath)
 
-  if cache and package.loaded[filepath] then
+  if package.loaded[filepath] then
     return function ()
       return package.loaded[filepath]
     end
@@ -299,21 +298,17 @@ local function myloadfile(filepath, cache)
   }, global_meta))
   local module = fn()
 
-  if cache then
-    package.loaded[filepath] = module
-  end
+  package.loaded[filepath] = module
 
   return function() return module end
 end
 
 local function myloadlib(filepath)
-  if cache  == nil then cache = true end
-
   if not vfs:exists(filepath) then return end
 
   filepath = partialRealpath(filepath)
 
-  if cache and package.loaded[filepath] then
+  if  package.loaded[filepath] then
     return function ()
       return package.loaded[filepath]
     end
@@ -329,9 +324,7 @@ local function myloadlib(filepath)
   if fn then
     local module = fn()
 
-    if cache then
-      package.loaded[filepath] = module
-    end
+    package.loaded[filepath] = module
 
     return function() return module end
   end
@@ -339,16 +332,14 @@ local function myloadlib(filepath)
 end
 
 -- tries to load a module at a specified absolute path
-local function loadModule(filepath, verbose, cache)
-  if cache == nil then cache = true end
-
+local function loadModule(filepath, verbose)
   -- First, look for exact file match if the extension is given
   local extension = path.posix:extname(filepath)
   if extension == ".lua" then
-    return myloadfile(filepath, cache)
+    return myloadfile(filepath)
   end
   if extension == ".luvit" then
-    return myloadlib(filepath, cache)
+    return myloadlib(filepath)
   end
 
   -- Then, look for module/package.lua config file
@@ -377,9 +368,8 @@ package.seeall = nil
 package.config = nil
 _G.module = nil
 
-function require(filepath, dirname, cache)
+function require(filepath, dirname)
   if not dirname then dirname = "" end
-  if cache == nil then cache = true end
 
   -- Absolute and relative required modules
   local first = filepath:sub(1, 1)
@@ -408,9 +398,7 @@ function require(filepath, dirname, cache)
     if type(loader) == "function" then
       module = loader()
 
-      if cache then
-        package.loaded[filepath] = module
-      end
+      package.loaded[filepath] = module
 
       return module
     else
