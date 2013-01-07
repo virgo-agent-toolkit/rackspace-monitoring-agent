@@ -283,8 +283,15 @@ function AgentProtocolConnection:_send(msg, callback, timeout)
           err = errors.ProtocolError:new(resp_err)
         end
 
-        if err ~= nil then
-          self:emit('error', err)
+        if err then
+          -- All 400 errors will be logged, but not re-emitted. All other errors
+          -- will cause the connection to be dropped to the endpoint. We may
+          -- need to revise this behavior in the future.
+          if err.code == 400 then
+            self._log(logging.ERROR, fmt('Non-fatal error: %s', err.message))
+          else
+            self:emit('error', err)
+          end
         end
       end
 
