@@ -65,6 +65,7 @@ show_help()
          "  -d, --debug           Log at debug level.\n"
          "  -i, --insecure        Use insecure SSL CA cert (for testing/debugging).\n"
          "  -D, --detach          Detach the process and run the agent in the background.\n"
+         "  --report-lua-crash    Write debug information to disk when lua crahes.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);
