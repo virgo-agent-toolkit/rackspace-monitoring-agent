@@ -69,13 +69,25 @@ virgo__lua_luvit_init(virgo_t *v)
 }
 
 static void
-virgo__set_virgo_key(lua_State *L, const char *key, const char *value)
-{
+virgo__set_virgo_key(lua_State *L, const char *key, const char *value) {
   /* Set virgo.os */
   lua_getglobal(L, "virgo");
   lua_pushstring(L, key);
   lua_pushstring(L, value);
   lua_settable(L, -3);
+}
+
+static void
+virgo__push_function(lua_State *L, const char *name, lua_CFunction cfunc){
+  lua_getglobal(L, "virgo");
+  lua_pushcfunction(L, cfunc);
+  lua_setfield(L, -2, name);
+}
+
+static int
+virgo__lua_force_dump(lua_State *L){
+  virgo__force_dump();
+  return 0;
 }
 
 static int
@@ -86,14 +98,15 @@ virgo__lua_force_crash(lua_State *L) {
 }
 
 static int
-virgo__lua_handle_crash(lua_State *L){
+virgo__lua_handle_crash(lua_State *L) {
   const char *lua_err;
   const char *lua_tb;
   char* lua_msg;
   size_t nlen;
   int rv;
+  virgo_t* v;
 
-  /* grab the error for reporting to stderr*/
+  /* grab the error for reporting to stderr */
   lua_err = lua_tostring(L, -1);
   /* Push the exception into virgo for the dumper */
   lua_getglobal(L, "virgo");
@@ -101,7 +114,11 @@ virgo__lua_handle_crash(lua_State *L){
   lua_setfield(L, -2, "exception");
   lua_pop(L, 1);
   /* do dump */
-  virgo__force_dump();
+
+  v = virgo__lua_context(L);
+  if (virgo__argv_has_flag(v, NULL, "--report-lua-crash") == 1){
+    virgo__force_dump();
+  }
 
   /* push a traceback onto the stack */
   lua_getglobal(L, "require");
@@ -178,18 +195,12 @@ virgo__lua_init(virgo_t *v)
   lua_newtable(L);
   lua_setglobal(L, "virgo");
 
-  lua_getglobal(L, "virgo");
-  lua_pushcfunction(L, virgo__lua_force_crash);
-  lua_setfield(L, -2, "force_crash");
-
-  lua_getglobal(L, "virgo");
-  lua_pushcfunction(L, virgo_time_now);
-  lua_setfield(L, -2, "gmtnow");
+  virgo__push_function(L, "force_crash", virgo__lua_force_crash);
+  virgo__push_function(L, "gmtnow", virgo_time_now);
+  virgo__push_function(L, "force_dump", virgo__lua_force_dump);
 
 #ifdef _WIN32
-  lua_getglobal(L, "virgo");
-  lua_pushcfunction(L, virgo__lua_win32_get_associated_exe);
-  lua_setfield(L, -2, "win32_get_associated_exe");
+  virgo__push_function(L, "win32_get_associated_exe", virgo__lua_win32_get_associated_exe);
 #endif
 
   virgo__set_virgo_key(L, "os", VIRGO_OS);

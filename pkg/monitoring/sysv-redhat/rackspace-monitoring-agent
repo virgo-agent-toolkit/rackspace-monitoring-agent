@@ -18,7 +18,7 @@ LOG=/var/log/rackspace-monitoring-agent.log
 case "$1" in
   start)
         echo -n "Starting $DAEMON: "
-        daemon $DAEMON -D -p $PIDFILE -l $LOG
+        daemon $DAEMON -D -p $PIDFILE -l $LOG --report-lua-crash
         echo
         touch /var/lock/subsys/process-name
         ;;
