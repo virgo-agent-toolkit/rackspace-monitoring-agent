@@ -60,13 +60,16 @@ def test_cmd(additional=""):
     return '%s -o -d -c %s -s %s %s' % (paths.agent, monitoring_config, state_config, additional)
 
 
-def test(stdout=None, entry="tests"):
+def test(stdout=None, entry="tests", flags=None):
     if sys.platform != "win32":
         agent_tests = os.path.join(paths.root, 'out', paths.BUILDTYPE, 'monitoring-test.zip')
     else:
         agent_tests = os.path.join(paths.root, paths.BUILDTYPE, 'monitoring-test.zip')
 
     cmd = test_cmd("--zip %s -e %s -o" % (agent_tests, entry))
+    if flags:
+        for flag in flags:
+            cmd += " %s" % (flag)
     print cmd
     rc = 0
     if stdout is None:
@@ -90,7 +93,7 @@ def test_file():
 
 
 def crash():
-    test(None, "crash")
+    test(None, "crash", flags=["--production"])
 
 commands = {
     'crash': crash,
