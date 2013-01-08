@@ -70,15 +70,22 @@ extern "C" {
   virgo_error_t *err = virgo__paths_get(v, VIRGO_PATH_PERSISTENT_DIR, path, VIRGO_PATH_MAX);
 
   void virgo__crash_reporter_init(virgo_t **p_v) {
-    virgo_global_exception_handler = new google_breakpad::ExceptionHandler(path, NULL, dumpCallback, (void *)p_v, true);
+    virgo_t* v = *p_v;
+    if (virgo__argv_has_flag(v, NULL, "--production") == 1){
+      virgo_global_exception_handler = new google_breakpad::ExceptionHandler(path, NULL, dumpCallback, (void *)p_v, true);
+    }
   };
 
   void virgo__force_dump() {
-    virgo_global_exception_handler->WriteMinidump();
+    if (virgo_global_exception_handler){
+      virgo_global_exception_handler->WriteMinidump();
+    }
   };
 
   void virgo__crash_reporter_destroy() {
-    delete virgo_global_exception_handler;
+    if (virgo_global_exception_handler){
+      delete virgo_global_exception_handler;
+    }
   };
 };
 

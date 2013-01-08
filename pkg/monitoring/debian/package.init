@@ -27,7 +27,7 @@ fi
 
 case "$1" in
 start)	log_daemon_msg "Starting $NAME" "$NAME"
-        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --startas $DAEMON -- -D -p $PIDFILE -l $LOG --report-lua-crash $EXTRA_OPTS
+        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --startas $DAEMON -- -D -p $PIDFILE -l $LOG --production $EXTRA_OPTS
         log_end_msg $?
 	;;
 stop)	log_daemon_msg "Stopping $NAME" "$NAME"
@@ -36,7 +36,7 @@ stop)	log_daemon_msg "Stopping $NAME" "$NAME"
         ;;
 restart) log_daemon_msg "Restarting $NAME" "$NAME"
         start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE --exec $DAEMON
-        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --startas $DAEMON -- -D -p $PIDFILE -l $LOG --report-lua-crash $EXTRA_OPTS
+        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --startas $DAEMON -- -D -p $PIDFILE -l $LOG --production $EXTRA_OPTS
         log_end_msg $?
         ;;
 status)

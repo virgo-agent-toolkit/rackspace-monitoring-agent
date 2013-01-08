@@ -49,7 +49,7 @@ typedef struct virgo_conf_t virgo_conf_t;
 /**
  * Creates a Virgo context.
  */
-VIRGO_API(virgo_error_t*) virgo_create(virgo_t **ctxt, const char *default_module);
+VIRGO_API(virgo_error_t*) virgo_create(virgo_t **p_v, const char *default_module, int argc, char** argv);
 
 /**
  * Destroys a Virsgo context. After this call, ctxt points to invalid memory
@@ -103,7 +103,7 @@ VIRGO_API(virgo_error_t*) virgo_conf_lua_load_path(virgo_t *v, const char *path)
 /**
  * Set the process argv arguments into the virgo context object.
  */
-VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v, int argc, char** argv);
+VIRGO_API(virgo_error_t*) virgo_conf_args(virgo_t *v);
 
 /**
  * Set a key in the agent configuration table. This provides a way for the

@@ -65,7 +65,7 @@ show_help()
          "  -d, --debug           Log at debug level.\n"
          "  -i, --insecure        Use insecure SSL CA cert (for testing/debugging).\n"
          "  -D, --detach          Detach the process and run the agent in the background.\n"
-         "  --report-lua-crash    Write debug information to disk when lua crahes.\n"
+         "  --production          Write debug information to disk when the agent crahes.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
   virgo_error_t *err;
   char path[VIRGO_PATH_MAX];
 
-  err = virgo_create(&v, "./init");
+  err = virgo_create(&v, "./init", argc, argv);
 
   if (err) {
     handle_error("Error in startup", err);
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
   }
 
   /* Read command-line arguments */
-  err = virgo_conf_args(v, argc, argv);
+  err = virgo_conf_args(v);
   if (err) {
     handle_error("Error in settings args", err);
     return EXIT_FAILURE;
