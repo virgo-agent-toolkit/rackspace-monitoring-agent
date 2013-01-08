@@ -9,11 +9,17 @@ local constants = require('constants')
 local consts = require('../../default/util/constants')
 local Endpoint = require('../../default/endpoint').Endpoint
 local path = require('path')
+local os = require('os')
 
 local exports = {}
 local child
 
 exports['test_reconnects'] = function(test, asserts)
+
+  if os.type() == "win32" then
+    test.skip("Skip test_reconnects until a suitable SIGUSR1 replacement is used in runner.py")
+    return nil
+  end
 
   local options = {
     datacenter = 'test',
