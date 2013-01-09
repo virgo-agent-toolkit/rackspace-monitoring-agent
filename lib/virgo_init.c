@@ -59,6 +59,11 @@ void virgo__crash_reporter_destroy()
 
 }
 
+void virgo__force_dump()
+{
+
+}
+
 #endif
 
 static void
@@ -102,7 +107,7 @@ virgo__global_terminate(void)
 }
 
 virgo_error_t*
-virgo_create(virgo_t **p_v, const char *default_module)
+virgo_create(virgo_t **p_v, const char *default_module, int argc, char** argv)
 {
   virgo_t *v = NULL;
 
@@ -112,6 +117,10 @@ virgo_create(virgo_t **p_v, const char *default_module)
   v->lua_default_module = strdup(default_module);
   v->log_level = VIRGO_LOG_EVERYTHING;
   v->try_upgrade = TRUE;
+
+  v->argc = argc;
+  v->argv = argv;
+
   *p_v = v;
 
   virgo__crash_reporter_init(&v);

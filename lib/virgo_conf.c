@@ -71,15 +71,12 @@ virgo_conf_lua_load_path(virgo_t *v, const char *path)
 }
 
 virgo_error_t*
-virgo_conf_args(virgo_t *v, int argc, char** argv)
+virgo_conf_args(virgo_t *v)
 {
   virgo_error_t *err;
   const char *arg;
   char path[VIRGO_PATH_MAX];
   short forced_zip = FALSE;
-
-  v->argc = argc;
-  v->argv = argv;
 
   arg = virgo__argv_get_value(v, "-z", "--zip");
   if (arg != NULL) {

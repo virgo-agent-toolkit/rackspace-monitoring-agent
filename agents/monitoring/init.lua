@@ -52,14 +52,7 @@ function Entry.run()
   end
   logging.debugf('Running Module %s', mod)
 
-  local err, msg = pcall(function()
-    require(mod).run(argv.args)
-  end)
-
-  if err == false then
-    logging.error(msg)
-    process.exit(1)
-  end
+  require(mod).run(argv.args)
 end
 
 return Entry

@@ -427,8 +427,7 @@ local virgo_init = {}
 
 function virgo_init.run(name)
   local mod = require(name)
-
-  assert(xpcall(mod.run, debugm.traceback))
+  mod.run()
 
   -- Stagents/monitoring/tests/agent-protocol/handshake.hello.response.jsonart the event loop
   native.run()
