@@ -3,7 +3,7 @@ Description=Rackspace Cloud Monitoring Agent
 Documentation=http://www.rackspace.com/cloud/public/monitoring/
 
 [Service]
-ExecStart=/usr/bin/rackspace-monitoring-agent -l /var/log/rackspace-monitoring-agent.log
+ExecStart=/usr/bin/rackspace-monitoring-agent -l /var/log/rackspace-monitoring-agent.log --production
 
 [Install]
 WantedBy=multi-user.target
