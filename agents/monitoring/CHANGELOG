@@ -1,4 +1,4 @@
-## rackspace-monitoring-agent-0.1.6-3
+## rackspace-monitoring-agent-0.1.6-5
 
 - Fix --setup crashing
 - Fix commandline argument for --production (crashes will get reported)
