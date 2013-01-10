@@ -60,6 +60,9 @@ function MonitoringAgent:start(options)
 
   async.series({
     function(callback)
+      self:_preConfig(callback)
+    end,
+    function(callback)
       self:loadEndpoints(callback)
     end,
     function(callback)
@@ -131,7 +134,7 @@ function MonitoringAgent:setConfig(config)
   self._config = config
 end
 
-function MonitoringAgent:_verifyState(callback)
+function MonitoringAgent:_preConfig(callback)
 
   if self._config['monitoring_token'] == nil then
     logging.error("'monitoring_token' is missing from 'config'")
