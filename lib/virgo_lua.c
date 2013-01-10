@@ -116,7 +116,7 @@ virgo__lua_handle_crash(lua_State *L) {
   /* do dump */
 
   v = virgo__lua_context(L);
-  if (virgo__argv_has_flag(v, NULL, "--report-lua-crash") == 1){
+  if (virgo__argv_has_flag(v, NULL, "--production") == 1){
     virgo__force_dump();
   }
 
