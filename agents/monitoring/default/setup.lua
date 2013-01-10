@@ -350,7 +350,15 @@ function Setup:run(callback)
 
               local validatedIndex = tonumber(index)
               if validatedIndex == #localEntities + 1 then
-                client.entities.create(self:_buildLocalEntity(hostname), callback)
+                client.entities.create(self:_buildLocalEntity(hostname), function(err, entity)
+                  if err then
+                    callback(err)
+                    return
+                  end
+                  self:_out('')
+                  self:_out(fmt('New Entity Created: %s', entity))
+                  callback(nil, entity)
+                end)
               elseif validatedIndex == #localEntities + 2 then
                 callback()
               elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
