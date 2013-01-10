@@ -266,7 +266,7 @@ function Setup:run(callback)
           self._agent:loadEndpoints(callback)
         end,
         function(callback)
-          self._agent:loadStates(callback)
+          self._agent:_preConfig(callback)
         end,
         function(callback)
           self._agent:connect()
