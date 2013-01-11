@@ -432,6 +432,27 @@ exports['test_custom_plugin_dimensions'] = function(test, asserts)
   end)
 end
 
+exports['test_custom_plugin_metric_line_with_units'] = function(test, asserts)
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='plugin_units.sh'}})
+  asserts.ok(check._lastResult == nil)
+  check:run(function(result)
+    local metrics = result:getMetrics()
+
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'Total logged users: 66')
+    asserts.equals(result:getState(), 'available')
+
+    asserts.dequals(metrics['host1']['logged_users'], {t = 'int64', v = '66', u = 'users'})
+    asserts.dequals(metrics['host1']['data_out'], {t = 'int64', v = '1024', u = 'bytes'})
+    asserts.dequals(metrics['host1']['no_units'], {t = 'int64', v = '1'})
+    test.done()
+  end)
+end
+
 exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = function(test, asserts)
   constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
                       '/agents/monitoring/tests/fixtures/custom_plugins')
@@ -556,7 +577,7 @@ exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(
     local metrics = result:getMetrics()
 
     asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Metric line not in the following format: metric <name> <type> <value>')
+    asserts.equals(result:getStatus(), 'Metric line not in the following format: metric <name> <type> <value> [<unit>]')
     asserts.equals(result:getState(), 'unavailable')
 
     asserts.dequals(metrics, {})
@@ -575,7 +596,7 @@ exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_met
     local metrics = result:getMetrics()
 
     asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Invalid value "100 200" for a non-string metric')
+    asserts.equals(result:getStatus(), 'Invalid "<value> [<unit>]" combination "100 200 bytes" for a non-string metric')
     asserts.equals(result:getState(), 'unavailable')
 
     asserts.dequals(metrics, {})

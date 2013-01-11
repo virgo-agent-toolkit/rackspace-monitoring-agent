@@ -238,7 +238,7 @@ function MySQLCheck:_runCheckInChild(callback)
     if kstat ~= nil then
       -- TODO: would be nice to use mysql native types here?
       local val = ffi.string(r[1])
-      cr:addMetric(kstat.alias, nil, kstat.type, val)
+      cr:addMetric(kstat.alias, nil, kstat.type, val, nil)
     end
   end
 
