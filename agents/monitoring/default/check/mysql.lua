@@ -104,9 +104,9 @@ local stat_map = {
   Innodb_buffer_pool_pages_free = { type = 'uint64', alias = 'innodb.buffer_pool_pages_free'},
   Innodb_buffer_pool_pages_flushed = { type = 'uint64', alias = 'innodb.buffer_pool_pages_flushed'},
   Innodb_buffer_pool_pages_total = { type = 'uint64', alias = 'innodb.buffer_pool_pages_total'},
-  Innodb_row_lock_time = { type = 'uint64', alias = 'innodb.row_lock_time'},
-  Innodb_row_lock_time_avg = { type = 'uint64', alias = 'innodb.row_lock_time_avg'},
-  Innodb_row_lock_time_max = { type = 'uint64', alias = 'innodb.row_lock_time_max'},
+  Innodb_row_lock_time = { type = 'uint64', alias = 'innodb.row_lock_time', unit = 'milliseconds'},
+  Innodb_row_lock_time_avg = { type = 'uint64', alias = 'innodb.row_lock_time_avg', unit = 'milliseconds'},
+  Innodb_row_lock_time_max = { type = 'uint64', alias = 'innodb.row_lock_time_max', unit = 'milliseconds'},
   Innodb_rows_deleted = { type = 'gauge', alias = 'innodb.rows_deleted'},
   Innodb_rows_inserted = { type = 'gauge', alias = 'innodb.rows_inserted'},
   Innodb_rows_read = { type = 'gauge', alias = 'innodb.rows_read'},
@@ -118,10 +118,10 @@ local stat_map = {
   Threads_created = { type = 'uint64', alias = 'threads.created'},
   Threads_running = { type = 'uint64', alias = 'threads.running'},
 
-  Uptime = { type = 'uint64', alias = 'core.uptime'},
+  Uptime = { type = 'uint64', alias = 'core.uptime', unit = 'milliseconds'}, -- TODO: verify unit
 
   Qcache_free_blocks = { type = 'uint64', alias = 'qcache.free_blocks'},
-  Qcache_free_memory = { type = 'uint64', alias = 'qcache.free_memory'},
+  Qcache_free_memory = { type = 'uint64', alias = 'qcache.free_memory', unit = 'bytes'},
   Qcache_hits = { type = 'gauge', alias = 'qcache.hits'},
   Qcache_inserts  = { type = 'gauge', alias = 'qcache.inserts'},
   Qcache_lowmem_prunes  = { type = 'gauge', alias = 'qcache.lowmem_prunes'},
@@ -238,7 +238,7 @@ function MySQLCheck:_runCheckInChild(callback)
     if kstat ~= nil then
       -- TODO: would be nice to use mysql native types here?
       local val = ffi.string(r[1])
-      cr:addMetric(kstat.alias, nil, kstat.type, val, nil)
+      cr:addMetric(kstat.alias, nil, kstat.type, val, rawget(kstat, 'unit'))
     end
   end
 
