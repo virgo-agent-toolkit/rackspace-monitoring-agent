@@ -226,7 +226,7 @@ function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension,
                                    tostring(err)))
   else
     self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s, unit=%s)',
-               tostring(metricDimension), metricName, metricType, metricValue, metricUnit))
+               tostring(metricDimension), metricName, metricType, metricValue, tostring(metricUnit)))
   end
 end
 
