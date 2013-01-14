@@ -174,7 +174,7 @@ function CpuCheck:run(callback)
     function(cpuinfo, metrics, callback)
       -- attach percentages and averages
       for key, value in pairs(metrics) do
-        checkResult:addMetric(key, nil, 'double', value)
+        checkResult:addMetric(key, nil, 'double', value, 'percent')
       end
       callback()
     end

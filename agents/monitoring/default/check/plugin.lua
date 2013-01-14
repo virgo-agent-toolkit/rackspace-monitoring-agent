@@ -23,9 +23,9 @@ All the plugins must output information to the standard output in the
 format defined bellow:
 
 status <status string>
-metric <name 1> <type> <value>
-metric <name 2> <type> <value>
-metric <name 3> <type> <value>
+metric <name 1> <type> <value> [<unit>]
+metric <name 2> <type> <value> [<unit>]
+metric <name 3> <type> <value> [<unit>]
 
 * <status string> - A status string which includes a summary of the results.
 * <name> Name of the metric. No spaces are allowed. If a name contains a dot,
@@ -35,6 +35,9 @@ metric <name 3> <type> <value>
   * gauge
   * float
   * int
+* [<unit>] - Metric unit, optional. A string representing the units of the metric
+  measurement. Units may only be provided on non-string metrics, and may not
+  contain any spaces. Examples: 'bytes', 'milliseconds', 'percent'.
 --]]
 
 local table = require('table')

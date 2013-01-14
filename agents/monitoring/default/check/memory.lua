@@ -29,6 +29,16 @@ function MemoryCheck:run(callback)
   local meminfo = s:mem()
   local swapinfo = s:swap()
   local checkResult = CheckResult:new(self, {})
+  local units = {
+    actual_free = 'bytes',
+    used = 'bytes',
+    free = 'bytes',
+    actual_used = 'bytes',
+    page_in = 'bytes',
+    page_out = 'bytes',
+    total = 'bytes',
+    ram = 'megabytes'
+  }
   local metrics = {
     'actual_used',
     'free',
@@ -46,11 +56,11 @@ function MemoryCheck:run(callback)
   }
 
   for _, key in pairs(metrics) do
-    checkResult:addMetric(key, nil, 'gauge', meminfo[key])
+    checkResult:addMetric(key, nil, 'gauge', meminfo[key], units[key])
   end
 
   for _, key in pairs(swap_metrics) do
-    checkResult:addMetric('swap_' .. key, nil, 'gauge', swapinfo[key])
+    checkResult:addMetric('swap_' .. key, nil, 'gauge', swapinfo[key], units[key])
   end
 
   -- Return Result

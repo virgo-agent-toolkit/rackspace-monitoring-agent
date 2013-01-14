@@ -96,19 +96,23 @@ function ApacheCheck:_parseLine(line, checkResult)
     },
     ['Total_kBytes'] = {
       ['type'] = 'uint64',
-      ['name'] = 'total_kbytes'
+      ['name'] = 'total_kbytes',
+      ['unit'] = 'kilobytes'
     },
     ['Uptime'] = {
       ['type'] = 'uint64',
-      ['name'] = 'uptime'
+      ['name'] = 'uptime',
+      ['unit'] = 'milliseconds'
     },
     ['BytesPerSec'] = {
       ['type'] = 'uint64',
-      ['name'] = 'bytes_per_second'
+      ['name'] = 'bytes_per_second',
+      ['unit'] = 'bytes'
     },
     ['BytesPerReq'] = {
       ['type'] = 'uint64',
-      ['name'] = 'bytes_per_request'
+      ['name'] = 'bytes_per_request',
+      ['unit'] = 'bytes'
     },
     ['BusyWorkers'] = {
       ['type'] = 'uint64',
@@ -120,7 +124,8 @@ function ApacheCheck:_parseLine(line, checkResult)
     },
     ['CPULoad'] = {
       ['type'] = 'double',
-      ['name'] = 'cpu_load'
+      ['name'] = 'cpu_load',
+      ['unit'] = 'percent' -- #TODO: verify
     },
     ['ReqPerSec'] = {
       ['type'] = 'double',

@@ -52,6 +52,15 @@ function DiskCheck:run(callback)
   local disks = s:disks()
   local checkResult = CheckResult:new(self, {})
   local name, usage
+  local units = {
+    read_bytes = 'bytes',
+    write_bytes = 'bytes',
+    rtime = 'milliseconds',
+    wtime = 'milliseconds',
+    qtime = 'milliseconds',
+    time = 'milliseconds',
+    service_time = 'milliseconds'
+  }
   local metrics = {
     'reads',
     'writes',
@@ -78,7 +87,7 @@ function DiskCheck:run(callback)
 
       if usage then
         for _, key in pairs(metrics) do
-          checkResult:addMetric(key, nil, nil, usage[key])
+          checkResult:addMetric(key, nil, nil, usage[key], units[key])
         end
       else
         checkResult:setError(fmt('Unable to access disk usage metrics for %s', self.dev_name))
