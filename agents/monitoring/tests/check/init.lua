@@ -624,14 +624,15 @@ exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(t
 end
 
 exports['test_check_metrics_post_serialization'] = function(test, asserts)
-  local check = DiskCheck:new({id='foo', period=30})
+  local check = MemoryCheck:new({id='foo', period=30})
   asserts.ok(check._lastResult == nil)
   check:run(function(result)
     local check_metrics_post = msg.MetricsRequest:new(check, result)
     local serialized = check_metrics_post:serialize()
     asserts.ok(serialized.params.timestamp > 1343400000)
-    asserts.equals(serialized.params.check_type, 'agent.disk')
+    asserts.equals(serialized.params.check_type, 'agent.memory')
     asserts.equals(serialized.params.check_id, 'foo')
+    asserts.equals(serialized.params.metrics[1][2].swap_free.u, 'bytes')
     test.done()
   end)
 end
