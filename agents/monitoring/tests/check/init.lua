@@ -35,15 +35,11 @@ local PluginCheck = Check.PluginCheck
 local LoadAverageCheck = Check.LoadAverageCheck
 
 local MySQLTests = require('./mysql')
-local ZooKeeperTests = require('./zookeeper')
-local RedisTests = require('./redis')
 local ApacheTests = require('./apache')
 local FileSystemTests = require('./filesystem')
 
 local exports = merge(MySQLTests, {})
-exports = merge(exports, ZooKeeperTests)
 exports = merge(exports, ApacheTests)
-exports = merge(exports, RedisTests)
 exports = merge(exports, FileSystemTests)
 
 exports['test_base_check'] = function(test, asserts)
