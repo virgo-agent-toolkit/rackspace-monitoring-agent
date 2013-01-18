@@ -27,8 +27,6 @@ local MySQLCheck = require('./mysql').MySQLCheck
 local NullCheck = require('./null').NullCheck
 local LoadAverageCheck = require('./load_average').LoadAverageCheck
 local PluginCheck = require('./plugin').PluginCheck
-local ZooKeeperCheck = require('./zookeeper').ZooKeeperCheck
-local RedisCheck = require('./redis').RedisCheck
 
 local Error = require('core').Error
 
@@ -62,10 +60,6 @@ function create(checkData)
     return MySQLCheck:new(obj)
   elseif checkType == 'agent.load_average' then
     return LoadAverageCheck:new(obj)
-  elseif checkType == 'agent.zookeeper' then
-    return ZooKeeperCheck:new(obj)
-  elseif checkType == 'agent.redis' then
-    return RedisCheck:new(obj)
   elseif checkType == 'agent.null' then
     return NullCheck:new(obj)
   else
@@ -122,8 +116,6 @@ exports.MySQLCheck = MySQLCheck
 exports.PluginCheck = PluginCheck
 exports.LoadAverageCheck = LoadAverageCheck
 exports.ApacheCheck = ApacheCheck
-exports.ZooKeeperCheck = ZooKeeperCheck
-exports.RedisCheck = RedisCheck
 exports.NullCheck = NullCheck
 
 exports.create = create

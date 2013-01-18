@@ -8,7 +8,6 @@ case "$1" in
          # Cleanup init's mess if it fails to stop
          PIDFILE=/var/run/rackspace-monitoring-agent.pid
          start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE --name rackspace-monit --signal KILL
-         echo "stop returned $?"
 
          # Start only if we find a config file in place
          if [ -f /etc/rackspace-monitoring-agent.cfg ]; then
