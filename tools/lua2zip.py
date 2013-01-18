@@ -31,6 +31,7 @@ class VirgoZip(ZipFile):
 def main():
     lib_lua = os.path.join('lib', 'lua')
     async_lua = os.path.join('modules', 'async')
+    twisted_lua = os.path.join('modules', 'twisted')
     bourbon_lua = os.path.join('modules', 'bourbon')
     options_lua = os.path.join('modules', 'options')
     hsm_lua = os.path.join('modules', 'luvit-hsm')
@@ -46,6 +47,8 @@ def main():
     monitoring_init = os.path.join('agents', 'monitoring', 'init.lua')
 
     modules = {
+        twisted_lua:
+            generate_bundle_map('modules/twisted', 'modules/twisted'),
         async_lua:
             generate_bundle_map('modules/async', 'modules/async'),
         bourbon_lua:
