@@ -95,14 +95,26 @@ def configure_virgo(o):
     o['variables']['host_arch'] = host_arch()
     o['variables']['target_arch'] = target_arch()
     if sys.platform == "win32":
-        supported_paths = ["C:\\Program Files (x86)\\WiX Toolset v3.7", "C:\\Program Files (x86)\\Windows Installer XML v3.6"]
-        using_path = "MISSING"
-        for path in supported_paths:
-            if os.path.exists(path):
-                using_path = path
+        supported_toolsets = [
+            {
+                'LIGHT_EXE' : "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\light.exe", 
+                'CANDLE_EXE' : "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\candle.exe",
+            },
+            {
+                'LIGHT_EXE' : "C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\light.exe", 
+                'CANDLE_EXE' : "C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\candle.exe",
+            },
+        ]
+        # set defaults to missing
+        o['variables']['LIGHT_EXE'] = '"tools\\win_tool_missing.bat" "light.exe"'
+        o['variables']['CANDLE_EXE'] = '"tools\\win_tool_missing.bat" "candle.exe"'
+
+        # find both tools or consider them missing
+        for toolset in supported_toolsets:
+            if os.path.exists(toolset['LIGHT_EXE']) and os.path.exists(toolset['CANDLE_EXE']):
+                print "Found WiX Toolset"
+                o['variables'].update(toolset)
                 break
-        o['variables']['LIGHT_EXE'] = '"' + using_path + '\\bin\\light.exe"'
-        o['variables']['CANDLE_EXE'] = '"' + using_path + '\\bin\\candle.exe"'
 
 def render_openssl_symlinks(src, dest):
     src = os.path.abspath(src)
