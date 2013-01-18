@@ -106,12 +106,12 @@ def configure_virgo(o):
     if sys.platform == "win32":
         supported_toolsets = [
             {
-                'LIGHT_EXE' : "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\light.exe", 
-                'CANDLE_EXE' : "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\candle.exe",
+                'LIGHT_EXE': "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\light.exe",
+                'CANDLE_EXE': "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\candle.exe",
             },
             {
-                'LIGHT_EXE' : "C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\light.exe", 
-                'CANDLE_EXE' : "C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\candle.exe",
+                'LIGHT_EXE': "C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\light.exe",
+                'CANDLE_EXE': "C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\candle.exe",
             },
         ]
         # set defaults to missing
@@ -126,6 +126,7 @@ def configure_virgo(o):
                 o['variables']['LIGHT_EXE'] = '"' + toolset['LIGHT_EXE'] + '"'
                 o['variables']['CANDLE_EXE'] = '"' + toolset['CANDLE_EXE'] + '"'
                 break
+
 
 def render_openssl_symlinks(src, dest):
     src = os.path.abspath(src)
