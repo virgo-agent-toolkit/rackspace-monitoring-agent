@@ -49,27 +49,21 @@
                         <ServiceControl Id="StopControlAgent" Name="$(var.ProductName)" Stop="both" Remove="uninstall" Wait="yes" />
 
                     </Component>
-                        <Directory Id="PLUGINS" Name="plugins">
-                            <Component Id="PluginDirectory" Guid="9DC64F5F-0B17-4C73-AEEC-A906DB3DEF84">
-                                <CreateFolder />
-                            </Component>
-                        </Directory>
-              </Directory>
+                    <Directory Id="PLUGINS" Name="plugins">
+                        <Component Id="PluginDirectory" Guid="9DC64F5F-0B17-4C73-AEEC-A906DB3DEF84">
+                            <CreateFolder />
+                        </Component>
+                    </Directory>
+                </Directory>
             </Directory>
             <Directory Id="CommonAppDataFolder" Name="CommonAppDataFolder">
-              <Directory Id="RaxMonFolder" Name="Rackspace Monitoring">
-                <Component Id="ExampleConfigFile" Guid="F875141D-191A-4219-B70F-E44BFCE437EE">
-                          <File Id="example_config_file"
-                                Name="rackspace-monitoring-agent-example.cfg"
-                                Source="$(var.ProductDir)\..\pkg\monitoring\rackspace-monitoring-agent.cfg" />
-                </Component>
+                <Directory Id="RaxMonFolder" Name="Rackspace Monitoring">
+                </Directory>
             </Directory>
-          </Directory>
         </Directory>
         <Feature Id="Complete" Level="1">
             <ComponentRef Id="MainExecutable" />
             <ComponentRef Id="PluginDirectory" />
-            <ComponentRef Id="ExampleConfigFile" />
         </Feature>
     <Icon Id="agent_icon" SourceFile="$(var.ProductDir)\..\agents\monitoring\rackspace-monitoring-agent.ico" />
     <Property Id="ARPPRODUCTICON" Value="agent_icon" />
