@@ -94,7 +94,15 @@ def configure_virgo(o):
     o['variables']['luvit_prefix'] = options.prefix if options.prefix else ''
     o['variables']['host_arch'] = host_arch()
     o['variables']['target_arch'] = target_arch()
-
+    if sys.platform == "win32":
+        supported_paths = ["C:\\Program Files (x86)\\WiX Toolset v3.7", "C:\\Program Files (x86)\\Windows Installer XML v3.6"]
+        using_path = "MISSING"
+        for path in supported_paths:
+            if os.path.exists(path):
+                using_path = path
+                break
+        o['variables']['LIGHT_EXE'] = '"' + using_path + '\\bin\\light.exe"'
+        o['variables']['CANDLE_EXE'] = '"' + using_path + '\\bin\\candle.exe"'
 
 def render_openssl_symlinks(src, dest):
     src = os.path.abspath(src)
