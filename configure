@@ -30,6 +30,16 @@ parser.add_option("--ninja",
     dest="ninja_build",
     help="Generate files for the ninja build system")
 
+parser.add_option("--target_arch",
+    action="store",
+    dest="target_arch",
+    help="Select the target architecture (defaults to detected host_arch)")
+
+parser.add_option("--host_arch",
+    action="store",
+    dest="host_arch",
+    help="Select the architecture of the build host (defaults to autodetect)")
+
 (options, args) = parser.parse_args()
 
 
@@ -83,17 +93,16 @@ def host_arch():
 
 
 def target_arch():
-    # TODO act on options.dest_cpu
     return host_arch()
 
 
 def configure_virgo(o):
-    # TODO add gdb and dest_cpu
+    # TODO add gdb
     o['variables']['virgo_debug'] = 'true' if options.debug else 'false'
     o['variables']['virgo_prefix'] = options.prefix if options.prefix else ''
     o['variables']['luvit_prefix'] = options.prefix if options.prefix else ''
-    o['variables']['host_arch'] = host_arch()
-    o['variables']['target_arch'] = target_arch()
+    o['variables']['host_arch'] = options.host_arch if options.host_arch else host_arch()
+    o['variables']['target_arch'] = options.target_arch if options.target_arch else target_arch()
     if sys.platform == "win32":
         supported_toolsets = [
             {

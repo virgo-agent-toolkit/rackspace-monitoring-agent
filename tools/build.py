@@ -18,9 +18,9 @@ def extra_env():
 
 def build():
     if sys.platform.find('freebsd') == 0:
-        cmd = 'gmake -C %s' % paths.build_dir
+        cmd = 'gmake -C %s' % paths.root
     elif sys.platform != "win32":
-        cmd = 'make -C %s' % paths.build_dir
+        cmd = 'make -C %s' % paths.root
     else:
         cmd = 'tools\win_build.bat'
 
