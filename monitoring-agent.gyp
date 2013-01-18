@@ -275,11 +275,6 @@
           'dependencies': [
             'monitoring-agent#host',
           ],
-          'variables': {
-            # TODO: detect path via a python script?
-            'LIGHT_EXE': '"C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\light.exe"',
-            'CANDLE_EXE': '"C:\\Program Files (x86)\\Windows Installer XML v3.6\\bin\\candle.exe"',
-          },
 
           'sources': [
             'pkg/monitoring/windows/RackspaceMonitoringAgent.wxs',
