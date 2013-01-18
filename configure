@@ -122,7 +122,9 @@ def configure_virgo(o):
         for toolset in supported_toolsets:
             if os.path.exists(toolset['LIGHT_EXE']) and os.path.exists(toolset['CANDLE_EXE']):
                 print "Found WiX Toolset"
-                o['variables'].update(toolset)
+                # update the paths and force them back into quotes
+                o['variables']['LIGHT_EXE'] = '"' + toolset['LIGHT_EXE'] + '"'
+                o['variables']['CANDLE_EXE'] = '"' + toolset['CANDLE_EXE'] + '"'
                 break
 
 def render_openssl_symlinks(src, dest):
