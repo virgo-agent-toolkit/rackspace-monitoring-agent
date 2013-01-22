@@ -45,18 +45,15 @@ function UpgradePollEmitter:_registerTimeout(callback)
     return
   end
   -- Check for upgrade
-  function timeout()
-    self:_registerTimeout(function()
-      if self.stopped then
-        return
-      end
-      self:_emit()
-      timeout()
-    end)
+  local timeoutCallback
+  timeoutCallback = function()
+    self:_emit()
+    self:_registerTimeout(timeoutCallback)
   end
+
   self.timeout = self:calcTimeout()
   logging.debugf('Using Upgrade Timeout %ums', self.timeout)
-  self._timer = timer.setTimeout(self.timeout, timeout)
+  self._timer = timer.setTimeout(self.timeout, timeoutCallback)
 end
 
 function UpgradePollEmitter:start()
