@@ -66,6 +66,7 @@ show_help()
          "  -i, --insecure        Use insecure SSL CA cert (for testing/debugging).\n"
          "  -D, --detach          Detach the process and run the agent in the background.\n"
          "  --production          Write debug information to disk when the agent crahes.\n"
+         "  --crash               Crash the agent.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);
