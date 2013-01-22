@@ -118,7 +118,7 @@ local stat_map = {
   Threads_created = { type = 'uint64', alias = 'threads.created'},
   Threads_running = { type = 'uint64', alias = 'threads.running'},
 
-  Uptime = { type = 'uint64', alias = 'core.uptime', unit = 'milliseconds'}, -- TODO: verify unit
+  Uptime = { type = 'uint64', alias = 'core.uptime', unit = 'seconds'},
 
   Qcache_free_blocks = { type = 'uint64', alias = 'qcache.free_blocks'},
   Qcache_free_memory = { type = 'uint64', alias = 'qcache.free_memory', unit = 'bytes'},
