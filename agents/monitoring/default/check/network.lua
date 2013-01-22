@@ -17,6 +17,10 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 
 local table = require('table')
+local units = {
+  rx_bytes = 'bytes',
+  tx_bytes = 'bytes'
+}
 
 local NetworkCheck = BaseCheck:extend()
 
@@ -64,7 +68,7 @@ function NetworkCheck:run(callback)
   else
     local usage = interface:usage()
     for key, value in pairs(usage) do
-      checkResult:addMetric(key, nil, 'gauge', value)
+      checkResult:addMetric(key, nil, 'gauge', value, units[key])
     end
   end
 

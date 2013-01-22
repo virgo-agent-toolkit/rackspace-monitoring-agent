@@ -30,6 +30,13 @@ local METRICS = {
   'free_files',
 }
 
+local UNITS = {
+  total = 'kilobytes',
+  free = 'bytes',
+  used = 'bytes',
+  avail = 'bytes'
+}
+
 function FileSystemCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.filesystem', params)
 
@@ -81,7 +88,7 @@ function FileSystemCheck:run(callback)
       if usage then
         for _, key in pairs(METRICS) do
           value = usage[key]
-          checkResult:addMetric(key, nil, nil, value)
+          checkResult:addMetric(key, nil, nil, value, UNITS[key])
         end
       end
 

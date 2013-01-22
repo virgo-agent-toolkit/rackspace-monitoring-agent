@@ -13,37 +13,60 @@
             [
                 null,
                 {
-                    "used_percent": {
-                        "t": "double",
-                        "v": "50.09241047559"
+                    "actual_free": {
+                        "t": "int64",
+                        "v": "8338522112",
+                        "u": "bytes"
                     },
                     "actual_used": {
                         "t": "int64",
-                        "v": "8369401856"
-                    },
-                    "total": {
-                        "t": "int64",
-                        "v": "16707923968"
+                        "v": "8369401856",
+                        "u": "bytes"
                     },
                     "free": {
                         "t": "int64",
-                        "v": "955637760"
+                        "v": "955637760",
+                        "u": "bytes"
                     },
                     "ram": {
                         "t": "int64",
-                        "v": "15936"
+                        "v": "15936",
+                        "u": "megabytes"
                     },
-                    "free_percent": {
-                        "t": "double",
-                        "v": "49.90758952441"
-                    },
-                    "actual_free": {
+                    "swap_free": {
                         "t": "int64",
-                        "v": "8338522112"
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "swap_page_in": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "swap_page_out": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "swap_total": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "swap_used": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "total": {
+                        "t": "int64",
+                        "v": "16707923968",
+                        "u": "bytes"
                     },
                     "used": {
                         "t": "int64",
-                        "v": "15752286208"
+                        "v": "15752286208",
+                        "u": "bytes"
                     }
                 }
             ]

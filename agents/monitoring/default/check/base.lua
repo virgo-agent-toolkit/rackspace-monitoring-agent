@@ -196,7 +196,7 @@ end
 --[[
 Add a metric to CheckResult object with proper logging and error handling
 --]]
-function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension, metricType, metricValue)
+function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension, metricType, metricValue, metricUnit)
   local internalMetricType, msg
 
   local function matcher(v)
@@ -218,15 +218,15 @@ function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension,
 
   local status, err = pcall(function()
     checkResult:addMetric(metricName, metricDimension, internalMetricType,
-                          metricValue)
+                          metricValue, metricUnit)
   end)
 
   if err then
     self._log(logging.WARNING, fmt('Failed to add metric, skipping it... (err=%s)',
                                    tostring(err)))
   else
-    self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s)',
-               tostring(metricDimension), metricName, metricType, metricValue))
+    self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s, unit=%s)',
+               tostring(metricDimension), metricName, metricType, metricValue, tostring(metricUnit)))
   end
 end
 
@@ -236,8 +236,8 @@ or add a metric).
 --]]
 function ChildCheck:_handleLine(runCtx, checkResult, line)
   local stateEndIndex, statusEndIndex, metricEndIndex, splitString, value, state
-  local metricName, metricType, metricValue, dotIndex, internalMetricType, partsCount
-  local msg
+  local metricName, metricType, metricValue, metricUnit, dotIndex, internalMetricType
+  local msg, partsCount
 
   if runCtx.hasError then
     -- If a CheckResult already has an error set, all the lines which come after
@@ -264,7 +264,7 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
       -- formatted like so: "status ok Everything is normal"
       -- We parse and set the status message here, and additionally inclue state as a 
       -- string metric. This is purely a compatability convenience.
-      self:_addMetric(runCtx, checkResult, 'legacy_state', nil, 'string', state)
+      self:_addMetric(runCtx, checkResult, 'legacy_state', nil, 'string', state, nil)
       table.remove(splitString, 1)
       status = table.concat(splitString, ' ')
     else
@@ -301,7 +301,7 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
     partsCount = #splitString
 
     if partsCount < 3 then
-      msg = 'Metric line not in the following format: metric <name> <type> <value>'
+      msg = 'Metric line not in the following format: metric <name> <type> <value> [<unit>]'
       self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
       self:_setError(runCtx, checkResult, msg)
       return
@@ -310,7 +310,11 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
     metricName = splitString[1]
     metricType = splitString[2]
 
-    -- Everything after name and type is treated as a metric value
+    -- Everything after name and type and unit are removed is treated as metric value
+    if metricType ~= 'string' and partsCount == 4 then
+      metricUnit = splitString[4]
+      table.remove(splitString, 4)
+    end
     table.remove(splitString, 1)
     table.remove(splitString, 1)
 
@@ -325,15 +329,15 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
       metricDimension = nil
     end
 
-    if metricType ~= 'string' and partsCount ~= 3 then
+    if metricType ~= 'string' and partsCount > 4 then
       -- Only values for string metrics can contain spaces
-      local msg = fmt('Invalid value "%s" for a non-string metric', metricValue)
+      local msg = fmt('Invalid "<value> [<unit>]" combination "%s" for a non-string metric', metricValue)
       self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
       self:_setError(runCtx, checkResult, msg)
       return
     end
 
-    self:_addMetric(runCtx, checkResult, metricName, metricDimension, metricType, metricValue)
+    self:_addMetric(runCtx, checkResult, metricName, metricDimension, metricType, metricValue, metricUnit)
 
   else
     msg = fmt('Unrecognized line "%s"', line)
@@ -540,14 +544,14 @@ function CheckResult:setError(message)
   self:setStatus(message)
 end
 
-function CheckResult:addMetric(name, dimension, type, value)
-  local metric = Metric:new(name, dimension, type, value)
+function CheckResult:addMetric(name, dimension, type, value, unit)
+  local metric = Metric:new(name, dimension, type, value, unit)
 
   if not self._metrics[metric.dimension] then
     self._metrics[metric.dimension] = {}
   end
 
-  self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value}
+  self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value, u = metric.unit}
 end
 
 function CheckResult:getMetrics()
@@ -578,6 +582,7 @@ end
 function CheckResult:serializeAsPluginOutput()
   local result = {}
   local k,v,j,metric
+  local line
 
   table.insert(result, 'state '.. self:getState())
   table.insert(result, 'status '.. self:getStatus())
@@ -593,17 +598,22 @@ function CheckResult:serializeAsPluginOutput()
         mname = j
       end
 
-      table.insert(result, 'metric ' .. mname .. ' ' .. metric.t .. ' ' .. metric.v)
+      line = 'metric ' .. mname .. ' ' .. metric.t .. ' ' .. metric.v
+      if metric.u then
+        line = line .. ' ' .. metric.u
+      end
+      table.insert(result, line)
     end
   end
 
   return table.concat(result, '\n') .. '\n'
 end
 
-function Metric:initialize(name, dimension, type, value)
+function Metric:initialize(name, dimension, type, value, unit)
   self.name = name
   self.dimension = dimension or 'none'
   self.value = tostring(value)
+  self.unit = unit
 
   if type then
     if not tableContains(function(v) return type == v end, VALID_METRIC_TYPES) then
