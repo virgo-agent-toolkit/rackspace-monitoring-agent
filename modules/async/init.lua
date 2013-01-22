@@ -17,13 +17,13 @@ async.forEach = function(arr, iterator, callback)
     local elem = arr[i]
     iterator(elem, function(err)
       if err then
-        callback(err)
+        local cb = callback
         callback = function() end
-      else
-        completed = completed + 1
-        if completed == #arr then
-          callback()
-        end
+        return cb(err)
+      end
+      completed = completed + 1
+      if completed == #arr then
+        return callback()
       end
     end)
   end
@@ -36,31 +36,30 @@ async.forEachSeries = function(arr, iterator, callback)
   local completed = 0
   local iterate
   iterate = function()
-    iterator(arr[completed + 1], function(err)
+    return iterator(arr[completed + 1], function(err)
       if err then
-        callback(err)
+        local cb = callback
         callback = function() end
-      else
-        completed = completed + 1
-        if completed == #arr then
-          callback()
-        else
-          iterate()
-        end
+        return cb(err)
       end
+      completed = completed + 1
+      if completed == #arr then
+        return callback()
+      end
+      return iterate()
     end)
   end
-  iterate()
+  return iterate()
 end
 
 async.reduce = function(arr, memo, iterator, callback)
-  async.forEachSeries(arr, function(x, callback)
-    iterator(memo, x, function(err, v)
+  return async.forEachSeries(arr, function(x, callback)
+    return iterator(memo, x, function(err, v)
       memo = v
-      callback(err)
+      return callback(err)
     end)
   end, function(err)
-    callback(err, memo)
+    return callback(err, memo)
   end)
 end
 
@@ -82,21 +81,20 @@ async.forEachLimit = function(arr, limit, iterator, callback)
       running = running + 1
       iterator(arr[started], function(err)
         if err then
-          callback(err)
+          local cb = callback
           callback = function() end
-        else
-          completed = completed + 1
-          running = running - 1
-          if completed == #arr then
-            callback()
-          else
-            replenish()
-          end
+          return cb(err)
         end
+        completed = completed + 1
+        running = running - 1
+        if completed == #arr then
+          return callback()
+        end
+        return replenish()
       end)
     end
   end
-  replenish()
+  return replenish()
 end
 
 -- Map
@@ -109,20 +107,20 @@ end
 local _map = function(arr, iterator)
   local results = {}
   _forEach(arr, function(x, i, a)
-    table.insert(results, iterator(x, i, a))
+    return table.insert(results, iterator(x, i, a))
   end)
   return results
 end
 
 local doParallel = function(fn)
   return function(arr, iterator, callback)
-    fn(async.forEach, arr, iterator, callback)
+    return fn(async.forEach, arr, iterator, callback)
   end
 end
 
 local doSeries = function(fn)
   return function(arr, iterator, callback)
-    fn(async.forEachSeries, arr, iterator, callback)
+    return fn(async.forEachSeries, arr, iterator, callback)
   end
 end
 
@@ -131,13 +129,13 @@ local _asyncMap = function(eachfn, arr, iterator, callback)
   arr = _map(arr, function(x, i)
     return {index=i, value=x}
   end)
-  eachfn(arr, function(x, callback)
-    iterator(x.value, function(err, v)
+  return eachfn(arr, function(x, callback)
+    return iterator(x.value, function(err, v)
       results[x.index] = v
-      callback(err)
+      return callback(err)
     end)
   end, function(err)
-    callback(err, results)
+    return callback(err, results)
   end)
 end
 
@@ -150,18 +148,18 @@ local _filter = function(eachfn, arr, iterator, callback)
   arr = _map(arr, function(x, i)
    return {index=i, value=x}
   end)
-  eachfn(arr, function(x, callback)
-    iterator(x.value, function(v)
+  return eachfn(arr, function(x, callback)
+    return iterator(x.value, function(v)
       if v == 1 then
         table.insert(results, 1, x)
       end
-      callback()
+      return callback()
     end)
   end, function(err)
     table.sort(results, function(a, b)
       return a.index - b.index
     end)
-    callback(_map(results, function(x)
+    return callback(_map(results, function(x)
       return x.value
     end))
   end)
@@ -178,17 +176,17 @@ local _reject = function(eachfn, arr, iterator, callback)
   arr = _map(arr, function(x, i)
     return {index=i, value=x}
   end)
-  eachfn(arr, function(x, callback)
-    iterator(x.value, function(v)
+  return eachfn(arr, function(x, callback)
+    return iterator(x.value, function(v)
       if not v then
         table.insert(results, 1, x)
       end
-      callback()
+      return callback()
     end, function(err)
       table.sort(results, function(a, b)
         return a.index - b.index
       end)
-      callback(_map(results, function(x)
+      return callback(_map(results, function(x)
         return x.value
       end))
     end)
@@ -201,16 +199,16 @@ async.rejectSeries = doSeries(_reject)
 --  Detect
 
 local _detect = function(eachfn, arr, iterator, main_callback)
-  eachfn(arr, function(x, callback)
-    iterator(x, function(result)
+  return eachfn(arr, function(x, callback)
+    return iterator(x, function(result)
         if result then
-          main_callback(x)
+          local cb = main_callback
           main_callback = function() end
-        else
-          callback()
+          return cb(x)
         end
+        return callback()
       end, function(err)
-        main_callback()
+        return main_callback()
     end)
   end)
 end
@@ -221,48 +219,46 @@ async.detectSeries = doSeries(_detect)
 -- Sortby
 
 async.sortBy = function(arr, iterator, callback)
-  async.map(arr, function(x, callback)
-    iterator(x, function(err, criteria)
+  return async.map(arr, function(x, callback)
+    return iterator(x, function(err, criteria)
       if err then
-        callback(err)
-      else
-        callback(nil, {value=x, criteria=criteria})
+        return callback(err)
       end
+      return callback(nil, {value=x, criteria=criteria})
     end)
   end, function (err, results)
     if err then
       return callback(err)
-    else
-      local fn
-      fn = function(left, right)
-        local a = left.criteria
-        local b = right.criteria
-        if a < b then
-          return -1
-        elseif a > b then
-          return 1
-        else
-          return 0
-        end
-      end
-      table.sort(results, fn)
-      callback(nil, _map(results, function(x)
-        return x.value
-      end))
     end
+    local fn
+    fn = function(left, right)
+      local a = left.criteria
+      local b = right.criteria
+      if a < b then
+        return -1
+      elseif a > b then
+        return 1
+      else
+        return 0
+      end
+    end
+    table.sort(results, fn)
+    return callback(nil, _map(results, function(x)
+      return x.value
+    end))
   end)
 end
 
 -- Some or any
 
 async.some = function(arr, iterator, main_callback)
-  async.forEach(arr, function(x, callback)
-    iterator(x, function(v)
+  return async.forEach(arr, function(x, callback)
+    return iterator(x, function(v)
       if v then
         main_callback(true)
         main_callback = function() end
       end
-      callback()
+      return callback()
     end)
   end, function(err)
   end)
@@ -273,16 +269,16 @@ async.any = async.some
 -- Every
 
 async.every = function(arr, iterator, main_callback)
-  async.forEach(arr, function(x, callback)
-    iterator(x, function(v)
+  return async.forEach(arr, function(x, callback)
+    return iterator(x, function(v)
       if not v then
         main_callback(false)
         main_callback = function() end
       end
-      callback()
+      return callback()
     end)
   end, function(err)
-    main_callback(true)
+    return main_callback(true)
   end)
 end
 
@@ -337,13 +333,13 @@ end
 
 local _concat = function(eachfn, arr, fn, callback)
   local r = {}
-  eachfn(arr, function(x, cb)
-    fn(x, function(err, y)
+  return eachfn(arr, function(x, cb)
+    return fn(x, function(err, y)
       r = table.copy(y or {})
-      cb(err)
+      return cb(err)
     end)
   end, function(err)
-    callback(err, r)
+    return callback(err, r)
   end)
 end
 
@@ -353,59 +349,59 @@ async.concatSeries = doSeries(_concat)
 -- Whilst
 
 async.whilst = function(test, iterator, callback)
-  if test() then
-    iterator(function(err)
-      if err then
-        return callback(err)
-      end
-      async.whilst(test, iterator, callback)
-    end)
-  else
-    callback()
+  if not test() then
+    return callback()
   end
+
+  return iterator(function(err)
+    if err then
+      return callback(err)
+    end
+    return async.whilst(test, iterator, callback)
+  end)
 end
 
 -- Until
 
 async.Until = function(test, iterator, callback)
-  if not test() then
-    iterator(function(err)
-      if err then
-        return callback(err)
-      end
-      async.Until(test, iterator, callback)
-    end)
-  else
-    callback()
+  if test() then
+    return callback()
   end
+
+  return iterator(function(err)
+    if err then
+      return callback(err)
+    end
+    return async.Until(test, iterator, callback)
+  end)
 end
 
 -- Series
 async.series = function(tasks, callback)
   callback = callback or function() end
   if tasks[1] then
-    async.mapSeries(tasks, function(fn, callback)
+    return async.mapSeries(tasks, function(fn, callback)
       if fn then
-        fn(function(err, ...)
-          callback(err, unpack({...}))
+        return fn(function(err, ...)
+          return callback(err, unpack({...}))
         end)
       end
     end, callback)
-  else
-    local _keys = {}
-    local results = {}
-    for k, v in pairs(tasks) do
-      table.insert(_keys, 1, k)
-    end
-    async.forEachSeries(_keys, function(k, callback)
-      tasks[k](function(err, ...)
-        results[k] = {...}
-        callback(err)
-      end)
-    end, function(err)
-      callback(err, results)
-    end)
   end
+
+  local _keys = {}
+  local results = {}
+  for k, v in pairs(tasks) do
+    table.insert(_keys, 1, k)
+  end
+  return async.forEachSeries(_keys, function(k, callback)
+    tasks[k](function(err, ...)
+      results[k] = {...}
+      return callback(err)
+    end)
+  end, function(err)
+    return callback(err, results)
+  end)
 end
 
 -- Iterator
@@ -441,32 +437,33 @@ async.waterfall = function(tasks, callback)
   wrapIterator = function(iterator)
     return function(err, ...)
       if err then
-        callback(err)
+        local cb = callback
         callback = function() end
-      else
-        local args = {...}
-        local _next = iterator.Next()
-        if _next then
-          table.insert(args, wrapIterator(_next))
-        else
-          table.insert(args, callback)
-        end
-        timer.setTimeout(0, function()
-          iterator.run(unpack(args))
-        end)
+        return cb(err)
       end
+
+      local args = {...}
+      local _next = iterator.Next()
+      if _next then
+        table.insert(args, wrapIterator(_next))
+      else
+        table.insert(args, callback)
+      end
+      return timer.setTimeout(0, function()
+        return iterator.run(unpack(args))
+      end)
     end
   end
-  wrapIterator(async.iterator(tasks))()
+  return wrapIterator(async.iterator(tasks))()
 end
 
 -- Parallel
 async.parallel = function(tasks, callback)
   callback = callback or function() end
-  async.map(tasks, function(fn, callback)
+  return async.map(tasks, function(fn, callback)
     if fn then
-      fn(function(err, ...)
-        callback(err, {...})
+      return fn(function(err, ...)
+        return callback(err, {...})
       end)
     end
   end, callback)
@@ -493,20 +490,24 @@ async.queue = function(worker, concurrency)
       local task = Queue.popleft(q.tasks)
       if q.empty and q.length() == 0 then q.empty() end
       workers = workers + 1
-      worker(task.data, function(...)
+      return worker(task.data, function(...)
         workers = workers - 1
         if task.callback then
           task.callback(unpack({...}))
         end
-        if q.drain and (q.length() + workers) == 0 then q.drain() end
-        q.process()
+        if q.drain and (q.length() + workers) == 0 then
+          q.drain()
+        end
+        return q.process()
       end)
     end
   end
   q.push = function(data, callback)
     Queue.pushright(q.tasks, { data = data, callback = callback })
-    if q.saturated and q.length() == concurrency then q.saturated() end
-    timer.setTimeout(0, q.process)
+    if q.saturated and q.length() == concurrency then
+      q.saturated()
+    end
+    return timer.setTimeout(0, q.process)
   end
   return q
 end
