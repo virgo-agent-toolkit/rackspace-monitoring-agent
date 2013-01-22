@@ -303,8 +303,8 @@ exports['test_custom_plugin_timeout'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
-  if os.type() == "win32" then
-    test.skip("Unsupported Platform for custom plugins")
+  if os.type() == 'win32' then
+    test.skip('Unsupported Platform for custom plugins')
     return
   end
 
@@ -317,6 +317,26 @@ exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
   check:run(function(result)
     asserts.ok(result ~= nil)
     asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=127)')
+    asserts.equals(result:getState(), 'unavailable')
+    test.done()
+  end)
+end
+
+exports['test_custom_plugin_non_zero_exit_code_with_status'] = function(test, asserts)
+  if os.type() == 'win32' then
+    test.skip('Unsupported Platform for custom plugins')
+    return
+  end
+
+  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
+                      '/agents/monitoring/tests/fixtures/custom_plugins')
+
+  local check = PluginCheck:new({id='foo', period=30,
+                                 details={file='non_zero_with_status.sh'}})
+  asserts.ok(check._lastResult == nil)
+  check:run(function(result)
+    asserts.ok(result ~= nil)
+    asserts.equals(result:getStatus(), 'ponies > unicorns')
     asserts.equals(result:getState(), 'unavailable')
     test.done()
   end)
