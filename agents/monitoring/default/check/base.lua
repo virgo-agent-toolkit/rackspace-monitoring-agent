@@ -551,7 +551,7 @@ function CheckResult:addMetric(name, dimension, type, value, unit)
     self._metrics[metric.dimension] = {}
   end
 
-  self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value, u = metric.unit} -- TODO: do we want 'u' key always present, or present only when it has a value
+  self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value, u = metric.unit}
 end
 
 function CheckResult:getMetrics()

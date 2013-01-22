@@ -125,7 +125,7 @@ function ApacheCheck:_parseLine(line, checkResult)
     ['CPULoad'] = {
       ['type'] = 'double',
       ['name'] = 'cpu_load',
-      ['unit'] = 'percent' -- #TODO: verify
+      ['unit'] = 'percent'
     },
     ['ReqPerSec'] = {
       ['type'] = 'double',
