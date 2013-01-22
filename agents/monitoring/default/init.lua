@@ -22,6 +22,10 @@ local function main(argv)
   argv = argv and argv or {}
   local options = {}
 
+  if argv.crash then
+    return virgo.force_crash()
+  end
+
   if argv.s then
     options.stateDirectory = argv.s
   end
