@@ -21,9 +21,9 @@ def load_options():
     fn = os.path.join(root_dir, '..', 'options.gypi')
     print "reading ", fn
 
-    f = open(fn)
     opts = {}
-    if (f):
+    try:
+        f = open(fn)
         content = ''
         for line in f.readlines():
             ## Looking for comments
@@ -35,8 +35,8 @@ def load_options():
 
         opts = json.loads(content)
         f.close()
-    else:
-        print "no options file found ", fn
+    except Exception as inst:
+        print "Exception type", inst
 
     return opts
 
