@@ -18,12 +18,12 @@ options = {}
 
 
 def load_options():
-    fn = os.path.join(root_dir, '..', 'options.gypi')
-    print "reading ", fn
+    options_filename = os.path.join(root_dir, '..', 'options.gypi')
+    print "reading ", options_filename
 
     opts = {}
     try:
-        f = open(fn)
+        f = open(options_filename, 'rb')
         content = ''
         for line in f.readlines():
             ## Looking for comments
