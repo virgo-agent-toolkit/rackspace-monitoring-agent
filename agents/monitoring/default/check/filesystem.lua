@@ -32,9 +32,9 @@ local METRICS = {
 
 local UNITS = {
   total = 'kilobytes',
-  free = 'bytes',
-  used = 'bytes',
-  avail = 'bytes'
+  free = 'kilobytes',
+  used = 'kilobytes',
+  avail = 'kilobytes'
 }
 
 function FileSystemCheck:initialize(params)
