@@ -48,7 +48,7 @@ function UpgradePollEmitter:_registerTimeout()
   local timeoutCallback
   timeoutCallback = function()
     self:_emit()
-    self:_registerTimeout(timeoutCallback)
+    self:_registerTimeout()
   end
 
   self.timeout = self:calcTimeout()
