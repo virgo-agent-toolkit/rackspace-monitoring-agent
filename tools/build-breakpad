@@ -36,7 +36,7 @@ def main():
         raise AttributeError('Failed to get digest from head of symbol file')
     digest = groups.groups()[0]
 
-    symbol_file = open("%s/%s" % (dest, digest), 'wb')
+    symbol_file = open("%s/symbol-%s" % (dest, digest), 'wb')
     symbol_file.write(stdout)
     symbol_file.close()
 
