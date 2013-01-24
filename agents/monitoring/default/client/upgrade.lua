@@ -22,7 +22,6 @@ local logging = require('logging')
 local UpgradePollEmitter = Emitter:extend()
 
 function UpgradePollEmitter:initialize()
-  self.timeout = nil
   self.stopped = nil
 end
 
@@ -40,23 +39,20 @@ function UpgradePollEmitter:forceUpgradeCheck()
   self:_emit()
 end
 
-function UpgradePollEmitter:_registerTimeout(callback)
+function UpgradePollEmitter:_registerTimeout()
   if self.stopped then
     return
   end
   -- Check for upgrade
-  function timeout()
-    self:_registerTimeout(function()
-      if self.stopped then
-        return
-      end
-      self:_emit()
-      timeout()
-    end)
+  local timeoutCallback
+  timeoutCallback = function()
+    self:_emit()
+    self:_registerTimeout()
   end
-  self.timeout = self:calcTimeout()
-  logging.debugf('Using Upgrade Timeout %ums', self.timeout)
-  self._timer = timer.setTimeout(self.timeout, timeout)
+
+  local timeout = self:calcTimeout()
+  logging.debugf('Using Upgrade Timeout %ums', timeout)
+  self._timer = timer.setTimeout(timeout, timeoutCallback)
 end
 
 function UpgradePollEmitter:start()
