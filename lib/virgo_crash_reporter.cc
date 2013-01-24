@@ -15,6 +15,9 @@
  *
  */
 
+#define DEMARCATOR \
+  "__5FY97Y1WBU7GPXCSIRS3T2EEHTSNJ6W183N8FUBFOD5LDWW06ZRBQB8AA8LA8BJD__"
+
 extern "C" {
   #include "virgo__util.h"
   #include "virgo__types.h"
@@ -33,13 +36,23 @@ static bool dumpCallback(const char* dump_path, const char* minidump_id, void* c
   int rv;
   FILE *fp;
   char *dump_file = NULL;
-  virgo_t* v = *(virgo_t **)context;
-  lua_State *L = v->L;
+  virgo_t* v;
+  lua_State *L;
 
   rv = asprintf((char **) &dump_file, "%s/%s-crash-report-%s.dmp", dump_path, VIRGO_DEFAULT_NAME, minidump_id);
   if (rv != -1){
     printf("FATAL ERROR: Crash Dump written to: %s\n", dump_file);
   }
+
+  fp = fopen(dump_file, "ab");
+  if (fp == NULL) {
+    return succeeded;
+  }
+  fprintf(fp, "%s\n%s", DEMARCATOR, VERSION_FULL);
+
+  v = *(virgo_t **)context;
+  L = v->L;
+
   if (!L){
     printf("No lua found.");
     return succeeded;
@@ -51,12 +64,7 @@ static bool dumpCallback(const char* dump_path, const char* minidump_id, void* c
     return succeeded;
   }
 
-  fp = fopen(dump_file, "ab");
-  if (fp == NULL) {
-    return succeeded;
-  }
-
-  fprintf(fp, "__5FY97Y1WBU7GPXCSIRS3T2EEHTSNJ6W183N8FUBFOD5LDWW06ZRBQB8AA8LA8BJD__\n%s", lua_tostring(L, -1));
+  fprintf(fp, "%s\n%s", DEMARCATOR, lua_tostring(L, -1));
   fclose(fp);
 
   return succeeded;
