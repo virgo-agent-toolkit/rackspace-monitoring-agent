@@ -123,7 +123,6 @@ function Request:_cycle_endpoint()
       return true
     end
   end
-
   return false
 end
 
@@ -140,7 +139,17 @@ end
 function Request:_write_stream(res)
   logging.debugf('writing stream to disk: %s.', self.download)
 
-  local stream = fs.createWriteStream(self.download)
+  local ok, stream = pcall(function()
+    return fs.createWriteStream(self.download)
+  end)
+
+  if not ok then
+    -- can't make the file because the dir doens't exist
+    if stream.code and stream.code == "ENOENT" then
+      return self.callback(stream)
+    end
+    return self:_ensure_retries(err, res)
+  end
 
   stream:on('end', function()
     self:_ensure_retries(nil, res)
