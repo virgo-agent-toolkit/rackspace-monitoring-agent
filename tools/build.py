@@ -22,21 +22,18 @@ def load_options():
     print "reading ", options_filename
 
     opts = {}
-    try:
-        f = open(options_filename, 'rb')
-        content = ''
-        for line in f.readlines():
-            ## Looking for comments
-            match = comment_re.search(line)
-            if match:
-                line = line[:match.start()] + line[match.end():]
+    f = open(options_filename, 'rb')
+    content = ''
+    for line in f.readlines():
+        ## Looking for comments to remove
+        match = comment_re.search(line)
+        if match:
+            line = line[:match.start()] + line[match.end():]
 
-            content = content + line
+        content = content + line
 
-        opts = json.loads(content)
-        f.close()
-    except Exception as inst:
-        print "Exception type", inst
+    opts = json.loads(content)
+    f.close()
 
     return opts
 
