@@ -3,10 +3,39 @@
 import os
 import subprocess
 import sys
+import json
+import re
 
 sys.path.insert(0, './')
 import paths
 
+root_dir = os.path.dirname(__file__)
+
+# Regular expression for comments
+comment_re = re.compile('^#(.+)$')
+
+options = {}
+
+
+def load_options():
+    options_filename = os.path.join(root_dir, '..', 'options.gypi')
+    print "reading ", options_filename
+
+    opts = {}
+    f = open(options_filename, 'rb')
+    content = ''
+    for line in f.readlines():
+        ## Looking for comments to remove
+        match = comment_re.search(line)
+        if match:
+            line = line[:match.start()] + line[match.end():]
+
+        content = content + line
+
+    opts = json.loads(content)
+    f.close()
+
+    return opts
 
 def extra_env():
     env = {}
@@ -22,7 +51,8 @@ def build():
     elif sys.platform != "win32":
         cmd = 'make -C %s' % paths.root
     else:
-        cmd = 'tools\win_build.bat'
+        build = 'Debug' if options['variables']['virgo_debug'] == 'true' else 'Release'
+        cmd = 'tools\win_build.bat %s'%build
 
     print cmd
     sys.exit(subprocess.call(cmd, shell=True))
@@ -34,7 +64,8 @@ def pkg():
     elif sys.platform != "win32":
         cmd = 'BUILDTYPE=%s make -C %s pkg' % (paths.BUILDTYPE, paths.root)
     else:
-        cmd = 'tools\win_pkg.bat'
+        build = 'Debug' if options['variables']['virgo_debug'] == 'true' else 'Release'
+        cmd = 'tools\win_pkg.bat %s'%build
 
     print cmd
     sys.exit(subprocess.call(cmd, shell=True))
@@ -122,6 +153,8 @@ extra_env = extra_env()
 
 for key in extra_env.keys():
     os.environ[key] = extra_env[key]
+
+options = load_options()
 
 print('Running %s' % ins)
 cmd = commands.get(ins)
