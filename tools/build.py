@@ -37,6 +37,7 @@ def load_options():
 
     return opts
 
+
 def extra_env():
     env = {}
     if sys.platform.find('freebsd') == 0:
@@ -52,7 +53,7 @@ def build():
         cmd = 'make -C %s' % paths.root
     else:
         build = 'Debug' if options['variables']['virgo_debug'] == 'true' else 'Release'
-        cmd = 'tools\win_build.bat %s'%build
+        cmd = 'tools\win_build.bat %s' % build
 
     print cmd
     sys.exit(subprocess.call(cmd, shell=True))
@@ -65,7 +66,7 @@ def pkg():
         cmd = 'BUILDTYPE=%s make -C %s pkg' % (paths.BUILDTYPE, paths.root)
     else:
         build = 'Debug' if options['variables']['virgo_debug'] == 'true' else 'Release'
-        cmd = 'tools\win_pkg.bat %s'%build
+        cmd = 'tools\win_pkg.bat %s' % build
 
     print cmd
     sys.exit(subprocess.call(cmd, shell=True))
