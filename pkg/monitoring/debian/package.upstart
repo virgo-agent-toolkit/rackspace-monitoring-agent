@@ -4,4 +4,4 @@ start on stopped rc RUNLEVEL=[2345]
 stop on runlevel [!2345]
 
 respawn
-exec rackspace-monitoring-agent --production >> /var/log/rackspace-monitoring-agent.log 2>&1
+exec rackspace-monitoring-agent --production -l /var/log/rackspace-monitoring-agent.log 2>&1
