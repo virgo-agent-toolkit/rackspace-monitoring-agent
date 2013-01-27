@@ -3,40 +3,12 @@
 import os
 import subprocess
 import sys
-import json
-import re
+from optloader import load_options
 
 sys.path.insert(0, './')
 import paths
 
-root_dir = os.path.dirname(__file__)
-
-# Regular expression for comments
-comment_re = re.compile('^#(.+)$')
-
 options = {}
-
-
-def load_options():
-    options_filename = os.path.join(root_dir, '..', 'options.gypi')
-    print "reading ", options_filename
-
-    opts = {}
-    f = open(options_filename, 'rb')
-    content = ''
-    for line in f.readlines():
-        ## Looking for comments to remove
-        match = comment_re.search(line)
-        if match:
-            line = line[:match.start()] + line[match.end():]
-
-        content = content + line
-
-    opts = json.loads(content)
-    f.close()
-
-    return opts
-
 
 def extra_env():
     env = {}
@@ -78,9 +50,7 @@ def pkg_sign():
     elif sys.platform != "win32":
         cmd = 'BUILDTYPE=%s make -C %s pkg-sign' % (paths.BUILDTYPE, paths.root)
     else:
-        print 'win32 not supported skipping packaging'
-        sys.exit(0)
-
+        cmd = 'tools\win_sign.py'
     print cmd
     sys.exit(subprocess.call(cmd, shell=True))
 

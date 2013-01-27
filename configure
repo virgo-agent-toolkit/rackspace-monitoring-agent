@@ -96,6 +96,22 @@ def target_arch():
     return host_arch()
 
 
+def find_toolset(toolsets, toolset_name, variables):
+    # find both tools or consider them missing
+    for toolset in toolsets:
+        found_tools = True
+        for tool in toolset.keys():
+            if os.path.exists(toolset[tool]) == False:
+                found_tools = False
+                break;
+        if found_tools:
+            print "Found", toolset_name, "Toolset"
+            # update the paths and force them back into quotes
+            for tool in toolset.keys():
+                variables[tool] = '"' + toolset[tool] + '"'
+            break
+
+
 def configure_virgo(o):
     # TODO add gdb
     o['variables']['virgo_debug'] = 'true' if options.debug else 'false'
@@ -104,7 +120,7 @@ def configure_virgo(o):
     o['variables']['host_arch'] = options.host_arch if options.host_arch else host_arch()
     o['variables']['target_arch'] = options.target_arch if options.target_arch else target_arch()
     if sys.platform == "win32":
-        supported_toolsets = [
+        supported_wix_toolsets = [
             {
                 'LIGHT_EXE': "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\light.exe",
                 'CANDLE_EXE': "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\candle.exe",
@@ -118,14 +134,14 @@ def configure_virgo(o):
         o['variables']['LIGHT_EXE'] = '"tools\\win_tool_missing.bat" "light.exe"'
         o['variables']['CANDLE_EXE'] = '"tools\\win_tool_missing.bat" "candle.exe"'
 
-        # find both tools or consider them missing
-        for toolset in supported_toolsets:
-            if os.path.exists(toolset['LIGHT_EXE']) and os.path.exists(toolset['CANDLE_EXE']):
-                print "Found WiX Toolset"
-                # update the paths and force them back into quotes
-                o['variables']['LIGHT_EXE'] = '"' + toolset['LIGHT_EXE'] + '"'
-                o['variables']['CANDLE_EXE'] = '"' + toolset['CANDLE_EXE'] + '"'
-                break
+        find_toolset(supported_wix_toolsets, "WiX", o['variables'])
+
+        # Specifiy the location of the codesigning cert as a signtool.exe param
+        windows_key_loc = "windows_key_location\\rackspace.pfx"
+        if (os.path.exists(windows_key_loc)):
+            o['variables']['RACKSPACE_CODESIGNING_KEYFILE'] = windows_key_loc
+        else:
+            o['variables']['RACKSPACE_CODESIGNING_KEYFILE'] = "pkg\\monitoring\\windows\\testss.pfx"
 
 
 def render_openssl_symlinks(src, dest):
