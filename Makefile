@@ -9,6 +9,7 @@ TARNAME=virgo-$(VERSION)
 PKG_FULL_VERSION = $(shell python tools/version.py)
 PKG_VERSION = $(shell python tools/version.py tag)
 PKG_RELEASE = $(shell python tools/version.py release)
+BUNDLE_DIR = ../bundle
 
 
 zip_files = monitoring.zip monitoring-test.zip
@@ -28,9 +29,9 @@ all: out/Makefile
 	$(MAKE) bundle_layout
 
 bundle_layout:
-	rm -rf bundle && mkdir -p bundle
-	mkdir bundle/${PKG_FULL_VERSION}
-	cp monitoring.zip bundle/${PKG_FULL_VERSION}
+	rm -rf ${BUNDLE_DIR} && mkdir -p ${BUNDLE_DIR}
+	mkdir ${BUNDLE_DIR}/${PKG_FULL_VERSION}
+	cp monitoring.zip ${BUNDLE_DIR}/${PKG_FULL_VERSION}
 
 out/Release/monitoring-agent: all
 
