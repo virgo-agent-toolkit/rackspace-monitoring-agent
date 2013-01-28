@@ -4,6 +4,12 @@ DESTDIR ?=
 BINDIR = ${DESTDIR}/usr/bin
 SHAREDIR = ${DESTDIR}/usr/share/rackspace-monitoring-agent
 ETCDIR = ${DESTDIR}/etc
+VERSION=$(shell git describe --tags --always)
+TARNAME=virgo-$(VERSION)
+PKG_FULL_VERSION = $(shell python tools/version.py)
+PKG_VERSION = $(shell python tools/version.py tag)
+PKG_RELEASE = $(shell python tools/version.py release)
+
 
 zip_files = monitoring.zip monitoring-test.zip
 sig_files = $(zip_files:%.zip=%.zip.sig)
@@ -19,6 +25,12 @@ all: out/Makefile
 	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/${BUILDTYPE}/monitoring-agent monitoring-agent
 	$(MAKE) $(sig_files) $(zip_files)
+	$(MAKE) bundle_layout
+
+bundle_layout:
+	rm -rf bundle && mkdir -p bundle
+	mkdir bundle/${PKG_FULL_VERSION}
+	cp monitoring.zip bundle/${PKG_FULL_VERSION}
 
 out/Release/monitoring-agent: all
 
@@ -30,9 +42,6 @@ clean:
 
 distclean:
 	rm -rf out
-
-VERSION=$(shell git describe --tags --always)
-TARNAME=virgo-$(VERSION)
 
 pep8:
 	python tools/pep8.py --exclude=deps,gyp,contrib,pep8.py --ignore=E126,E501,E128,E127 . configure
@@ -55,10 +64,6 @@ install: all
 	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/rackspace-monitoring-agent
 	install out/${BUILDTYPE}/monitoring.zip ${SHAREDIR}
 	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
-
-PKG_FULL_VERSION = $(shell python tools/version.py)
-PKG_VERSION = $(shell python tools/version.py tag)
-PKG_RELEASE = $(shell python tools/version.py release)
 
 spec_file_name = rackspace-monitoring-agent.spec
 spec_file_dir = pkg/monitoring/rpm
