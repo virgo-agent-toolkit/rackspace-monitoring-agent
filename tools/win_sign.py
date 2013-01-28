@@ -14,7 +14,7 @@ from optloader import load_options
 # Test CA Cert Import
 # certutil -user -addstore Root testca.cer
 
-options = load_options();
+options = load_options()
 
 build = 'Debug' if options['variables']['virgo_debug'] == 'true' else 'Release'
 signtool = "C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v7.0A\\bin\\signtool.exe"
@@ -39,12 +39,12 @@ if sys.argv[1] == 'pkg':
 
 if os.path.exists(pfx):
     for file in files_to_sign:
-        command = "\"%s\" sign /d \"%s\" /v /f \"%s\" \"%s\""%(signtool, file, pfx, build + "\\" + file)
+        command = "\"%s\" sign /d \"%s\" /v /f \"%s\" \"%s\"" % (signtool, file, pfx, build + "\\" + file)
         result = subprocess.call(command, shell=True)
         if result != 0:
-            print "FAILED(%d) CMD : %s"%(result, command)
+            print "FAILED(%d) CMD : %s" % (result, command)
             break
 else:
-    print "No PFX found, looking for: %s"%pfx
+    print "No PFX found, looking for: %s" % pfx
 
 sys.exit(result)

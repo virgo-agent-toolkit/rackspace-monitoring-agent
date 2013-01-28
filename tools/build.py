@@ -10,6 +10,7 @@ import paths
 
 options = {}
 
+
 def extra_env():
     env = {}
     if sys.platform.find('freebsd') == 0:
