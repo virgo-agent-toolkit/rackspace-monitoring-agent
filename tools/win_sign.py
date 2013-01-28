@@ -22,11 +22,22 @@ pfx = options['variables']['RACKSPACE_CODESIGNING_KEYFILE']
 
 result = -1
 
-if os.path.exists(pfx):
+if len(sys.argv) != 2 or not (sys.argv[1] == 'exe' or sys.argv[1] == 'pkg'):
+    print "Usage: win_sign.py [exe, pkg]"
+    sys.exit(result)
+
+files_to_sign = []
+
+if sys.argv[1] == 'exe':
     files_to_sign = [
         "monitoring-agent.exe",
+    ]
+if sys.argv[1] == 'pkg':
+    files_to_sign = [
         "rackspace-monitoring-agent.msi",
     ]
+
+if os.path.exists(pfx):
     for file in files_to_sign:
         command = "\"%s\" sign /d \"%s\" /v /f \"%s\" \"%s\""%(signtool, file, pfx, build + "\\" + file)
         result = subprocess.call(command, shell=True)

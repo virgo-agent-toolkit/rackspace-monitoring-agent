@@ -44,13 +44,24 @@ def pkg():
     sys.exit(subprocess.call(cmd, shell=True))
 
 
+def exe_sign():
+    if sys.platform == "win32":
+        cmd = 'tools\win_sign.py exe'
+    else:
+        print "Executable Signing is only supported on Win32"
+        sys.exit(1)
+
+    print cmd
+    sys.exit(subprocess.call(cmd, shell=True))
+
+
 def pkg_sign():
     if sys.platform.find('freebsd') == 0:
         cmd = 'BUILDTYPE=%s gmake -C %s pkg-sign' % (paths.BUILDTYPE, paths.root)
     elif sys.platform != "win32":
         cmd = 'BUILDTYPE=%s make -C %s pkg-sign' % (paths.BUILDTYPE, paths.root)
     else:
-        cmd = 'tools\win_sign.py'
+        cmd = 'tools\win_sign.py pkg'
     print cmd
     sys.exit(subprocess.call(cmd, shell=True))
 
@@ -101,6 +112,7 @@ commands = {
     'crash': crash,
     'build': build,
     'pkg': pkg,
+    'exe-sign': exe_sign,
     'pkg-sign': pkg_sign,
     'test': test_std,
     'test_pipe': test_pipe,
