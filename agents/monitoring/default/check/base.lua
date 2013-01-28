@@ -42,6 +42,12 @@ local Metric = Object:extend()
 local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
 local VALID_STATES = {'available', 'unavailable'}
 
+-- Default check status
+local DEFAULT_STATUS = 'success'
+
+-- Default check state
+local DEFAULT_STATE = 'available'
+
 
 function BaseCheck:initialize(checkType, params)
   self.id = tostring(params.id)
@@ -393,8 +399,17 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     process.nextTick(function()
       -- Callback is called on the next tick so any pending line processing can
       -- happen before calling a callback.
+      local checkStatus
+
       if code ~= 0 then
-        checkResult:setError(fmt('Plugin exited with non-zero status code (code=%s)', (code)))
+        -- If a status is provided use it instead of using the default one
+        checkStatus = checkResult:getStatus()
+
+        if not checkStatus or checkStatus == DEFAULT_STATUS then
+          checkStatus = fmt('Plugin exited with non-zero status code (code=%s)', (code))
+        end
+
+        checkResult:setError(checkStatus)
       end
       self._lastResult = checkResult
       callback(checkResult)
@@ -502,8 +517,8 @@ end
 function CheckResult:initialize(check, options)
   self._options = options or {}
   self._metrics = {}
-  self._state = 'available'
-  self._status = 'success'
+  self._state = DEFAULT_STATE
+  self._status = DEFAULT_STATUS
   self._check = check
   self:setTimestamp(self._options.timestamp)
   self._timestamp = vtime.now()
@@ -647,6 +662,8 @@ end
 
 local exports = {}
 exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES
+exports.DEFAULT_STATE = DEFAULT_STATE
+exports.DEFAULT_STATUS = DEFAULT_STATUS
 exports.BaseCheck = BaseCheck
 exports.ChildCheck = ChildCheck
 exports.SubProcCheck = SubProcCheck
