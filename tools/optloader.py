@@ -7,6 +7,7 @@ root_dir = os.path.dirname(__file__)
 # Regular expression for comments
 comment_re = re.compile('^#(.+)$')
 
+
 def load_options():
     options_filename = os.path.join(root_dir, '..', 'options.gypi')
     print "reading ", options_filename
@@ -26,5 +27,3 @@ def load_options():
     f.close()
 
     return opts
-
-

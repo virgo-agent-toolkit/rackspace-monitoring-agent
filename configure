@@ -101,9 +101,9 @@ def find_toolset(toolsets, toolset_name, variables):
     for toolset in toolsets:
         found_tools = True
         for tool in toolset.keys():
-            if os.path.exists(toolset[tool]) == False:
+            if not os.path.exists(toolset[tool]):
                 found_tools = False
-                break;
+                break
         if found_tools:
             print "Found", toolset_name, "Toolset"
             # update the paths and force them back into quotes
