@@ -30,7 +30,6 @@ all: out/Makefile
 
 bundle_layout:
 	rm -rf ${BUNDLE_DIR} && mkdir -p ${BUNDLE_DIR}
-	mkdir ${BUNDLE_DIR}
 	cp monitoring.zip ${BUNDLE_DIR}
 	cp monitoring.zip.sig ${BUNDLE_DIR}
 
