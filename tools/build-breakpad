@@ -7,7 +7,22 @@ import subprocess
 
 from optparse import OptionParser
 
-build_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'out', 'Debug'))
+import pkgutils
+
+pkg_type = pkgutils.pkg_type()
+base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+pkg_build_dir_args = [base_path, 'out']
+
+if pkg_type == 'deb':
+    pkg_build_dir_args += ('debbuild', 'rackspace-monitoring-agent')
+elif pkg_type == 'rpm':
+    pkg_build_dir_args += ('rpmbuild', 'BUILD', "virgo-%s" % ("-".join(pkgutils.git_describe())))
+else:
+    raise AttributeError('Unsupported pkg type, %s' % (pkg_type))
+
+pkg_build_dir_args += ('out', 'Debug')
+
+build_dir = os.path.join(*pkg_build_dir_args)
 
 
 def main():
@@ -20,9 +35,13 @@ def main():
         sys.exit(1)
 
     dest = args[0]
-    print(build_dir)
 
-    p = subprocess.Popen(["%s/dump_syms" % (build_dir), "monitoring-agent"],
+    command = os.path.join(build_dir, 'dump_syms')
+    arg = os.path.join(build_dir, 'monitoring-agent')
+
+    print('running %s %s' % (command, arg))
+
+    p = subprocess.Popen([command, arg],
         cwd=build_dir, stdout=subprocess.PIPE)
 
     (stdout, stderr) = p.communicate()
@@ -31,7 +50,7 @@ def main():
         raise OSError('Failed to run dump_syms: %s' % p.stderr.read())
 
     head = stdout.split('\n', 1)[0]
-    groups = re.search(" ([A-Z0-9]{33}) monitoring-agent", head)
+    groups = re.search(" ([A-Z0-9]+) monitoring-agent", head)
     if not groups:
         raise AttributeError('Failed to get digest from head of symbol file')
     digest = groups.groups()[0]
