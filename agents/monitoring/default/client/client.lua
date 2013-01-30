@@ -51,6 +51,7 @@ function AgentClient:initialize(options, scheduler, connectionStream)
   self._token = options.token
   self._guid = options.guid
   self._target = 'endpoint'
+  self._channel = consts.DEFAULT_CHANNEL
   self._ip = options.ip
   self._port = options.port
   self._host = options.host
@@ -161,6 +162,7 @@ function AgentClient:connect()
       end
       self._heartbeat_interval = msg.result.heartbeat_interval
       self._entity_id = msg.result.entity_id
+      self._channel = msg.result.channel or consts.DEFAULT_CHANNEL
       self:emit('handshake_success', msg.result)
     end)
   end)
