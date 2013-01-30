@@ -32,6 +32,7 @@ bundle_layout:
 	rm -rf ${BUNDLE_DIR} && mkdir -p ${BUNDLE_DIR}
 	cp monitoring.zip ${BUNDLE_DIR}
 	cp monitoring.zip.sig ${BUNDLE_DIR}
+	echo ${PKG_FULL_VERSION} > ${BUNDLE_DIR}/VERSION
 
 out/Release/monitoring-agent: all
 
