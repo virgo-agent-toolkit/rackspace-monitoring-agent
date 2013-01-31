@@ -30,9 +30,9 @@ all: out/Makefile
 
 bundle_layout:
 	rm -rf ${BUNDLE_DIR} && mkdir -p ${BUNDLE_DIR}
-	mkdir ${BUNDLE_DIR}/${PKG_FULL_VERSION}
-	cp monitoring.zip ${BUNDLE_DIR}/${PKG_FULL_VERSION}
-	cp monitoring.zip.sig ${BUNDLE_DIR}/${PKG_FULL_VERSION}
+	cp monitoring.zip ${BUNDLE_DIR}
+	cp monitoring.zip.sig ${BUNDLE_DIR}
+	echo ${PKG_FULL_VERSION} > ${BUNDLE_DIR}/VERSION
 
 out/Release/monitoring-agent: all
 
