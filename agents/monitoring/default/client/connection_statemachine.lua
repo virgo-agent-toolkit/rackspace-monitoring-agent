@@ -71,8 +71,7 @@ function ConnectionStateMachine:_reactHandshake(client, state, msg)
   end
   self._connectionStream:promoteClient(client)
   self._connectionStream:clearDelay(client.datacenter)
-  -- TODO: Re-enable when we fix the crasher
-  -- self._connectionStream:getUpgrade():start()
+  self._connectionStream:getUpgrade():start()
   client:startHeartbeatInterval()
   return self.states.TimeSync
 end

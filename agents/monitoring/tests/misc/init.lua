@@ -83,6 +83,9 @@ exports['test_versions'] = function(test, asserts)
   asserts.equals(compareVersions('1.0.25.25', '1.0.25'), 1)
   asserts.equals(compareVersions('1.0.0', '1.0.25.1'), -1)
   asserts.equals(compareVersions('9.0.0', '1.0.0'), 1)
+  asserts.equals(compareVersions('9.0.0-1', '9.0.0-2'), -1)
+  asserts.equals(compareVersions('9.0.0-2', '9.0.0-2'), 0)
+  asserts.equals(compareVersions('9.0.0-2', '9.0.0-1'), 1)
   test.done()
 end
 

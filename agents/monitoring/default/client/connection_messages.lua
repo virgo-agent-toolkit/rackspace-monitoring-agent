@@ -74,7 +74,6 @@ function ConnectionMessages:fetchManifest(client)
 end
 
 function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
-
   local parallel = {
     hash = function(callback)
       local hash = crypto.verify.new('sha256')
@@ -95,7 +94,9 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
     end
   }
   async.parallel(parallel, function(err, res)
-    if err then return callback(err) end
+    if err then
+      return callback(err)
+    end
     local hash = res.hash[1]
     local sig = res.sig[1]
     local pub_data = res.pub_data[1]
@@ -113,40 +114,18 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
   end)
 end
 
-function ConnectionMessages:getUpgrade(upgrade_type, client)
-  local dir, filename, version, extension, AbortDownloadError, temp_dir, unverified_dir, download_attempts
-
-  AbortDownloadError = errors.Error:extend()
-  temp_dir = consts.DEFAULT_DOWNLOAD_PATH
-  unverified_dir = path.join(consts.DEFAULT_DOWNLOAD_PATH, 'unverified')
-  filename = virgo.default_name
-  extension = ""
-  download_attempts = 2
-
-  if upgrade_type ~= "bundle" and upgrade_type ~= "binary" then
-    client:log(logging.ERROR, fmt('Invalid upgrade_type specified: %s', tostring(upgrade_type)))
-    return
-  end
-
-  if upgrade_type == "bundle" then
-    extension = ".zip"
-  end
-
-  local function get_path(arg)
-    local sig = arg and arg.sig and '.sig' or ""
-    local verified = arg and arg.verified
-    local name = filename..'-'..version..extension..sig
-
-    local _dir = unverified_dir
-    if verified then
-      if upgrade_type == "binary" then
-        _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_EXE_DIR)
-      else
-        _dir = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
-      end
-    end
-    return path.join(_dir, name)
-  end
+function ConnectionMessages:getUpgrade(version, client)
+  local bundle_files = {
+    [1] = {
+      payload = 'monitoring.zip',
+      signature = 'monitoring.zip.sig',
+      path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
+    }
+  }
+  local channel = self._connectionStream:getChannel()
+  local unverified_dir = path.join(consts.DEFAULT_DOWNLOAD_PATH, 'unverified')
+  local AbortDownloadError = errors.Error:extend()
+  local SigVerifyError = errors.Error:extend()
 
   async.waterfall({
     function(callback)
@@ -157,91 +136,61 @@ function ConnectionMessages:getUpgrade(upgrade_type, client)
       end)
     end,
     function(callback)
-      client.protocol:request(upgrade_type ..'_upgrade.get_version', callback)
-    end,
-    function(res, callback)
-      version = res.result.version
-
-      async.parallel({
-        function(callback)
-          fs.exists(get_path{verified=true}, callback)
-        end,
-        function(callback)
-          fs.exists(get_path{verified=true, sig=true}, callback)
-        end,
-      }, callback)
-    end,
-    function(res, callback)
-      local sig, update
-
-      sig, update = unpack(res)
-
-      -- Early return from waterfall
-      if sig[1] == true and update[1] == true then
-        return callback(AbortDownloadError:new())
+      local function download_iter(item, callback)
+        local options = {
+          method = 'GET',
+          host = client._host,
+          port = client._port,
+          tls = client._tls_options,
+        }
+        async.parallel({
+          payload = function(callback)
+            local opts = misc.merge({
+              path = fmt('/upgrades/%s/%s', channel, item.payload),
+              download = path.join(unverified_dir, item.payload)
+            }, options)
+            request.makeRequest(opts, callback)
+          end,
+          signature = function(callback)
+            local opts = misc.merge({
+              path = fmt('/upgrades/%s/%s', channel, item.signature),
+              download = path.join(unverified_dir, item.signature)
+            }, options)
+            request.makeRequest(opts, callback)
+          end
+        }, function(err)
+          if err then
+            return callback(err)
+          end
+          local filename = path.join(unverified_dir, item.payload)
+          local filename_sig = path.join(unverified_dir, item.signature)
+          local filename_verified = path.join(item.path, item.payload)
+          local filename_verified_sig = path.join(item.path, item.signature)
+          self:verify(filename, filename_sig, process.cwd() .. '/tests/ca/server.pem', function(err)
+            if err then
+              return callback(err)
+            end
+            async.parallel({
+              function(callback)
+                fs.rename(filename, filename_verified, callback)
+              end,
+              function(callback)
+                fs.rename(filename_sig, filename_verified_sig, callback)
+              end
+            }, callback)
+          end)
+        end)
       end
-
-      local uri_path = fmt('/upgrades/%s/%s', upgrade_type, version)
-      if upgrade_type == 'binary' then
-        uri_path = uri_path .. '/' .. virgo.platform
-      end
-
-      client:log(logging.INFO, fmt('fetching version %s and its sig for %s', version, upgrade_type))
-
-      local options = {
-        method = 'GET',
-        host = client._host,
-        port = client._port,
-        tls = client._tls_options
-      }
-      async.parallel({
-        function(callback)
-          request.makeRequest(misc.merge({
-            path = uri_path,
-            download = get_path(),
-          }, options), callback)
-        end,
-        function(callback)
-          request.makeRequest(misc.merge({
-            path = uri_path ..'.sig',
-            download = get_path{sig=true},
-          }, options), callback)
-        end
-      }, callback)
-    end,
-    function(res, callback)
-      client:log(logging.DEBUG, 'Downloaded update and sig')
-      self:verify(get_path(), get_path{sig=true}, process.cwd()..'/tests/ca/server.pem', callback)
-    end,
-  function(res, callback)
-
-    async.parallel({
-      function(callback)
-        fs.rename(get_path(), get_path{verified=true}, callback)
-      end,
-      function(callback)
-        fs.rename(get_path{sig=true}, get_path{sig=true, verified=true}, callback)
-      end
-      }, callback)
-  end},
-  function(err, res)
-    if not err then
-      local msg = 'An update to the Rackspace Cloud Monitoring Agent has been downloaded to ' ..
-      get_path{verified=true} .. 'and is ready to use. Please restart the agent.'
-      client:log(logging.INFO, msg)
-      self:emit(upgrade_type .. '_upgrade.success')
+      async.forEach(bundle_files, download_iter, callback)
+    end
+  }, function(err)
+    if err then
+      client:log(logging.ERROR, fmt('Error downloading update: %s', tostring(err)))
       return
     end
-
-    if instanceof(err, AbortDownloadError) then
-      self:emit(upgrade_type .. '_upgrade.already_downloaded')
-      return client:log(logging.DEBUG, 'already downloaded update, not doing so again')
-    end
-
-    client:log(logging.ERROR, fmt('Error downloading update: %s', tostring(err)))
-    self:emit(upgrade_type .. '_upgrade.error', err)
+    local msg = 'An update to the Rackspace Cloud Monitoring Agent has been downloaded'
+    client:log(logging.INFO, msg)
   end)
-
 end
 
 function ConnectionMessages:onMessage(client, msg)
