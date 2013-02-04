@@ -19,14 +19,17 @@ sig_files = $(zip_files:%.zip=%.zip.sig)
 	-ln -fs out/${BUILDTYPE}/$@ $@
 
 %.zip.sig: $(zip_files)
-	openssl dgst -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/${BUILDTYPE}/$@
+	openssl dgst -sha256 -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/${BUILDTYPE}/$@
 	-ln -fs out/${BUILDTYPE}/$@ $@
 
 all: out/Makefile
 	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/${BUILDTYPE}/monitoring-agent monitoring-agent
+	openssl dgst -sha256 -sign tests/ca/server.key.insecure monitoring-agent > out/${BUILDTYPE}/monitoring-agent.sig
+	-ln -fs out/${BUILDTYPE}/monitoring-agent.sig monitoring-agent.sig
 	$(MAKE) $(sig_files) $(zip_files)
 	$(MAKE) bundle_layout
+
 
 bundle_layout:
 	rm -rf ${BUNDLE_DIR} && mkdir -p ${BUNDLE_DIR}

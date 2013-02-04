@@ -114,5 +114,26 @@ def git_describe(is_exact=False, split=True):
 
     return version
 
+
+def package_builder_dir():
+    """returns the directory that is packaged into rpms/debs.
+    This is useful because the builders maybe specifiy different cflags, etc, which
+    interfere with generating symbols files."""
+
+    pkgType = pkg_type()
+    basePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    buildDirArgs = [basePath, 'out']
+
+    if pkgType == 'deb':
+        buildDirArgs += ('debbuild', 'rackspace-monitoring-agent')
+    elif pkgType == 'rpm':
+        buildDirArgs += ('rpmbuild', 'BUILD', "virgo-%s" % ("-".join(git_describe())))
+    else:
+        raise AttributeError('Unsupported pkg type, %s' % (pkgType))
+
+    buildDirArgs += ('out', 'Debug')
+
+    return os.path.join(*buildDirArgs)
+
 if __name__ == "__main__":
     print pkg_type()
