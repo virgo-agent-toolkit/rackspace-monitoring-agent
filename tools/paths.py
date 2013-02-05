@@ -10,6 +10,11 @@ build_dir = os.path.join(root, 'out')
 BUILDTYPE = os.environ.get('BUILDTYPE', 'Debug')
 
 if sys.platform != "win32":
+    output_path = os.path.join(root, 'out', BUILDTYPE)
+else:
+    output_path = os.path.join(root, BUILDTYPE)
+
+if sys.platform != "win32":
     agent = os.path.join(root, 'out', BUILDTYPE, 'monitoring-agent')
 else:
     agent = os.path.join(root, BUILDTYPE, 'monitoring-agent.exe')
