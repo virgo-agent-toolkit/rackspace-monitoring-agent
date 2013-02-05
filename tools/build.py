@@ -14,7 +14,7 @@ options = {}
 DEFAULT_BUNDLE_PREFIX = 'monitoring'
 DEFAULT_BUNDLE_NAME = "%s.zip" % DEFAULT_BUNDLE_PREFIX
 DEFAULT_SIGNATURE_NAME = "%s.zip.sig" % DEFAULT_BUNDLE_PREFIX
-DEFAULT_BUNDLE_PATH = os.path.join('..', 'bundle')
+DEFAULT_BUNDLE_PATH = os.path.join(paths.root, '..', 'bundle')
 
 
 def _get_output_path():
@@ -142,15 +142,18 @@ def bundle(directory=DEFAULT_BUNDLE_PATH):
     signature_filename = _get_signature_filename()
     version = _get_version()
 
+    print "Removing %s" % (directory)
+    shutil.rmtree(directory, True)
+    print "mkdir %s" % (directory)
+    os.mkdir(directory)
+
     # copy bundle
-    dest_path = os.path.join(directory, "%s-%s.zip" % (DEFAULT_BUNDLE_NAME,
-      version))
+    dest_path = os.path.join(directory, "monitoring-%s.zip" % (version))
     print "Copying %s to %s" % (_get_bundle_filename(), dest_path)
     shutil.copy(_get_bundle_filename(), dest_path)
 
     # copy signature
-    dest_path = os.path.join(directory, "%s-%s.zip.sig" % (DEFAULT_BUNDLE_NAME,
-      version))
+    dest_path = os.path.join(directory, "monitoring-%s.zip.sig" % (version))
     print "Copying %s to %s" % (_get_signature_filename(), dest_path)
     shutil.copy(_get_signature_filename(), dest_path)
 
