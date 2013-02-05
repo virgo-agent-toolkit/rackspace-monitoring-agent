@@ -138,8 +138,6 @@ def crash():
 
 
 def bundle(directory=DEFAULT_BUNDLE_PATH):
-    stdout = open("stdout", "w+")
-
     bundle_filename = _get_bundle_filename()
     signature_filename = _get_signature_filename()
     version = _get_version()
