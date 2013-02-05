@@ -17,19 +17,12 @@ DEFAULT_SIGNATURE_NAME = "%s.zip.sig" % DEFAULT_BUNDLE_PREFIX
 DEFAULT_BUNDLE_PATH = os.path.join(paths.root, '..', 'bundle')
 
 
-def _get_output_path():
-    if sys.platform != "win32":
-        return os.path.join(paths.root, 'out', paths.BUILDTYPE)
-    else:
-        return os.path.join(paths.root, paths.BUILDTYPE)
-
-
 def _get_bundle_filename(filename=DEFAULT_BUNDLE_NAME):
-    return os.path.join(_get_output_path(), filename)
+    return os.path.join(paths.output_path, filename)
 
 
 def _get_signature_filename(filename=DEFAULT_SIGNATURE_NAME):
-    return os.path.join(_get_output_path(), filename)
+    return os.path.join(paths.output_path, filename)
 
 
 def _get_version():
