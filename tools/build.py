@@ -127,7 +127,6 @@ def crash():
     test(None, "crash", flags=["--production"])
 
 
-
 def bundle(directory=DEFAULT_BUNDLE_PATH):
     bundle_filename = _get_bundle_filename()
     signature_filename = _get_signature_filename()
