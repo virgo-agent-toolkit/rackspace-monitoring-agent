@@ -4,10 +4,8 @@ import os
 import shutil
 import subprocess
 import sys
-from optloader import load_options
-
-sys.path.insert(0, './')
 import paths
+from optloader import load_options
 
 options = {}
 
