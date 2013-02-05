@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import shutil
 import subprocess
 import sys
 from optloader import load_options
@@ -9,6 +10,35 @@ sys.path.insert(0, './')
 import paths
 
 options = {}
+
+DEFAULT_BUNDLE_PREFIX = 'monitoring'
+DEFAULT_BUNDLE_NAME = "%s.zip" % DEFAULT_BUNDLE_PREFIX
+DEFAULT_SIGNATURE_NAME = "%s.zip.sig" % DEFAULT_BUNDLE_PREFIX
+DEFAULT_BUNDLE_PATH = os.path.join('..', 'bundle')
+
+
+def _get_output_path():
+    if sys.platform != "win32":
+        return os.path.join(paths.root, 'out', paths.BUILDTYPE)
+    else:
+        return os.path.join(paths.root, paths.BUILDTYPE)
+
+
+def _get_bundle_filename(filename=DEFAULT_BUNDLE_NAME):
+    return os.path.join(_get_output_path(), filename)
+
+
+def _get_signature_filename(filename=DEFAULT_SIGNATURE_NAME):
+    return os.path.join(_get_output_path(), filename)
+
+
+def _get_version():
+    # capture the current version
+    cmd = 'python tools/version.py'
+    print cmd
+    p = subprocess.Popen(["python", "tools/version.py"], stdout=subprocess.PIPE)
+    version, err = p.communicate()
+    return version.strip()
 
 
 def extra_env():
@@ -75,11 +105,7 @@ def test_cmd(additional=""):
 
 
 def test(stdout=None, entry="tests", flags=None):
-    if sys.platform != "win32":
-        agent_tests = os.path.join(paths.root, 'out', paths.BUILDTYPE, 'monitoring-test.zip')
-    else:
-        agent_tests = os.path.join(paths.root, paths.BUILDTYPE, 'monitoring-test.zip')
-
+    agent_tests = _get_bundle_filename('monitoring-test.zip')
     cmd = test_cmd("--zip %s -e %s -o" % (agent_tests, entry))
     if flags:
         for flag in flags:
@@ -109,8 +135,39 @@ def test_file():
 def crash():
     test(None, "crash", flags=["--production"])
 
+
+
+def bundle(directory=DEFAULT_BUNDLE_PATH):
+    stdout = open("stdout", "w+")
+
+    bundle_filename = _get_bundle_filename()
+    signature_filename = _get_signature_filename()
+    version = _get_version()
+
+    # copy bundle
+    dest_path = os.path.join(directory, "%s-%s.zip" % (DEFAULT_BUNDLE_NAME,
+      version))
+    print "Copying %s to %s" % (_get_bundle_filename(), dest_path)
+    shutil.copy(_get_bundle_filename(), dest_path)
+
+    # copy signature
+    dest_path = os.path.join(directory, "%s-%s.zip.sig" % (DEFAULT_BUNDLE_NAME,
+      version))
+    print "Copying %s to %s" % (_get_signature_filename(), dest_path)
+    shutil.copy(_get_signature_filename(), dest_path)
+
+    # create VERSION file
+    version_file_name = os.path.join(directory, 'VERSION')
+    print "Creating %s" % (version_file_name)
+    version_file = open(version_file_name, "w")
+    version_file.write(version)
+    version_file.write('\n')
+    version_file.close()
+
+
 commands = {
     'crash': crash,
+    'bundle': bundle,
     'build': build,
     'pkg': pkg,
     'exe-sign': exe_sign,
