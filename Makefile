@@ -9,7 +9,6 @@ TARNAME=virgo-$(VERSION)
 PKG_FULL_VERSION = $(shell python tools/version.py)
 PKG_VERSION = $(shell python tools/version.py tag)
 PKG_RELEASE = $(shell python tools/version.py release)
-BUNDLE_DIR = ../bundle
 
 
 zip_files = monitoring.zip monitoring-test.zip
@@ -28,14 +27,7 @@ all: out/Makefile
 	openssl dgst -sha256 -sign tests/ca/server.key.insecure monitoring-agent > out/${BUILDTYPE}/monitoring-agent.sig
 	-ln -fs out/${BUILDTYPE}/monitoring-agent.sig monitoring-agent.sig
 	$(MAKE) $(sig_files) $(zip_files)
-	$(MAKE) bundle_layout
 
-
-bundle_layout:
-	rm -rf ${BUNDLE_DIR} && mkdir -p ${BUNDLE_DIR}
-	cp monitoring.zip ${BUNDLE_DIR}
-	cp monitoring.zip.sig ${BUNDLE_DIR}
-	echo ${PKG_FULL_VERSION} > ${BUNDLE_DIR}/VERSION
 
 out/Release/monitoring-agent: all
 
