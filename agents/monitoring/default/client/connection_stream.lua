@@ -37,7 +37,7 @@ local version = require('../util/version')
 local request = require('../protocol/request')
 
 local ConnectionStream = Emitter:extend()
-function ConnectionStream:initialize(id, token, guid, options)
+function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options)
   self._id = id
   self._token = token
   self._guid = guid
@@ -46,25 +46,16 @@ function ConnectionStream:initialize(id, token, guid, options)
   self._unauthedClients = {}
   self._delays = {}
   self._activeTimeSyncClient = nil
+  self._upgradeEnabled = upgradeEnabled
   self._options = options or {}
   self._scheduler = Scheduler:new()
   self._scheduler:on('check.completed', function(check, checkResult)
     self:_sendMetrics(check, checkResult)
   end)
 
-  local _event_names = {
-    'bundle_upgrade.success',
-    'binary_upgrade.success',
-    'bundle_upgrade.already_downloaded',
-    'binary_upgrade.already_downloaded',
-    'bundle_upgrade.error',
-    'binary_upgrade.error'
-  }
   self._messages = ConnectionMessages:new(self)
-  misc.propagateEvents(self._messages, self, _event_names)
-
   self._upgrade = UpgradePollEmitter:new()
-   self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
+  self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
 end
 
 function ConnectionStream:getUpgrade()
@@ -80,6 +71,10 @@ function ConnectionStream:_onUpgrade()
   local bundleVersion = version.bundle
   local processVersion = version.process
   local uri_path, options
+
+  if not self._upgradeEnabled then
+    return
+  end
 
   if not client then
     return

@@ -27,7 +27,7 @@ exports['test_reconnects'] = function(test, asserts)
     tls = { rejectUnauthorized = false }
   }
 
-  local client = ConnectionStream:new('id', 'token', 'guid', options)
+  local client = ConnectionStream:new('id', 'token', 'guid', false, options)
 
   local clientEnd = 0
   local reconnect = 0
@@ -104,7 +104,7 @@ exports['test_upgrades'] = function(test, asserts)
       child = helper.start_server(callback)
     end,
     function(callback)
-      client = ConnectionStream:new('id', 'token', 'guid', options)
+      client = ConnectionStream:new('id', 'token', 'guid', false, options)
       client:on('handshake_success', misc.nCallbacks(callback, 3))
       client:createConnections(endpoints, function() end)
     end,
