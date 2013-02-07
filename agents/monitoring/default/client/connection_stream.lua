@@ -95,13 +95,16 @@ function ConnectionStream:_onUpgrade()
       client:log(logging.ERROR, 'Error on upgrade: ' .. tostring(err))
       return
     end
+    local upgrade_found = false
     version = misc.trim(version)
     client:log(logging.DEBUG, fmt('(upgrade) -> Current Version: %s', bundleVersion))
     client:log(logging.DEBUG, fmt('(upgrade) -> Upstream Version: %s', version))
     if misc.compareVersions(version, bundleVersion) > 0 then
       client:log(logging.INFO, fmt('(upgrade) -> found: %s', version))
       self._messages:getUpgrade(version, client)
+      upgrade_found = true
     end
+    self:emit('upgrade_done', { upgrade_found = upgrade_found })
   end)
 end
 
