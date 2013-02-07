@@ -115,17 +115,8 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
 end
 
 function ConnectionMessages:getUpgrade(version, client)
-  local bundle_files = {
-    [1] = {
-      payload = 'monitoring.zip',
-      signature = 'monitoring.zip.sig',
-      path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
-    }
-  }
   local channel = self._connectionStream:getChannel()
   local unverified_dir = path.join(consts.DEFAULT_DOWNLOAD_PATH, 'unverified')
-  local AbortDownloadError = errors.Error:extend()
-  local SigVerifyError = errors.Error:extend()
 
   async.waterfall({
     function(callback)
@@ -181,6 +172,14 @@ function ConnectionMessages:getUpgrade(version, client)
           end)
         end)
       end
+
+      local bundle_files = {
+        [1] = {
+          payload = 'monitoring.zip',
+          signature = 'monitoring.zip.sig',
+          path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
+        }
+      }
       async.forEach(bundle_files, download_iter, callback)
     end
   }, function(err)
