@@ -92,7 +92,8 @@ function ApacheCheck:_parseLine(line, checkResult)
   local metrics = {
     ['Total_Accesses'] = {
       ['type'] = 'gauge',
-      ['name'] = 'total_accesses'
+      ['name'] = 'total_accesses',
+      ['unit'] = 'accesses'
     },
     ['Total_kBytes'] = {
       ['type'] = 'uint64',
@@ -116,11 +117,13 @@ function ApacheCheck:_parseLine(line, checkResult)
     },
     ['BusyWorkers'] = {
       ['type'] = 'uint64',
-      ['name'] = 'busy_workers'
+      ['name'] = 'busy_workers',
+      ['unit'] = 'workers'
     },
     ['IdleWorkers'] = {
       ['type'] = 'uint64',
-      ['name'] = 'idle_workers'
+      ['name'] = 'idle_workers',
+      ['unit'] = 'workers'
     },
     ['CPULoad'] = {
       ['type'] = 'double',
@@ -129,7 +132,8 @@ function ApacheCheck:_parseLine(line, checkResult)
     },
     ['ReqPerSec'] = {
       ['type'] = 'double',
-      ['name'] = 'requests_per_second'
+      ['name'] = 'requests_per_second',
+      ['unit'] = 'requests'
     }
   }
 

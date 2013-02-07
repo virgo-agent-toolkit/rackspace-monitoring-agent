@@ -19,7 +19,18 @@ local CheckResult = require('./base').CheckResult
 local table = require('table')
 local units = {
   rx_bytes = 'bytes',
-  tx_bytes = 'bytes'
+  rx_dropped = 'packets',
+  rx_errors = 'errors',
+  rx_frame = 'frames',
+  rx_overruns = 'overruns',
+  rx_packets = 'packets',
+  tx_bytes = 'bytes',
+  tx_carrier = 'errors',
+  tx_collisions = 'collisions',
+  tx_dropped = 'packets',
+  tx_errors = 'errors',
+  tx_overruns = 'overruns',
+  tx_packets = 'packets'
 }
 
 local NetworkCheck = BaseCheck:extend()
