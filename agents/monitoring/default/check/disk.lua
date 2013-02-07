@@ -53,13 +53,16 @@ function DiskCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   local name, usage
   local units = {
+    reads = 'reads',
+    writes = 'writes',
     read_bytes = 'bytes',
     write_bytes = 'bytes',
     rtime = 'milliseconds',
     wtime = 'milliseconds',
     qtime = 'milliseconds',
     time = 'milliseconds',
-    service_time = 'milliseconds'
+    service_time = 'milliseconds',
+    queue = 'seconds'
   }
   local metrics = {
     'reads',
