@@ -37,7 +37,13 @@
       'agents/monitoring/crash',
       'agents/monitoring/tests',
     ],
+
     'VERSION_FULL': '<!(python tools/version.py)',
+
+    'conditions': [
+        [ 'OS=="win"', { 'VERSION_FULL': '<!(python tools/version.py -s .)', }, ],
+    ],
+
     'VERSION_MAJOR': '<!(python tools/version.py major)',
     'VERSION_MINOR': '<!(python tools/version.py minor)',
     'VERSION_PATCH': '<!(python tools/version.py patch)',
