@@ -97,37 +97,37 @@ end
 
 -- List of MySQL Stats that we export, along with their metric type.
 local stat_map = {
-  Aborted_clients = { type = 'uint64', alias = 'core.aborted_clients' },
-  Connections = { type = 'gauge', alias = 'core.connections' },
+  Aborted_clients = { type = 'uint64', alias = 'core.aborted_clients', unit = 'clients' },
+  Connections = { type = 'gauge', alias = 'core.connections', unit = 'connections'},
 
-  Innodb_buffer_pool_pages_dirty = { type = 'uint64', alias = 'innodb.buffer_pool_pages_dirty' },
-  Innodb_buffer_pool_pages_free = { type = 'uint64', alias = 'innodb.buffer_pool_pages_free'},
-  Innodb_buffer_pool_pages_flushed = { type = 'uint64', alias = 'innodb.buffer_pool_pages_flushed'},
-  Innodb_buffer_pool_pages_total = { type = 'uint64', alias = 'innodb.buffer_pool_pages_total'},
+  Innodb_buffer_pool_pages_dirty = { type = 'uint64', alias = 'innodb.buffer_pool_pages_dirty', unit = 'pages' },
+  Innodb_buffer_pool_pages_free = { type = 'uint64', alias = 'innodb.buffer_pool_pages_free', unit = 'pages'},
+  Innodb_buffer_pool_pages_flushed = { type = 'uint64', alias = 'innodb.buffer_pool_pages_flushed', unit = 'pages'},
+  Innodb_buffer_pool_pages_total = { type = 'uint64', alias = 'innodb.buffer_pool_pages_total', unit = 'pages'},
   Innodb_row_lock_time = { type = 'uint64', alias = 'innodb.row_lock_time', unit = 'milliseconds'},
   Innodb_row_lock_time_avg = { type = 'uint64', alias = 'innodb.row_lock_time_avg', unit = 'milliseconds'},
   Innodb_row_lock_time_max = { type = 'uint64', alias = 'innodb.row_lock_time_max', unit = 'milliseconds'},
-  Innodb_rows_deleted = { type = 'gauge', alias = 'innodb.rows_deleted'},
-  Innodb_rows_inserted = { type = 'gauge', alias = 'innodb.rows_inserted'},
-  Innodb_rows_read = { type = 'gauge', alias = 'innodb.rows_read'},
-  Innodb_rows_updated = { type = 'gauge', alias = 'innodb.rows_updated'},
+  Innodb_rows_deleted = { type = 'gauge', alias = 'innodb.rows_deleted', unit = 'rows'},
+  Innodb_rows_inserted = { type = 'gauge', alias = 'innodb.rows_inserted', unit = 'rows'},
+  Innodb_rows_read = { type = 'gauge', alias = 'innodb.rows_read', unit = 'rows'},
+  Innodb_rows_updated = { type = 'gauge', alias = 'innodb.rows_updated', unit = 'rows'},
 
-  Queries = { type = 'gauge', alias = 'core.queries'},
+  Queries = { type = 'gauge', alias = 'core.queries', unit = 'queries'},
 
-  Threads_connected = { type = 'uint64', alias = 'threads.connected'},
-  Threads_created = { type = 'uint64', alias = 'threads.created'},
-  Threads_running = { type = 'uint64', alias = 'threads.running'},
+  Threads_connected = { type = 'uint64', alias = 'threads.connected', unit = 'threads'},
+  Threads_created = { type = 'uint64', alias = 'threads.created', unit = 'threads'},
+  Threads_running = { type = 'uint64', alias = 'threads.running', unit = 'threads'},
 
   Uptime = { type = 'uint64', alias = 'core.uptime', unit = 'seconds'},
 
-  Qcache_free_blocks = { type = 'uint64', alias = 'qcache.free_blocks'},
+  Qcache_free_blocks = { type = 'uint64', alias = 'qcache.free_blocks', unit = 'blocks'},
   Qcache_free_memory = { type = 'uint64', alias = 'qcache.free_memory', unit = 'bytes'},
-  Qcache_hits = { type = 'gauge', alias = 'qcache.hits'},
-  Qcache_inserts  = { type = 'gauge', alias = 'qcache.inserts'},
-  Qcache_lowmem_prunes  = { type = 'gauge', alias = 'qcache.lowmem_prunes'},
-  Qcache_not_cached = { type = 'gauge', alias = 'qcache.not_cached'},
-  Qcache_queries_in_cache = { type = 'uint64', alias = 'qcache.queries_in_cache'},
-  Qcache_total_blocks = { type = 'uint64', alias = 'qcache.total_blocks'},
+  Qcache_hits = { type = 'gauge', alias = 'qcache.hits', unit = 'hits'},
+  Qcache_inserts  = { type = 'gauge', alias = 'qcache.inserts', unit = 'inserts'},
+  Qcache_lowmem_prunes  = { type = 'gauge', alias = 'qcache.lowmem_prunes', unit = 'prunes'},
+  Qcache_not_cached = { type = 'gauge', alias = 'qcache.not_cached', unit = 'queries'},
+  Qcache_queries_in_cache = { type = 'uint64', alias = 'qcache.queries_in_cache', unit = 'queries'},
+  Qcache_total_blocks = { type = 'uint64', alias = 'qcache.total_blocks', unit = 'blocks'},
 }
 
 function MySQLCheck:_runCheckInChild(callback)

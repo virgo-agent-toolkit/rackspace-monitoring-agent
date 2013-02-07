@@ -34,7 +34,9 @@ local UNITS = {
   total = 'kilobytes',
   free = 'kilobytes',
   used = 'kilobytes',
-  avail = 'kilobytes'
+  avail = 'kilobytes',
+  files = 'files',
+  free_files = 'free_files'
 }
 
 function FileSystemCheck:initialize(params)
