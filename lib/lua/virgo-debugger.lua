@@ -27,61 +27,13 @@ local utils = require('utils')
 local Object = require('core').Object
 local fmt = string.format
 
+-- singleton debugger instance
 local debugger = nil
 
-local help = {
-q = [[
-(q)  quit
+-- all callable debugger commands
+local commands = {}
 
-]],
-w = [[
-(w)  where                            --shows call stack
-
-]],
-c = [[
-(c)  continue
-
-]],
-n = [[
-(n)  next                             --step once
-
-]],
-o = [[
-(o)  out [number of frames]           --step out of the existing function
-
-]],
-l = [[
-(l)  list                             --Show the current file
-
-]],
-v = [[
-(v)  variables                        --list all reachable variables and thier values
-
-]],
-t = [[
-(t) trace                             --Show every function call
-The trace is buffered to a table.  Calling trace again will dump it.
-]],
-lb = [[
-(lb) list breakpoints
-
-]],
-sb = [[
-(sb) set breakpoint [file:line]
-
-]],
-db = [[
-(db) delete breakpoint [file:line]
-
-]],
-x = [[
-(x)  eval                             -- evals the statment via loadstring in the current strack frame
-This function can't set local variables in the stack because loadstring returns a function.  Any input that
-doesn't match an op defaults to eval.
-]]
-}
-
-
+-- internal response returned by a comand
 local OPS = {
   -- continue normal execution
   ['c']   = 0,
@@ -103,6 +55,38 @@ local STATES = {
   [STATE_IN]      = "IN"
 }
 
+local Command = Object:extend()
+
+-- max short help text length (for formatting help strings)
+local max_short_length = 0
+
+function Command:initialize(name, short, long, f)
+  self.name = name
+  self.short = short
+  self.long = long
+  self.f = f
+end
+
+function Command:call(...)
+  return self.f(...)
+end
+
+function Command:help()
+  local num_spaces = max_short_length - #self.short
+  return string.format("%s\t%s%s\t%s\n\n", self.name, self.short, string.rep(' ', num_spaces), self.long or ' ')
+end
+
+function make_command(name, short, ...)
+  if short and #short > max_short_length then
+    max_short_length = #short
+  end
+
+  assert(commands[name] == nil, "don't redifine command " .. name)
+  commands[name] = Command:new(name, short, ...)
+end
+
+local Debugger = Object:extend()
+
 local function getinfo(lvl)
   local info = debug.getinfo(lvl+1)
   if not info then
@@ -111,14 +95,20 @@ local function getinfo(lvl)
   return {info.short_src, info.currentline}
 end
 
--- returns debugger's stack depth and the stack depth beneath that
+local debugger_entry = function()
+  local file, line = unpack(getinfo(2))
+  debugger:set_breakpoint(file, line)
+end
+
+-- returns debugger's stack depth and the stack depth above that
 local function get_lvl(lvl)
   local info
   local last_seen = 1
   lvl = lvl or 1
 
   while true do
-    info = debug.getinfo(lvl, 'nS')
+    info = debug.getinfo(lvl, 'nfS')
+
     if not info then
       break
     -- oh god, this is terrible
@@ -130,9 +120,8 @@ local function get_lvl(lvl)
     lvl = lvl + 1
   end
 
-  return {last_seen-1, lvl - last_seen - 1}
+  return {last_seen - 1, lvl - last_seen - 1}
 end
-
 
 local function getvalue(level, name)
   -- this is an efficient lookup of a name
@@ -189,7 +178,7 @@ local function capture_vars(level, __no_meta_table, __no_environment, __no_globa
   -- captures all variables in scope which is
   --useful for evaling user input in the given stack frame
   local ar = debug.getinfo(level, "f")
-  if not ar then return {},'?',0 end
+  if not ar then return {}, '?', 0 end
 
   local vars = {__UPVALUES__={}, __LOCALS__={}}
   local i
@@ -201,7 +190,7 @@ local function capture_vars(level, __no_meta_table, __no_environment, __no_globa
       local name, value = debug.getupvalue(func, i)
       if not name then break end
       --ignoring internal control variables
-      if string.sub(name,1,1) ~= '(' then
+      if string.sub(name, 1, 1) ~= '(' then
         vars[name] = value
         vars.__UPVALUES__[i] = name
       end
@@ -220,7 +209,7 @@ local function capture_vars(level, __no_meta_table, __no_environment, __no_globa
   while true do
     local name, value = debug.getlocal(level, i)
     if not name then break end
-    if string.sub(name,1,1) ~= '(' then
+    if string.sub(name, 1, 1) ~= '(' then
       vars[name] = value
       vars.__LOCALS__[i] = name
     end
@@ -253,7 +242,7 @@ local function restore_vars(level, vars)
   while true do
     local name, value = debug.getlocal(level, i)
     if not name then break end
-    if vars[name] and string.sub(name,1,1) ~= '(' then
+    if vars[name] and string.sub(name, 1, 1) ~= '(' then
       debug.setlocal(level, i, vars[name])
       written_vars[name] = true
     end
@@ -270,7 +259,7 @@ local function restore_vars(level, vars)
     while true do
       local name, value = debug.getupvalue(func, i)
       if not name then break end
-      if vars[name] and string.sub(name,1,1) ~= '(' then
+      if vars[name] and string.sub(name, 1, 1) ~= '(' then
         if not written_vars[name] then
           debug.setupvalue(func, i, vars[name])
         end
@@ -281,7 +270,136 @@ local function restore_vars(level, vars)
   end
 end
 
-local Debugger = Object:extend()
+make_command('h', 'help', "", function(Debugger, file, line, topic)
+  local _,command
+  if topic and commands[topic] then
+    command = commands[topic] or string.format('no help topic found for %s', topic)
+    Debugger:write(command:help())
+    return OPS.nop
+  end
+  for _,command in pairs(commands) do
+    Debugger:write(command:help())
+  end
+  return OPS.nop
+end)
+
+make_command('w', 'where', "shows call stack", function(Debugger, file, line, args, lvl)
+  if args == 'a' then
+    lvl = 1
+  else
+    lvl = lvl + 1
+  end
+  Debugger:write(debug.traceback("", lvl))
+  return OPS.nop
+end)
+
+make_command('l', 'list', "shows the current file", function(Debugger, file, line)
+  Debugger:show(input, file, line)
+  return OPS.nop
+end)
+
+make_command('q', 'quit', "", function(Debugger)
+  return OPS.q
+end)
+
+make_command('c', 'continue', "go until the next breakpoint", function(Debugger)
+  return OPS.c
+end)
+
+make_command('n', 'next', "step once", function(Debugger)
+  Debugger:advance(STATE_OVER, 1, 0)
+  return OPS.c
+end)
+
+make_command('o', 'out [number of frames]', "step out of the existing function", function(Debugger)
+  Debugger:advance(STATE_OUT, 0, -1)
+  return OPS.c
+end)
+
+make_command('s', 'step', "step down a frame", function(Debugger)
+  Debugger:advance(STATE_IN, 0, 1)
+  return OPS.c
+end)
+
+make_command('v', 'variables', "list all reachable variables and thier values", function(Debugger, file, line, topic, lvl)
+  local vars = capture_vars(lvl + 1)
+  for key, val in pairs(vars) do
+    Debugger:write(key..':\n\n')
+    Debugger:dump(val)
+    Debugger:write('\n\n')
+  end
+  return OPS.nop
+end)
+
+make_command('lb', 'list breakpoints', "", function(Debugger)
+  for file, lines in pairs(Debugger.breaks) do
+    for line, is_set in pairs(lines) do
+      local str = string.format("%s:%s (%s)\n", file, line, tostring(is_set))
+      Debugger:write(str)
+    end
+  end
+  return OPS.nop
+end)
+make_command('sb', 'set breakpoint [file:line]', "", function(Debugger, file, line, args)
+  file,line = unpack(args:split(':'))
+  line = tonumber(line)
+  if file and line then
+    Debugger:set_breakpoint(file, line)
+  end
+  return OPS.nop
+end)
+make_command('db', 'delete breakpoint [file:line]', "", function(Debugger, file, line, args)
+  file,line = unpack(args:split(':'))
+  line = tonumber(line)
+  if file and line then
+    Debugger:remove_breakpoint(file, line)
+  end
+  return OPS.nop
+end)
+make_command('t', 'trace', [[Show every function call.
+The trace is buffered to a table.  Calling trace again will dump it.]], function(Debugger)
+  if Debugger.trace then
+    Debugger.trace = false
+    Debugger:dump_trace()
+  else
+    Debugger.trace = true
+  end
+  return OPS.c
+end)
+
+make_command('x', 'eval', [[evals the statment via loadstring in the current strack frame
+This function can't set local variables in the stack because loadstring returns a function.  Any input that
+doesn't match an op defaults to eval.]], function(Debugger, file, line, eval, lvl)
+  local function reply(msg)
+    Debugger:write(msg .. '\n')
+    return OPS.nop
+  end
+
+  local ok, func = pcall(loadstring, eval)
+  if not ok and not func then
+    return reply("Compile error: "..func)
+  end
+  if not func then
+    eval = 'return ' .. eval
+    ok, func = pcall(loadstring, eval)
+    if not (ok and func) then
+      return reply("Loadstring returns a function, try using the return statement.")
+    end
+  end
+
+  local vars = capture_vars(lvl+1)
+
+  setfenv(func, vars)
+  local isgood, res = pcall(func)
+
+  if not isgood then
+    return reply("Run error: "..res)
+  end
+  restore_vars(lvl+1, vars)
+
+  local msg = utils.dump(res)
+  return reply(msg)
+end)
 
 function Debugger:initialize(io)
   self.io = io
@@ -331,128 +449,14 @@ function Debugger:advance(state, steps, relative_stack_target)
   end
 end
 
-Debugger.switch = {
-  ['h'] = function(Debugger, file, line, topic)
-    local _,v
-    if topic and help[topic] then
-      v = help[topic] or string.format('no help topic found for %s', topic)
-      Debugger.write(v)
-      return OPS.nop
-    end
-    for _,v in pairs(help) do
-      Debugger.write(v)
-    end
-    return OPS.nop
-  end,
-  ['w'] = function(Debugger, file, line, args, lvl)
-    Debugger:write(debug.traceback("", lvl+1))
-    return OPS.nop
-  end,
-  ["l"] = function(Debugger, file, line, args)
-    Debugger:show(input, file, line)
-    return OPS.nop
-  end,
-  ['q'] = function(Debugger, file, line, args)
-    return OPS.q
-  end,
-  ["c"] = function(Debugger, file, line, args)
-    return OPS.c
-  end,
-  ["n"] = function(Debugger, file, line, args, lvl)
-    Debugger:advance(STATE_OVER, 1, 0)
-    return OPS.c
-  end,
-  ["o"] = function(Debugger, file, line, args, lvl)
-    Debugger:advance(STATE_OUT, 0, -1)
-    return OPS.c
-  end,
-  ["s"] = function(Debugger, file, line, args, lvl)
-    Debugger:advance(STATE_IN, 0, 1)
-    return OPS.c
-  end,
-  ["v"] = function(Debugger, file, line, args, lvl)
-    local vars = capture_vars(lvl+1)
-    for key, val in pairs(vars) do
-      Debugger:write(key..':\n\n')
-      Debugger:dump(val)
-      Debugger:write('\n\n')
-    end
-    return OPS.nop
-  end,
-  ["lb"] = function(Debugger, file, line, args)
-    for file, lines in pairs(Debugger.breaks) do
-      for line, is_set in pairs(lines) do
-        Debugger:write(string.format("%s:%s (%s)", file, line, tostring(is_set)))
-      end
-    end
-    return OPS.nop
-  end,
-  ["sb"] = function(Debugger, file, line, args)
-    file,line = unpack(args:split(':'))
-    line = tonumber(line)
-    if file and line then
-      Debugger:set_breakpoint(file, line)
-    end
-    return OPS.nop
-  end,
-  ["db"] = function(Debugger, file, line, args)
-    file,line = unpack(args:split(':'))
-    line = tonumber(line)
-    if file and line then
-      Debugger:remove_breakpoint(file, line)
-    end
-    return OPS.nop
-  end,
-  ["t"] = function(Debugger, file, line)
-    if Debugger.trace then
-      Debugger.trace = false
-      Debugger:dump_trace()
-    else
-      Debugger.trace = true
-    end
-    return OPS.c
-  end,
-  ['x'] = function(Debugger, file, line, eval, lvl)
-    local function reply(msg)
-      Debugger:write(msg .. '\n')
-      return OPS.nop
-    end
-
-    local ok, func = pcall(loadstring, eval)
-    if not ok and not func then
-      return reply("Compile error: "..func)
-    end
-    if not func then
-      eval = 'return ' .. eval
-      ok, func = pcall(loadstring, eval)
-      if not (ok and func) then
-        return reply("Loadstring returns a function, try using the return statement.")
-      end
-    end
-
-    local vars = capture_vars(lvl+1)
-
-    setfenv(func, vars)
-    local isgood, res = pcall(func)
-
-    if not isgood then
-      return reply("Run error: "..res)
-    end
-    restore_vars(lvl+1, vars)
-
-    local msg = utils.dump(res)
-    return reply(msg)
-  end
-}
-
 function Debugger:set_hook()
   if self.hooked then
     return
   end
   self.hooked = true
-  local that = self
+  local Debugger = self
   debug.sethook(function(...)
-    that:hook(...)
+    Debugger:hook(...)
   end, "crl")
 end
 
@@ -515,29 +519,7 @@ end
 
 
 function Debugger:has_breakpoint(file, line)
-  -- p(file, line)
-  -- file = file or 'nil'
-  -- line = line or 'nil'
-  -- print('looking for '.. file .. line)
-  -- p(breaks)
   return self.breaks[file] and self.breaks[file][line]
-  -- if not breaks[file] then
-  --   return false
-  -- end
-
-  -- local noext = string.gsub(file,"(%..-)$",'',1)
-
-  -- if noext == file then noext = nil end
-  -- while file do
-  --   if breaks[file][line] then
-  --     return true end
-  --   file = string.match(file,"[:/](.+)$")
-  -- end
-  -- while noext do
-  --   if breaks[noext][line] then return true end
-  --   noext = string.match(noext,"[:/](.+)$")
-  -- end
-  -- return false
 end
 
 function Debugger:input(file, line, event, lvl)
@@ -563,37 +545,40 @@ function Debugger:input(file, line, event, lvl)
 end
 
 function Debugger:process_input(file, line, input, lvl)
-  local args = input
-  -- parses user input
-  local op = input:sub(0,1)
-  local f = self.switch[op]
-
-  if not op then
+  if not input or #input == 0 then
     self:write('Give me something.')
     return OPS.nop
   end
 
-  -- valid op with args?
-  if f and input:sub(2,2) == '' or input:sub(2,2) == ' ' then
+  local op, args
+  -- 1 or 2 byte command
+  if #input == 1 or #input == 2 then
+    op = input
+  -- 1 byte comand with args
+  elseif input:sub(2, 2) == ' ' then
+    op = input:sub(1, 1)
     args = input:sub(3)
-  else
-    f = nil
+  -- 2 byte comand with args
+  elseif input:sub(3, 3) == " " then
+    op = input:sub(0, 2)
+    args = input:sub(4)
   end
-  -- if the op doesn't exist, eval the expression and hope for the best
-  if not f then
-    f = self.switch['x']
-  end
-  -- avoid tail call which fucks with the stack
-  local res = f(self, file, line, args, lvl+1)
-  return res
 
+  -- if the op doesn't exist, eval the expression and hope for the best
+  if not op or not commands[op] then
+    op = 'x'
+    args = input
+  end
+
+  -- lets not put this into every command
+  if args and #args == 0 then
+    args = nil
+  end
+
+  return commands[op]:call(self, file, line, args, lvl)
 end
 
 function Debugger:should_break(file, line, event)
-  -- if self.go then
-  --   self.go = false
-  --   return false
-  -- end
 
   if event == "call" then
     if self.state == STATE_IN and self.stack_target == self.lvl then
@@ -638,13 +623,11 @@ end
 
 function Debugger:hook(event, line)
   local lvl, total_depth, file, current_hash
-
   -- NOTE: this hook is called via two paths - one via a Lua debug hook event, and one when we set a breakpoint
 
-  -- lvl is the how deep we are in the Debugger stack at this point
-  -- self.lvl = depth beneath the Debugger's stack frames
+  -- lvl is the how deep the is at this point
+  -- self.lvl = depth beneath the Debugger's entry stack frame
   lvl, self.lvl = unpack(get_lvl(1))
-
   file, line = unpack(getinfo(lvl+1))
 
   if self.trace then
@@ -679,35 +662,40 @@ function Debugger:hook(event, line)
   end
 end
 
-return {
-  ['dump_lua'] = function()
-    local JSON = require('json')
-    local stack = {}
-    local _, lvl = unpack(get_lvl(1))
-    local function dump(o)
-      return utils.dump(o, 0, true)
-    end
-    for i=2,lvl do
-      local vars = capture_vars(i, true, true, true)
-      vars.__LOCALS__ = nil
-      vars.__UPVALUES__ = nil
-      vars.__VARSLEVEL__ = nil
-      table.insert(stack, dump(vars))
-    end
-
-    local lua_dump = {}
-    lua_dump.stack = stack
-    lua_dump.tb = debug.traceback("", 2)
-    virgo["config"]["monitoring_token"] = "******"
-    lua_dump.virgo = dump(virgo)
-    lua_dump.globals = dump(getfenv(0))
-    return JSON.stringify(lua_dump)
-  end,
-  ['install'] = function(io)
-    debugger = Debugger:new(io)
-    return function()
-      local file, line = unpack(getinfo(2))
-      debugger:set_breakpoint(file, line)
-    end
+local function dump_lua()
+  -- useful function for debugging - dumps all variables in all frames
+  local JSON = require('json')
+  local stack = {}
+  local _, lvl = unpack(get_lvl(1))
+  local function dump(o)
+    return utils.dump(o, 0, true)
   end
+  for i=2,lvl do
+    local vars = capture_vars(i, true, true, true)
+    vars.__LOCALS__ = nil
+    vars.__UPVALUES__ = nil
+    vars.__VARSLEVEL__ = nil
+    table.insert(stack, dump(vars))
+  end
+
+  local lua_dump = {}
+  lua_dump.stack = stack
+  lua_dump.tb = debug.traceback("", 2)
+  virgo["config"]["monitoring_token"] = "******"
+  lua_dump.virgo = dump(virgo)
+  lua_dump.globals = dump(getfenv(0))
+  return JSON.stringify(lua_dump)
+end
+
+local function install(io)
+  if not io then
+    error('Debugger needs an io')
+  end
+  debugger = Debugger:new(io)
+  return debugger_entry
+end
+
+return {
+  dump_lua = dump_lua,
+  install = install
 }
