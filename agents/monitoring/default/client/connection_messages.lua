@@ -118,6 +118,55 @@ function ConnectionMessages:getUpgrade(version, client)
   local channel = self._connectionStream:getChannel()
   local unverified_dir = path.join(consts.DEFAULT_DOWNLOAD_PATH, 'unverified')
 
+  local function download_iter(item, callback)
+    local options = {
+      method = 'GET',
+      host = client._host,
+      port = client._port,
+      tls = client._tls_options,
+    }
+
+    local filename = path.join(unverified_dir, item.payload)
+    local filename_sig = path.join(unverified_dir, item.signature)
+    local filename_verified = path.join(item.path, item.payload)
+    local filename_verified_sig = path.join(item.path, item.signature)
+
+    async.parallel({
+      payload = function(callback)
+        local opts = misc.merge({
+          path = fmt('/upgrades/%s/%s', channel, item.payload),
+          download = path.join(unverified_dir, item.payload)
+        }, options)
+        request.makeRequest(opts, callback)
+      end,
+      signature = function(callback)
+        local opts = misc.merge({
+          path = fmt('/upgrades/%s/%s', channel, item.signature),
+          download = path.join(unverified_dir, item.signature)
+        }, options)
+        request.makeRequest(opts, callback)
+      end
+    }, function(err)
+      if err then
+        return callback(err)
+      end
+
+      self:verify(filename, filename_sig, process.cwd() .. '/tests/ca/server.pem', function(err)
+        if err then
+          return callback(err)
+        end
+        async.parallel({
+          function(callback)
+            fs.rename(filename, filename_verified, callback)
+          end,
+          function(callback)
+            fs.rename(filename_sig, filename_verified_sig, callback)
+          end
+        }, callback)
+      end)
+    end)
+  end
+
   async.waterfall({
     function(callback)
       fsutil.mkdirp(unverified_dir, "0755", function(err)
@@ -127,52 +176,6 @@ function ConnectionMessages:getUpgrade(version, client)
       end)
     end,
     function(callback)
-      local function download_iter(item, callback)
-        local options = {
-          method = 'GET',
-          host = client._host,
-          port = client._port,
-          tls = client._tls_options,
-        }
-        async.parallel({
-          payload = function(callback)
-            local opts = misc.merge({
-              path = fmt('/upgrades/%s/%s', channel, item.payload),
-              download = path.join(unverified_dir, item.payload)
-            }, options)
-            request.makeRequest(opts, callback)
-          end,
-          signature = function(callback)
-            local opts = misc.merge({
-              path = fmt('/upgrades/%s/%s', channel, item.signature),
-              download = path.join(unverified_dir, item.signature)
-            }, options)
-            request.makeRequest(opts, callback)
-          end
-        }, function(err)
-          if err then
-            return callback(err)
-          end
-          local filename = path.join(unverified_dir, item.payload)
-          local filename_sig = path.join(unverified_dir, item.signature)
-          local filename_verified = path.join(item.path, item.payload)
-          local filename_verified_sig = path.join(item.path, item.signature)
-          self:verify(filename, filename_sig, process.cwd() .. '/tests/ca/server.pem', function(err)
-            if err then
-              return callback(err)
-            end
-            async.parallel({
-              function(callback)
-                fs.rename(filename, filename_verified, callback)
-              end,
-              function(callback)
-                fs.rename(filename_sig, filename_verified_sig, callback)
-              end
-            }, callback)
-          end)
-        end)
-      end
-
       local bundle_files = {
         [1] = {
           payload = 'monitoring.zip',
