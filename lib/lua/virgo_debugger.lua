@@ -28,7 +28,7 @@ local Object = require('core').Object
 local fmt = string.format
 
 -- singleton debugger instance
-local debugger = nil
+local _debugger = nil
 
 -- all callable debugger commands
 local commands = {}
@@ -93,11 +93,6 @@ local function getinfo(lvl)
     return {nil, nil}
   end
   return {info.short_src, info.currentline}
-end
-
-local debugger_entry = function()
-  local file, line = unpack(getinfo(2))
-  debugger:set_breakpoint(file, line)
 end
 
 -- returns debugger's stack depth and the stack depth above that
@@ -401,8 +396,9 @@ doesn't match an op defaults to eval.]], function(Debugger, file, line, eval, lv
   return reply(msg)
 end)
 
-function Debugger:initialize(io)
-  self.io = io
+function Debugger:initialize()
+  -- grab a handle on io before we kill it
+  self.io = _G.io
   self.lvl = 0
   self.event = ""
   self.previous_break_hash = nil
@@ -662,7 +658,9 @@ function Debugger:hook(event, line)
   end
 end
 
-local function dump_lua()
+_debugger = Debugger:new()
+
+_G.dump_lua = function()
   -- useful function for debugging - dumps all variables in all frames
   local JSON = require('json')
   local stack = {}
@@ -687,15 +685,7 @@ local function dump_lua()
   return JSON.stringify(lua_dump)
 end
 
-local function install(io)
-  if not io then
-    error('Debugger needs an io')
-  end
-  debugger = Debugger:new(io)
-  return debugger_entry
+_G.debugger = function()
+  local file, line = unpack(getinfo(2))
+  _debugger:set_breakpoint(file, line)
 end
-
-return {
-  dump_lua = dump_lua,
-  install = install
-}

@@ -9,7 +9,7 @@ out/*
 config.log
 api-docs
 *.xcodeproj
-monitoring-agent
+virgo
 .DS_Store
 *.sln
 *.vcxproj*
@@ -17,11 +17,11 @@ monitoring-agent
 *.opensdf
 tags
 deps/openssl-configs/realized/openssl/*.h
-monitoring.zip
-monitoring-test.zip
 *.sig
 scheduler.state
 ._*
 rpmbuild/*
-agents/monitoring/default/util/version.lua
-agents/monitoring/monitoring.rc
+virgo.rc
+include/generated/*.h
+*.mk
+virgo_exports.c

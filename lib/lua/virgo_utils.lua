@@ -21,11 +21,11 @@ local math = require('math')
 local delta = 0
 local delay = 0
 
-local function now()
+local function gmtNow()
   return math.floor(virgo.gmtnow() + delta)
 end
 
-local function raw()
+local function gmtRaw()
   return math.floor(virgo.gmtnow())
 end
 
@@ -64,10 +64,13 @@ local function timesync(T1, T2, T3, T4)
   return
 end
 
-local exports = {}
-exports.setDelta = setDelta
-exports.getDelta = getDelta
-exports.now = now
-exports.raw = raw
-exports.timesync = timesync
+local exports = {
+  setDelta = setDelta,
+  getDelta = getDelta,
+  gmtNow = gmtNow,
+  gmtRaw = gmtRaw,
+  timesync = timesync,
+  crash = virgo.force_crash,
+}
+
 return exports

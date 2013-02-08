@@ -1,34 +1,39 @@
 import sys
 import os
-from optloader import load_options
 
-agent = None
-luvit = None
+import optloader
 
-options = load_options()
+AGENT = None
+LUVIT = None
+BUNDLE_NAME = None
+BUNDLE_DIR = None
 
-root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-build_dir = os.path.join(root, 'out')
 
-BUILDTYPE = os.environ.get('BUILDTYPE', 'Debug')
+def _abs_path(*args):
+    return os.path.abspath(os.path.join(*args))
+
+_options = optloader.load_options()
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+BUNDLE_DIR = _abs_path(ROOT, _options['variables']['bundle_dir'])
+BUNDLE_NAME = _options['variables']['bundle_name']
+
+if BUNDLE_NAME == "/..":
+    raise AttributeError('You must call configure with a bundle path.')
+
 if sys.platform == "win32":
-    BUILDTYPE = 'Debug' if options['variables']['virgo_debug'] == 'true' else 'Release'
-
-if sys.platform != "win32":
-    output_path = os.path.join(root, 'out', BUILDTYPE)
+    BUILDTYPE = 'Debug' if _options['variables']['virgo_debug'] == 'true' else 'Release'
+    BUILD_DIR = _abs_path(ROOT, BUILDTYPE)
+    LUVIT = _abs_path(BUILD_DIR, 'luvit.exe')
+    AGENT = _abs_path(BUILD_DIR, 'virgo.exe')
 else:
-    output_path = os.path.join(root, BUILDTYPE)
+    BUILDTYPE = os.environ.get('BUILDTYPE', 'Debug')
+    BUILD_DIR = _abs_path(ROOT, 'out', BUILDTYPE)
+    LUVIT = _abs_path(BUILD_DIR, 'luvit')
+    AGENT = _abs_path(BUILD_DIR, 'virgo')
 
-if sys.platform != "win32":
-    agent = os.path.join(root, 'out', BUILDTYPE, 'monitoring-agent')
-else:
-    agent = os.path.join(root, BUILDTYPE, 'monitoring-agent.exe')
-
-if sys.platform != "win32":
-    luvit = os.path.join(root, 'out', BUILDTYPE, 'luvit')
-else:
-    luvit = os.path.join(root, BUILDTYPE, 'luvit.exe')
 
 if __name__ == "__main__":
-    os.environ['AGENT_BIN'] = agent
-    os.environ['LUVIT_BIN'] = luvit
+    os.environ['AGENT_BIN'] = AGENT
+    os.environ['LUVIT_BIN'] = LUVIT

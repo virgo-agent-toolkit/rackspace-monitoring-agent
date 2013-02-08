@@ -14,6 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+require('buffer')
+require('childprocess')
+require('core')
+require('dgram')
+require('dns')
+require('fiber')
+
+require('tls')
 -- Bootstrap require system
 local native = require('uv_native')
 process = {
@@ -85,8 +93,6 @@ _G.dofile = nil
 _G.print = utils.print
 _G.p = utils.prettyPrint
 _G.debug = utils.debug
-_G.debugger = require('virgo-debugger').install(_G.io)
-_G.dump_lua = require('virgo-debugger').dump_lua
 _G.io = nil
 
 process.version = VERSION
@@ -102,6 +108,15 @@ _G.YAJL_VERSION = nil
 _G.LUAJIT_VERSION = nil
 _G.UV_VERSION = nil
 _G.HTTP_VERSION = nil
+
+function preload_lua_modules()
+  local lua_modules = require('/lua_modules')
+  for _,v in ipairs(lua_modules.lua_modules) do
+    package.loaded[v] = require('/lua_modules/'..v)
+  end
+  virgo.bundle_version = lua_modules.version
+  virgo.virgo_version = virgo.agent_config.version
+end
 
 function process.exit(exit_code)
   process:emit('exit', exit_code)
@@ -271,7 +286,6 @@ end
 
 
 local function myloadfile(filepath)
-
   if not vfs:exists(filepath) then return end
   -- Not done by luvit, we don't have synlinks in the zip file.
   -- filepath = partialRealpath(filepath)
@@ -393,6 +407,7 @@ function require(filepath, dirname)
   -- Builtin modules
   local module = package.loaded[filepath]
   if module then return module end
+
   if filepath:find("^[a-z_]+$") then
     local loader = builtinLoader(filepath)
     if type(loader) == "function" then
@@ -410,8 +425,8 @@ function require(filepath, dirname)
   local dir = dirname .. "/"
   repeat
     dir = dir:sub(1, dir:find("/[^/]*$") - 1)
-    local full_path = dir .. "/modules/" .. filepath
-    local loader = loadModule(dir .. "/modules/" .. filepath)
+    local full_path = dir .. '/' .. filepath
+    local loader = loadModule(dir ..'/'.. filepath)
     if type(loader) == "function" then
       return loader()
     else
@@ -421,18 +436,6 @@ function require(filepath, dirname)
 
   error("Failed to find module '" .. filepath .."'" .. table.concat(errors, ""))
 
-end
-
-local virgo_init = {}
-
-function virgo_init.run(name)
-  local mod = require(name)
-  mod.run()
-
-  -- Stagents/monitoring/tests/agent-protocol/handshake.hello.response.jsonart the event loop
-  native.run()
-  -- trigger exit handlers and exit cleanly
-  process.exit(process.exitCode or 0)
 end
 
 function gc()
@@ -459,4 +462,13 @@ local gcInterval = timer.setInterval(GC_INTERVAL, gc)
 -- Unref the interval timer. We don't want it to keep the eventloop blocked
 gcInterval:unref()
 
-return virgo_init
+_G.virgo_entry = function()
+  _G.virgo_entry = nil
+  preload_lua_modules()
+  require(mod).run()
+  --start the event loop
+  native.run()
+  -- trigger exit handlers and exit cleanly
+  process.exit(process.exitCode or 0)
+end
+

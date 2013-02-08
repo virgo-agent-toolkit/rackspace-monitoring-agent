@@ -121,13 +121,10 @@ virgo__lua_loader_loadit(lua_State *L) {
   size_t nlen = strlen("modules/") + strlen(name) + strlen(".lua") + 1;
   char *nstr = malloc(nlen);
 
-  if (strstr(name, ".lua")) {
-    snprintf(nstr, nlen, "modules/%s", name);
+  if (!strstr(name, ".lua")) {
+    snprintf(nstr, nlen, "%s.lua", name);
   }
-  else {
-    snprintf(nstr, nlen, "modules/%s.lua", name);
-  }
-
+  printf("attempting to load %s\n\n", name);
   rv = virgo__lua_loader_zip2buf(v, nstr, &buf, &len);
   if (rv != 0) {
     rv = luaL_error(L, "error finding virgo module in zip: (%d) %s", rv, nstr);
@@ -186,6 +183,9 @@ replace_loaders(lua_State *L, const char *loaders_name) {
 void
 virgo__lua_loader_init(lua_State *L)
 {
+  lua_getglobal(L, "require");
+  lua_pushliteral(L, "tls");
+  lua_call(L, 1, 1);
   /* Lua 5.2 changed package.loaders -> package.searchers */
 #if LUA_VERSION_NUM >= 502
   replace_loaders(L, "searchers");

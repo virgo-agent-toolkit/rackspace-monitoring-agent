@@ -46,12 +46,17 @@
 #include "lenv.h"
 #include "lyajl.h"
 #include "lcrypto.h"
+#include "luvit_exports.h"
+#include "virgo_exports.h"
 
-extern int luaopen_sigar (lua_State *L);
+extern int
+luaopen_sigar (lua_State *L);
 
 static void
-virgo__lua_luvit_init(virgo_t *v)
-{
+virgo__lua_luvit_init(virgo_t *v) {
+  /* Hack to keep the linker from killing symbols that luajit pulls in at runtime :( */
+  virgo__suck_in_symbols();
+  luvit__suck_in_symbols();
   lua_State *L = v->L;
 
   luvit_init(L, uv_default_loop(), v->argc, v->argv);
@@ -78,14 +83,14 @@ virgo__set_virgo_key(lua_State *L, const char *key, const char *value) {
 }
 
 static void
-virgo__push_function(lua_State *L, const char *name, lua_CFunction cfunc){
+virgo__push_function(lua_State *L, const char *name, lua_CFunction cfunc) {
   lua_getglobal(L, "virgo");
   lua_pushcfunction(L, cfunc);
   lua_setfield(L, -2, name);
 }
 
 static int
-virgo__lua_force_dump(lua_State *L){
+virgo__lua_force_dump(lua_State *L) {
   virgo__force_dump();
   return 0;
 }
@@ -181,11 +186,6 @@ virgo__lua_init(virgo_t *v)
 {
   lua_State *L = luaL_newstate();
 
-#if 0
-  /* Can disable the JIT if you think it will allow better debugging */
-  luaJIT_setmode(L, 0, LUAJIT_MODE_ENGINE|LUAJIT_MODE_OFF);
-#endif
-
   v->L = L;
 
   lua_pushlightuserdata(L, v);
@@ -214,10 +214,19 @@ virgo__lua_init(virgo_t *v)
 
   virgo__lua_paths(L);
   virgo__lua_vfs_init(L);
-  virgo__lua_loader_init(L);
+  /* virgo__lua_loader_init(L); */
   virgo__lua_debugger_init(L);
 
   virgo__lua_luvit_init(v);
+
+
+  lua_getglobal(L, "require");
+  lua_pushliteral(L, "virgo_utils");
+  lua_call(L, 1, 1);
+
+  lua_getglobal(L, "require");
+  lua_pushliteral(L, "tls");
+  lua_call(L, 1, 1);
 
   return VIRGO_SUCCESS;
 }
@@ -226,58 +235,32 @@ virgo_error_t*
 virgo__lua_run(virgo_t *v)
 {
   int rv;
-  const char *lua_err;
+  const char* lua_err;
+  lua_State* L = v->L;
 
-  virgo__set_virgo_key(v->L, "loaded_zip_path", v->lua_load_path);
+  virgo__set_virgo_key(L, "loaded_zip_path", v->lua_load_path);
 
-#if 1
-  /**
-   * Use this method of invoking the getglobal / getfield for init,
-   * because someday we might want to compile out the Lua parser
-   */
-
-  lua_getglobal(v->L, "require");
-  if (lua_type(v->L, -1) != LUA_TFUNCTION) {
-    return virgo_error_create(VIRGO_EINVAL, "Lua require wasn't a function");
-  }
-
-  lua_pushliteral(v->L, "virgo-init");
-
-  rv = lua_pcall(v->L, 1, 1, 0);
-  if (rv != 0) {
-    lua_err = lua_tostring(v->L, -1);
-    return virgo_error_createf(VIRGO_EINVAL, "Failed to load init from %s: %s", v->lua_load_path, lua_err);
-  }
-
-  lua_getfield(v->L, -1, "run");
-  lua_pushstring(v->L, v->lua_default_module);
+  lua_getglobal(L, "require");
+  lua_pushliteral(L, "virgo_init");
+  lua_call(L, 1, 1);
 
   /* push on the error handler */
-  lua_pushcfunction(v->L, virgo__lua_handle_crash);
-  /* mv back before /virgo-init.run */
-  lua_insert(v->L, -3);
+  lua_pushcfunction(L, virgo__lua_handle_crash);
+
+  lua_getglobal(L, "virgo_entry");
+  if (!lua_isfunction(L, -1)) {
+    return virgo_error_create(VIRGO_EINVAL, "virgo_init.lua was not properly installed");
+  }
+
+  lua_pushstring(L, v->lua_default_module);
+
   /* pcall virgo.run(default) with error handler handle_crash */
-  rv = lua_pcall(v->L, 1, 0, -3);
+  rv = lua_pcall(L, 1, 0, -3);
 
   if (rv != 0) {
     lua_err = lua_tostring(v->L, -1);
     return virgo_error_createf(VIRGO_EINVAL, "\nLua Runtime Error: %s", lua_err);
   }
-
-#else
-  rv = luaL_loadstring(v->L, "require('init'):run()");
-
-  if (rv != 0) {
-    lua_err = lua_tostring(v->L, -1);
-    return virgo_error_createf(VIRGO_EINVAL, "Load Buffer Error: %s", lua_err);
-  }
-
-  rv = lua_pcall(v->L, 0, 0, 0);
-  if (rv != 0) {
-    lua_err = lua_tostring(v->L, -1);
-    return virgo_error_createf(VIRGO_EINVAL, "Runtime error: %s", lua_err);
-  }
-#endif
 
   return VIRGO_SUCCESS;
 }
