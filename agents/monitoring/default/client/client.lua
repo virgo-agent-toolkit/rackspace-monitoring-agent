@@ -161,6 +161,7 @@ function AgentClient:connect()
       end
       self._heartbeat_interval = msg.result.heartbeat_interval
       self._entity_id = msg.result.entity_id
+      self._connectionStream:setChannel(msg.result.channel)
       self:emit('handshake_success', msg.result)
     end)
   end)

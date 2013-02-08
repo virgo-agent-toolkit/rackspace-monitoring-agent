@@ -23,6 +23,7 @@ local UpgradePollEmitter = Emitter:extend()
 
 function UpgradePollEmitter:initialize()
   self.stopped = nil
+  self.options = nil
 end
 
 function UpgradePollEmitter:calcTimeout()
@@ -31,11 +32,12 @@ end
 
 function UpgradePollEmitter:_emit()
   process.nextTick(function()
-    self:emit('upgrade')
+    self:emit('upgrade', self.options)
   end)
 end
 
-function UpgradePollEmitter:forceUpgradeCheck()
+function UpgradePollEmitter:forceUpgradeCheck(options)
+  self.options = misc.merge(self.options or {}, options)
   self:_emit()
 end
 

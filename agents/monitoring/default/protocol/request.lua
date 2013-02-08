@@ -81,7 +81,7 @@ function Request:initialize(options, callback)
 end
 
 function Request:request()
-  logging.debugf('sending request to %s:%s', self.options.host, self.options.port)
+  logging.debugf('sending request to %s:%s%s', self.options.host, self.options.port, self.options.path)
 
   local options = misc.merge({}, self.options)
 
@@ -166,9 +166,9 @@ function Request:_write_stream(res)
   res:pipe(stream)
 end
 
-function Request:_ensure_retries(err, res)
+function Request:_ensure_retries(err, res, buf)
   if not err then
-    self.callback(err, res)
+    self.callback(err, res, buf)
     return
   end
 
@@ -203,7 +203,7 @@ function Request:_handle_response(res)
       return self:_ensure_retries(Error:new(buf), res)
     end
 
-    self:_ensure_retries(nil, res)
+    self:_ensure_retries(nil, res, buf)
   end)
 end
 
