@@ -34,99 +34,83 @@ local vtime = require('virgo-time')
 local path = require('path')
 local utils = require('utils')
 local version = require('../util/version')
+local request = require('../protocol/request')
 
 local ConnectionStream = Emitter:extend()
-function ConnectionStream:initialize(id, token, guid, options)
+function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options)
   self._id = id
   self._token = token
   self._guid = guid
+  self._channel = nil
   self._clients = {}
   self._unauthedClients = {}
   self._delays = {}
   self._activeTimeSyncClient = nil
+  self._upgradeEnabled = upgradeEnabled
   self._options = options or {}
   self._scheduler = Scheduler:new()
   self._scheduler:on('check.completed', function(check, checkResult)
     self:_sendMetrics(check, checkResult)
   end)
 
-  local _event_names = {
-    'bundle_upgrade.success',
-    'binary_upgrade.success',
-    'bundle_upgrade.already_downloaded',
-    'binary_upgrade.already_downloaded',
-    'bundle_upgrade.error',
-    'binary_upgrade.error'
-  }
   self._messages = ConnectionMessages:new(self)
-  misc.propagateEvents(self._messages, self, _event_names)
-
-  -- TODO: Re-enable upgrade polling once we track down the crasher
-  -- self._upgrade = UpgradePollEmitter:new()
-  -- self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
+  self._upgrade = UpgradePollEmitter:new()
+  self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
 end
 
 function ConnectionStream:getUpgrade()
   return self._upgrade
 end
 
+function ConnectionStream:setChannel(channel)
+  self._channel = channel or consts.DEFAULT_CHANNEL
+end
+
 function ConnectionStream:_onUpgrade()
   local client = self:getClient()
   local bundleVersion = version.bundle
   local processVersion = version.process
+  local uri_path, options
+
+  if not self._upgradeEnabled then
+    return
+  end
 
   if not client then
     return
   end
 
-  function updateGenerator(client, name, upgrade_type, version, callback)
-    client.protocol:request(name, function(err, msg)
-        if err then
-          logging.errorf(name .. ' failed: %s', err.message)
-          callback(err)
-          return
-        end
-        if misc.compareVersions(msg.result.version, version) > 0 then
-          self._messages:getUpgrade(upgrade_type, client)
-          callback(nil, msg.result.version)
-        else
-          callback()
-        end
-    end)
-  end
+  options = {
+    method = 'GET',
+    host = client._host,
+    port = client._port,
+    tls = client._tls_options
+  }
 
-  async.parallel({
-    function(callback)
-      updateGenerator(client, 'binary_upgrade.get_version', 'binary', processVersion, function(err, version)
-        if err then
-          callback(err)
-          return
-        end
-
-        if version then
-          logging.infof('Found binary upgrade to version %s', version)
-          self:emit('binary_upgrade.found', version)
-        end
-
-        callback()
-      end)
-    end,
-    function(callback)
-      updateGenerator(client, 'bundle_upgrade.get_version', 'bundle', bundleVersion, function(err, version)
-        if err then
-          callback(err)
-          return
-        end
-
-        if version then
-          logging.infof('Found bundle upgrade to version %s', version)
-          self:emit('bundle_upgrade.found', version)
-        end
-
-        callback()
-      end)
+  self._channel = 'master'
+  uri_path = fmt('/upgrades/%s/VERSION', self._channel)
+  options = misc.merge({ path = uri_path, }, options)
+  request.makeRequest(options, function(err, result, version)
+    if err then
+      client:log(logging.ERROR, 'Error on upgrade: ' .. tostring(err))
+      return
     end
-  })
+    local upgrade_found = false
+    version = misc.trim(version)
+    client:log(logging.DEBUG, fmt('(upgrade) -> Current Version: %s', bundleVersion))
+    client:log(logging.DEBUG, fmt('(upgrade) -> Upstream Version: %s', version))
+    if misc.compareVersions(version, bundleVersion) > 0 then
+      client:log(logging.INFO, fmt('(upgrade) -> found: %s', version))
+      self._messages:getUpgrade(version, client)
+      upgrade_found = true
+    end
+    self:emit('upgrade_done', { upgrade_found = upgrade_found })
+  end)
+end
+
+
+function ConnectionStream:getChannel()
+  return self._channel
 end
 
 --[[

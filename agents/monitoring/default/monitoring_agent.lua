@@ -89,6 +89,7 @@ end
 
 function MonitoringAgent:connect(callback)
   local endpoints = self._config['monitoring_endpoints']
+  local upgradesEnabled = self._config['monitoring_upgrade'] or false
 
   if #endpoints <= 0 then
     logging.error('no endpoints')
@@ -97,9 +98,13 @@ function MonitoringAgent:connect(callback)
     end)
     return
   end
+
+  logging.info(fmt('Upgrades are %s', upgradesEnabled and 'enabled' or 'disabled'))
+
   self._streams = ConnectionStream:new(self._config['monitoring_id'],
                                        self._config['monitoring_token'],
                                        self._config['monitoring_guid'],
+                                       upgradesEnabled,
                                        self._options)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))

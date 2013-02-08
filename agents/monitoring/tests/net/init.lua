@@ -27,7 +27,7 @@ exports['test_reconnects'] = function(test, asserts)
     tls = { rejectUnauthorized = false }
   }
 
-  local client = ConnectionStream:new('id', 'token', 'guid', options)
+  local client = ConnectionStream:new('id', 'token', 'guid', false, options)
 
   local clientEnd = 0
   local reconnect = 0
@@ -104,17 +104,13 @@ exports['test_upgrades'] = function(test, asserts)
       child = helper.start_server(callback)
     end,
     function(callback)
-      client = ConnectionStream:new('id', 'token', 'guid', options)
+      client = ConnectionStream:new('id', 'token', 'guid', false, options)
       client:on('handshake_success', misc.nCallbacks(callback, 3))
       client:createConnections(endpoints, function() end)
     end,
     function(callback)
-      callback = misc.nCallbacks(callback, 4)
-      client:on('binary_upgrade.found', callback)
-      client:on('bundle_upgrade.found', callback)
-      client:on('bundle_upgrade.error', callback)
-      client:on('binary_upgrade.error', callback)
-      client:getUpgrade():forceUpgradeCheck()
+      client:on('upgrade_done', callback)
+      client:getUpgrade():forceUpgradeCheck({test = true})
     end
   }, function()
     helper.stop_server(child)

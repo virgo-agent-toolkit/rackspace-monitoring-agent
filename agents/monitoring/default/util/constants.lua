@@ -3,6 +3,8 @@ local path = require('path')
 
 local exports = {}
 
+exports.DEFAULT_CHANNEL = 'stable'
+
 -- All intervals and timeouts are in milliseconds
 
 exports.CONNECT_TIMEOUT = 6000
