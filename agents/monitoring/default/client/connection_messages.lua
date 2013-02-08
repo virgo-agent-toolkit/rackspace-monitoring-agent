@@ -8,6 +8,7 @@ local loggingUtil = require ('../util/logging')
 local path = require('path')
 local util = require('../util/misc')
 local consts = require('../util/constants')
+local certs = require('../certs')
 local table = require('table')
 local os = require('os')
 local https = require('https')
@@ -151,7 +152,7 @@ function ConnectionMessages:getUpgrade(version, client)
         return callback(err)
       end
 
-      self:verify(filename, filename_sig, process.cwd() .. '/tests/ca/server.pem', function(err)
+      self:verify(filename, filename_sig, certs.codeCert, function(err)
         if err then
           return callback(err)
         end
