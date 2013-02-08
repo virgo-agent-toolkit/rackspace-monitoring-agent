@@ -10,7 +10,6 @@ comment_re = re.compile('^#(.+)$')
 
 def load_options():
     options_filename = os.path.join(root_dir, '..', 'options.gypi')
-    print "reading ", options_filename
 
     opts = {}
     f = open(options_filename, 'rb')

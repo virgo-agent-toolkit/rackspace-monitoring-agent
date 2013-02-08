@@ -57,7 +57,7 @@
             'WholeProgramOptimization': 'true', # /GL, whole program optimization, needed for LTCG
             'OmitFramePointers': 'true',
             'EnableFunctionLevelLinking': 'true',
-            'EnableIntrinsicFunctions': 'true', 
+            'EnableIntrinsicFunctions': 'true',
           },
           'VCLibrarianTool': {
             'AdditionalOptions': [

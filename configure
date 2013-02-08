@@ -40,6 +40,11 @@ parser.add_option("--host_arch",
     dest="host_arch",
     help="Select the architecture of the build host (defaults to autodetect)")
 
+parser.add_option("--bundle",
+    action="store",
+    dest="bundle",
+    help="The path to the directory on disk containing lua files to be bundled.")
+
 (options, args) = parser.parse_args()
 
 
@@ -114,6 +119,18 @@ def find_toolset(toolsets, toolset_name, variables):
 
 def configure_virgo(o):
     # TODO add gdb
+    #NOTE: gyp is retarded and bad things happen if we make these an empty string or use an absolute path
+    if not options.bundle:
+        bundle_dir = "/.."
+        bundle_name = "/.."
+        print('\nWarning: no bundle path was specified.  There will not be bundles.\n')
+    else:
+        bundle_dir = os.path.os.path.relpath(options.bundle, '.')
+        bundle_name = os.path.split(bundle_dir)[1]
+        print('\nBundling %s from %s' % (bundle_name, bundle_dir))
+
+    o['variables']['bundle_dir'] = bundle_dir
+    o['variables']['bundle_name'] = bundle_name
     o['variables']['virgo_debug'] = 'true' if options.debug else 'false'
     o['variables']['virgo_prefix'] = options.prefix if options.prefix else ''
     o['variables']['luvit_prefix'] = options.prefix if options.prefix else ''

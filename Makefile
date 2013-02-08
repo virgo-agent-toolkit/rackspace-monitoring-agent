@@ -1,5 +1,5 @@
 BUILDTYPE ?= Debug
-
+BINARY_NAME=virgo
 DESTDIR ?=
 BINDIR = ${DESTDIR}/usr/bin
 SHAREDIR = ${DESTDIR}/usr/share/rackspace-monitoring-agent
@@ -10,24 +10,11 @@ PKG_FULL_VERSION = $(shell python tools/version.py)
 PKG_VERSION = $(shell python tools/version.py tag)
 PKG_RELEASE = $(shell python tools/version.py release)
 
-
-zip_files = monitoring.zip monitoring-test.zip
-sig_files = $(zip_files:%.zip=%.zip.sig)
-
-%.zip:
-	-ln -fs out/${BUILDTYPE}/$@ $@
-
-%.zip.sig: $(zip_files)
-	openssl dgst -sha256 -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/${BUILDTYPE}/$@
-	-ln -fs out/${BUILDTYPE}/$@ $@
-
 all: out/Makefile
 	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
-	-ln -fs out/${BUILDTYPE}/monitoring-agent monitoring-agent
-	openssl dgst -sha256 -sign tests/ca/server.key.insecure monitoring-agent > out/${BUILDTYPE}/monitoring-agent.sig
-	-ln -fs out/${BUILDTYPE}/monitoring-agent.sig monitoring-agent.sig
-	$(MAKE) $(sig_files) $(zip_files)
-
+	-ln -fs out/${BUILDTYPE}/$(BINARY_NAME) $(BINARY_NAME)
+	openssl dgst -sha256 -sign tests/ca/server.key.insecure $(BINARY_NAME) > out/${BUILDTYPE}/$(BINARY_NAME).sig
+	-ln -fs out/${BUILDTYPE}/$(BINARY_NAME).sig $(BINARY_NAME).sig
 
 out/Release/monitoring-agent: all
 
@@ -58,9 +45,9 @@ install: all
 	install -d ${BINDIR}
 	install -d ${ETCDIR}
 	install -d ${SHAREDIR}
-	install out/${BUILDTYPE}/monitoring-agent ${BINDIR}/rackspace-monitoring-agent
-	install out/${BUILDTYPE}/monitoring.zip ${SHAREDIR}
-	install out/${BUILDTYPE}/monitoring-test.zip ${SHAREDIR}
+	install out/${BUILDTYPE}/$(BINARY_NAME) ${BINDIR}/$(BINARY_NAME)
+	install out/${BUILDTYPE}/bundle.zip ${SHAREDIR}
+	install out/${BUILDTYPE}/bundle-test.zip ${SHAREDIR}
 
 spec_file_name = rackspace-monitoring-agent.spec
 spec_file_dir = pkg/monitoring/rpm

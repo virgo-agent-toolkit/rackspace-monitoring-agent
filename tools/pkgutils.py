@@ -85,19 +85,28 @@ def system_info():
 
 # git describe return "0.1-143-ga554734"
 # git_describe() returns {'release': '143', 'tag': '0.1', 'hash': 'ga554734'}
-def git_describe(is_exact=False, split=True):
-    options = "--always"
+def git_describe(is_exact=False, split=True, cwd=None):
+
+    describe = "git "
+    if cwd:
+        # if not os.path.isabs(cwd):
+        #     raise ValueError('cwd must me an absolute path for your own sanity: %s' % cwd)
+
+        describe = "%s --git-dir=%s/.git --work-tree=%s " % (describe, cwd, cwd)
 
     if is_exact:
         options = "--exact-match"
+    else:
+        options = "--always"
 
-    describe = "git describe --tags %s" % (options)
+    describe = "%s describe --tags %s" % (describe, options)
 
     try:
         p = subprocess.Popen(describe,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                shell=True)
+                shell=True,
+                cwd=cwd)
     except OSError as e:
         print "ERROR: running: %s" % describe
         print e
