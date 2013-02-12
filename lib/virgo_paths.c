@@ -137,12 +137,14 @@ virgo__path_config_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 
 static int
 is_bundle_file(const char *name) {
-  return strstr(name, VIRGO_DEFAULT_BUNDLE_NAME_PREFIX) != NULL;
+  return (strstr(name, VIRGO_DEFAULT_BUNDLE_NAME_PREFIX) != NULL) &&
+    (strstr(name, ".sig") == NULL);
 }
 
 static int
 is_exe_file(const char *name) {
-  return strstr(name, VIRGO_DEFAULT_EXE_NAME_PREFIX) != NULL;
+  return (strstr(name, VIRGO_DEFAULT_EXE_NAME_PREFIX) != NULL) &&
+    (strstr(name, ".sig") == NULL);
 }
 
 virgo_error_t*
