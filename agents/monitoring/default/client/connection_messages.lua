@@ -74,7 +74,7 @@ function ConnectionMessages:fetchManifest(client)
   end
 end
 
-function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
+function ConnectionMessages:verify(path, sig_path, kpub_data, callback)
   local parallel = {
     hash = function(callback)
       local hash = crypto.verify.new('sha256')
@@ -89,9 +89,6 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
     end,
     sig = function(callback)
       fs.readFile(sig_path, callback)
-    end,
-    pub_data = function(callback)
-      fs.readFile(kpub_path, callback)
     end
   }
   async.parallel(parallel, function(err, res)
@@ -100,7 +97,7 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
     end
     local hash = res.hash[1]
     local sig = res.sig[1]
-    local pub_data = res.pub_data[1]
+    local pub_data = kpub_data
     local key = crypto.pkey.from_pem(pub_data)
 
     if not key then
@@ -117,7 +114,8 @@ end
 
 function ConnectionMessages:getUpgrade(version, client)
   local channel = self._connectionStream:getChannel()
-  local unverified_dir = path.join(consts.DEFAULT_DOWNLOAD_PATH, 'unverified')
+  local unverified_dir = consts.DEFAULT_UNVERIFIED_BUNDLE_PATH
+  local verified_dir = consts.DEFAULT_VERIFIED_BUNDLE_PATH
 
   local function download_iter(item, callback)
     local options = {
@@ -156,12 +154,29 @@ function ConnectionMessages:getUpgrade(version, client)
         if err then
           return callback(err)
         end
+        client:log(logging.INFO, 'Signature verified (ok)')
         async.parallel({
           function(callback)
-            fs.rename(filename, filename_verified, callback)
+            callback = misc.fireOnce(callback)
+            local writeStream = fs.createWriteStream(filename_verified)
+            local readStream = fs.createReadStream(filename)
+            readStream:on('error', callback)
+            readStream:on('end', callback)
+            writeStream:on('error', callback)
+            writeStream:on('end', callback)
+            readStream:pipe(writeStream)
+            --fs.rename(filename, filename_verified, callback)
           end,
           function(callback)
-            fs.rename(filename_sig, filename_verified_sig, callback)
+            callback = misc.fireOnce(callback)
+            local writeStream = fs.createWriteStream(filename_verified_sig)
+            local readStream = fs.createReadStream(filename_sig)
+            readStream:on('error', callback)
+            readStream:on('end', callback)
+            writeStream:on('error', callback)
+            writeStream:on('end', callback)
+            readStream:pipe(writeStream)
+            --fs.rename(filename_sig, filename_verified_sig, callback)
           end
         }, callback)
       end)
@@ -177,10 +192,17 @@ function ConnectionMessages:getUpgrade(version, client)
       end)
     end,
     function(callback)
+      fsutil.mkdirp(verified_dir, "0755", function(err)
+        if not err then return callback() end
+        if err.code == "EEXIST" then return callback() end
+        callback(err)
+      end)
+    end,
+    function(callback)
       local bundle_files = {
         [1] = {
-          payload = 'monitoring.zip',
-          signature = 'monitoring.zip.sig',
+          payload = fmt('monitoring-%s.zip', version),
+          signature = fmt('monitoring-%s.zip.sig', version),
           path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
         }
       }

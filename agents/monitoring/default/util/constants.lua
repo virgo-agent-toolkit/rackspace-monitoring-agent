@@ -47,11 +47,15 @@ local PERSISTENT_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
 local CONFIG_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_CONFIG_DIR)
 local LIBRARY_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_LIBRARY_DIR)
 local RUNTIME_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_RUNTIME_DIR)
+local BUNDLE_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
+
 
 exports.DEFAULT_PERSISTENT_VARIABLE_PATH = path.join(PERSISTENT_DIR, 'variables')
 exports.DEFAULT_CONFIG_PATH = path.join(CONFIG_DIR, 'rackspace-monitoring-agent.cfg')
 exports.DEFAULT_STATE_PATH = path.join(RUNTIME_DIR, 'states')
 exports.DEFAULT_DOWNLOAD_PATH = path.join(RUNTIME_DIR, 'downloads')
+exports.DEFAULT_VERIFIED_BUNDLE_PATH = BUNDLE_DIR
+exports.DEFAULT_UNVERIFIED_BUNDLE_PATH = path.join(exports.DEFAULT_DOWNLOAD_PATH, 'unverified')
 
 -- Custom plugins related settings
 
