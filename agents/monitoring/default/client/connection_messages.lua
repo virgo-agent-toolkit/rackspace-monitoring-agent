@@ -154,6 +154,7 @@ function ConnectionMessages:getUpgrade(version, client)
         if err then
           return callback(err)
         end
+        client:log(logging.INFO, 'Signature verified (ok)')
         async.parallel({
           function(callback)
             fs.rename(filename, filename_verified, callback)
