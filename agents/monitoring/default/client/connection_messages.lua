@@ -74,7 +74,7 @@ function ConnectionMessages:fetchManifest(client)
   end
 end
 
-function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
+function ConnectionMessages:verify(path, sig_path, kpub_data, callback)
   local parallel = {
     hash = function(callback)
       local hash = crypto.verify.new('sha256')
@@ -89,9 +89,6 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
     end,
     sig = function(callback)
       fs.readFile(sig_path, callback)
-    end,
-    pub_data = function(callback)
-      fs.readFile(kpub_path, callback)
     end
   }
   async.parallel(parallel, function(err, res)
@@ -100,7 +97,7 @@ function ConnectionMessages:verify(path, sig_path, kpub_path, callback)
     end
     local hash = res.hash[1]
     local sig = res.sig[1]
-    local pub_data = res.pub_data[1]
+    local pub_data = kpub_data
     local key = crypto.pkey.from_pem(pub_data)
 
     if not key then
