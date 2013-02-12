@@ -117,7 +117,8 @@ end
 
 function ConnectionMessages:getUpgrade(version, client)
   local channel = self._connectionStream:getChannel()
-  local unverified_dir = path.join(consts.DEFAULT_DOWNLOAD_PATH, 'unverified')
+  local unverified_dir = consts.DEFAULT_UNVERIFIED_BUNDLE_PATH
+  local verified_dir = consts.DEFAULT_VERIFIED_BUNDLE_PATH
 
   local function download_iter(item, callback)
     local options = {
@@ -171,6 +172,13 @@ function ConnectionMessages:getUpgrade(version, client)
   async.waterfall({
     function(callback)
       fsutil.mkdirp(unverified_dir, "0755", function(err)
+        if not err then return callback() end
+        if err.code == "EEXIST" then return callback() end
+        callback(err)
+      end)
+    end,
+    function(callback)
+      fsutil.mkdirp(verified_dir, "0755", function(err)
         if not err then return callback() end
         if err.code == "EEXIST" then return callback() end
         callback(err)
