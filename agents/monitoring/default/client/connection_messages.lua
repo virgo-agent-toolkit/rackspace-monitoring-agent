@@ -179,8 +179,8 @@ function ConnectionMessages:getUpgrade(version, client)
     function(callback)
       local bundle_files = {
         [1] = {
-          payload = 'monitoring.zip',
-          signature = 'monitoring.zip.sig',
+          payload = fmt('monitoring-%s.zip', version),
+          signature = fmt('monitoring-%s.zip.sig', version),
           path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
         }
       }
