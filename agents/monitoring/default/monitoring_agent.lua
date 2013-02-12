@@ -89,7 +89,7 @@ end
 
 function MonitoringAgent:connect(callback)
   local endpoints = self._config['monitoring_endpoints']
-  local upgradesEnabled = self._config['monitoring_upgrade'] or false
+  local upgradesEnabled = self._config['monitoring_upgrade'] or true
 
   if #endpoints <= 0 then
     logging.error('no endpoints')
