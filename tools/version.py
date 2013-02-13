@@ -35,9 +35,10 @@ def git_describe_fields(version):
 version = git_describe(is_exact=False, split=True)
 zeroed = zero_release(version)
 fields = git_describe_fields(zeroed)
+full_version = options.seperator.join(zeroed[:2])
 
 if len(args) == 1:
     print("%s" % fields.get(args[0], ""))
     sys.exit(0)
 
-print(options.seperator.join(zeroed[:2]))
+print(full_version)
