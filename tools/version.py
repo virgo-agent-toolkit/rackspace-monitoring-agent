@@ -37,8 +37,12 @@ zeroed = zero_release(version)
 fields = git_describe_fields(zeroed)
 full_version = options.seperator.join(zeroed[:2])
 
-if len(args) == 1:
-    print("%s" % fields.get(args[0], ""))
-    sys.exit(0)
+def main():
+    if len(args) == 1:
+        print("%s" % fields.get(args[0], ""))
+        sys.exit(0)
 
-print(full_version)
+    print(full_version)
+
+if __name__ == "__main__":
+    main()
