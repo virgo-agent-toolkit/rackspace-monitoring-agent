@@ -4,6 +4,7 @@ import os
 import sys
 import shutil
 
+from version import full_version
 from optparse import OptionParser
 
 import pkgutils
@@ -23,7 +24,8 @@ def main():
 
     binary = os.path.join(build_dir, 'monitoring-agent')
 
-    dest = os.path.join(dest, '%s-monitoring-agent' % (pkgutils.pkg_dir()))
+    dest = os.path.join(dest, '%s-monitoring-agent-%s' % (pkgutils.pkg_dir(),
+      full_version))
     shutil.move(binary, dest)
     shutil.move(binary + ".sig", dest + ".sig")
 
