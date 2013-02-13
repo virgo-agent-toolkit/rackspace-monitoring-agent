@@ -191,7 +191,8 @@ function ConnectionMessages:getUpgrade(version, client)
     end,
     function(callback)
       local s = sigar:new():sysinfo()
-      local binary_name = fmt('%s-%s-%s-monitoring-agent', s.vendor, s.vendor_version, s.arch):lower()
+      local binary_name = fmt('%s-%s-%s-monitoring-agent-%s', s.vendor, s.vendor_version, s.arch, version):lower()
+      local binary_name_sig = fmt('%s.sig', binary_name)
       local bundle_files = {
         [1] = {
           payload = fmt('monitoring-%s.zip', version),
@@ -200,7 +201,7 @@ function ConnectionMessages:getUpgrade(version, client)
         },
         [2] = {
           payload = binary_name,
-          signature = binary_name .. '.sig',
+          signature = binary_name_sig,
           path = virgo_paths.get(virgo_paths.VIRGO_PATH_EXE_DIR)
         }
       }
