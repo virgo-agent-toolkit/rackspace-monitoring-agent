@@ -261,8 +261,21 @@ function propagateEvents(fromClass, toClass, eventNames)
 end
 
 
+function copyFile(fromFile, toFile, callback)
+  callback = fireOnce(callback)
+  local writeStream = fs.createWriteStream(toFile)
+  local readStream = fs.createReadStream(fromFile)
+  readStream:on('error', callback)
+  readStream:on('end', callback)
+  writeStream:on('error', callback)
+  writeStream:on('end', callback)
+  readStream:pipe(writeStream)
+end
+
+
 --[[ Exports ]]--
 local exports = {}
+exports.copyFile = copyFile
 exports.calcJitter = calcJitter
 exports.merge = merge
 exports.splitAddress = splitAddress
