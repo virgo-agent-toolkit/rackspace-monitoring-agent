@@ -21,6 +21,7 @@ local errors = require('../errors')
 local instanceof = require('core').instanceof
 local request = require('../protocol/request')
 local sigar = require('sigar')
+local string = require('string')
 
 -- Connection Messages
 local ConnectionMessages = Emitter:extend()
@@ -167,7 +168,12 @@ function ConnectionMessages:getUpgrade(version, client)
             client:log(logging.INFO, fmt('Moving file to %s', filename_verified_sig))
             misc.copyFile(filename_sig, filename_verified_sig, callback)
           end
-        }, callback)
+        }, function(err)
+          if err then
+            return callback(err)
+          end
+          fs.chmod(filename_verified, string.format('%o', item.permissions), callback)
+        end)
       end)
     end)
   end
@@ -199,12 +205,14 @@ function ConnectionMessages:getUpgrade(version, client)
         [1] = {
           payload = fmt('monitoring-%s.zip', version),
           signature = fmt('monitoring-%s.zip.sig', version),
-          path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
+          path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR),
+          permissions = tonumber('644', 8)
         },
         [2] = {
           payload = binary_name,
           signature = binary_name_sig,
-          path = virgo_paths.get(virgo_paths.VIRGO_PATH_EXE_DIR)
+          path = virgo_paths.get(virgo_paths.VIRGO_PATH_EXE_DIR),
+          permissions = tonumber('755', 8)
         }
       }
       async.forEach(bundle_files, download_iter, callback)
