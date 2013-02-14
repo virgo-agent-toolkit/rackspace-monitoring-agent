@@ -59,7 +59,7 @@ exports.DEFAULT_DOWNLOAD_PATH = path.join(RUNTIME_DIR, 'downloads')
 exports.DEFAULT_VERIFIED_BUNDLE_PATH = BUNDLE_DIR
 exports.DEFAULT_UNVERIFIED_BUNDLE_PATH = path.join(exports.DEFAULT_DOWNLOAD_PATH, 'unverified')
 exports.DEFAULT_VERIFIED_EXE_PATH = EXE_DIR
-exports.DEFAULT_UNVERIFIED_BUNDLE_PATH = path.join(exports.DEFAULT_DOWNLOAD_PATH, 'unverified')
+exports.DEFAULT_UNVERIFIED_EXE_PATH = path.join(exports.DEFAULT_DOWNLOAD_PATH, 'unverified')
 
 -- Custom plugins related settings
 

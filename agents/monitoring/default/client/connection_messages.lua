@@ -157,12 +157,14 @@ function ConnectionMessages:getUpgrade(version, client)
         if err then
           return callback(err)
         end
-        client:log(logging.INFO, 'Signature verified (ok)')
+        client:log(logging.INFO, fmt('Signature verified %s (ok)', item.payload))
         async.parallel({
           function(callback)
+            client:log(logging.INFO, fmt('Moving file to %s', filename_verified))
             misc.copyFile(filename, filename_verified, callback)
           end,
           function(callback)
+            client:log(logging.INFO, fmt('Moving file to %s', filename_verified_sig))
             misc.copyFile(filename_sig, filename_verified_sig, callback)
           end
         }, callback)
