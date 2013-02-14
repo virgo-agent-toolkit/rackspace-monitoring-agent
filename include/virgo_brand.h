@@ -26,7 +26,7 @@
   "rackspace-monitoring-agent"
 
 #define VIRGO_DEFAULT_EXE_NAME_PREFIX \
-  "rackspace-monitoring"
+  "monitoring-agent"
 
 #define VIRGO_DEFAULT_BUNDLE_NAME_PREFIX \
   "monitoring"

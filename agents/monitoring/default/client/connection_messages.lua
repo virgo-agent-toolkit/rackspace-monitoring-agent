@@ -20,6 +20,8 @@ local crypto = require('_crypto')
 local errors = require('../errors')
 local instanceof = require('core').instanceof
 local request = require('../protocol/request')
+local sigar = require('sigar')
+local string = require('string')
 
 -- Connection Messages
 local ConnectionMessages = Emitter:extend()
@@ -116,6 +118,8 @@ function ConnectionMessages:getUpgrade(version, client)
   local channel = self._connectionStream:getChannel()
   local unverified_dir = consts.DEFAULT_UNVERIFIED_BUNDLE_PATH
   local verified_dir = consts.DEFAULT_VERIFIED_BUNDLE_PATH
+  local unverified_binary_dir = consts.DEFAULT_UNVERIFIED_EXE_PATH
+  local verified_binary_dir = consts.DEFAULT_VERIFIED_EXE_PATH
 
   local function download_iter(item, callback)
     local options = {
@@ -154,56 +158,61 @@ function ConnectionMessages:getUpgrade(version, client)
         if err then
           return callback(err)
         end
-        client:log(logging.INFO, 'Signature verified (ok)')
+        client:log(logging.INFO, fmt('Signature verified %s (ok)', item.payload))
         async.parallel({
           function(callback)
-            callback = misc.fireOnce(callback)
-            local writeStream = fs.createWriteStream(filename_verified)
-            local readStream = fs.createReadStream(filename)
-            readStream:on('error', callback)
-            readStream:on('end', callback)
-            writeStream:on('error', callback)
-            writeStream:on('end', callback)
-            readStream:pipe(writeStream)
-            --fs.rename(filename, filename_verified, callback)
+            client:log(logging.INFO, fmt('Moving file to %s', filename_verified))
+            misc.copyFile(filename, filename_verified, callback)
           end,
           function(callback)
-            callback = misc.fireOnce(callback)
-            local writeStream = fs.createWriteStream(filename_verified_sig)
-            local readStream = fs.createReadStream(filename_sig)
-            readStream:on('error', callback)
-            readStream:on('end', callback)
-            writeStream:on('error', callback)
-            writeStream:on('end', callback)
-            readStream:pipe(writeStream)
-            --fs.rename(filename_sig, filename_verified_sig, callback)
+            client:log(logging.INFO, fmt('Moving file to %s', filename_verified_sig))
+            misc.copyFile(filename_sig, filename_verified_sig, callback)
           end
-        }, callback)
+        }, function(err)
+          if err then
+            return callback(err)
+          end
+          fs.chmod(filename_verified, string.format('%o', item.permissions), callback)
+        end)
       end)
     end)
   end
 
+  local function mkdirp(path, callback)
+    fsutil.mkdirp(path, "0755", function(err)
+      if not err then return callback() end
+      if err.code == "EEXIST" then return callback() end
+      callback(err)
+    end)
+  end
+
+  local directories = {
+    unverified_dir,
+    verified_dir,
+    unverified_binary_dir,
+    verified_binary_dir
+  }
+
   async.waterfall({
     function(callback)
-      fsutil.mkdirp(unverified_dir, "0755", function(err)
-        if not err then return callback() end
-        if err.code == "EEXIST" then return callback() end
-        callback(err)
-      end)
+      async.forEach(directories, mkdirp, callback)
     end,
     function(callback)
-      fsutil.mkdirp(verified_dir, "0755", function(err)
-        if not err then return callback() end
-        if err.code == "EEXIST" then return callback() end
-        callback(err)
-      end)
-    end,
-    function(callback)
+      local s = sigar:new():sysinfo()
+      local binary_name = fmt('%s-%s-%s-monitoring-agent-%s', s.vendor, s.vendor_version, s.arch, version):lower()
+      local binary_name_sig = fmt('%s.sig', binary_name)
       local bundle_files = {
         [1] = {
           payload = fmt('monitoring-%s.zip', version),
           signature = fmt('monitoring-%s.zip.sig', version),
-          path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR)
+          path = virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE_DIR),
+          permissions = tonumber('644', 8)
+        },
+        [2] = {
+          payload = binary_name,
+          signature = binary_name_sig,
+          path = virgo_paths.get(virgo_paths.VIRGO_PATH_EXE_DIR),
+          permissions = tonumber('755', 8)
         }
       }
       async.forEach(bundle_files, download_iter, callback)
