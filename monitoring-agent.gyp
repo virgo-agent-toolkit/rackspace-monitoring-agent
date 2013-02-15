@@ -323,6 +323,7 @@
                             '-ext', 'WixUIExtension',
                             '-ext', 'WixUtilExtension',
                             '-out', '<@(_outputs)',
+                            '-sval',
                           ],
                           'process_outputs_as_sources': 1,
                         },
