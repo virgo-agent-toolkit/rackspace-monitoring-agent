@@ -24,6 +24,20 @@
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="ProgramFilesFolder" Name="PFiles">
                 <Directory Id="RAXMONAGENT" Name="$(var.ProductShortName)">
+                    <Component Id="MonitoringZip" Guid="F40E81F0-1044-4BF7-A4E6-0F3B0995E074">
+                        <File Id="monitoring_zip"
+                                Name="monitoring.zip"
+                                DiskId="1"
+                                Source='$(var.ProductDir)\monitoring.zip' KeyPath="yes">
+                        </File>
+                    </Component>
+                    <Component Id="LuaJITDLL" Guid="5A6763C9-B65D-4991-857D-4C0C250F8C60">
+                        <File Id="luajit_dll"
+                                Name="libluajit.dll"
+                                DiskId="1"
+                                Source='$(var.ProductDir)\libluajit.dll' KeyPath="yes">
+                        </File>
+                    </Component>
                     <Component Id="MainExecutable" Guid="F044290F-E32E-438D-8E1A-C628E0353BD4">
                         <File Id="agent_exe"
                                 Name="rackspace-monitoring-agent.exe"
@@ -32,7 +46,7 @@
                         </File>
                         <!--  Vital="yes" Removed until we can fixup more services integration. -->
                         <ServiceInstall Id="InstallRackspaceMonitoringAgent"
-                            Name="$(var.ProductName)"
+                            Name="RackspaceMonitoringAgent"
                             DisplayName="$(var.ProductName)"
                             Type="ownProcess"
                             Start="auto"
@@ -62,6 +76,8 @@
             </Directory>
         </Directory>
         <Feature Id="Complete" Level="1">
+            <ComponentRef Id="MonitoringZip" />
+            <ComponentRef Id="LuaJITDLL" />
             <ComponentRef Id="MainExecutable" />
             <ComponentRef Id="PluginDirectory" />
         </Feature>
