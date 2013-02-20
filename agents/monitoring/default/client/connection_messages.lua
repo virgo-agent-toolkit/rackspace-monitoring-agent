@@ -114,7 +114,7 @@ function ConnectionMessages:verify(path, sig_path, kpub_data, callback)
   end)
 end
 
-function ConnectionMessages:getUpgrade(version, client)
+function ConnectionMessages:getUpgrade(version, client, callback)
   local channel = self._connectionStream:getChannel()
   local unverified_dir = consts.DEFAULT_UNVERIFIED_BUNDLE_PATH
   local verified_dir = consts.DEFAULT_VERIFIED_BUNDLE_PATH
