@@ -46,7 +46,7 @@
                         </File>
                         <!--  Vital="yes" Removed until we can fixup more services integration. -->
                         <ServiceInstall Id="InstallRackspaceMonitoringAgent"
-                            Name="RackspaceMonitoringAgent"
+                            Name="$(var.ProductName)"
                             DisplayName="$(var.ProductName)"
                             Type="ownProcess"
                             Start="auto"
