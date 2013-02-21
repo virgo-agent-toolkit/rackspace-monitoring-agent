@@ -208,6 +208,7 @@ virgo__lua_init(virgo_t *v)
   virgo__set_virgo_key(L, "platform", VIRGO_PLATFORM);
   virgo__set_virgo_key(L, "default_name", VIRGO_DEFAULT_NAME);
   virgo__set_virgo_key(L, "default_config_filename", VIRGO_DEFAULT_CONFIG_FILENAME);
+  virgo__set_virgo_key(L, "exit_on_upgrade", v->exit_on_upgrade ? "true" : "false");
 
   luaL_openlibs(L);
   luaopen_sigar(L);
