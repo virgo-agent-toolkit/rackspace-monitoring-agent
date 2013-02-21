@@ -245,21 +245,21 @@ static virgo_error_t*
 virgo__conf_get_path(virgo_t *v, const char **p_path)
 {
 #ifdef _WIN32
-  char *programfiles;
+  char *programdata;
   const char *path;
 
   path = virgo__argv_get_value(v, "-c", "--config");
 
   if (path == NULL) {
     char gen_path[512];
-    programfiles = getenv("ProgramData");
+    programdata = getenv("ProgramData");
 
-    if (programfiles == NULL) {
+    if (programdata == NULL) {
       return virgo_error_create(VIRGO_EINVAL, "Unable to get environment variable: \"ProgramData\"\n");
     }
 
     sprintf(gen_path, "%s\\%s\\config\\%s",
-            programfiles,
+            programdata,
             VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY,
             VIRGO_DEFAULT_CONFIG_FILENAME);
 
