@@ -70,8 +70,13 @@
                     </Directory>
                 </Directory>
             </Directory>
-            <Directory Id="CommonAppDataFolder" Name="CommonAppDataFolder">
-                <Directory Id="RaxMonFolder" Name="Rackspace Monitoring">
+            <Directory Id="CommonAppDataFolder" Name="ComApptDt">
+                <Directory Id="RaxMonFolder" Name="$(var.ProductShortName)">
+                    <Directory Id="RAXMONAGENTCONF" Name="config">
+                        <Component Id="ConfigDirectory" Guid="FB99EF1C-AF81-4257-9392-FBA49851A856">
+                            <CreateFolder />
+                        </Component>
+                    </Directory>
                 </Directory>
             </Directory>
         </Directory>
@@ -80,6 +85,7 @@
             <ComponentRef Id="LuaJITDLL" />
             <ComponentRef Id="MainExecutable" />
             <ComponentRef Id="PluginDirectory" />
+            <ComponentRef Id="ConfigDirectory" />
         </Feature>
     <Icon Id="agent_icon" SourceFile="$(var.ProductDir)\..\agents\monitoring\rackspace-monitoring-agent.ico" />
     <Property Id="ARPPRODUCTICON" Value="agent_icon" />
