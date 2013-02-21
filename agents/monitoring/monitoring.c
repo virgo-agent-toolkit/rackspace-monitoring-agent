@@ -67,6 +67,7 @@ show_help()
          "  -D, --detach          Detach the process and run the agent in the background.\n"
          "  --production          Write debug information to disk when the agent crahes.\n"
          "  --crash               Crash the agent.\n"
+         "  --exit-on-upgrade     On a successful upgrade exit.\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);

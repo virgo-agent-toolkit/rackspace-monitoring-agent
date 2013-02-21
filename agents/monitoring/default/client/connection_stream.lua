@@ -56,6 +56,9 @@ function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options)
   self._messages = ConnectionMessages:new(self)
   self._upgrade = UpgradePollEmitter:new()
   self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
+  self._upgrade:on('shutdown', function()
+    self:emit('shutdown', consts.SHUTDOWN_UPGRADE)
+  end)
 end
 
 function ConnectionStream:getUpgrade()
@@ -95,16 +98,19 @@ function ConnectionStream:_onUpgrade()
       client:log(logging.ERROR, 'Error on upgrade: ' .. tostring(err))
       return
     end
-    local upgrade_found = false
     version = misc.trim(version)
     client:log(logging.DEBUG, fmt('(upgrade) -> Current Version: %s', bundleVersion))
     client:log(logging.DEBUG, fmt('(upgrade) -> Upstream Version: %s', version))
     if misc.compareVersions(version, bundleVersion) > 0 then
-      client:log(logging.INFO, fmt('(upgrade) -> found: %s', version))
-      self._messages:getUpgrade(version, client)
-      upgrade_found = true
+      client:log(logging.INFO, fmt('(upgrade) -> Performing upgrade to %s', version))
+      self._messages:getUpgrade(version, client, function(err)
+        if err then
+          client:log(logging.ERROR, fmt('(upgrade) -> error: %s', tostring(err)))
+          return
+        end
+        self._upgrade:onSuccess()
+      end)
     end
-    self:emit('upgrade_done', { upgrade_found = upgrade_found })
   end)
 end
 
@@ -268,24 +274,14 @@ function ConnectionStream:_restart(client, options, callback)
   -- The error we hit was rateLimit related.
   -- Shut down the agent.
   if client.rateLimitReached then
-    client:log(logging.ERROR, fmt('Rate limit reached on connection to %s. ' ..
-        'Shutting down this agent', client:getDatacenter()))
-
-    self:shutdown('Shutting down. The rate limit was exceeded for the ' ..
-     'agent API endpoint. Contact support if you need an increased rate limit.')
-     return
+    self:emit('shutdown', consts.SHUTDOWN_RATE_LIMIT)
+    return
   end
-
   self:reconnect(options, callback)
 end
 
-function ConnectionStream:shutdown(msg)
+function ConnectionStream:shutdown()
   self:done()
-  -- Sleep to keep from busy restarting on upstart/systemd/etc
-  timer.setTimeout(consts.RATE_LIMIT_SLEEP, function()
-    logging.error(msg)
-    process.exit(consts.RATE_LIMIT_RETURN_CODE)
-  end)
 end
 
 function ConnectionStream:done()
