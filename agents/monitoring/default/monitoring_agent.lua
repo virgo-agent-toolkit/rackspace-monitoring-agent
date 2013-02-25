@@ -135,13 +135,13 @@ function MonitoringAgent:_onShutdown(shutdownType)
   -- Destroy Socket Streams
   self._streams:shutdown()
 
-  if shutdownType == consts.SHUTDOWN_UPGRADE then
+  if shutdownType == constants.SHUTDOWN_UPGRADE then
     msg = 'Shutting down agent due to upgrade'
-  elseif shutdownType == consts.SHUTDOWN_RATE_LIMIT then
+  elseif shutdownType == constants.SHUTDOWN_RATE_LIMIT then
     msg = 'Shutting down. The rate limit was exceeded for the ' ..
     'agent API endpoint. Contact support if you need an increased rate limit.'
-    exit_code = consts.RATE_LIMIT_RETURN_CODE
-    timeout = consts.RATE_LIMIT_SLEEP
+    exit_code = constants.RATE_LIMIT_RETURN_CODE
+    timeout = constants.RATE_LIMIT_SLEEP
   else
     msg = fmt('Shutdown called for unknown type %s', shutdownType)
   end
