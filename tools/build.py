@@ -55,11 +55,9 @@ def pkg_sign():
 
 
 def test(stdout=None, entry="tests", flags=None):
-    state_config = os.path.join(paths.BUNDLE_DIR, 'tests', 'scheduler.state')
-    monitoring_config = os.path.join(paths.BUNDLE_DIR, 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
     bundle = os.path.join(paths.BUILD_DIR, "%s-bundle-test.zip" % (paths.BUNDLE_NAME))
 
-    cmd = '%s -o -d -c %s -s %s --zip %s -e %s -o' % (paths.AGENT, monitoring_config, state_config, bundle, entry)
+    cmd = '%s -o -d --zip %s -e %s' % (paths.AGENT, bundle, entry)
 
     if flags:
         cmd += " ".join(flags)

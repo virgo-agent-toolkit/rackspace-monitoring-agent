@@ -183,6 +183,12 @@ hide("exitProcess")
 
 local vfs = LVFS.open()
 
+_G.get_static = function(filepath)
+  if vfs:exists(filepath) then
+    return vfs:read(filepath)
+  end
+end
+
 local path_mapping = {}
 if vfs:exists('/path_mapping.lua') then
   local mapping_string = vfs:read('/path_mapping.lua')
@@ -462,7 +468,7 @@ local gcInterval = timer.setInterval(GC_INTERVAL, gc)
 -- Unref the interval timer. We don't want it to keep the eventloop blocked
 gcInterval:unref()
 
-_G.virgo_entry = function()
+_G.virgo_entry = function(mod)
   _G.virgo_entry = nil
   preload_lua_modules()
   require(mod).run()
