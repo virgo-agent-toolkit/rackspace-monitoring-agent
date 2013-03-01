@@ -96,7 +96,7 @@ virgo_conf_args(virgo_t *v)
     v->exit_on_upgrade = TRUE;
   }
 
-  if (virgo__argv_has_flag(v, "-p", "--restart-on-upgrade")) {
+  if (virgo__argv_has_flag(v, "-p", "--restart-sysv-on-upgrade")) {
     v->restart_on_upgrade = TRUE;
   }
 
