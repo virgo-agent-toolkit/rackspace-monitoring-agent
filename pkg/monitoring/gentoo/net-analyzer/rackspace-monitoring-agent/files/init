@@ -13,7 +13,7 @@ depend() {
 start() {
     ebegin "Starting monitoring-agent"
     start-stop-daemon --background --start --exec /usr/bin/rackspace-monitoring-agent \
-      --make-pidfile --pidfile $PIDFILE
+      --make-pidfile --pidfile $PIDFILE --restart-on-upgrade
     eend $?
 }
 

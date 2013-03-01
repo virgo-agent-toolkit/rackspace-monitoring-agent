@@ -103,8 +103,7 @@ virgo__lua_restart_on_upgrade(lua_State *L) {
 
   if (pid > 0) {
     setsid();
-    system("/etc/init.d/rackspace-monitoring-agent stop");
-    system("/etc/init.d/rackspace-monitoring-agent start");
+    system("/etc/init.d/rackspace-monitoring-agent restart");
     exit(0);
   }
 
