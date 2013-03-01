@@ -116,14 +116,18 @@ function MonitoringAgent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
-function MonitoringAgent:_shutdown(msg, timeout, exit_code)
-  -- Sleep to keep from busy restarting on upstart/systemd/etc
-  timer.setTimeout(timeout, function()
-    if msg then
-      logging.info(msg)
-    end
-    process.exit(exit_code)
-  end)
+function MonitoringAgent:_shutdown(msg, timeout, exit_code, shutdownType)
+  if shutdownType == constants.SHUTDOWN_RESTART then
+    virgo.perform_restart_on_upgrade()
+  else
+    -- Sleep to keep from busy restarting on upstart/systemd/etc
+    timer.setTimeout(timeout, function()
+      if msg then
+        logging.info(msg)
+      end
+      process.exit(exit_code)
+    end)
+  end
 end
 
 function MonitoringAgent:_onShutdown(shutdownType)
@@ -142,11 +146,13 @@ function MonitoringAgent:_onShutdown(shutdownType)
     'agent API endpoint. Contact support if you need an increased rate limit.'
     exit_code = constants.RATE_LIMIT_RETURN_CODE
     timeout = constants.RATE_LIMIT_SLEEP
+  elseif shutdownType == constants.SHUTDOWN_RESTART then
+    msg = 'Attempting to restart agent'
   else
     msg = fmt('Shutdown called for unknown type %s', shutdownType)
   end
 
-  self:_shutdown(msg, timeout, exit_code)
+  self:_shutdown(msg, timeout, exit_code, shutdownType)
 end
 
 function MonitoringAgent:getStreams()

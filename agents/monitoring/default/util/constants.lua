@@ -31,6 +31,7 @@ exports.SETUP_AUTH_CHECK_INTERVAL = 2 * 1000
 
 exports.SHUTDOWN_UPGRADE = 1
 exports.SHUTDOWN_RATE_LIMIT = 2
+exports.SHUTDOWN_RESTART = 3
 
 if process.env.STAGING then
   exports.DEFAULT_MONITORING_SRV_QUERIES = {
