@@ -68,6 +68,7 @@ show_help()
          "  --production          Write debug information to disk when the agent crahes.\n"
          "  --crash               Crash the agent.\n"
          "  --exit-on-upgrade     On a successful upgrade exit.\n"
+         "  --restart-on-upgrade  Attempt to restart on upgrade. (System V)\n"
          "\n"
          "Documentation can be found at http://monitoring.api.rackspacecloud.com/\n");
   fflush(stdout);

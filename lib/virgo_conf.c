@@ -96,6 +96,10 @@ virgo_conf_args(virgo_t *v)
     v->exit_on_upgrade = TRUE;
   }
 
+  if (virgo__argv_has_flag(v, "-p", "--restart-on-upgrade")) {
+    v->restart_on_upgrade = TRUE;
+  }
+
   arg = virgo__argv_get_value(v, "-l", "--logfile");
   if (arg != NULL) {
     v->log_path = strdup(arg);

@@ -45,6 +45,7 @@ struct virgo_t {
   char **argv;
   short try_upgrade;
   short exit_on_upgrade;
+  int restart_on_upgrade;
   virgo_log_level_e log_level;
   FILE *log_fp;
   const char *log_path;
