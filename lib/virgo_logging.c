@@ -28,7 +28,7 @@ virgo_error_t*
 virgo__log_rotate(virgo_t *v)
 {
   FILE *old = v->log_fp;
-  FILE *nxt = stderr;
+  FILE *nxt = stdout;
 
   if (v->log_path != NULL) {
     nxt = fopen(v->log_path, "ab");
@@ -51,7 +51,7 @@ virgo__log_rotate(virgo_t *v)
 
   v->log_fp = nxt;
 
-  if (old != NULL && old != stderr) {
+  if (old != NULL && old != stdout) {
     fclose(old);
   }
 
@@ -79,7 +79,7 @@ static void
 virgo__log_buf(virgo_t *v, const char *str, size_t len)
 {
   if (v->log_fp == NULL) {
-    v->log_fp = stderr;
+    v->log_fp = stdout;
   }
   fwrite(str, 1, strlen(str), v->log_fp);
   fflush(v->log_fp);
