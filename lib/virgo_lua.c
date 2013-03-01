@@ -92,6 +92,23 @@ virgo__lua_force_dump(lua_State *L){
 
 static int
 virgo__lua_restart_on_upgrade(lua_State *L) {
+#ifndef _WIN32
+  int pid;
+
+  pid = fork();
+  if (pid < 0) {
+    luaL_error(L, strerror(errno));
+    return 0;
+  }
+
+  if (pid > 0) {
+    setsid();
+    system("/etc/init.d/rackspace-monitoring-agent stop");
+    system("/etc/init.d/rackspace-monitoring-agent start");
+    exit(0);
+  }
+
+#endif
   return 0;
 }
 
