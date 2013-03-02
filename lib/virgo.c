@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  virgo_log_infof(v, "Process Executable: %s", path);
+  // virgo_log_infof(v, "Process Executable: %s", path);
 
   /* Check to see if bundle is valid */
   err = virgo__bundle_is_valid(v);
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
+  // virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
 
   /* Setup Lua Contexts for Luvit and Libuv runloop */
   err = virgo_init(v);
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
   /* Enter Luvit and Execute */
   err = virgo_run(v);
   if (err) {
-    handle_error("Runtime Error", err);
+    handle_error("\nRuntime Error: ", err);
     return EXIT_FAILURE;
   }
 
