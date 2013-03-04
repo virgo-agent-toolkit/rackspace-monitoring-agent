@@ -25,6 +25,7 @@ function UpgradePollEmitter:initialize()
   self.stopped = nil
   self._options = {}
   self._options.exit_on_upgrade = virgo.exit_on_upgrade == 'true'
+  self._options.restart_on_upgrade = virgo.restart_on_upgrade == 'true'
 end
 
 function UpgradePollEmitter:calcTimeout()
@@ -78,10 +79,13 @@ function UpgradePollEmitter:stop()
 end
 
 function UpgradePollEmitter:onSuccess()
+  local reason
   if self._options.exit_on_upgrade then
-    self:emit('shutdown')
-    return
+    reason = consts.SHUTDOWN_UPGRADE
+  elseif self._options.restart_on_upgrade then
+    reason = consts.SHUTDOWN_RESTART
   end
+  self:emit('shutdown', reason)
 end
 
 local exports = {}

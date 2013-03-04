@@ -91,6 +91,27 @@ virgo__lua_force_dump(lua_State *L){
 }
 
 static int
+virgo__lua_restart_on_upgrade(lua_State *L) {
+#ifndef _WIN32
+  int pid;
+
+  pid = fork();
+  if (pid < 0) {
+    luaL_error(L, strerror(errno));
+    return 0;
+  }
+
+  if (pid > 0) {
+    setsid();
+    system("/etc/init.d/rackspace-monitoring-agent restart");
+    exit(0);
+  }
+
+#endif
+  return 0;
+}
+
+static int
 virgo__lua_force_crash(lua_State *L) {
   volatile int* a = (int*)(NULL);
   *a = 1;
@@ -198,6 +219,7 @@ virgo__lua_init(virgo_t *v)
   virgo__push_function(L, "force_crash", virgo__lua_force_crash);
   virgo__push_function(L, "gmtnow", virgo_time_now);
   virgo__push_function(L, "force_dump", virgo__lua_force_dump);
+  virgo__push_function(L, "perform_restart_on_upgrade", virgo__lua_restart_on_upgrade);
 
 #ifdef _WIN32
   virgo__push_function(L, "win32_get_associated_exe", virgo__lua_win32_get_associated_exe);
@@ -209,6 +231,7 @@ virgo__lua_init(virgo_t *v)
   virgo__set_virgo_key(L, "default_name", VIRGO_DEFAULT_NAME);
   virgo__set_virgo_key(L, "default_config_filename", VIRGO_DEFAULT_CONFIG_FILENAME);
   virgo__set_virgo_key(L, "exit_on_upgrade", v->exit_on_upgrade ? "true" : "false");
+  virgo__set_virgo_key(L, "restart_on_upgrade", v->restart_on_upgrade ? "true" : "false");
 
   luaL_openlibs(L);
   luaopen_sigar(L);

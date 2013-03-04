@@ -56,8 +56,8 @@ function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options)
   self._messages = ConnectionMessages:new(self)
   self._upgrade = UpgradePollEmitter:new()
   self._upgrade:on('upgrade', utils.bind(ConnectionStream._onUpgrade, self))
-  self._upgrade:on('shutdown', function()
-    self:emit('shutdown', consts.SHUTDOWN_UPGRADE)
+  self._upgrade:on('shutdown', function(reason)
+    self:emit('shutdown', reason)
   end)
 end
 
