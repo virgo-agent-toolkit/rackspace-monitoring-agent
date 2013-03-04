@@ -83,16 +83,10 @@ def system_info():
     return (machine, system, pkg_dir())
 
 
-# git describe return "0.1-143-ga554734"
-# git_describe() returns {'release': '143', 'tag': '0.1', 'hash': 'ga554734'}
-def git_describe(is_exact=False, split=True, cwd=None):
-
+def _git_describe(is_exact, git_dir, cwd):
     describe = "git "
     if cwd:
-        # if not os.path.isabs(cwd):
-        #     raise ValueError('cwd must me an absolute path for your own sanity: %s' % cwd)
-
-        describe = "%s --git-dir=%s/.git --work-tree=%s " % (describe, cwd, cwd)
+        describe = "%s --git-dir=%s/.git --work-tree=%s " % (describe, git_dir, cwd)
 
     if is_exact:
         options = "--exact-match"
@@ -100,22 +94,32 @@ def git_describe(is_exact=False, split=True, cwd=None):
         options = "--always"
 
     describe = "%s describe --tags %s" % (describe, options)
-    print describe, cwd
-    try:
-        p = subprocess.Popen(describe,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                shell=True,
-                cwd=cwd)
-    except OSError as e:
-        print "ERROR: running: %s" % describe
-        print e
-        sys.exit(1)
+
+    p = subprocess.Popen(describe,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=cwd)
 
     version, errors = p.communicate()
 
     if errors:
-        raise ValueError(errors)
+        raise ValueError("The command failed:\n%s\n%s" % (describe, errors))
+
+    return version
+
+
+# git describe return "0.1-143-ga554734"
+# git_describe() returns {'release': '143', 'tag': '0.1', 'hash': 'ga554734'}
+def git_describe(is_exact=False, split=True, cwd=None):
+
+    try:
+        version = _git_describe(is_exact, cwd, cwd)
+    except ValueError:
+        version = ""
+
+    if not version:
+        version = _git_describe(is_exact, "..", cwd)
 
     version = version.strip()
     if split:

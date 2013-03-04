@@ -55,7 +55,7 @@ def pkg_sign():
 
 
 def test(stdout=None, entry="tests", flags=None):
-    bundle = os.path.join(paths.BUILD_DIR, "%s-bundle-test.zip" % (paths.BUNDLE_NAME))
+    bundle = os.path.join(paths.BUILD_DIR, "%s-bundle.zip" % (paths.BUNDLE_NAME))
 
     cmd = '%s -o -d --zip %s -e %s' % (paths.AGENT, bundle, entry)
 

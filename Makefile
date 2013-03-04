@@ -13,8 +13,8 @@ PKG_RELEASE = $(shell python tools/version.py release)
 all: out/Makefile
 	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/${BUILDTYPE}/$(BINARY_NAME) $(BINARY_NAME)
-	openssl dgst -sha256 -sign tests/ca/server.key.insecure $(BINARY_NAME) > out/${BUILDTYPE}/$(BINARY_NAME).sig
-	-ln -fs out/${BUILDTYPE}/$(BINARY_NAME).sig $(BINARY_NAME).sig
+#	openssl dgst -sha256 -sign tests/ca/server.key.insecure $(BINARY_NAME) > out/${BUILDTYPE}/$(BINARY_NAME).sig
+#	-ln -fs out/${BUILDTYPE}/$(BINARY_NAME).sig $(BINARY_NAME).sig
 
 out/Release/monitoring-agent: all
 
@@ -47,7 +47,7 @@ install: all
 	install -d ${SHAREDIR}
 	install out/${BUILDTYPE}/$(BINARY_NAME) ${BINDIR}/$(BINARY_NAME)
 	install out/${BUILDTYPE}/bundle.zip ${SHAREDIR}
-	install out/${BUILDTYPE}/bundle-test.zip ${SHAREDIR}
+#	install out/${BUILDTYPE}/bundle-test.zip ${SHAREDIR}
 
 spec_file_name = rackspace-monitoring-agent.spec
 spec_file_dir = pkg/monitoring/rpm
