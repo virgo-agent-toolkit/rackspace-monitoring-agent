@@ -100,7 +100,7 @@ def git_describe(is_exact=False, split=True, cwd=None):
         options = "--always"
 
     describe = "%s describe --tags %s" % (describe, options)
-
+    print describe, cwd
     try:
         p = subprocess.Popen(describe,
                 stdout=subprocess.PIPE,
@@ -113,9 +113,9 @@ def git_describe(is_exact=False, split=True, cwd=None):
         sys.exit(1)
 
     version, errors = p.communicate()
-    if (len(errors)):
-        print(errors)
-        return None
+
+    if errors:
+        raise ValueError(errors)
 
     version = version.strip()
     if split:
