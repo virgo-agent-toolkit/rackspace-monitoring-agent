@@ -14,10 +14,7 @@
       {
         'target_name': 'bundle.zip',
         'type': 'none',
-        'conditions': [
-          ['"<(call_gyp)"=="1"', {
-            }, {  # no gyp file, just call this guy ourselves
-            'actions': [
+          'actions': [
               {
                 'action_name': 'bundle',
                 'inputs': ['tools/gyp_utils.py', '<@(luas)'],
@@ -36,9 +33,13 @@
                   '<(bundle_dir)', '<(bundle_version)', '<@(_outputs)', '<@(test-luas)'
                 ]
               },
-            ],
-          },
-        ],
+#        'conditions': [
+#          ['"<(call_gyp)"=="1"', {
+#            }, {  # no gyp file, just call this guy ourselves
+#
+#            ],
+#          },
+#        ],
       ],
     }
   ]

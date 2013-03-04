@@ -121,13 +121,13 @@ def configure_virgo(o):
     # TODO add gdb
     #NOTE: gyp is retarded and bad things happen if we make these an empty string or use an absolute path
     if not options.bundle:
-        bundle_dir = "/.."
-        bundle_name = "/.."
-        print('\nWarning: no bundle path was specified.  There will not be bundles.\n')
-    else:
-        bundle_dir = os.path.os.path.relpath(options.bundle, '.')
-        bundle_name = os.path.split(bundle_dir)[1]
-        print('\nBundling %s from %s' % (bundle_name, bundle_dir))
+        options.bundle = "example"
+        print('\nWarning: no bundle path was specified.  The example bundle will be used.\n')
+
+    bundle_dir = os.path.os.path.relpath(options.bundle, '.')
+    bundle_name = os.path.split(bundle_dir)[1]
+
+    print('\nBundling %s from %s' % (bundle_name, bundle_dir))
 
     o['variables']['bundle_dir'] = bundle_dir
     o['variables']['bundle_name'] = bundle_name
