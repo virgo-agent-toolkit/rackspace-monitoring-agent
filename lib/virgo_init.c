@@ -139,11 +139,11 @@ virgo_init(virgo_t *v)
   virgo_error_t* err;
 
   if (virgo__argv_has_flag(v, "-h", "--help") == 1) {
-    return virgo_error_create(VIRGO_EHELPREQ, "--help was passed");;
+    return virgo_error_create(VIRGO_EHELPREQ, "--help was passed");
   }
 
   if (virgo__argv_has_flag(v, "-v", "--version") == 1) {
-    return virgo_error_create(VIRGO_EVERSIONREQ, "--version was passed");;
+    return virgo_error_create(VIRGO_EVERSIONREQ, "--version was passed");
   }
 
 #ifdef _WIN32
