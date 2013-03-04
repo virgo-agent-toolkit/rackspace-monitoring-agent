@@ -177,15 +177,16 @@ replace_loaders(lua_State *L, const char *loaders_name) {
     lua_pushcfunction(L, loaders[i]);
     lua_rawseti(L, -2, i+1);
   }
-  lua_setfield(L, -2, "loaders");
+  /* grab the fourth package.loader http://pgl.yoyo.org/luai/i/package.loaders */
+  lua_getfield(L, -2, loaders_name);
+  lua_rawgeti(L, -1, 4);
+  lua_rawseti(L, -3, i=1);
+  lua_setfield(L, -2, loaders_name);
 }
 
 void
 virgo__lua_loader_init(lua_State *L)
 {
-  lua_getglobal(L, "require");
-  lua_pushliteral(L, "tls");
-  lua_call(L, 1, 1);
   /* Lua 5.2 changed package.loaders -> package.searchers */
 #if LUA_VERSION_NUM >= 502
   replace_loaders(L, "searchers");
