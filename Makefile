@@ -13,8 +13,8 @@ PKG_RELEASE = $(shell python tools/version.py release)
 all: out/Makefile
 	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/${BUILDTYPE}/$(BINARY_NAME) $(BINARY_NAME)
-	openssl dgst -sha256 -sign tests/ca/server.key.insecure $(BINARY_NAME) > out/${BUILDTYPE}/$(BINARY_NAME).sig
-	-ln -fs out/${BUILDTYPE}/$(BINARY_NAME).sig $(BINARY_NAME).sig
+#	openssl dgst -sha256 -sign tests/ca/server.key.insecure $(BINARY_NAME) > out/${BUILDTYPE}/$(BINARY_NAME).sig
+#	-ln -fs out/${BUILDTYPE}/$(BINARY_NAME).sig $(BINARY_NAME).sig
 
 out/Release/monitoring-agent: all
 

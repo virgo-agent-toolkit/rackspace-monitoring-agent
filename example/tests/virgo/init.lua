@@ -14,13 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local Error = require('core').Error
-local async = require('async')
-local vtime = require('virgo-time')
+local core = require('core')
+
 local fs = require('fs')
 local path = require('path')
-local table = require('table')
 
+local async = require('async')
+local vutils = require('virgo_utils')
+
+local exports = {}
+local Error = core.Error;
 local times = {
   --   T1          T2          T3           T4     Delta
   {1234567890, 1234567890, 1234567890, 1234567890, 0       },
@@ -28,12 +31,24 @@ local times = {
   {1234567890, 1234567880, 1234567880, 1234567890, -10       },
 }
 
-local exports = {}
+local dump_bundle = function(dir, name, cb)
+  local abs_dir = path.join(TEST_DIR, dir)
+
+  fs.mkdir(abs_dir, "0755", function(err)
+    if err and err.code ~= 'EEXIST' then
+      return cb(err)
+    end
+    local file_path = path.join(abs_dir, name)
+    fs.writeFile(file_path, "", function(err)
+      return cb(err, file_path)
+    end)
+  end)
+end
 
 exports['test_vtime'] = function(test, asserts)
   for k, v in pairs(times) do
-    vtime.timesync(v[1], v[2], v[3], v[4])
-    asserts.ok(vtime.getDelta() == v[5])
+    vutils.timesync(v[1], v[2], v[3], v[4])
+    asserts.ok(vutils.getDelta() == v[5])
   end
   test.done()
 end
@@ -67,27 +82,57 @@ exports['test_paths'] = function(test, asserts)
   end
 
   async.forEach(paths, iter, function(err)
-    asserts.ok(err == nil)
+    asserts.is_nil(err)
     test.done()
   end)
 end
 
-exports['test_bundle_path'] = function(test, asserts)
-  local tmpPath = path.join('tests', 'bundles')
-  local files = {}
-
-  virgo_paths.set_bundle_path(path.join(tmpPath, 'a'))
-  asserts.ok(virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE) == path.join('tests','bundles','a','monitoring-0.0.3.zip'))
-
-  virgo_paths.set_bundle_path(path.join(tmpPath, 'b'))
-  asserts.ok(virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE) == path.join('tests','bundles','b','monitoring-1.0.0.zip'))
-
-  virgo_paths.set_bundle_path(path.join(tmpPath, 'c'))
-  asserts.ok(virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE) == path.join('tests','bundles','c','monitoring-0.1.0.zip'))
-
-  test.done()
+local bundle_iter = function(dir, name, asserts, cb)
+  dump_bundle(dir, name, function(err, file_path)
+    asserts.is_nil(err, tostring(err))
+    virgo_paths.set_bundle_path(path.join(TEST_DIR, dir))
+    asserts.ok(virgo_paths.get(virgo_paths.VIRGO_PATH_BUNDLE) == file_path)
+    cb()
+  end)
 end
 
+exports['test_bundle_path_a'] = function(test, asserts)
+  async.forEachSeries({'monitoring-0.0.0.zip', 'monitoring-0.0.1.zip', 'monitoring-0.0.2.zip', 'monitoring-0.0.3.zip'},
+    function(name, cb)
+      return bundle_iter('a', name, asserts, cb)
+    end,
+    function(err)
+      asserts.is_nil(err)
+      test.done()
+    end
+  )
+end
+
+exports['test_bundle_path_b'] = function(test, asserts)
+  async.forEachSeries({'monitoring-0.0.1.zip', 'monitoring-1.0.1.zip'},
+    function(name, cb)
+      return bundle_iter('b', name, asserts, cb)
+    end,
+    function(err)
+      asserts.is_nil(err)
+      test.done()
+    end
+  )
+end
+
+exports['test_bundle_path_c'] = function(test, asserts)
+  dump_bundle('c', 'collector-1.0.0.zip', function()
+    async.forEachSeries({'monitoring-0.0.5.zip', 'monitoring-0.1.0.zip'},
+      function(name, cb)
+        return bundle_iter('c', name, asserts, cb)
+      end,
+      function(err)
+        asserts.is_nil(err)
+        test.done()
+      end
+    )
+  end)
+end
 exports['test_virgo_items'] = function(test, asserts)
   asserts.ok(virgo.os)
   asserts.ok(virgo.version)
