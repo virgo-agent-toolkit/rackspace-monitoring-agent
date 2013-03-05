@@ -112,12 +112,14 @@ def _git_describe(is_exact, git_dir, cwd):
 # git describe return "0.1-143-ga554734"
 # git_describe() returns {'release': '143', 'tag': '0.1', 'hash': 'ga554734'}
 def git_describe(is_exact=False, split=True, cwd=None):
+
     try:
         version = _git_describe(is_exact, cwd, cwd)
     except ValueError:
-        pass
+        version = ""
 
-    version = _git_describe(is_exact, "..", cwd)
+    if not version:
+        version = _git_describe(is_exact, "..", cwd)
 
     version = version.strip()
     if split:
