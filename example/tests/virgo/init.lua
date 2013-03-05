@@ -133,6 +133,7 @@ exports['test_bundle_path_c'] = function(test, asserts)
     )
   end)
 end
+
 exports['test_virgo_items'] = function(test, asserts)
   asserts.ok(virgo.os)
   asserts.ok(virgo.version)
@@ -140,6 +141,12 @@ exports['test_virgo_items'] = function(test, asserts)
   asserts.ok(virgo.default_name)
   asserts.ok(virgo.default_config_filename)
 
+  test.done()
+end
+
+exports['test_virgo_static'] = function(test, asserts)
+  local data = get_static(path.posix:join('static', 'asdf'))
+  asserts.ok(data=="asdf")
   test.done()
 end
 
