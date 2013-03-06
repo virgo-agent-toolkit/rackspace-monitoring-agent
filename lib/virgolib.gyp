@@ -44,6 +44,7 @@
         '../deps/luvit/luvit.gyp:libluvit',
         '../deps/sigar.gyp:sigar',
         '../deps/sigar.gyp:lua_sigar',
+        './copy_luajiters.gyp:*'
       ],
       'export_dependent_settings': [
         '../deps/luvit/luvit.gyp:libluvit',
@@ -75,13 +76,6 @@
         'virgo_exports.c',
         '../deps/luvit/src/luvit_exports.c',
         '<@(bootstrap-luas)',
-      ],
-      'copies': [
-        # the luajit interpreter needs these to be able to bytecompile .lua => .c
-        {
-          "destination": "<(PRODUCT_DIR)",
-          "files": ["<(PRODUCT_DIR)/lua/jit"]
-        },
       ],
       'rules': [
         {

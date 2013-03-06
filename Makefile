@@ -61,9 +61,9 @@ $(spec_file_built): $(spec_file_in)
 
 dist_build:
 	sed -e "s/'BUNDLE_VERSION':.*/'BUNDLE_VERSION': '${VERSION}',/" \
-	      < monitoring-agent.gyp > monitoring-agent.gyp.dist
+	      < virgo.gyp > virgo.gyp.dist
 	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' \
-	      < lib/virgo.gyp > lib/virgo.gyp.dist
+	      < lib/virgolib.gyp > lib/virgolib.gyp.dist
 	sed -e 's/^VERSION=.*/VERSION=${VERSION}/' < Makefile > Makefile.dist
 
 dist: dist_build $(spec_file_built)
@@ -71,8 +71,8 @@ dist: dist_build $(spec_file_built)
 	tar xzf virgo-$(VERSION).tar.gz
 	make -C deps/luvit dist_build
 	cp $(spec_file_built) $(TARNAME)/$(spec_file_dir)
-	mv lib/virgo.gyp.dist $(TARNAME)/lib/virgo.gyp
-	mv monitoring-agent.gyp.dist $(TARNAME)/monitoring-agent.gyp
+	mv lib/virgolib.gyp.dist $(TARNAME)/lib/virgolib.gyp
+	mv virgolib.gyp.dist $(TARNAME)/virgolib.gyp
 	mv deps/luvit/luvit.gyp.dist $(TARNAME)/deps/luvit/luvit.gyp
 	mv deps/luvit/Makefile.dist $(TARNAME)/deps/luvit/Makefile
 	mv Makefile.dist $(TARNAME)/Makefile
