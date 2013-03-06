@@ -25,3 +25,4 @@ virgo.rc
 include/generated/*.h
 *.mk
 virgo_exports.c
+*.dist
