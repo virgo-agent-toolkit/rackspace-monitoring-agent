@@ -50,7 +50,7 @@ install: all
 #	install out/${BUILDTYPE}/bundle-test.zip ${SHAREDIR}
 
 spec_file_name = rackspace-monitoring-agent.spec
-spec_file_dir = pkg/monitoring/rpm
+spec_file_dir = pkg/rpm
 spec_file_built = out/$(spec_file_name)
 spec_file_in = $(spec_file_dir)/$(spec_file_name).in
 
@@ -61,9 +61,9 @@ $(spec_file_built): $(spec_file_in)
 
 dist_build:
 	sed -e "s/'BUNDLE_VERSION':.*/'BUNDLE_VERSION': '${VERSION}',/" \
-	      < monitoring-agent.gyp > monitoring-agent.gyp.dist
+	      < virgo.gyp > virgo.gyp.dist
 	sed -e 's/VIRGO_VERSION=".*/VIRGO_VERSION=\"${VERSION}\"'\'',/' \
-	      < lib/virgo.gyp > lib/virgo.gyp.dist
+	      < lib/virgolib.gyp > lib/virgolib.gyp.dist
 	sed -e 's/^VERSION=.*/VERSION=${VERSION}/' < Makefile > Makefile.dist
 
 dist: dist_build $(spec_file_built)
@@ -71,8 +71,8 @@ dist: dist_build $(spec_file_built)
 	tar xzf virgo-$(VERSION).tar.gz
 	make -C deps/luvit dist_build
 	cp $(spec_file_built) $(TARNAME)/$(spec_file_dir)
-	mv lib/virgo.gyp.dist $(TARNAME)/lib/virgo.gyp
-	mv monitoring-agent.gyp.dist $(TARNAME)/monitoring-agent.gyp
+	mv lib/virgolib.gyp.dist $(TARNAME)/lib/virgolib.gyp
+	mv virgo.gyp.dist $(TARNAME)/virgo.gyp
 	mv deps/luvit/luvit.gyp.dist $(TARNAME)/deps/luvit/luvit.gyp
 	mv deps/luvit/Makefile.dist $(TARNAME)/deps/luvit/Makefile
 	mv Makefile.dist $(TARNAME)/Makefile
@@ -100,8 +100,8 @@ rpm: all dist $(rpmbuild_dirs)
 
 rpm-sign:
 	-mv ~/.rpmmacros ~/.rpmmacros.bak
-	ln -s $(PWD)/pkg/monitoring/rpm/rpm_macros_gpg ~/.rpmmacros
-	find $(rpmbuild_dir)/ -type f -name *.rpm -exec pkg/monitoring/rpm/rpm-sign.exp {} \;
+	ln -s $(PWD)/pkg/rpm/rpm_macros_gpg ~/.rpmmacros
+	find $(rpmbuild_dir)/ -type f -name *.rpm -exec pkg/rpm/rpm-sign.exp {} \;
 	rm ~/.rpmmacros
 	-mv ~/.rpmmacros.bak ~/.rpmmacros
 
