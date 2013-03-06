@@ -50,7 +50,7 @@ install: all
 #	install out/${BUILDTYPE}/bundle-test.zip ${SHAREDIR}
 
 spec_file_name = rackspace-monitoring-agent.spec
-spec_file_dir = pkg/monitoring/rpm
+spec_file_dir = pkg/rpm
 spec_file_built = out/$(spec_file_name)
 spec_file_in = $(spec_file_dir)/$(spec_file_name).in
 
@@ -100,8 +100,8 @@ rpm: all dist $(rpmbuild_dirs)
 
 rpm-sign:
 	-mv ~/.rpmmacros ~/.rpmmacros.bak
-	ln -s $(PWD)/pkg/monitoring/rpm/rpm_macros_gpg ~/.rpmmacros
-	find $(rpmbuild_dir)/ -type f -name *.rpm -exec pkg/monitoring/rpm/rpm-sign.exp {} \;
+	ln -s $(PWD)/pkg/rpm/rpm_macros_gpg ~/.rpmmacros
+	find $(rpmbuild_dir)/ -type f -name *.rpm -exec pkg/rpm/rpm-sign.exp {} \;
 	rm ~/.rpmmacros
 	-mv ~/.rpmmacros.bak ~/.rpmmacros
 
