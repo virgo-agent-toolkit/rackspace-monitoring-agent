@@ -72,7 +72,7 @@ dist: dist_build $(spec_file_built)
 	make -C deps/luvit dist_build
 	cp $(spec_file_built) $(TARNAME)/$(spec_file_dir)
 	mv lib/virgolib.gyp.dist $(TARNAME)/lib/virgolib.gyp
-	mv virgolib.gyp.dist $(TARNAME)/virgolib.gyp
+	mv virgo.gyp.dist $(TARNAME)/virgo.gyp
 	mv deps/luvit/luvit.gyp.dist $(TARNAME)/deps/luvit/luvit.gyp
 	mv deps/luvit/Makefile.dist $(TARNAME)/deps/luvit/Makefile
 	mv Makefile.dist $(TARNAME)/Makefile
