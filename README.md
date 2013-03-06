@@ -1,22 +1,18 @@
 Virgo
 =====
 
-Virgo is a project for building an on-host agents. The goal is to
-provide shared infrastructure for various types of agents while maintaining a small footprint.
+Virgo is a project for building on-host agents. Virgo's goal is to provide shared infrastructure for various types of agents while maintaining a small footprint.
 
 Virgo provides:
 
-1. A high level scripting language in Lua.
+1. A high level scripting language in Lua using Luvit (an event driven framework).
 2. The ability to perform self updating.
-3. Crash reporting through Google's Breakpad.
+3. Crash capturing and reporting through Google's Breakpad.
 4. Packages, Installers and related goodies.
-5. Automatic .zip bundle generation from a directory.
+5. Automatic .zip bundle generation from a directory (ie, easy deployment).
 6. Automatic versioning from .git introspection of both virgo and the bundle.
 
-The first agent to use this infrastructure is the Rackspace Cloud
-Monitoring agent.
-
-Join in and build your agent with us.
+The first agent to use this infrastructure is the Rackspace Cloud Monitoring agent.  Join in and build your agent with us.
 
 License
 =======
@@ -35,13 +31,11 @@ Otherwise, Virgo will bundle the included example directory.
 
 Virgo obeys the following rules when generating bundles:
 
-1. Only Lua files are included
-2. ...except the files in the root level "static" directory 
-3. ...except the files which don't match the bundle type.
-4. Additionally, lua files and folders found under the root lua_modules dir are globally accessible and are not lazily loaded.
+1. Only Lua files are included ...
+2. except the files in the root level "static" directory (ie, you can ship fixtures for testing if you want).
+3. Lua files and folders found under the root lua_modules dir are globally accessible and are not lazily loaded.
 
-Virgo automatically generates two bundles: one includes files found in tests and static/tests while the other does not (rule 3).  
-This bundles will take the name of the final directory that was specified to configure plus the suffic "-bundle.zip" or "-bundle-test.zip".
+This bundles will take the name of the final directory that was specified to configure plus the suffic "-bundle.zip".
 
 Versioning
 ==========
@@ -127,7 +121,7 @@ Install the following:
 
 Once the dependencies are installed:
 
-    python configure
+    python configure --bundle=some_dir
 
 Now you can open `monitoring-agent.sln` from Visual Studio.
 
