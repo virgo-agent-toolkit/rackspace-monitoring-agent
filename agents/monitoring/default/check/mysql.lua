@@ -153,6 +153,8 @@ function MySQLCheck:_runCheckInChild(callback)
     '/usr/local/lib',
     '/usr/local/mysql/lib',
     '/opt/local/lib',
+    '/usr/lib64/lib',
+    '/usr/lib64/lib/mysql',
   }
 
   local clib = self:_findLibrary(mysqlexact, mysqlpattern, mysqlpaths)
