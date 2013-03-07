@@ -2,7 +2,7 @@
 case "$1" in
     remove)
         # Stop the agent if we are removing
-        service rackspace-monitoring-agent stop || :
+        service $PKG_NAME stop || :
         ;;
     *)
         echo "Unrecognized prerm argument '$1'"

@@ -6,7 +6,7 @@ import sys
 import subprocess
 import contextlib
 
-from pkgutils import system_info, git_describe, sh
+from pkgutils import sh
 from optparse import OptionParser
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,7 +44,7 @@ def is_git_repo(dest):
             rv = subprocess.call(cmd, shell=True)
             if rv == 0:
                 return True
-    except OSError, e:
+    except OSError:
         pass
     return False
 

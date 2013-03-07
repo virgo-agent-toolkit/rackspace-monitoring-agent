@@ -52,8 +52,8 @@
       'defines': [
         'VIRGO_OS="<(OS)"',
         'VIRGO_PLATFORM="<!(python ../tools/virgo_platform.py)"',
-        'VIRGO_VERSION="<!(git --git-dir ../.git rev-parse HEAD)"',
-        'VERSION_FULL="<!(python tools/version.py)"',
+        'VIRGO_VERSION="<(VIRGO_HEAD_SHA)"',
+        'VERSION_FULL="<(VERSION_FULL)"',
       ],
       'sources': [
         'virgo_agent_conf.c',

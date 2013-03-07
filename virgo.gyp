@@ -1,11 +1,6 @@
 {
   'variables': {
     'target_arch': 'ia32',
-    'VERSION_FULL': '<!(python tools/version.py)',
-    'VERSION_MAJOR': '<!(python tools/version.py major)',
-    'VERSION_MINOR': '<!(python tools/version.py minor)',
-    'VERSION_PATCH': '<!(python tools/version.py patch)',
-    'VERSION_RELEASE': '<!(python tools/version.py release)',
   },
 
   'targets': [
@@ -15,6 +10,7 @@
 
       'dependencies': [
         'lib/virgolib.gyp:virgolib',
+        './bundle.gyp:bundle.zip',
       ],
 
       'include_dirs': [
@@ -58,13 +54,6 @@
         },
       ],
       'conditions': [
-        [ '"<(bundle_dir)"!="/.."',
-          {
-            'dependencies': [
-              'bundle.gyp:bundle.zip',
-            ],
-          },
-        ],
         [ 'OS=="win"',
           {
             'defines': [

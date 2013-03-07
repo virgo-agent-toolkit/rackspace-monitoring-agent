@@ -1,0 +1,18 @@
+# autogened by gyp, do not edit by hand
+PKG_TYPE=$PKG_TYPE
+PKG_NAME=$PKG_NAME
+VERSION=$VERSION
+PKG_RELEASE=$PKG_RELEASE
+SHORT_DESCRIPTION=$SHORT_DESCRIPTION
+DOCUMENTATION_LINK=$DOCUMENTATION_LINK
+EMAIL=$EMAIL
+TARNAME=$TARNAME
+
+BINDIR = ${DESTDIR}/usr/bin
+SHAREDIR = ${DESTDIR}/usr/share/${PKG_NAME}
+ETCDIR = ${DESTDIR}/etc
+
+
+# PKG_FULL_VERSION = $(shell python tools/version.py)
+# PKG_VERSION = $(shell python tools/version.py tag)
+# PKG_RELEASE = $(shell python tools/version.py release)

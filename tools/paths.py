@@ -16,11 +16,8 @@ _options = optloader.load_options()
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-BUNDLE_DIR = _abs_path(ROOT, _options['variables']['bundle_dir'])
-BUNDLE_NAME = _options['variables']['bundle_name']
-
-if BUNDLE_NAME == "/..":
-    raise AttributeError('You must call configure with a bundle path.')
+BUNDLE_DIR = _abs_path(ROOT, _options['variables']['BUNDLE_DIR'])
+BUNDLE_NAME = _options['variables']['BUNDLE_NAME']
 
 if sys.platform == "win32":
     BUILDTYPE = 'Debug' if _options['variables']['virgo_debug'] == 'true' else 'Release'

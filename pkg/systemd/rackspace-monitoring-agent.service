@@ -1,9 +1,9 @@
 [Unit]
-Description=Rackspace Cloud Monitoring Agent
-Documentation=http://www.rackspace.com/cloud/public/monitoring/
+Description=$SHORT_DESCRIPTION
+Documentation=$DOCUMENTATION_LINK
 
 [Service]
-ExecStart=/usr/bin/rackspace-monitoring-agent -l /var/log/rackspace-monitoring-agent.log --production
+ExecStart=/usr/bin/$PKG_NAME -l /var/log/$PKG_NAME.log --production
 
 [Install]
 WantedBy=multi-user.target

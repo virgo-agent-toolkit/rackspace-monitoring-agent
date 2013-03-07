@@ -6,13 +6,13 @@ EAPI=4
 
 inherit git-2
 
-DESCRIPTION="Rackspace monitoring agent"
-HOMEPAGE="https://www.rackspace.com/"
+DESCRIPTION="$SHORT_DESCRIPTION"
+HOMEPAGE="$DOCUMENTATION_LINK"
 
-EGIT_REPO_URI="https://github.com/racker/virgo.git"
+EGIT_REPO_URI="$REPO"
 EGIT_BRANCH="gentoo"
 
-LICENSE="Apache-2.0"
+LICENSE="$LICENSE"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
 IUSE=""
@@ -36,5 +36,5 @@ src_install() {
 	make install DESTDIR="${D}" || die "failed install"
 
 	dodir /etc/init.d
-	cp "${FILESDIR}"/init "${D}"/etc/init.d/rackspace-monitoring-agent
+	cp "${FILESDIR}"/init "${D}"/etc/init.d/$PKG_NAME
 }
