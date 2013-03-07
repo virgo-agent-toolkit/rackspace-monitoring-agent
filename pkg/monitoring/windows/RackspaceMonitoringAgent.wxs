@@ -45,12 +45,14 @@
                                 Source='$(var.ProductDir)\monitoring-agent.exe' KeyPath="yes">
                         </File>
                         <!--  Vital="yes" Removed until we can fixup more services integration. -->
+                        <!--  Suppress upgrading until it it firther tested, hard code a log file for the short term -->
                         <ServiceInstall Id="InstallRackspaceMonitoringAgent"
                             Name="$(var.ProductName)"
                             DisplayName="$(var.ProductName)"
                             Type="ownProcess"
                             Start="auto"
                             ErrorControl="normal"
+                            Arguments='-o --logfile "C:\ProgramData\Rackspace Monitoring\log.txt"'
                             Description="$(var.ProductServiceDescription)">
                   <!--
                   <util:ServiceConfig
