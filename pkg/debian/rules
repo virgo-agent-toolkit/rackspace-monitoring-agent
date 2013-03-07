@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-NAME=rackspace-monitoring-agent
+NAME=$PKG_NAME
 DESTDIR=$(CURDIR)/debian/$(NAME)
 ETCDIR=$(DESTDIR)/etc
 BINDIR=$(DESTDIR)/usr/bin
@@ -27,9 +27,9 @@ install: build
 	dh_installdirs
 	DESTDIR=$(DESTDIR) $(MAKE) install
 	install -d $(INITDIR)
-	install -o root -g root -m 644 pkg/monitoring/debian/package.upstart $(INITDIR)/$(NAME).conf
+	install -o root -g root -m 644 pkg/debian/package.upstart $(INITDIR)/$(NAME).conf
 	install -d $(INITDDIR)
-	install -o root -g root -m 755 pkg/monitoring/debian/package.init $(INITDDIR)/$(NAME)
+	install -o root -g root -m 755 pkg/debian/package.init $(INITDDIR)/$(NAME)
 
 binary-arch: build install
 	dh_testdir

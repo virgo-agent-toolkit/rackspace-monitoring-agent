@@ -20,16 +20,7 @@
                   'python', 'tools/gyp_utils.py', 'make_bundle',
                   '<(bundle_dir)', '<(bundle_version)', '<@(_outputs)', '<@(luas)'
                 ]
-              }
-#              {
-#                'action_name': 'bundle-test',
-#                'inputs': ['tools/gyp_utils.py', '<@(test-luas)'],
-#                'outputs': ["<(PRODUCT_DIR)/<(bundle_name)-bundle-test.zip"],
-#                'action': [
-#                  'python', 'tools/gyp_utils.py', 'make_bundle',
-#                  '<(bundle_dir)', '<(bundle_version)', '<@(_outputs)', '<@(test-luas)'
-#                ]
-#              },
+              },
 #        'conditions': [
 #          ['"<(call_gyp)"=="1"', {
 #            }, {  # no gyp file, just call this guy ourselves
