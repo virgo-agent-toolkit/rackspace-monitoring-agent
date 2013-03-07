@@ -225,6 +225,7 @@ virgo__lua_init(virgo_t *v)
   virgo__push_function(L, "win32_get_associated_exe", virgo__lua_win32_get_associated_exe);
 #endif
 
+  virgo__push_function(L, "get_lua_context", virgo__lua_context);
   virgo__set_virgo_key(L, "os", VIRGO_OS);
   virgo__set_virgo_key(L, "version", VIRGO_VERSION);
   virgo__set_virgo_key(L, "platform", VIRGO_PLATFORM);

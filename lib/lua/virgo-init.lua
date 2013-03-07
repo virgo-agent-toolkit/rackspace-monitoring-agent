@@ -63,11 +63,13 @@ logging.debugf = function(...)
   logf(logging.DEBUG, ...)
 end
 
+virgo_context = get_lua_context()
+
 -- Load the tty as a pair of pipes
 -- But don't hold the event loop open for them
 process.stdin = uv.createReadableStdioStream(0)
-process.stdout = uv.createWriteableStdioStream(1)
-process.stderr = uv.createWriteableStdioStream(2)
+process.stdout = uv.createWriteableStdioStream(virgo_context.log_fp)
+process.stderr = uv.createWriteableStdioStream(virgo_context.log_fp)
 local stdout = process.stdout
 
 -- clear some globals
