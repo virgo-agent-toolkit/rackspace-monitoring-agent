@@ -51,7 +51,7 @@ copy_args(virgo_t *v, const char *bundle_path) {
 #else
   {
     char quoted_bundle[MAX_PATH];
-    sprintf(quoted_bundle, "\"%s\"", bundle_path);
+    snprintf(quoted_bundle, MAX_PATH, "\"%s\"", bundle_path);
     args[index++] = strdup(quoted_bundle);
   }
 #endif
