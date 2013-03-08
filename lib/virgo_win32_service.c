@@ -239,7 +239,7 @@ virgo__service_handler(virgo_t *v)
       virgo_log_infof(v, "Win32 Service Running Outside the Service Manger");
       err = virgo__lua_run(v);
     } else {
-      virgo_log_errorf(v, "Win32 Service Filed to Start (%u)", error);
+      virgo_log_errorf(v, "Win32 Service Failed to Start (%u)", error);
       err = virgo_error_os_create(VIRGO_EINVAL, error, "StartServiceCtrlDispatcher failed");
     }
   } else {
