@@ -67,15 +67,15 @@ virgo_log_fileno = virgo.get_log_fileno()
 
 -- Load the tty as a pair of pipes
 -- But don't hold the event loop open for them
-if virgo.win32_get_service_status_state() > 0 then
-  process.stdout = uv.createWriteableStdioStream(virgo_log_fileno)
-  process.stderr = uv.createWriteableStdioStream(virgo_log_fileno)
-  logging.debugf("Service Status is > 0, stdout, stderr forced to log fileno; stdin unset")
-else
+if virgo.is_stdio_available() then
+  logging.debugf("Stdio is available; normal stdio used")
   process.stdin = uv.createReadableStdioStream(0)
   process.stdout = uv.createWriteableStdioStream(1)
   process.stderr = uv.createWriteableStdioStream(2)
-  logging.debugf("Service Status is < 1, normal stdio used")
+else
+  logging.debugf("Stdio is unavailable; stdout, stderr forced to log fileno; stdin unset")
+  process.stdout = uv.createWriteableStdioStream(virgo_log_fileno)
+  process.stderr = uv.createWriteableStdioStream(virgo_log_fileno)
 end
 local stdout = process.stdout
 
