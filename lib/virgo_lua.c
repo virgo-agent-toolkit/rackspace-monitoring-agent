@@ -195,7 +195,23 @@ virgo__lua_win32_get_associated_exe(lua_State *L) {
   lua_pushlstring(L, exePath, exePathLen - 1);
   return 1;
 }
+
+static int
+virgo__lua_win32_get_service_status_state(lua_State *L) {
+  virgo_t* v = virgo__lua_context(L);
+
+  lua_pushnumber(L, v->service_status.dwCurrentState);
+  return 1;
+}
 #endif
+
+static int
+virgo__lua_get_log_fileno(lua_State *L) {
+  virgo_t* v = virgo__lua_context(L);
+
+  lua_pushnumber(L, fileno(v->log_fp));
+  return 1;
+}
 
 virgo_error_t*
 virgo__lua_init(virgo_t *v)
@@ -223,9 +239,10 @@ virgo__lua_init(virgo_t *v)
 
 #ifdef _WIN32
   virgo__push_function(L, "win32_get_associated_exe", virgo__lua_win32_get_associated_exe);
+  virgo__push_function(L, "win32_get_service_status_state", virgo__lua_win32_get_service_status_state);
 #endif
 
-  virgo__push_function(L, "get_lua_context", virgo__lua_context);
+  virgo__push_function(L, "get_log_fileno", virgo__lua_get_log_fileno);
   virgo__set_virgo_key(L, "os", VIRGO_OS);
   virgo__set_virgo_key(L, "version", VIRGO_VERSION);
   virgo__set_virgo_key(L, "platform", VIRGO_PLATFORM);
