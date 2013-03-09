@@ -52,7 +52,7 @@ static virgo_error_t*
 
   WideCharToMultiByte(CP_UTF8, 0, tmp, -1, buf, sizeof(buf), 0, NULL);
   CoTaskMemFree(tmp);
-  snprintf(buffer, buffer_len, "%s"SEP"%s"SEP"%s", buf, VIRGO_DEFAULT_NAME, addition);
+  snprintf(buffer, buffer_len, "%s"SEP"%s"SEP"%s", buf,  VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY, addition);
   return VIRGO_SUCCESS;
 }
 #endif

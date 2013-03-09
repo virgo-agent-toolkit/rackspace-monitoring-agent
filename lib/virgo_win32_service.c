@@ -141,73 +141,6 @@ virgo__service_delete(virgo_t *v)
   return VIRGO_SUCCESS;
 }
 
-static virgo_error_t*
-virgo__win32_is_service(int *result)
-{
-  int rc = 0;
-  int err;
-  int rv;
-  unsigned int i;
-  int myPid;
-  char *buf = NULL;
-  ULONG bufneeded = 0;
-  ULONG svccount = 0;
-  ULONG resume = 0;
-  SC_HANDLE scm;
-  ENUM_SERVICE_STATUS_PROCESS* svcPtr;
-
-  *result = -1;
-
-  myPid = _getpid();
-
-  scm = OpenSCManager(0, SERVICES_ACTIVE_DATABASE, SC_MANAGER_ENUMERATE_SERVICE);
-
-  if (scm == NULL) {
-    return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenSCManager() failed");
-  }
-  
-  rv = EnumServicesStatusExA(scm, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_ACTIVE,
-                            NULL, 0,
-                            &bufneeded, &svccount,
-                            &resume, NULL);
-
-  if (rv == 0) {
-    err = GetLastError();
-    if (err == ERROR_MORE_DATA) {
-      buf = malloc(bufneeded);
-    }
-    else {
-      return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "First EnumServicesStatusEx() failed");
-    }
-  }
-  else {
-    return virgo_error_create(VIRGO_EINVAL, "Unexpected success of EnumServicesStatusEx()");
-  }
-
-  rv = EnumServicesStatusExA(scm, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_ACTIVE,
-                            buf, bufneeded,
-                            &bufneeded, &svccount,
-                            &resume, NULL);
-
-  if (rv == 0) {
-    return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Second EnumServicesStatusEx() failed");
-  }
-
-  svcPtr = (ENUM_SERVICE_STATUS_PROCESS*) buf;
-  for (i = 0; i < svccount; i++, svcPtr++) {
-    if (svcPtr->ServiceStatusProcess.dwProcessId == myPid) {
-      rc = 1;
-      break;
-    }
-  }
-
-  free(buf);
-
-  *result = rc;
-
-  return VIRGO_SUCCESS;
-}
-
 static virgo_t *virgo_baton_hack = NULL;
 
 static VOID WINAPI virgo__win32_service_handler(DWORD dwControl)
@@ -228,6 +161,7 @@ DWORD WINAPI virgo__win32_service_worker(PVOID baton)
   err = virgo__lua_run(v);
   if (err != VIRGO_SUCCESS) {
     /* TODO: logging? better error handling? */
+    virgo_log_errorf(v, "Win32 Service virgo__lua_run error %s:%u %s", err->file, err->line, err->msg);
     return 1;
   }
   return 0;
@@ -287,27 +221,30 @@ virgo_error_t*
 virgo__service_handler(virgo_t *v)
 {
   virgo_error_t *err;
-  int is_service = 0;
 
-  err = virgo__win32_is_service(&is_service);
+  SERVICE_TABLE_ENTRY ste[]={
+    { v->service_name, virgo__win32_service_main },
+    { NULL, NULL }
+  };
 
-  if (is_service == 0) {
-    err = virgo__lua_run(v);
-  }
-  else {
-    SERVICE_TABLE_ENTRY ste[]={
-      { v->service_name, virgo__win32_service_main },
-      { NULL, NULL }
-    };
+  /* Services are invoked in their own thread, but we aren't allowed to actually
+   * pass anything to them. sigh.
+   */
+  virgo_baton_hack = v;
 
-    /* Services are invoked in their own thread, but we aren't allowed to actually
-     * pass anything to them. sigh.
-     */
-    virgo_baton_hack = v;
-
-    if (!StartServiceCtrlDispatcher(ste)) {
-      return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "StartServiceCtrlDispatcher failed");
+  if (!StartServiceCtrlDispatcher(ste)) {
+    DWORD error = GetLastError();
+    if (error == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
+      /* This was not staqrted by the Service Manager, so run normally */
+      virgo_log_infof(v, "Win32 Service Running Outside the Service Manger");
+      err = virgo__lua_run(v);
+    } else {
+      virgo_log_errorf(v, "Win32 Service Failed to Start (%u)", error);
+      err = virgo_error_os_create(VIRGO_EINVAL, error, "StartServiceCtrlDispatcher failed");
     }
+  } else {
+    virgo_log_infof(v, "Win32 Service Started");
+    err = VIRGO_SUCCESS;
   }
 
   return err;
