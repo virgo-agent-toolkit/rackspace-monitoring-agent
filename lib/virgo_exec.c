@@ -46,7 +46,15 @@ copy_args(virgo_t *v, const char *bundle_path) {
   }
 
   args[index++] = strdup("-z");
+#ifndef _WIN32
   args[index++] = strdup(bundle_path);
+#else
+  {
+    char quoted_bundle[MAX_PATH];
+    snprintf(quoted_bundle, MAX_PATH, "\"%s\"", bundle_path);
+    args[index++] = strdup(quoted_bundle);
+  }
+#endif
   args[index++] = strdup("-n");
   args[index++] = NULL;
 

@@ -63,11 +63,20 @@ logging.debugf = function(...)
   logf(logging.DEBUG, ...)
 end
 
+virgo_log_fileno = virgo.get_log_fileno()
+
 -- Load the tty as a pair of pipes
 -- But don't hold the event loop open for them
-process.stdin = uv.createReadableStdioStream(0)
-process.stdout = uv.createWriteableStdioStream(1)
-process.stderr = uv.createWriteableStdioStream(2)
+if virgo.is_stdio_available() then
+  logging.debugf("Stdio is available; normal stdio used")
+  process.stdin = uv.createReadableStdioStream(0)
+  process.stdout = uv.createWriteableStdioStream(1)
+  process.stderr = uv.createWriteableStdioStream(2)
+else
+  logging.debugf("Stdio is unavailable; stdout, stderr forced to log fileno; stdin unset")
+  process.stdout = uv.createWriteableStdioStream(virgo_log_fileno)
+  process.stderr = uv.createWriteableStdioStream(virgo_log_fileno)
+end
 local stdout = process.stdout
 
 -- clear some globals

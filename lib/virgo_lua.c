@@ -197,6 +197,32 @@ virgo__lua_win32_get_associated_exe(lua_State *L) {
 }
 #endif
 
+static int
+virgo__lua_is_stdio_available(lua_State *L) {
+  virgo_t* v = virgo__lua_context(L);
+  int ret = 1;
+
+#ifdef _WIN32
+  int i;
+  DWORD ios[3] = {STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE};
+  for(i = 0; i < 3 && ret; i++) {
+    HANDLE h = GetStdHandle(ios[i]);
+    ret = (h != NULL) && (h != INVALID_HANDLE_VALUE);
+  }
+#endif
+
+  lua_pushboolean(L, ret);
+  return 1;
+}
+
+static int
+virgo__lua_get_log_fileno(lua_State *L) {
+  virgo_t* v = virgo__lua_context(L);
+
+  lua_pushnumber(L, fileno(v->log_fp));
+  return 1;
+}
+
 virgo_error_t*
 virgo__lua_init(virgo_t *v)
 {
@@ -225,6 +251,8 @@ virgo__lua_init(virgo_t *v)
   virgo__push_function(L, "win32_get_associated_exe", virgo__lua_win32_get_associated_exe);
 #endif
 
+  virgo__push_function(L, "is_stdio_available", virgo__lua_is_stdio_available);
+  virgo__push_function(L, "get_log_fileno", virgo__lua_get_log_fileno);
   virgo__set_virgo_key(L, "os", VIRGO_OS);
   virgo__set_virgo_key(L, "version", VIRGO_VERSION);
   virgo__set_virgo_key(L, "platform", VIRGO_PLATFORM);
