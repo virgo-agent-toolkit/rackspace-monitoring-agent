@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local twisted = require('twisted')
 local string = require('string')
 local utils = require('utils')
 local JSON = require('json')
@@ -58,33 +59,20 @@ function MonitoringAgent:start(options)
     process.exit(1)
   end
 
-  async.series({
-    function(callback)
-      self:_preConfig(callback)
-    end,
-    function(callback)
-      self:loadEndpoints(callback)
-    end,
-    function(callback)
-      local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
-      local endpoints = self._config['monitoring_endpoints']
-      local reporter = CrashReporter:new(version.process, version.bundle, virgo.platform, dump_dir, endpoints)
-      reporter:submit(function(err, res)
-        callback()
-      end)
-    end,
-    function(callback)
-      misc.writePid(options.pidFile, callback)
-    end,
-    function(callback)
-      self:connect(callback)
-    end
-  },
-  function(err)
-    if err then
-      logging.error(err.message)
-    end
+  local startup = twisted.inline_callbacks(function()
+    local yield = twisted.yield
+    yield(self._preConfig, self)
+    yield(self.loadEndpoints, self)
+    local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
+    local endpoints = self._config['monitoring_endpoints']
+    local reporter = CrashReporter:new(version.process, version.bundle, virgo.platform, dump_dir, endpoints)
+    yield(reporter.submit, reporter)
+    yield(misc.writePid, options.pidFile, twisted.SENTINEL)
+    yield(self.connect, self)
   end)
+
+  startup()
+
 end
 
 function MonitoringAgent:connect(callback)
@@ -180,7 +168,6 @@ function MonitoringAgent:setConfig(config)
 end
 
 function MonitoringAgent:_preConfig(callback)
-
   if self._config['monitoring_token'] == nil then
     logging.error("'monitoring_token' is missing from 'config'")
     process.exit(1)

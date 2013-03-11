@@ -5,6 +5,7 @@
       'lib/lua',
       'deps/luvit/lib/luvit',
       'modules/async',
+      'modules/twisted',
       'modules/luvit-hsm',
       'modules/bourbon',
       'modules/options',
