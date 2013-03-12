@@ -102,6 +102,14 @@ virgo_log(virgo_t *v, virgo_log_level_e level, const char *str)
     struct tm *ptm;
     const char *llstr = NULL;
 
+#ifdef _WIN32
+    const char *EOL = "\r\n0";
+    size_t EOL_LEN = 3;
+#else
+    const char *EOL = "\n0";
+    size_t EOL_LEN = 2;
+#endif
+
     slen = strlen(str);
     t = time(NULL);
 
@@ -156,7 +164,7 @@ virgo_log(virgo_t *v, virgo_log_level_e level, const char *str)
     memcpy(&buf[0] + blen, str, slen);
     blen += slen;
 
-    memcpy(&buf[0] + blen, "\n\0", 2);
+    memcpy(&buf[0] + blen, EOL, EOL_LEN);
     blen += 2;
 
     virgo__log_buf(v, &buf[0], blen);
