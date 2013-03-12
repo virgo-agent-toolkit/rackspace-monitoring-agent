@@ -96,7 +96,11 @@ function Setup:_out(msg)
 end
 
 function Setup:_getOsStartString()
-  return 'service rackspace-monitoring-agent start'
+  if os.type() == "win32" then
+    return 'This agent is controlled by the Windows Service Manager.'
+  else
+    return 'service rackspace-monitoring-agent start'
+  end
 end
 
 function Setup:_isLocalEntity(entity)
