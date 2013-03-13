@@ -103,10 +103,10 @@ virgo_log(virgo_t *v, virgo_log_level_e level, const char *str)
     const char *llstr = NULL;
 
 #ifdef _WIN32
-    const char *EOL = "\r\n0";
+    const char *EOL = "\r\n\0";
     size_t EOL_LEN = 3;
 #else
-    const char *EOL = "\n0";
+    const char *EOL = "\n\0";
     size_t EOL_LEN = 2;
 #endif
 
