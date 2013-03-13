@@ -55,7 +55,7 @@ copy_args(virgo_t *v, const char *bundle_path) {
     args[index++] = strdup(quoted_bundle);
   }
 #endif
-  args[index++] = strdup("-n");
+  args[index++] = strdup("-o");
   args[index++] = NULL;
 
   return args;
@@ -70,8 +70,11 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
 
   args[0] = exe_path;
   rc = execve(exe_path, args, environ);
-  if (rc < 0) { /* on success, does not execute */
+  if (rc < 0) { /* on success, does not execute, unless running windows */
     return virgo_error_createf(VIRGO_ENOFILE, "execve failed errno=%i", errno);
+  } else {
+    /* running windows, exit quick! */
+    exit(0);
   }
 
   return VIRGO_SUCCESS;

@@ -14,7 +14,7 @@ def test_cmd(additional=""):
     state_config = os.path.join(paths.root, 'contrib')
     monitoring_config = os.path.join(paths.root, 'agents', 'monitoring', 'tests', 'fixtures', 'monitoring-agent-localhost.cfg')
     zip_file = "monitoring.zip"
-    cmd = '%s -n -z %s -c %s -s %s %s' % (paths.agent, zip_file, monitoring_config, state_config, additional)
+    cmd = '%s -o -z %s -c %s -s %s %s' % (paths.agent, zip_file, monitoring_config, state_config, additional)
     print cmd
     return cmd
 
