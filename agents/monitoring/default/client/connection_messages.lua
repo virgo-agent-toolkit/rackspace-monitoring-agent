@@ -252,9 +252,19 @@ function ConnectionMessages:onMessage(client, msg)
     end
 
     if method == 'binary_upgrade.available' then
-      return self:getUpgrade('binary', client)
+      return self:getUpgrade('binary', client, function(err)
+        if err then
+          client:log(logging.INFO, fmt('error handling %s %s', method, err))
+          return
+        end
+      end)
     elseif method == 'bundle_upgrade.available' then
-      return self:getUpgrade('bundle', client)
+      return self:getUpgrade('bundle', client, function(err)
+        if err then
+          client:log(logging.INFO, fmt('error handling %s %s', method, err))
+          return
+        end
+      end)
     end
 
     client:log(logging.DEBUG, fmt('No handler for method: %s', method))
