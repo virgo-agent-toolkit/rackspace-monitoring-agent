@@ -220,11 +220,10 @@ function ConnectionMessages:getUpgrade(version, client, callback)
   }, function(err)
     if err then
       client:log(logging.ERROR, fmt('Error downloading update: %s', tostring(err)))
-      return callback(err)
+      return
     end
     local msg = 'An update to the Rackspace Cloud Monitoring Agent has been downloaded'
     client:log(logging.INFO, msg)
-    callback()
   end)
 end
 
