@@ -10,6 +10,11 @@ PKG_FULL_VERSION = $(shell python tools/version.py)
 PKG_VERSION = $(shell python tools/version.py tag)
 PKG_RELEASE = $(shell python tools/version.py release)
 
+ifndef PRODUCTION
+SIGNING_KEY=tests/ca/server.key.insecure
+else
+SIGNING_KEY=/root/server.key
+endif
 
 zip_files = monitoring.zip monitoring-test.zip
 sig_files = $(zip_files:%.zip=%.zip.sig)
@@ -18,13 +23,13 @@ sig_files = $(zip_files:%.zip=%.zip.sig)
 	-ln -fs out/${BUILDTYPE}/$@ $@
 
 %.zip.sig: $(zip_files)
-	openssl dgst -sha256 -sign tests/ca/server.key.insecure $(patsubst %.zip.sig, %.zip, $@) > out/${BUILDTYPE}/$@
+	openssl dgst -sha256 -sign ${SIGNING_KEY} $(patsubst %.zip.sig, %.zip, $@) > out/${BUILDTYPE}/$@
 	-ln -fs out/${BUILDTYPE}/$@ $@
 
 all: out/Makefile
 	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
 	-ln -fs out/${BUILDTYPE}/monitoring-agent monitoring-agent
-	openssl dgst -sha256 -sign tests/ca/server.key.insecure monitoring-agent > out/${BUILDTYPE}/monitoring-agent.sig
+	openssl dgst -sha256 -sign ${SIGNING_KEY} monitoring-agent > out/${BUILDTYPE}/monitoring-agent.sig
 	-ln -fs out/${BUILDTYPE}/monitoring-agent.sig monitoring-agent.sig
 	$(MAKE) $(sig_files) $(zip_files)
 
