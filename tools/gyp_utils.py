@@ -229,7 +229,8 @@ def pkg(*args):
         for f in os.listdir(root):
             render(os.path.join(root, f), os.path.join(out, f))
         log = debian_changelog(changes, **mapping)
-        open('debian/changelog', 'wb').write(log.encode('utf8'))
+
+        open(os.path.join(out, 'changelog'), 'wb').write(log.encode('utf8'))
 
     elif mapping['PKG_TYPE'] == 'rpm':
         render('pkg/rpm/spec.in', 'out/%s.spec' % mapping['PKG_NAME'])
