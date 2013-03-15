@@ -61,6 +61,7 @@ dist:
 	touch out/${TARNAME}/no_gen_platform_gypi
 	make -C deps/luvit dist_build
 	mv deps/luvit/luvit.gyp.dist out/${TARNAME}/deps/luvit/luvit.gyp
+	cp -f lib/virgo_exports.c out/${TARNAME}/lib/virgo_exports.c
 	tar -cf out/${TARNAME}.tar out/${TARNAME}
 	rm -rf out/${TARNAME}
 	gzip -f -9 out/${TARNAME}.tar > out/${TARNAME}.tar.gz
