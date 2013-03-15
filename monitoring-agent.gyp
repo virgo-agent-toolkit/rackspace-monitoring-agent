@@ -298,6 +298,7 @@
                           ],
                           'action': [
                             '<(CANDLE_EXE)',
+                            '-ext', 'WixUtilExtension',
                             '-out',
                             '<@(_outputs)',
                             'pkg/monitoring/windows/RackspaceMonitoringAgent.wxs',
