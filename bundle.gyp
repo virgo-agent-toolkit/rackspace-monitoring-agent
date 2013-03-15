@@ -10,6 +10,8 @@
     'makefile_vars': [
       '<(PKG_NAME)',
       '<(BUNDLE_DIR)',
+      '<(BUNDLE_NAME)',
+      '<(BUNDLE_VERSION)',
       '<(PKG_TYPE)',
       '<(VERSION_FULL)',
       '<(VERSION_RELEASE)',

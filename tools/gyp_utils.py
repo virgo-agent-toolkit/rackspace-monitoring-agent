@@ -205,7 +205,7 @@ def pkg(*args):
     """Slurps variables out of gyp and dumps them into places for packaging.
     This is messy so that bundling is easy on end users"""
 
-    vars = ['PKG_NAME', 'BUNDLE_DIR', 'PKG_TYPE', 'VERSION_FULL', 'VERSION_RELEASE',
+    vars = ['PKG_NAME', 'BUNDLE_DIR', 'BUNDLE_NAME', 'BUNDLE_VERSION', 'PKG_TYPE', 'VERSION_FULL', 'VERSION_RELEASE',
         'VERSION_PATCH', 'TARNAME', 'SHORT_DESCRIPTION', 'LONG_DESCRIPTION',
         'REPO', 'LICENSE', 'EMAIL', 'MAINTAINER', 'DOCUMENTATION_LINK']
 

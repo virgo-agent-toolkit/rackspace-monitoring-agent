@@ -109,7 +109,7 @@
            'virgo_exports.c',
            '<@(bootstrap-luas)',
          ],
-	 'process_outputs_as_sources': 1,
+	       'process_outputs_as_sources': 1,
        }
       ],
       'include_dirs': [
