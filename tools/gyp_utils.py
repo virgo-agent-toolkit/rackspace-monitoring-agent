@@ -4,7 +4,7 @@ import string
 import zipfile
 import hashlib
 import subprocess
-from datetime import timedelta, datetime
+from datetime import datetime
 
 THIS_FILE = os.path.basename(__file__)
 
@@ -218,7 +218,9 @@ def pkg(*args):
         rendered = string.Template(template).safe_substitute(mapping)
         open(_out, 'wb').write(rendered)
 
-    if True:  # mapping['PKG_TYPE'] == 'deb':
+    name = mapping['PKG_NAME']
+
+    if mapping['PKG_TYPE'] == 'deb':
         out = os.path.join('out', 'debian')
         try:
             os.mkdir(out)
@@ -233,7 +235,9 @@ def pkg(*args):
         open(os.path.join(out, 'changelog'), 'wb').write(log.encode('utf8'))
 
     elif mapping['PKG_TYPE'] == 'rpm':
-        render('pkg/rpm/spec.in', 'out/%s.spec' % mapping['PKG_NAME'])
+        render('pkg/rpm/spec.in', 'out/%s.spec' % name)
+        render('pkg/systemd/agent.service', 'out/%s.service' % name)
+        render('pkg/sysv-redhat/agent', 'out/sysv-%s' % name)
     mapping['WARNING'] = '# autogened by gyp, do not edit by hand'
     render('pkg/Makefile.in', 'out/include.mk')
 

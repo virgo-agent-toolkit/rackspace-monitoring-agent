@@ -1,7 +1,4 @@
 {
-  'includes': [
-    '../zirgo/pkg.gyp',
-  ],
   'variables': {
     'luas': [
       '<!@(python tools/gyp_utils.py bundle_list <(BUNDLE_DIR))',
@@ -40,9 +37,6 @@
             'outputs': ['out/include.mk'],
             'action': ['python', 'tools/gyp_utils.py', 'pkg', '<@(makefile_vars)']
           }
-        ],
-        'dependencies': [
-          '../zirgo/pkg.gyp:*',
         ],
       },
       {

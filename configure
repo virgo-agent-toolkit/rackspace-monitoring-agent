@@ -120,22 +120,13 @@ def find_toolset(toolsets, toolset_name, variables):
             break
 
 
-def configure_virgo_platform():
+def configure_virgo_platform(bundle_dir, bundle_name):
+    print('Bundling %s from %s' % (bundle_name, bundle_dir))
+
     variables = {}
-    #NOTE: gyp is retarded and bad things happen if we make these an empty string or use an absolute path
-    if not options.bundle:
-        options.bundle = "example"
-        print('\nWarning: no bundle path was specified.  The example bundle will be used.\n')
-
-    bundle_dir = os.path.os.path.relpath(options.bundle, '.')
-    bundle_name = os.path.split(bundle_dir)[1]
-
-    print('\nBundling %s from %s' % (bundle_name, bundle_dir))
     variables['BUNDLE_DIR'] = bundle_dir
     variables['BUNDLE_NAME'] = bundle_name
-
     variables['VIRGO_HEAD_SHA'] = pkgutils.git_head()
-
     versions = version.version(sep=None)
     variables['PKG_TYPE'] = pkgutils.pkg_type() or ""
     variables['VERSION_FULL'] = versions['tag']
@@ -216,13 +207,26 @@ def render_openssl_symlinks(src, dest):
 
 def main():
     print 'Creating GYP include files (.gypi)'
-    configure_virgo_platform
     options_gypi = configure_virgo()
     write_gypi(options_gypi, 'options.gypi')
 
     # are we being built inside a package (ie, these options should be burned in)
-    if not os.path.exists(os.path.join(root_dir, 'no_gen_platform_gypi')):
-        platform_gypi = configure_virgo_platform()
+    #NOTE: gyp is retarded and bad things happen if we make these an empty string or use an absolute path
+    if os.path.exists(os.path.join(root_dir, 'no_gen_platform_gypi')):
+        platform = ""
+        # ast.literal_eval would be nice be we are stuck on python 2.4 :(
+        for line in open(os.path.join(root_dir, 'platform.gypi'), 'rb').readlines():
+            platform += line.split('#')[0]
+        platform = json.loads(platform)
+        bundle_name = platform['variables']['BUNDLE_NAME']
+        bundle_dir = platform['variables']['BUNDLE_DIR']
+    else:
+        if not options.bundle:
+            options.bundle = "example"
+            print('\nWarning: no bundle path was specified.  The example bundle will be used.\n')
+        bundle_dir = os.path.relpath(options.bundle, '.')
+        bundle_name = os.path.split(bundle_dir)[1]
+        platform_gypi = configure_virgo_platform(bundle_dir, bundle_name)
         write_gypi(platform_gypi, 'platform.gypi')
 
     if os.path.isdir(os.path.join('.', '.git')):
@@ -231,14 +235,16 @@ def main():
 
     print "Generating build system with GYP..."
 
+    pkg = os.path.join(bundle_dir, 'pkg.gypi')
+
     rv = None
     if sys.platform == "win32":
         os.environ['GYP_MSVS_VERSION'] = '2010'
         render_openssl_symlinks('deps/luvit/deps/openssl/openssl/include/openssl',
             'deps/luvit/deps/openssl/openssl-configs/realized/openssl')
-        rv = os.system("python tools\gyp_virgo -f msvs -G msvs_version=2010")
+        rv = os.system("python tools\gyp_virgo -f msvs -G msvs_version=2010 -I %s" % pkg)
     else:
-        cmd = "tools/gyp_virgo"
+        cmd = "tools/gyp_virgo -I %s" % pkg
         if options.ninja_build:
             cmd += " -f ninja"
         rv = os.system(cmd)

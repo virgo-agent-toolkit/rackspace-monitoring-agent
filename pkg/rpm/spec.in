@@ -6,10 +6,11 @@ Summary:	$SHORT_DESCRIPTION
 Group:		System Environment/Daemons
 License:	Apache 2.0
 URL:		$DOCUMENTATION_LINK
-Source0:	$REPO/tarball/$TARNAME.tar.gz
-BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+#Source0:	$REPO/tarball/$TARNAME.tar.gz
+Source: 	$PKG_NAME-$VERSION_FULL.tar.gz 
+BuildRoot:	%(mktemp -ud %{_tmppath}/$PKG_NAME-%{version}-%{release}-XXXXXX)
 
-BuildRequires:	python traceroute
+BuildRequires:	python
 Requires:	glibc
 Requires(post): chkconfig
 Requires(preun): chkconfig
@@ -21,7 +22,7 @@ $LONG_DESCRIPTION
 
 
 %prep
-%setup -q -n $TARNAME
+%setup -q 
 
 
 %build
@@ -34,14 +35,14 @@ rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 # TODO: do distro detection here
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
-install -m 644 pkg/systemd/$PKG_NAME.service $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
+install -m 644 out/${PKG_NAME}.service $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system
 install -d $RPM_BUILD_ROOT/%{_initrddir}
-install -m 755 pkg/sysv-redhat/$PKG_NAME $RPM_BUILD_ROOT/%{_initrddir}/
+install -m 755 out/sysv-${PKG_NAME} $RPM_BUILD_ROOT/%{_initrddir}/${PKG_NAME}
 # With the first RPM packages we accidently installed the configuration file as
 # an RPM owned "%file" but didn't mark it as a "%config" file. Now we can't
 # really go back on that. So, install an empty config file which will cause the
 # agent to complain about a missing monitoring_id on start
-touch $RPM_BUILD_ROOT/%{_sysconfdir}/$PKG_NAME.cfg
+touch $RPM_BUILD_ROOT/%{_sysconfdir}/${PKG_NAME}.cfg
 
 %check
 make test
