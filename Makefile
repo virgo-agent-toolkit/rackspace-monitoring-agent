@@ -12,7 +12,6 @@ out/Makefile:
 	./configure
 
 clean:
-	rm -f debian/*
 	rm -rf out
 
 distclean:
@@ -109,8 +108,8 @@ deb: all dist $(debbuild_dir)
 	cp out/${TARNAME}.tar.gz $(debbuild_dir)
 	rm -rf $(debbuild_dir)/${TARNAME} #&& mkdir -p $(debbuild_dir)/${TARNAME}
 	tar zxf out/${TARNAME}.tar.gz --strip-components=1 -C $(debbuild_dir)
-	cp -rf debian $(debbuild_dir)/${TARNAME}/debian
-	cp -rf ${BUNDLE} $(debbuild_dir)
+	cp -rf out/debian $(debbuild_dir)/${TARNAME}/debian
+	cp -rf ${BUNDLE_DIR} $(debbuild_dir)
 	# cd $(debbuild_dir)/${TARNAME} #&& dch -v ${VERSION} 'Release of ${PKG_NAME-VERSION}'
 	cd $(debbuild_dir)/${TARNAME} && dpkg-buildpackage
 

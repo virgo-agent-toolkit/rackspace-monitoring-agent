@@ -9,6 +9,7 @@
     'call_gyp': '<!(python tools/gyp_utils.py is_gyp_bundled <(BUNDLE_DIR))',
     'makefile_vars': [
       '<(PKG_NAME)',
+      '<(BUNDLE_DIR)',
       '<(PKG_TYPE)',
       '<(VERSION_FULL)',
       '<(VERSION_RELEASE)',

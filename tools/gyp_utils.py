@@ -205,7 +205,7 @@ def pkg(*args):
     """Slurps variables out of gyp and dumps them into places for packaging.
     This is messy so that bundling is easy on end users"""
 
-    vars = ['PKG_NAME', 'PKG_TYPE', 'VERSION_FULL', 'VERSION_RELEASE',
+    vars = ['PKG_NAME', 'BUNDLE_DIR', 'PKG_TYPE', 'VERSION_FULL', 'VERSION_RELEASE',
         'VERSION_PATCH', 'TARNAME', 'SHORT_DESCRIPTION', 'LONG_DESCRIPTION',
         'REPO', 'LICENSE', 'EMAIL', 'MAINTAINER', 'DOCUMENTATION_LINK']
 
@@ -218,16 +218,22 @@ def pkg(*args):
         rendered = string.Template(template).safe_substitute(mapping)
         open(_out, 'wb').write(rendered)
 
-    if True: # mapping['PKG_TYPE'] == 'deb':
+    if True:  # mapping['PKG_TYPE'] == 'deb':
+        out = os.path.join('out', 'debian')
+        try:
+            os.mkdir(out)
+        except OSError as e:
+            if e.errno != 17:
+                raise
         root = os.path.join('pkg', 'debian')
         for f in os.listdir(root):
-            render(os.path.join(root, f), os.path.join('debian', f))
+            render(os.path.join(root, f), os.path.join(out, f))
         log = debian_changelog(changes, **mapping)
         open('debian/changelog', 'wb').write(log.encode('utf8'))
 
     elif mapping['PKG_TYPE'] == 'rpm':
         render('pkg/rpm/spec.in', 'out/%s.spec' % mapping['PKG_NAME'])
-
+    mapping['WARNING'] = '# autogened by gyp, do not edit by hand'
     render('pkg/Makefile.in', 'out/include.mk')
 
 
