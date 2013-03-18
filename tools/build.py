@@ -40,17 +40,30 @@ def extra_env():
     return env
 
 
-def build():
+def _build(prod):
+    env_str = ''
+    if prod:
+        env_str = 'PRODUCTION=1'
     if sys.platform.find('freebsd') == 0:
-        cmd = 'gmake -C %s' % paths.root
+        cmd = '%s gmake -C %s' % (env_str, paths.root)
     elif sys.platform != "win32":
-        cmd = 'make -C %s' % paths.root
+        cmd = '%s make -C %s' % (env_str, paths.root)
     else:
         build = 'Debug' if options['variables']['virgo_debug'] == 'true' else 'Release'
-        cmd = 'tools\win_build.bat %s' % build
+        if prod:
+            env_str = 'Production'
+        cmd = 'tools\win_build.bat %s %s' % (build, env_str)
 
     print cmd
     sys.exit(subprocess.call(cmd, shell=True))
+
+
+def build():
+    _build()
+
+
+def build_prod():
+    _build(True)
 
 
 def pkg():
@@ -160,6 +173,7 @@ commands = {
     'crash': crash,
     'bundle': bundle,
     'build': build,
+    'build_prod': build_prod,
     'pkg': pkg,
     'exe-sign': exe_sign,
     'pkg-sign': pkg_sign,
