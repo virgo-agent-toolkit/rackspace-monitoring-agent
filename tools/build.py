@@ -40,7 +40,7 @@ def extra_env():
     return env
 
 
-def _build(prod):
+def _build(prod=False):
     env_str = ''
     if prod:
         env_str = 'PRODUCTION=1'
