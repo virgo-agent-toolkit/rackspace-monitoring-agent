@@ -119,6 +119,14 @@ def configure_virgo(o):
     o['variables']['luvit_prefix'] = options.prefix if options.prefix else ''
     o['variables']['host_arch'] = options.host_arch if options.host_arch else host_arch()
     o['variables']['target_arch'] = options.target_arch if options.target_arch else target_arch()
+
+    if os.getenv('PRODUCTION'):
+        shutil.copy2('agents/monitoring/default/code_cert.lua.prod',
+            'agents/monitoring/default/code_cert.lua')
+    else:
+        shutil.copy2('agents/monitoring/default/code_cert.lua.test',
+            'agents/monitoring/default/code_cert.lua')
+
     if sys.platform == "win32":
         supported_wix_toolsets = [
             {
