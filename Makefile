@@ -13,7 +13,7 @@ PKG_RELEASE = $(shell python tools/version.py release)
 ifndef PRODUCTION
 SIGNING_KEY=tests/ca/server.key.insecure
 else
-SIGNING_KEY=/root/server.key
+SIGNING_KEY=/home/buildslave/server.key
 endif
 
 zip_files = monitoring.zip monitoring-test.zip
