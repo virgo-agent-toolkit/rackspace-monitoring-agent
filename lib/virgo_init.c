@@ -196,12 +196,8 @@ virgo_run(virgo_t *v)
     return err;
   }
 
-#ifdef _WIN32
-  err = virgo__service_handler(v);
-#else
   /* TOOD: restart support */
   err = virgo__lua_run(v);
-#endif
 
   if (err) {
     return err;

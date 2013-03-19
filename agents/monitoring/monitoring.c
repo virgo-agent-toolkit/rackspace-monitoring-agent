@@ -92,11 +92,85 @@ upgrade_status_cb(virgo_t *v, const char *fmt, ...) {
   va_end(ap);
 }
 
+virgo_error_t *main_wrapper(virgo_t *v)
+{
+  virgo_error_t *err;
+  char path[VIRGO_PATH_MAX];
+
+  /* See if we are upgrading */
+  if (virgo_try_upgrade(v)) {
+    /* Attempt upgrade. On success this process gets replaced. */
+    err = virgo__exec_upgrade(v, upgrade_status_cb);
+    if (err) {
+      if (err->err == VIRGO_ENOFILE) {
+        virgo_log_info(v, "Continuing Startup without Upgrade");
+      } else {
+        virgo_log_errorf(v, "Exec Error: %s", err->msg);
+        virgo_error_clear(err);
+      }
+    } else {
+      /* this code never gets executed because of execve */
+      return VIRGO_SUCCESS;
+    }
+  }
+
+  err = virgo__paths_get(v, VIRGO_PATH_CURRENT_EXECUTABLE_PATH, path, sizeof(path));
+  if (err) {
+    handle_error("Could not find current executable name", err);
+    return err;
+  }
+
+  virgo_log_infof(v, "Process Executable: %s", path);
+
+  /* Check to see if bundle is valid */
+  err = virgo__bundle_is_valid(v);
+  if (err) {
+    handle_error("Virgo Bundle is invalid", err);
+    return err;
+  }
+
+  virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
+
+  /* Setup Lua Contexts for Luvit and Libuv runloop */
+  err = virgo_init(v);
+  if (err) {
+    if (err->err == VIRGO_EHELPREQ) {
+      show_help();
+      virgo_error_clear(err);
+      return VIRGO_SUCCESS;
+    }
+    else if (err->err == VIRGO_EVERSIONREQ) {
+      show_version(v);
+      virgo_error_clear(err);
+      return VIRGO_SUCCESS;
+    }
+
+    handle_error("Error in init", err);
+    return err;
+  }
+
+  err = virgo_agent_conf_set(v, "version", VERSION_FULL);
+  if (err) {
+    handle_error("Error setting agent version", err);
+    return err;
+  }
+
+  /* Enter Luvit and Execute */
+  err = virgo_run(v);
+  if (err) {
+    handle_error("Runtime Error", err);
+    return err;
+  }
+
+  /* Cleanup */
+  virgo_destroy(v);
+  return VIRGO_SUCCESS;
+}
+
 int main(int argc, char* argv[])
 {
   virgo_t *v;
   virgo_error_t *err;
-  char path[VIRGO_PATH_MAX];
 
   err = virgo_create(&v, "./init", argc, argv);
 
@@ -119,72 +193,12 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  /* See if we are upgrading */
-  if (virgo_try_upgrade(v)) {
-    /* Attempt upgrade. On success this process gets replaced. */
-    err = virgo__exec_upgrade(v, upgrade_status_cb);
-    if (err) {
-      if (err->err == VIRGO_ENOFILE) {
-        virgo_log_info(v, "Continuing Startup without Upgrade");
-      } else {
-        virgo_log_errorf(v, "Exec Error: %s", err->msg);
-        virgo_error_clear(err);
-      }
-    } else {
-      /* this code never gets executed because of execve */
-      return 0;
-    }
-  }
+#ifdef _WIN32
+  err = virgo__service_handler(v, main_wrapper);
+#else
+  err =  main_wrapper(v);
+#endif
 
-  err = virgo__paths_get(v, VIRGO_PATH_CURRENT_EXECUTABLE_PATH, path, sizeof(path));
-  if (err) {
-    handle_error("Could not find current executable name", err);
-    return EXIT_FAILURE;
-  }
-
-  virgo_log_infof(v, "Process Executable: %s", path);
-
-  /* Check to see if bundle is valid */
-  err = virgo__bundle_is_valid(v);
-  if (err) {
-    handle_error("Virgo Bundle is invalid", err);
-    return EXIT_FAILURE;
-  }
-
-  virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
-
-  /* Setup Lua Contexts for Luvit and Libuv runloop */
-  err = virgo_init(v);
-  if (err) {
-    if (err->err == VIRGO_EHELPREQ) {
-      show_help();
-      virgo_error_clear(err);
-      return 0;
-    }
-    else if (err->err == VIRGO_EVERSIONREQ) {
-      show_version(v);
-      virgo_error_clear(err);
-      return 0;
-    }
-
-    handle_error("Error in init", err);
-    return EXIT_FAILURE;
-  }
-
-  err = virgo_agent_conf_set(v, "version", VERSION_FULL);
-  if (err) {
-    handle_error("Error setting agent version", err);
-    return EXIT_FAILURE;
-  }
-
-  /* Enter Luvit and Execute */
-  err = virgo_run(v);
-  if (err) {
-    handle_error("Runtime Error", err);
-    return EXIT_FAILURE;
-  }
-
-  /* Cleanup */
-  virgo_destroy(v);
-  return 0;
+  return err==VIRGO_SUCCESS?0:EXIT_FAILURE;
 }
+
