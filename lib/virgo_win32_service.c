@@ -141,11 +141,16 @@ virgo__service_delete(virgo_t *v)
   return VIRGO_SUCCESS;
 }
 
-static virgo_t *virgo_baton_hack = NULL;
+struct baton
+{
+  virgo_t *v;
+  virgo_error_t* (*wrapper)(virgo_t *v);
+};
+static struct baton virgo_baton_hack = {NULL, NULL};
 
 static VOID WINAPI virgo__win32_service_handler(DWORD dwControl)
 {
-  virgo_t *v = virgo_baton_hack;
+  virgo_t *v = virgo_baton_hack.v;
 
   if (dwControl == SERVICE_CONTROL_STOP) {
     v->service_status.dwCurrentState = SERVICE_STOP_PENDING;
@@ -157,11 +162,11 @@ static VOID WINAPI virgo__win32_service_handler(DWORD dwControl)
 DWORD WINAPI virgo__win32_service_worker(PVOID baton)
 {
   virgo_error_t *err;
-  virgo_t *v = baton;
-  err = virgo__lua_run(v);
+  struct baton *virgo_baton = (struct baton *)baton;
+  err = virgo_baton->wrapper(virgo_baton->v);
   if (err != VIRGO_SUCCESS) {
     /* TODO: logging? better error handling? */
-    virgo_log_errorf(v, "Win32 Service virgo__lua_run error %s:%u %s", err->file, err->line, err->msg);
+    virgo_log_errorf(virgo_baton->v, "Win32 Service wrapper error %s:%u %s", err->file, err->line, err->msg);
     return 1;
   }
   return 0;
@@ -174,7 +179,7 @@ DWORD WINAPI virgo__win32_service_worker(PVOID baton)
 static VOID WINAPI virgo__win32_service_main(DWORD dwArgc,LPTSTR* lpszArgv)
 {
   HANDLE worker_thread;
-  virgo_t *v = virgo_baton_hack;
+  virgo_t *v = virgo_baton_hack.v;
   v->service_handle = RegisterServiceCtrlHandler(v->service_name, virgo__win32_service_handler);
 
   if (v->service_handle == NULL) {
@@ -218,7 +223,7 @@ error:
 }
 
 virgo_error_t*
-virgo__service_handler(virgo_t *v)
+virgo__service_handler(virgo_t *v, virgo_error_t* (*wrapper)(virgo_t *v))
 {
   virgo_error_t *err;
 
@@ -230,14 +235,15 @@ virgo__service_handler(virgo_t *v)
   /* Services are invoked in their own thread, but we aren't allowed to actually
    * pass anything to them. sigh.
    */
-  virgo_baton_hack = v;
+  virgo_baton_hack.v = v;
+  virgo_baton_hack.wrapper = wrapper;
 
   if (!StartServiceCtrlDispatcher(ste)) {
     DWORD error = GetLastError();
     if (error == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
       /* This was not staqrted by the Service Manager, so run normally */
       virgo_log_infof(v, "Win32 Service Running Outside the Service Manger");
-      err = virgo__lua_run(v);
+      err = wrapper(v);
     } else {
       virgo_log_errorf(v, "Win32 Service Failed to Start (%u)", error);
       err = virgo_error_os_create(VIRGO_EINVAL, error, "StartServiceCtrlDispatcher failed");

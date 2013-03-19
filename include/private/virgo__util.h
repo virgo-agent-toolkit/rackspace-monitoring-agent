@@ -36,7 +36,7 @@ int virgo__argv_has_flag(virgo_t *v,
 
 virgo_error_t* virgo__service_install(virgo_t *v);
 virgo_error_t* virgo__service_delete(virgo_t *v);
-virgo_error_t* virgo__service_handler(virgo_t *v);
+virgo_error_t* virgo__service_handler(virgo_t *v, virgo_error_t* (*wrapper)(virgo_t *v));
 
 #endif
 
