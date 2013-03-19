@@ -171,6 +171,7 @@ int main(int argc, char* argv[])
 {
   virgo_t *v;
   virgo_error_t *err;
+  int ret;
 
   err = virgo_create(&v, "./init", argc, argv);
 
@@ -199,6 +200,12 @@ int main(int argc, char* argv[])
   err =  main_wrapper(v);
 #endif
 
-  return err==VIRGO_SUCCESS?0:EXIT_FAILURE;
+  if (err == VIRGO_SUCCESS) {
+    ret = 0;
+  } else {
+    ret = EXIT_FAILURE;
+  }
+
+  return ret;
 }
 
