@@ -14,9 +14,15 @@
             'virgo_detach.c',
           ],
         }],
+        ['OS!="mac"', {
+          "sources+": [
+              'virgo_exports.c',
+            ]
+          }
+        ],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-          'cflags': [ '--std=c89' ],
-          'defines': [ '_GNU_SOURCE' ]
+          'cflags': ['--std=c89'],
+          'defines': ['_GNU_SOURCE']
         }],
         ['OS=="linux"', {
           'dependencies': [
@@ -35,7 +41,7 @@
           ],
         }],
         ['"<(without_ssl)" == "false"', {
-          'defines': [ 'USE_OPENSSL' ],
+          'defines': ['USE_OPENSSL'],
         }],
       ],
       'dependencies': [
@@ -73,7 +79,7 @@
         'virgo_time.c',
         'virgo_util.c',
         'virgo_versions.c',
-        'virgo_exports.c',
+#        'virgo_exports.c',
         '../deps/luvit/src/luvit_exports.c',
         '<@(bootstrap-luas)',
       ],
