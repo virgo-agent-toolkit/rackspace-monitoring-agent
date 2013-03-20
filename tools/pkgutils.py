@@ -33,6 +33,13 @@ def pkg_dir():
         system = system + platform.release().lower()[0]
     if system == "linux":
         dist = platform.dist()
+
+        if dist[0] == 'debian':
+            if dist[1][0] == '6':
+                dist = [dist[0], 'squeeze']
+            else:
+                dist = [dist[0], 'undefined']
+
         # Lower case everyting (looking at you Ubuntu)
         dist = tuple([x.lower() for x in dist])
 
