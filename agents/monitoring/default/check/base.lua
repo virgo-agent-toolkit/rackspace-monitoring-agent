@@ -27,6 +27,7 @@ local table = require('table')
 local timer = require('timer')
 local vtime = require('virgo-time')
 local utils = require('utils')
+local path = require('path')
 
 local constants = require('../util/constants')
 local loggingUtil = require('../util/logging')
@@ -482,10 +483,15 @@ function SubProcCheck:run(callback)
 end
 
 
-function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
+function SubProcCheck:_findLibrary(lexact, paths)
   local ffi = require('ffi')
   local clib = nil
-  local i,exact
+  local i, j, k, exact, path, ext, fp
+  local libsoext = {
+    'so',
+    'dylib',
+    'dll',
+  }
 
   local function loadsharedobj(name)
     local err, lib = pcall(ffi.load, name, true)
@@ -494,14 +500,35 @@ function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
     end
   end
 
-  for i,exact in ipairs(mysqlexact) do
+  for i,exact in ipairs(lexact) do
     loadsharedobj(exact)
     if clib ~= nil then
       break
     end
   end
 
-  -- TODO: path grepping with patterns and paths
+  if clib == nil then
+    for i,path in ipairs(paths) do
+      for j,exact in ipairs(lexact) do
+        for k,ext in ipairs(libsoext) do
+          fp = path.join(path, exact .. "." .. ext)
+          loadsharedobj(fp)
+          if clib ~= nil then
+            break
+          end
+        end
+
+        if clib ~= nil then
+          break
+        end
+      end
+
+      if clib ~= nil then
+        break
+      end
+    end
+
+  end
 
   local mocker = env.get('VIRGO_SUBPROC_MOCK')
   if mocker ~= nil then
