@@ -48,14 +48,19 @@ copy_args(virgo_t *v, const char *bundle_path) {
   args[index++] = strdup("-z");
 #ifndef _WIN32
   args[index++] = strdup(bundle_path);
+  args[index++] = strdup("-o");
 #else
   {
     char quoted_bundle[MAX_PATH];
     snprintf(quoted_bundle, MAX_PATH, "\"%s\"", bundle_path);
     args[index++] = strdup(quoted_bundle);
   }
+  if (v->service_status.dwCurrentState == SERVICE_RUNNING) {
+    args[index++] = strdup("--service-upgrade");
+  } else {
+    args[index++] = strdup("-o");
+  }
 #endif
-  args[index++] = strdup("-o");
   args[index++] = NULL;
 
   return args;
@@ -73,8 +78,7 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
   if (rc < 0) { /* on success, does not execute, unless running windows */
     return virgo_error_createf(VIRGO_ENOFILE, "execve failed errno=%i", errno);
   } else {
-    /* running windows, exit quick! */
-    exit(0);
+    /* running windows, just continue and the child will stop me */
   }
 
   return VIRGO_SUCCESS;
