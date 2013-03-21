@@ -22,7 +22,7 @@ def pkg_type():
     if dist in rpm:
         return "rpm"
 
-    if sys.platform() == "win32":
+    if sys.platform == "win32":
         return "windows"
 
     return None
