@@ -83,10 +83,10 @@ function Setup:saveTest(callback)
   end)
 end
 
-function Setup:save(token, hostname, callback)
+function Setup:save(token, callback)
   process.stdout:write(fmt('Writing token to %s: ', self._configFile))
   local data = fmt('monitoring_token %s\n', token)
-  data = data .. fmt('monitoring_id %s\n', hostname)
+  data = data .. fmt('monitoring_id %s\n', self._agentId)
 
   --[[
   1. We are using an environment variable because we thought adding special hidden
@@ -179,7 +179,7 @@ function Setup:run(callback)
         return
       end
       self._agent:setConfig({ ['monitoring_token'] = token })
-      self:save(token, hostname, callback)
+      self:save(token, callback)
     end)
   end
 
@@ -235,7 +235,7 @@ function Setup:run(callback)
         self:_out(fmt('Found existing Agent Token for %s', hostname))
         self:_out('')
         self._agent:setConfig({ ['monitoring_token'] = agentToken })
-        self:save(agentToken, hostname, callback)
+        self:save(agentToken, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
          createToken(callback)
@@ -263,7 +263,7 @@ function Setup:run(callback)
           local validatedIndex = tonumber(index) -- validate response
           if validatedIndex >= 1 and validatedIndex <= #tokens.values then
             self._agent:setConfig({ ['monitoring_token'] = tokens.values[validatedIndex].id })
-            self:save(tokens.values[validatedIndex].id, hostname, callback)
+            self:save(tokens.values[validatedIndex].id, callback)
           elseif validatedIndex == (#tokens.values + 1) then
             createToken(callback)
           else
