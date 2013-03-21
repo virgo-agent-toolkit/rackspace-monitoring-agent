@@ -22,6 +22,9 @@ def pkg_type():
     if dist in rpm:
         return "rpm"
 
+    if sys.platform() == "win32":
+        return "windows"
+
     return None
 
 
@@ -135,6 +138,8 @@ def package_builder_dir():
         buildDirArgs += ('debbuild', 'rackspace-monitoring-agent')
     elif pkgType == 'rpm':
         buildDirArgs += ('rpmbuild', 'BUILD', "virgo-%s" % ("-".join(git_describe())))
+    elif pkgType == 'windows':
+        pass
     else:
         raise AttributeError('Unsupported pkg type, %s' % (pkgType))
 
