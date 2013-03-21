@@ -137,7 +137,7 @@ function Setup:_isLocalEntity(entity)
   return false
 end
 
-function Setup:_buildLocalEntity(agentId)
+function Setup:_buildLocalEntity(hostname)
   local addresses = {}
   local netifs = sigarCtx:netifs()
 
@@ -154,8 +154,8 @@ function Setup:_buildLocalEntity(agentId)
   end
 
   return {
-    label = agentId,
-    agent_id = agentId,
+    label = hostname,
+    agent_id = self._agentId,
     ip_addresses = addresses
   }
 end
