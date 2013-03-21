@@ -27,6 +27,7 @@ local async = require('async')
 local ask = require('./util/prompt').ask
 local errors = require('./errors')
 local constants = require('./util/constants')
+local UUID = require('./util/uuid')
 local sigarCtx = require('./sigar').ctx
 
 local maas = require('rackspace-monitoring')
@@ -42,6 +43,7 @@ function Setup:initialize(argv, configFile, agent)
     self._receivedPromotion = true
   end)
   self._addresses = {}
+  self._agentId = nil
 
   -- build a "set" (table keyed by address) of local IP addresses
   local netifs = sigarCtx:netifs()
@@ -54,6 +56,19 @@ function Setup:initialize(argv, configFile, agent)
     if info['addres6'] then
       self._addresses[info['address6']] = true
     end
+  end
+
+  -- generate a new agent ID
+  for i=1, #netifs do
+    local eth = netifs[i]:info()
+    if eth['type'] ~= 'Local Loopback' then
+      self._agentId = UUID:new(eth.hwaddr):toString()
+    end
+  end
+
+  if self._agentId == nil then
+    self._out('Error: unable to locate loopback interface, unable to proceed')
+    process.exit(1)
   end
 end
 
