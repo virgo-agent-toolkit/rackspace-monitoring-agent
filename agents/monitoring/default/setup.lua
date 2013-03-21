@@ -376,7 +376,7 @@ function Setup:run(callback)
               elseif validatedIndex == #localEntities + 2 then
                 callback()
               elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
-                client.entities.update(localEntities[validatedIndex].id, { agent_id = hostname }, callback)
+                client.entities.update(localEntities[validatedIndex].id, { agent_id = self._agentId }, callback)
               else
                 self:_out('')
                 self:_out('Invalid selection')
