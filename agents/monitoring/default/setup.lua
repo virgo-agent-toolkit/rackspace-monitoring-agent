@@ -104,7 +104,7 @@ function Setup:_getOsStartString()
 end
 
 function Setup:_isLocalEntity(entity)
-  if entity.label == os.hostname() then
+  if entity.label:lower() == os.hostname():lower() then
     return true
   end
 
