@@ -97,6 +97,11 @@ virgo_error_t *main_wrapper(virgo_t *v)
   virgo_error_t *err;
   char path[VIRGO_PATH_MAX];
 
+  virgo__paths_get(v, VIRGO_PATH_DEFAULT_EXE, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "Default EXE Path: %s", path);
+  virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "Default Bundle Path: %s", path);
+
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
     /* Attempt upgrade. On success this process gets replaced. */
@@ -192,6 +197,12 @@ int main(int argc, char* argv[])
   if (err) {
     handle_error("Error in settings args", err);
     return EXIT_FAILURE;
+  }
+
+  err = virgo__log_rotate(v);
+
+  if (err) {
+    return err;
   }
 
 #ifdef _WIN32

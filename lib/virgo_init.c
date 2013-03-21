@@ -188,11 +188,6 @@ virgo_run(virgo_t *v)
     }
   }
 #endif
-  err = virgo__log_rotate(v);
-
-  if (err) {
-    return err;
-  }
 
   err = virgo__conf_init(v);
 
