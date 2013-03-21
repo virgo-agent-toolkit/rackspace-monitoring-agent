@@ -352,7 +352,7 @@ function Setup:run(callback)
           function entitySelection()
             self:_out('Please select the Entity that corresponds to this server:')
             displayEntities()
-            self:_out(fmt('  %i. Create an new Entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
+            self:_out(fmt('  %i. Create an new Entity for this server (WARNING: not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
             self:_out(fmt('  %i. Do not associate with an Entity', #localEntities + 2))
             self:_out('')
 
