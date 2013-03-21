@@ -154,6 +154,10 @@ virgo_init(virgo_t *v)
   if (virgo__argv_has_flag(v, NULL, "--service-delete") == 1) {
     return virgo__service_delete(v);
   }
+
+  if (virgo__argv_has_flag(v, NULL, "--service-upgrade") == 1) {
+    return virgo__service_upgrade(v);
+  }
 #endif
 
   err = virgo__lua_init(v);
