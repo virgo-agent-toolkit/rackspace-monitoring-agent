@@ -268,7 +268,7 @@ static VOID WINAPI virgo__win32_service_main(DWORD dwArgc,LPTSTR* lpszArgv)
   v->service_stop_event = CreateEvent(NULL, TRUE, FALSE, NULL);
   SetServiceStatus(v->service_handle, &v->service_status);
 
-  worker_thread = CreateThread(0, 0, virgo__win32_service_worker, v, 0, NULL);
+  worker_thread = CreateThread(0, 0, virgo__win32_service_worker, &virgo_baton_hack, 0, NULL);
   if (worker_thread == NULL) {
     goto error;
   }
