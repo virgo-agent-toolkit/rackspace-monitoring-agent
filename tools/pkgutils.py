@@ -128,6 +128,10 @@ def git_describe(is_exact=False, split=True, cwd=None):
     return version
 
 
+def git_head():
+    return subprocess.check_output('git rev-parse HEAD', shell=True).strip()
+
+
 def package_builder_dir():
     """returns the directory that is packaged into rpms/debs.
     This is useful because the builders maybe specifiy different cflags, etc, which
