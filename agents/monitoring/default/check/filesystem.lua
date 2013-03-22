@@ -90,7 +90,9 @@ function FileSystemCheck:run(callback)
       if usage then
         for _, key in pairs(METRICS) do
           value = usage[key]
-          checkResult:addMetric(key, nil, nil, value, UNITS[key])
+          if value ~= nil then
+            checkResult:addMetric(key, nil, nil, value, UNITS[key])
+          end
         end
       end
 
