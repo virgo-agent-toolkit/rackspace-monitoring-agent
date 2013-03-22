@@ -102,6 +102,13 @@ virgo_error_t *main_wrapper(virgo_t *v)
   virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, path, VIRGO_PATH_MAX);
   virgo_log_infof(v, "Default Bundle Path: %s", path);
 
+  virgo__paths_get(v, VIRGO_PATH_EXE, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "EXE Path: %s", path);
+  virgo__paths_get(v, VIRGO_PATH_BUNDLE, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "Bundle Path: %s", path);
+
+  //virgo_log_infof(v, "v->lua_load_path: %s", v->lua_load_path);
+
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
     /* Attempt upgrade. On success this process gets replaced. */
