@@ -151,6 +151,7 @@ virgo_error_t*
 virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
   virgo_error_t *err = VIRGO_SUCCESS;
   char path[VIRGO_PATH_MAX];
+  path[0] = '\0';
 
   /* Fetch the BUNDLE directory */
   err = virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR, path, sizeof(path));
@@ -158,6 +159,7 @@ virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
     virgo_error_clear(err);
     goto default_bundle;
   }
+  virgo_log_infof(v, "Bundle Path 1: %s", path);
 
   err = virgo__versions_latest_file(v,
                                     path,
@@ -168,10 +170,13 @@ virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
     virgo_error_clear(err);
     goto default_bundle;
   }
+  virgo_log_infof(v, "Bundle Path 2: %s", path);
 
   return VIRGO_SUCCESS;
 
 default_bundle:
+    virgo_log_infof(v, "Bundle Path using default");
+
   /* use the default path */
   return virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, buffer, buffer_len);
 }
