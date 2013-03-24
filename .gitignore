@@ -2,6 +2,8 @@
 options.gypi
 build/*
 out/*
+Debug/
+Release/
 .scons*
 *.o
 *.pyc
