@@ -126,6 +126,8 @@ int main(int argc, char* argv[])
     if (err) {
       if (err->err == VIRGO_ENOFILE) {
         virgo_log_info(v, "Continuing Startup without Upgrade");
+      } else if(err->err == VIRGO_SKIPUPGRADE) {
+        virgo_log_info(v, "Continuing Startup without Upgrade");
       } else {
         virgo_log_errorf(v, "Exec Error: %s", err->msg);
         virgo_error_clear(err);
