@@ -1,10 +1,8 @@
 import os
 import sys
-import string
 import zipfile
 import hashlib
 import subprocess
-from datetime import datetime
 
 THIS_FILE = os.path.basename(__file__)
 
@@ -148,98 +146,6 @@ def make_bundle(root, bundle_version, out, *files):
     z.close()
 
     print('Wrote %d files to %s' % (len(files), out))
-
-
-CHANGE_LOG = """$PKG_NAME ($VERSION) unstable; urgency=low
-
-$CHANGES
- -- $MAINTAINER  $TIMESTAMP
-"""
-
-CHANGE = """  * $CHANGE\n"""
-
-
-def debian_changelog(changes, **kwargs):
-    log = []
-    CHANGE_LOG_TEMPLATE = string.Template(CHANGE_LOG)
-
-    def _render(changes):
-        version = changes[0].split('* ')[1]
-        date = changes[1].strip()
-        try:
-            int(date[-5:])
-        except ValueError:
-            offset = "-0000"
-        else:
-            offset = date[-5:]
-            date = date[:-5].strip()
-
-        try:
-            time = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            timestamp = date
-        else:
-            timestamp = time.strftime("%a, %d %b %Y %H:%M:%S") + " " + offset
-
-        rendered_changes = ""
-        for c in changes[2:]:
-            rendered_changes += string.Template(CHANGE).safe_substitute(CHANGE=c)
-        return CHANGE_LOG_TEMPLATE.safe_substitute(CHANGES=rendered_changes,
-            VERSION=version, TIMESTAMP=timestamp, **kwargs)
-
-    c = []
-    for change in changes:
-        if change.startswith('* '):
-            if c:
-                log.append(_render(c))
-                c = []
-        c.append(change)
-
-    if c:
-        log.append(_render(c))
-
-    return "\n".join(log)
-
-
-def pkg(*args):
-    """Slurps variables out of gyp and dumps them into places for packaging.
-    This is messy so that bundling is easy on end users"""
-
-    vars = ['PKG_NAME', 'BUNDLE_DIR', 'BUNDLE_NAME', 'BUNDLE_VERSION', 'PKG_TYPE', 'VERSION_FULL', 'VERSION_RELEASE',
-        'VERSION_PATCH', 'TARNAME', 'SHORT_DESCRIPTION', 'LONG_DESCRIPTION',
-        'REPO', 'LICENSE', 'EMAIL', 'MAINTAINER', 'DOCUMENTATION_LINK']
-
-    changes = args[len(vars):]
-
-    mapping = dict(zip(vars, args[:len(vars)]))
-
-    def render(_in, _out):
-        template = open(_in, 'rb').read()
-        rendered = string.Template(template).safe_substitute(mapping)
-        open(_out, 'wb').write(rendered)
-
-    name = mapping['PKG_NAME']
-
-    if mapping['PKG_TYPE'] == 'deb':
-        out = os.path.join('out', 'debian')
-        try:
-            os.mkdir(out)
-        except OSError as e:
-            if e.errno != 17:
-                raise
-        root = os.path.join('pkg', 'debian')
-        for f in os.listdir(root):
-            render(os.path.join(root, f), os.path.join(out, f))
-        log = debian_changelog(changes, **mapping)
-
-        open(os.path.join(out, 'changelog'), 'wb').write(log.encode('utf8'))
-
-    elif mapping['PKG_TYPE'] == 'rpm':
-        render('pkg/rpm/spec.in', 'out/%s.spec' % name)
-        render('pkg/systemd/agent.service', 'out/%s.service' % name)
-        render('pkg/sysv-redhat/agent', 'out/sysv-%s' % name)
-    mapping['WARNING'] = '# autogened by gyp, do not edit by hand'
-    render('pkg/Makefile.in', 'out/include.mk')
 
 
 def hash(*args):

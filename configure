@@ -9,6 +9,8 @@ import json
 import sys
 import glob
 import shutil
+import string
+from datetime import datetime
 
 from tools import pkgutils
 from tools import version
@@ -49,6 +51,88 @@ parser.add_option("--bundle",
     help="The path to the directory on disk containing lua files to be bundled.")
 
 (options, args) = parser.parse_args()
+
+
+CHANGE_LOG = """$PKG_NAME ($VERSION) $RELEASE; urgency=$URGENCY
+
+$CHANGES
+ -- $MAINTAINER  $TIMESTAMP
+"""
+
+CHANGE = """  * $CHANGE\n"""
+
+
+def debian_changelog(changes, **kwargs):
+    CHANGE_LOG_TEMPLATE = string.Template(CHANGE_LOG)
+
+    def _render(changeset):
+        version = changeset['version'].strip()
+        date = changeset['date'].strip()
+        try:
+            int(date[-5:])
+        except ValueError:
+            offset = "-0000"
+        else:
+            offset = date[-5:]
+            date = date[:-5].strip()
+
+        try:
+            time = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            timestamp = date
+        else:
+            timestamp = time.strftime("%a, %d %b %Y %H:%M:%S") + " " + offset
+
+        rendered_changes = ""
+        for change in changeset['changes']:
+            rendered_changes += string.Template(CHANGE).safe_substitute(CHANGE=change, **kwargs)
+        RELEASE = changeset.get('RELEASE', 'unstable')
+        URGENCY = changeset.get('URGENCY', 'low')
+        return CHANGE_LOG_TEMPLATE.safe_substitute(CHANGES=rendered_changes,
+            VERSION=version, TIMESTAMP=timestamp, RELEASE=RELEASE,
+            URGENCY=URGENCY, **kwargs)
+
+    return '\n'.join([_render(c) for c in changes])
+
+
+def configure_pkg(platform, pkg_vars):
+    """slurps up variables from various sources and renders package files
+    eg the debian changelog."""
+
+    mapping = pkg_vars.copy()
+    for k, v in platform['variables'].items():
+        mapping[k] = v
+    mapping['TARNAME'] = "%s-%s" % (mapping['PKG_NAME'], mapping['VERSION_FULL'])
+
+    out_dir = os.path.join('pkg', 'out')
+    try:
+        os.mkdir(out_dir)
+    except OSError as e:
+        if e.errno != 17:
+            raise
+
+    def render(_in, _out):
+        template = open(_in, 'rb').read()
+        rendered = string.Template(template).safe_substitute(mapping)
+        open(_out, 'wb').write(rendered)
+
+    name = mapping['PKG_NAME']
+
+    if mapping['PKG_TYPE'] == 'deb':
+        root = os.path.join('pkg', 'debian')
+        for f in os.listdir(root):
+            render(os.path.join(root, f), os.path.join(out_dir, f))
+        log = debian_changelog(mapping['CHANGELOG'], **mapping)
+
+        open(os.path.join(out_dir, 'changelog'), 'wb').\
+            write(log.encode('utf8'))
+
+    elif mapping['PKG_TYPE'] == 'rpm':
+        render('pkg/rpm/spec.in', 'out/%s.spec' % name)
+        render('pkg/systemd/agent.service', 'out/%s.service' % name)
+        render('pkg/sysv-redhat/agent', 'out/sysv-%s' % name)
+    mapping['WARNING'] = '# autogened by gyp, do not edit by hand'
+    render(os.path.join('pkg', 'include.mk.in'), 'include.mk')
 
 
 def pkg_config(pkg):
@@ -120,12 +204,11 @@ def find_toolset(toolsets, toolset_name, variables):
             break
 
 
-def configure_virgo_platform(bundle_dir, bundle_name):
+def configure_virgo_platform(bundle_dir, bundle_name, platform_vars):
     print('Bundling %s from %s' % (bundle_name, bundle_dir))
 
     variables = {}
     variables['BUNDLE_DIR'] = bundle_dir
-    variables['BUNDLE_NAME'] = bundle_name
     variables['VIRGO_HEAD_SHA'] = pkgutils.git_head()
     versions = version.version(sep=None)
     variables['PKG_TYPE'] = pkgutils.pkg_type() or ""
@@ -135,6 +218,10 @@ def configure_virgo_platform(bundle_dir, bundle_name):
     variables['VERSION_RELEASE'] = versions['release']
     variables['VERSION_PATCH'] = versions['patch']
     variables['BUNDLE_VERSION'] = version.version(cwd=bundle_dir)
+
+    for k, v in platform_vars.items():
+        if k != "CHANGELOG":
+            variables[k] = v
 
     return {'variables': variables}
 
@@ -226,8 +313,12 @@ def main():
             print('\nWarning: no bundle path was specified.  The example bundle will be used.\n')
         bundle_dir = os.path.relpath(options.bundle, '.')
         bundle_name = os.path.split(bundle_dir)[1]
-        platform_gypi = configure_virgo_platform(bundle_dir, bundle_name)
-        write_gypi(platform_gypi, 'platform.gypi')
+        pkg_vars = open(os.path.join(bundle_dir, 'virgo.json'), 'rb').read()
+        pkg_vars = json.loads(pkg_vars)
+        platform = configure_virgo_platform(bundle_dir, bundle_name, pkg_vars)
+        write_gypi(platform, 'platform.gypi')
+        # KANS: make makefile
+        configure_pkg(platform, pkg_vars)
 
     if os.path.isdir(os.path.join('.', '.git')):
         print "Updating git submodules...."

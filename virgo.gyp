@@ -10,7 +10,6 @@
 
       'dependencies': [
         'lib/virgolib.gyp:virgolib',
-        './bundle.gyp:bundle.zip',
       ],
 
       'include_dirs': [

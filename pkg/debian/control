@@ -1,4 +1,4 @@
-Source: rackspace-monitoring-agent
+Source: $PKG_NAME
 Section: admin
 Priority: optional
 Maintainer: $MAINTAINER
