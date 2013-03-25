@@ -7,7 +7,7 @@ Group:		System Environment/Daemons
 License:	Apache 2.0
 URL:		$DOCUMENTATION_LINK
 #Source0:	$REPO/tarball/$TARNAME.tar.gz
-Source: 	$PKG_NAME-$VERSION_FULL.tar.gz 
+Source: 	$PKG_NAME-$VERSION_FULL.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/$PKG_NAME-%{version}-%{release}-XXXXXX)
 
 BuildRequires:	python
@@ -22,7 +22,7 @@ $LONG_DESCRIPTION
 
 
 %prep
-%setup -q 
+%setup -q
 
 
 %build
@@ -35,9 +35,9 @@ rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 # TODO: do distro detection here
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
-install -m 644 out/${PKG_NAME}.service $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system
+install -m 644 pkg/out/${PKG_NAME}.service $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system
 install -d $RPM_BUILD_ROOT/%{_initrddir}
-install -m 755 out/sysv-${PKG_NAME} $RPM_BUILD_ROOT/%{_initrddir}/${PKG_NAME}
+install -m 755 pkg/out/sysv-${PKG_NAME} $RPM_BUILD_ROOT/%{_initrddir}/${PKG_NAME}
 # With the first RPM packages we accidently installed the configuration file as
 # an RPM owned "%file" but didn't mark it as a "%config" file. Now we can't
 # really go back on that. So, install an empty config file which will cause the
