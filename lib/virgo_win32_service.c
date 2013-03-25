@@ -111,7 +111,7 @@ virgo__service_install(virgo_t *v)
   CloseServiceHandle(schService);
   CloseServiceHandle(schSCManager);
 
-  return VIRGO_SUCCESS;
+  return VIRGO_MAINTREQ;
 }
 
 virgo_error_t*
@@ -140,13 +140,13 @@ virgo__service_delete(virgo_t *v)
 
   CloseServiceHandle(schService);
   CloseServiceHandle(schSCManager);
-  return VIRGO_SUCCESS;
+  return VIRGO_MAINTREQ;
 }
 
 virgo_error_t*
 virgo__service_upgrade(virgo_t *v)
 {
-  virgo_error_t *err = VIRGO_SUCCESS;
+  virgo_error_t *err = VIRGO_MAINTREQ;
   char origin[VIRGO_PATH_MAX];
   char dest[VIRGO_PATH_MAX];
   SC_HANDLE schSCManager = NULL;
@@ -190,18 +190,26 @@ virgo__service_upgrade(virgo_t *v)
   if (err != VIRGO_SUCCESS) {
     goto service_upgrade_end;
   }
-  if (!CopyFile(origin, dest, FALSE)) {
-    err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Copy Exe During Upgrade failed");
-    goto service_upgrade_end;
+  if (strcmp(origin, dest) != 0) {
+    if (!CopyFile(origin, dest, FALSE)) {
+      err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Copy Exe During Upgrade failed");
+      goto service_upgrade_end;
+    }
+  } else {
+    virgo_log_warningf(v, "Win32 Service upgrade unneeded for %s", origin);    
   }
   /* Bundle */
   err = virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, dest, VIRGO_PATH_MAX);
   if (err != VIRGO_SUCCESS) {
     goto service_upgrade_end;
   }
-  if (!CopyFile(v->lua_load_path, dest, FALSE)) {
-    err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Copy Bundle During Upgrade failed");
-    goto service_upgrade_end;
+  if (strcmp(origin, dest) != 0) {
+    if (!CopyFile(v->lua_load_path, dest, FALSE)) {
+      err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Copy Bundle During Upgrade failed");
+      goto service_upgrade_end;
+    }
+  } else {
+    virgo_log_warningf(v, "Win32 Service upgrade unneeded for %s", origin);
   }
 
   /* Start the new service */
