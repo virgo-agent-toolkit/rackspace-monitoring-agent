@@ -31,11 +31,14 @@
 #endif
 
 static void
-handle_error(const char *msg, virgo_error_t *err)
+handle_error(virgo_t *v, const char *msg, virgo_error_t *err)
 {
   char buf[256];
 
   snprintf(buf, sizeof(buf), "%s: %s", msg, "[%s:%d] (%d) %s");
+  if (v) {
+    virgo_log_errorf(v, buf, err->file, err->line, err->err, err->msg);
+  }
   fprintf(stderr, buf, err->file, err->line, err->err, err->msg);
   fputs("\n", stderr);
   fflush(stderr);
@@ -107,8 +110,6 @@ virgo_error_t *main_wrapper(virgo_t *v)
   virgo__paths_get(v, VIRGO_PATH_BUNDLE, path, VIRGO_PATH_MAX);
   virgo_log_infof(v, "Bundle Path: %s", path);
 
-  //virgo_log_infof(v, "v->lua_load_path: %s", v->lua_load_path);
-
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
     /* Attempt upgrade. On success this process gets replaced. */
@@ -128,7 +129,7 @@ virgo_error_t *main_wrapper(virgo_t *v)
 
   err = virgo__paths_get(v, VIRGO_PATH_CURRENT_EXECUTABLE_PATH, path, sizeof(path));
   if (err) {
-    handle_error("Could not find current executable name", err);
+    handle_error(v, "Could not find current executable name", err);
     return err;
   }
 
@@ -137,7 +138,7 @@ virgo_error_t *main_wrapper(virgo_t *v)
   /* Check to see if bundle is valid */
   err = virgo__bundle_is_valid(v);
   if (err) {
-    handle_error("Virgo Bundle is invalid", err);
+    handle_error(v, "Virgo Bundle is invalid", err);
     return err;
   }
 
@@ -188,21 +189,21 @@ int main(int argc, char* argv[])
   err = virgo_create(&v, "./init", argc, argv);
 
   if (err) {
-    handle_error("Error in startup", err);
+    handle_error(v, "Error in startup", err);
     return EXIT_FAILURE;
   }
 
   /* Set Service Name */
   err = virgo_conf_service_name(v, "Rackspace Monitoring Agent");
   if (err) {
-    handle_error("Error setting service name", err);
+    handle_error(v, "Error setting service name", err);
     return EXIT_FAILURE;
   }
 
   /* Read command-line arguments */
   err = virgo_conf_args(v);
   if (err) {
-    handle_error("Error in settings args", err);
+    handle_error(v, "Error in settings args", err);
     return EXIT_FAILURE;
   }
 
