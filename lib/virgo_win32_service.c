@@ -111,7 +111,7 @@ virgo__service_install(virgo_t *v)
   CloseServiceHandle(schService);
   CloseServiceHandle(schSCManager);
 
-  return VIRGO_MAINTREQ;
+  return virgo_error_create(VIRGO_MAINTREQ, "Maintenance Request Done");
 }
 
 virgo_error_t*
@@ -140,13 +140,13 @@ virgo__service_delete(virgo_t *v)
 
   CloseServiceHandle(schService);
   CloseServiceHandle(schSCManager);
-  return VIRGO_MAINTREQ;
+  return virgo_error_create(VIRGO_MAINTREQ, "Maintenance Request Done");
 }
 
 virgo_error_t*
 virgo__service_upgrade(virgo_t *v)
 {
-  virgo_error_t *err = VIRGO_MAINTREQ;
+  virgo_error_t *err = VIRGO_SUCCESS;
   char origin[VIRGO_PATH_MAX];
   char dest[VIRGO_PATH_MAX];
   SC_HANDLE schSCManager = NULL;
@@ -221,6 +221,9 @@ virgo__service_upgrade(virgo_t *v)
 service_upgrade_end:
   CloseServiceHandle(schService);
   CloseServiceHandle(schSCManager);
+  if (err == VIRGO_SUCCESS) {
+    err = virgo_error_create(VIRGO_MAINTREQ, "Maintenance Request Done");
+  }
   return err;
 }
 
