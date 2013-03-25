@@ -148,35 +148,34 @@ is_exe_file(const char *name) {
 }
 
 virgo_error_t*
-virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
+virgo__path_zip_file_latest(virgo_t *v, char *buffer, size_t buffer_len) {
   virgo_error_t *err = VIRGO_SUCCESS;
   char path[VIRGO_PATH_MAX];
-  path[0] = '\0';
 
   /* Fetch the BUNDLE directory */
   err = virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR, path, sizeof(path));
   if (err) {
-    virgo_error_clear(err);
-    goto default_bundle;
+    return err;
   }
-  virgo_log_infof(v, "Bundle Path 1: %s", path);
 
-  err = virgo__versions_latest_file(v,
-                                    path,
-                                    is_bundle_file,
-                                    buffer,
-                                    buffer_len);
+  err = virgo__versions_latest_file(v, path, is_bundle_file, buffer, buffer_len);
+  return err;
+}
+
+virgo_error_t*
+virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
+  virgo_error_t *err = VIRGO_SUCCESS;
+
+  /* Fetch the BUNDLE directory */
+  err = virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR_LATEST, buffer, buffer_len);
   if (err) {
     virgo_error_clear(err);
     goto default_bundle;
   }
-  virgo_log_infof(v, "Bundle Path 2: %s", path);
 
   return VIRGO_SUCCESS;
 
 default_bundle:
-    virgo_log_infof(v, "Bundle Path using default");
-
   /* use the default path */
   return virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, buffer, buffer_len);
 }
@@ -207,7 +206,7 @@ virgo__path_default_exe_file(virgo_t *v, char *buffer, size_t buffer_len) {
 }
 
 virgo_error_t*
-virgo__path_exe_file(virgo_t* v, char *buffer, size_t buffer_len) {
+virgo__path_exe_file_latest(virgo_t* v, char *buffer, size_t buffer_len) {
   virgo_error_t *err;
   char path[VIRGO_PATH_MAX];
 
@@ -217,6 +216,14 @@ virgo__path_exe_file(virgo_t* v, char *buffer, size_t buffer_len) {
   }
 
   err = virgo__versions_latest_file(v, path, is_exe_file, buffer, buffer_len);
+  return err;
+}
+
+virgo_error_t*
+virgo__path_exe_file(virgo_t* v, char *buffer, size_t buffer_len) {
+  virgo_error_t *err;
+
+  err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, buffer, buffer_len);
   if (err) {
     /* on error, use the current executable */
     virgo_error_clear(err);
@@ -242,6 +249,12 @@ virgo__paths_get(virgo_t *v, virgo_path_e type, char *buffer, size_t buffer_len)
     break;
   case VIRGO_PATH_EXE_DIR:
     err = virgo__path_exe_dir(v, buffer, buffer_len);
+    break;
+  case VIRGO_PATH_BUNDLE_DIR_LATEST:
+    err = virgo__path_zip_file_latest(v, buffer, buffer_len);
+    break;
+  case VIRGO_PATH_EXE_DIR_LATEST:
+    err = virgo__path_exe_file_latest(v, buffer, buffer_len);
     break;
   case VIRGO_PATH_PERSISTENT_DIR:
     err = virgo__path_persistent_dir(v, buffer, buffer_len);
