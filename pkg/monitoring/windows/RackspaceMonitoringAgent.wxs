@@ -45,7 +45,7 @@
                             Type="ownProcess"
                             Start="auto"
                             ErrorControl="normal"
-                            Arguments='-o --logfile "C:\ProgramData\Rackspace Monitoring\log.txt"'
+                            Arguments='--logfile "C:\ProgramData\Rackspace Monitoring\log.txt"'
                             Description="$(var.ProductServiceDescription)">
                             <util:ServiceConfig
                                 FirstFailureActionType="restart"

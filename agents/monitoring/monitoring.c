@@ -88,6 +88,15 @@ show_version(virgo_t *v)
 }
 
 static void
+service_maintenance(virgo_t *v)
+{
+  const char *msg = "Service Maintenance Complete";
+  virgo_log_infof(v, msg);
+  printf("%s\n", msg);
+  fflush(stdout);
+}
+
+static void
 upgrade_status_cb(virgo_t *v, const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
@@ -157,21 +166,26 @@ virgo_error_t *main_wrapper(virgo_t *v)
       virgo_error_clear(err);
       return VIRGO_SUCCESS;
     }
+    else if (err->err == VIRGO_MAINTREQ) {
+      service_maintenance(v);
+      virgo_error_clear(err);
+      return VIRGO_SUCCESS;
+    }
 
-    handle_error("Error in init", err);
+    handle_error(v, "Error in init", err);
     return err;
   }
 
   err = virgo_agent_conf_set(v, "version", VERSION_FULL);
   if (err) {
-    handle_error("Error setting agent version", err);
+    handle_error(v, "Error setting agent version", err);
     return err;
   }
 
   /* Enter Luvit and Execute */
   err = virgo_run(v);
   if (err) {
-    handle_error("Runtime Error", err);
+    handle_error(v, "Runtime Error", err);
     return err;
   }
 
