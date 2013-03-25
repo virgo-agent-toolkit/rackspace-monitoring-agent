@@ -182,7 +182,6 @@ default_bundle:
 
 virgo_error_t*
 virgo__path_default_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
-  virgo_error_t *err = VIRGO_SUCCESS;
   /* get the default zip path */
 #ifdef _WIN32
   return join_path_with_name(&FOLDERID_ProgramFiles, VIRGO_DEFAULT_ZIP_FILENAME, buffer, buffer_len);
@@ -194,7 +193,6 @@ virgo__path_default_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
 
 virgo_error_t*
 virgo__path_default_exe_file(virgo_t *v, char *buffer, size_t buffer_len) {
-  virgo_error_t *err = VIRGO_SUCCESS;
   /* get the default exe path */
 #ifdef _WIN32
   /* this may need some coaxing */
