@@ -75,6 +75,8 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
   int win_sc_started = 0;
   const char* name = "execve";
 
+  args[0] = exe_path;
+
 #ifdef _WIN32
   /* when running windows from the service manager */
   if (v->service_status.dwCurrentState == SERVICE_RUNNING) {
@@ -82,14 +84,14 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
     name = "spawnve";
   }
   /* a child process must stop the service and perform the upgrade */
-#endif
-
-  args[0] = exe_path;
   if (!win_sc_started) {
     rc = execve(exe_path, args, environ);
   } else {
     rc = spawnve(P_NOWAIT, exe_path, args, environ);
   }
+#else
+  rc = execve(exe_path, args, environ);
+#endif
   if (rc < 0) {
     return virgo_error_createf(VIRGO_ENOFILE, "%s failed errno=%i", name, errno);
   }
