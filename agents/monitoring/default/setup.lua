@@ -364,15 +364,25 @@ function Setup:run(callback)
 
               local validatedIndex = tonumber(index)
               if validatedIndex == #localEntities + 1 then
-                client.entities.create(self:_buildLocalEntity(hostname), function(err, entity)
+                ask('Creating an entity does not work with the Rackspace Cloud Control Panel. Really create an entity? (yes/no)', function(err, resp)
                   if err then
-                    callback(err)
-                    return
+                    return callback(err)
                   end
-                  self:_out('')
-                  self:_out(fmt('New Entity Created: %s', entity))
-                  callback(nil, entity)
-                end)
+
+                  if resp:lower() ~= 'y' and resp:lower() ~= 'yes' then
+                    return entitySelection()
+                  end
+
+                  client.entities.create(self:_buildLocalEntity(hostname), function(err, entity)
+                    if err then
+                      callback(err)
+                      return
+                    end
+                    self:_out('')
+                    self:_out(fmt('New Entity Created: %s', entity))
+                    callback(nil, entity)
+                  end)
+                end);
               elseif validatedIndex == #localEntities + 2 then
                 callback()
               elseif validatedIndex >= 1 and validatedIndex <= #localEntities then

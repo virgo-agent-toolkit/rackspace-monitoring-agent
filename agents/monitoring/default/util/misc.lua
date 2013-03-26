@@ -223,6 +223,8 @@ function compareVersions(a, b)
   bItem = table.remove(bParts, 1)
 
   while aItem and bItem do
+    aItem = tonumber(aItem)
+    bItem = tonumber(bItem)
     if not isNaN(aItem) and not isNaN(bItem) then
       if aItem < bItem then
         return -1

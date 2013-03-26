@@ -39,6 +39,9 @@ exports['test_filesystem_check'] = function(test, asserts)
       asserts.equal(metrics['files']['t'], 'int64')
       asserts.equal(metrics['free_files']['t'], 'int64')
       asserts.ok(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
+    else
+      asserts.is_nil(metrics['files'])
+      asserts.is_nil(metrics['free_files'])
     end
 
     test.done()
