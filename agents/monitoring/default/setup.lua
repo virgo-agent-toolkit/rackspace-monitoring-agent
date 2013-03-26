@@ -397,7 +397,6 @@ function Setup:run(callback)
 
           -- This server matches exactly 1 entity and it has a URI. Just use it.
           if #localEntities == 1 and localEntities[1].uri ~= nil then
-            self:_out('')
             self:_out(fmt('This server matches entity %s, binding to it...', localEntities[1].id))
             client.entities.update(localEntities[1].id, { agent_id = self._agentId }, callback)
             return
