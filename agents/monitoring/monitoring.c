@@ -31,11 +31,14 @@
 #endif
 
 static void
-handle_error(const char *msg, virgo_error_t *err)
+handle_error(virgo_t *v, const char *msg, virgo_error_t *err)
 {
   char buf[256];
 
   snprintf(buf, sizeof(buf), "%s: %s", msg, "[%s:%d] (%d) %s");
+  if (v) {
+    virgo_log_errorf(v, buf, err->file, err->line, err->err, err->msg);
+  }
   fprintf(stderr, buf, err->file, err->line, err->err, err->msg);
   fputs("\n", stderr);
   fflush(stderr);
@@ -85,6 +88,15 @@ show_version(virgo_t *v)
 }
 
 static void
+service_maintenance(virgo_t *v)
+{
+  const char *msg = "Service Maintenance Complete";
+  virgo_log_infof(v, msg);
+  printf("%s\n", msg);
+  fflush(stdout);
+}
+
+static void
 upgrade_status_cb(virgo_t *v, const char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
@@ -92,54 +104,42 @@ upgrade_status_cb(virgo_t *v, const char *fmt, ...) {
   va_end(ap);
 }
 
-int main(int argc, char* argv[])
+virgo_error_t *main_wrapper(virgo_t *v)
 {
-  virgo_t *v;
   virgo_error_t *err;
   char path[VIRGO_PATH_MAX];
 
-  err = virgo_create(&v, "./init", argc, argv);
+  virgo__paths_get(v, VIRGO_PATH_DEFAULT_EXE, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "Default EXE Path: %s", path);
+  virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "Default Bundle Path: %s", path);
 
-  if (err) {
-    handle_error("Error in startup", err);
-    return EXIT_FAILURE;
-  }
-
-  /* Set Service Name */
-  err = virgo_conf_service_name(v, "Rackspace Monitoring Agent");
-  if (err) {
-    handle_error("Error setting service name", err);
-    return EXIT_FAILURE;
-  }
-
-  /* Read command-line arguments */
-  err = virgo_conf_args(v);
-  if (err) {
-    handle_error("Error in settings args", err);
-    return EXIT_FAILURE;
-  }
+  virgo__paths_get(v, VIRGO_PATH_EXE, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "EXE Path: %s", path);
+  virgo__paths_get(v, VIRGO_PATH_BUNDLE, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "Bundle Path: %s", path);
 
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
     /* Attempt upgrade. On success this process gets replaced. */
     err = virgo__exec_upgrade(v, upgrade_status_cb);
     if (err) {
-      if (err->err == VIRGO_ENOFILE) {
-        virgo_log_info(v, "Continuing Startup without Upgrade");
+      if (err->err == VIRGO_ENOFILE || err->err == VIRGO_SKIPUPGRADE) {
+        virgo_log_infof(v, "Continuing Startup without Upgrade, %s", err->msg);
       } else {
         virgo_log_errorf(v, "Exec Error: %s", err->msg);
         virgo_error_clear(err);
       }
     } else {
       /* this code never gets executed because of execve */
-      return 0;
+      return VIRGO_SUCCESS;
     }
   }
 
   err = virgo__paths_get(v, VIRGO_PATH_CURRENT_EXECUTABLE_PATH, path, sizeof(path));
   if (err) {
-    handle_error("Could not find current executable name", err);
-    return EXIT_FAILURE;
+    handle_error(v, "Could not find current executable name", err);
+    return err;
   }
 
   virgo_log_infof(v, "Process Executable: %s", path);
@@ -147,8 +147,8 @@ int main(int argc, char* argv[])
   /* Check to see if bundle is valid */
   err = virgo__bundle_is_valid(v);
   if (err) {
-    handle_error("Virgo Bundle is invalid", err);
-    return EXIT_FAILURE;
+    handle_error(v, "Virgo Bundle is invalid", err);
+    return err;
   }
 
   virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
@@ -159,32 +159,86 @@ int main(int argc, char* argv[])
     if (err->err == VIRGO_EHELPREQ) {
       show_help();
       virgo_error_clear(err);
-      return 0;
+      return VIRGO_SUCCESS;
     }
     else if (err->err == VIRGO_EVERSIONREQ) {
       show_version(v);
       virgo_error_clear(err);
-      return 0;
+      return VIRGO_SUCCESS;
+    }
+    else if (err->err == VIRGO_MAINTREQ) {
+      service_maintenance(v);
+      virgo_error_clear(err);
+      return VIRGO_SUCCESS;
     }
 
-    handle_error("Error in init", err);
-    return EXIT_FAILURE;
+    handle_error(v, "Error in init", err);
+    return err;
   }
 
   err = virgo_agent_conf_set(v, "version", VERSION_FULL);
   if (err) {
-    handle_error("Error setting agent version", err);
-    return EXIT_FAILURE;
+    handle_error(v, "Error setting agent version", err);
+    return err;
   }
 
   /* Enter Luvit and Execute */
   err = virgo_run(v);
   if (err) {
-    handle_error("Runtime Error", err);
-    return EXIT_FAILURE;
+    handle_error(v, "Runtime Error", err);
+    return err;
   }
 
   /* Cleanup */
   virgo_destroy(v);
-  return 0;
+  return VIRGO_SUCCESS;
 }
+
+int main(int argc, char* argv[])
+{
+  virgo_t *v;
+  virgo_error_t *err;
+  int ret;
+
+  err = virgo_create(&v, "./init", argc, argv);
+
+  if (err) {
+    handle_error(v, "Error in startup", err);
+    return EXIT_FAILURE;
+  }
+
+  /* Set Service Name */
+  err = virgo_conf_service_name(v, "Rackspace Monitoring Agent");
+  if (err) {
+    handle_error(v, "Error setting service name", err);
+    return EXIT_FAILURE;
+  }
+
+  /* Read command-line arguments */
+  err = virgo_conf_args(v);
+  if (err) {
+    handle_error(v, "Error in settings args", err);
+    return EXIT_FAILURE;
+  }
+
+  err = virgo__log_rotate(v);
+
+  if (err) {
+    return err;
+  }
+
+#ifdef _WIN32
+  err = virgo__service_handler(v, main_wrapper);
+#else
+  err =  main_wrapper(v);
+#endif
+
+  if (err == VIRGO_SUCCESS) {
+    ret = 0;
+  } else {
+    ret = EXIT_FAILURE;
+  }
+
+  return ret;
+}
+

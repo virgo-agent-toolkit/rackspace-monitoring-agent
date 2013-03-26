@@ -19,6 +19,8 @@
 #include "virgo__util.h"
 #include "virgo__lua.h"
 #include "virgo__types.h"
+#include "virgo_error.h"
+#include "virgo_paths.h"
 
 #ifdef _WIN32
 
@@ -109,7 +111,7 @@ virgo__service_install(virgo_t *v)
   CloseServiceHandle(schService);
   CloseServiceHandle(schSCManager);
 
-  return VIRGO_SUCCESS;
+  return virgo_error_create(VIRGO_MAINTREQ, "Maintenance Request Done");
 }
 
 virgo_error_t*
@@ -138,14 +140,103 @@ virgo__service_delete(virgo_t *v)
 
   CloseServiceHandle(schService);
   CloseServiceHandle(schSCManager);
-  return VIRGO_SUCCESS;
+  return virgo_error_create(VIRGO_MAINTREQ, "Maintenance Request Done");
 }
 
-static virgo_t *virgo_baton_hack = NULL;
+virgo_error_t*
+virgo__service_upgrade(virgo_t *v)
+{
+  virgo_error_t *err = VIRGO_SUCCESS;
+  char origin[VIRGO_PATH_MAX];
+  char dest[VIRGO_PATH_MAX];
+  SC_HANDLE schSCManager = NULL;
+  SC_HANDLE schService = NULL;
+  SERVICE_STATUS ServiceStatus;
+
+  schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+
+  if (NULL == schSCManager) {
+    return virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenSCManager failed");
+  }
+
+  schService = OpenService(schSCManager, v->service_name, SERVICE_ALL_ACCESS);
+  if (schService == NULL) {
+    err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "OpenService failed");
+    goto service_upgrade_end;
+  }
+
+  /* Stop the Service that spawned me */
+  if (ControlService(schService, SERVICE_CONTROL_STOP, &ServiceStatus)) {
+    while (ServiceStatus.dwCurrentState != SERVICE_STOPPED) {
+      virgo_log_infof(v, "Waiting for Win32 Service to Stop for Upgrade");
+      Sleep(1000);
+      if (!QueryServiceStatus(schService, &ServiceStatus)) {
+        err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "QueryServiceStatus failed");
+        goto service_upgrade_end;
+      }
+    }
+  } else {
+    err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "ControlService failed");
+    goto service_upgrade_end;
+  }
+
+  /* Copy this service exe and bundle (which should be new) into place */
+  /* EXE */
+  err = virgo__paths_get(v, VIRGO_PATH_CURRENT_EXECUTABLE_PATH, origin, VIRGO_PATH_MAX);
+  if (err != VIRGO_SUCCESS) {
+    goto service_upgrade_end;
+  }
+  err = virgo__paths_get(v, VIRGO_PATH_DEFAULT_EXE, dest, VIRGO_PATH_MAX);
+  if (err != VIRGO_SUCCESS) {
+    goto service_upgrade_end;
+  }
+  if (strcmp(origin, dest) != 0) {
+    if (!CopyFile(origin, dest, FALSE)) {
+      err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Copy Exe During Upgrade failed");
+      goto service_upgrade_end;
+    }
+  } else {
+    virgo_log_warningf(v, "Win32 Service upgrade unneeded for %s", origin);    
+  }
+  /* Bundle */
+  err = virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, dest, VIRGO_PATH_MAX);
+  if (err != VIRGO_SUCCESS) {
+    goto service_upgrade_end;
+  }
+  if (strcmp(origin, dest) != 0) {
+    if (!CopyFile(v->lua_load_path, dest, FALSE)) {
+      err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Copy Bundle During Upgrade failed");
+      goto service_upgrade_end;
+    }
+  } else {
+    virgo_log_warningf(v, "Win32 Service upgrade unneeded for %s", origin);
+  }
+
+  /* Start the new service */
+  if (!StartService(schService, 0, NULL)) {
+    err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "StartService failed");
+    goto service_upgrade_end;
+  }
+
+service_upgrade_end:
+  CloseServiceHandle(schService);
+  CloseServiceHandle(schSCManager);
+  if (err == VIRGO_SUCCESS) {
+    err = virgo_error_create(VIRGO_MAINTREQ, "Maintenance Request Done");
+  }
+  return err;
+}
+
+struct baton
+{
+  virgo_t *v;
+  virgo_error_t* (*wrapper)(virgo_t *v);
+};
+static struct baton virgo_baton_hack = {NULL, NULL};
 
 static VOID WINAPI virgo__win32_service_handler(DWORD dwControl)
 {
-  virgo_t *v = virgo_baton_hack;
+  virgo_t *v = virgo_baton_hack.v;
 
   if (dwControl == SERVICE_CONTROL_STOP) {
     v->service_status.dwCurrentState = SERVICE_STOP_PENDING;
@@ -157,11 +248,11 @@ static VOID WINAPI virgo__win32_service_handler(DWORD dwControl)
 DWORD WINAPI virgo__win32_service_worker(PVOID baton)
 {
   virgo_error_t *err;
-  virgo_t *v = baton;
-  err = virgo__lua_run(v);
+  struct baton *virgo_baton = (struct baton *)baton;
+  err = virgo_baton->wrapper(virgo_baton->v);
   if (err != VIRGO_SUCCESS) {
     /* TODO: logging? better error handling? */
-    virgo_log_errorf(v, "Win32 Service virgo__lua_run error %s:%u %s", err->file, err->line, err->msg);
+    virgo_log_errorf(virgo_baton->v, "Win32 Service wrapper error %s:%u %s", err->file, err->line, err->msg);
     return 1;
   }
   return 0;
@@ -174,7 +265,7 @@ DWORD WINAPI virgo__win32_service_worker(PVOID baton)
 static VOID WINAPI virgo__win32_service_main(DWORD dwArgc,LPTSTR* lpszArgv)
 {
   HANDLE worker_thread;
-  virgo_t *v = virgo_baton_hack;
+  virgo_t *v = virgo_baton_hack.v;
   v->service_handle = RegisterServiceCtrlHandler(v->service_name, virgo__win32_service_handler);
 
   if (v->service_handle == NULL) {
@@ -188,7 +279,7 @@ static VOID WINAPI virgo__win32_service_main(DWORD dwArgc,LPTSTR* lpszArgv)
   v->service_stop_event = CreateEvent(NULL, TRUE, FALSE, NULL);
   SetServiceStatus(v->service_handle, &v->service_status);
 
-  worker_thread = CreateThread(0, 0, virgo__win32_service_worker, v, 0, NULL);
+  worker_thread = CreateThread(0, 0, virgo__win32_service_worker, &virgo_baton_hack, 0, NULL);
   if (worker_thread == NULL) {
     goto error;
   }
@@ -218,7 +309,7 @@ error:
 }
 
 virgo_error_t*
-virgo__service_handler(virgo_t *v)
+virgo__service_handler(virgo_t *v, virgo_error_t* (*wrapper)(virgo_t *v))
 {
   virgo_error_t *err;
 
@@ -230,14 +321,15 @@ virgo__service_handler(virgo_t *v)
   /* Services are invoked in their own thread, but we aren't allowed to actually
    * pass anything to them. sigh.
    */
-  virgo_baton_hack = v;
+  virgo_baton_hack.v = v;
+  virgo_baton_hack.wrapper = wrapper;
 
   if (!StartServiceCtrlDispatcher(ste)) {
     DWORD error = GetLastError();
     if (error == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
       /* This was not staqrted by the Service Manager, so run normally */
       virgo_log_infof(v, "Win32 Service Running Outside the Service Manger");
-      err = virgo__lua_run(v);
+      err = wrapper(v);
     } else {
       virgo_log_errorf(v, "Win32 Service Failed to Start (%u)", error);
       err = virgo_error_os_create(VIRGO_EINVAL, error, "StartServiceCtrlDispatcher failed");
