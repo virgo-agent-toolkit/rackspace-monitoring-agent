@@ -119,6 +119,11 @@ virgo_error_t *main_wrapper(virgo_t *v)
   virgo__paths_get(v, VIRGO_PATH_BUNDLE, path, VIRGO_PATH_MAX);
   virgo_log_infof(v, "Bundle Path: %s", path);
 
+  virgo__paths_get(v, VIRGO_PATH_EXE_DIR, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "Latest EXE Path: %s", path);
+  virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR, path, VIRGO_PATH_MAX);
+  virgo_log_infof(v, "Latest Bundle Path: %s", path);
+
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
     /* Attempt upgrade. On success this process gets replaced. */
