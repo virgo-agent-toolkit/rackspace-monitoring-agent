@@ -66,6 +66,16 @@ def build_prod():
     _build(True)
 
 
+def sig_gen(signingkey, filename, sigfilename):
+    if not filename or not sigfilename:
+        print "sig-gen requires additioanl parameters of <filename> <signature_filename>"
+        sys.exit(1)
+    cmd = '%s dgst -sha256 -sign %s %s > %s'%(
+        options['variables']['OPENSSL'], signingkey, filename, sigfilename)
+    print cmd
+    sys.exit(subprocess.call(cmd, shell=True))
+
+
 def pkg():
     if sys.platform.find('freebsd') == 0:
         cmd = 'BUILDTYPE=%s gmake -C %s pkg' % (paths.BUILDTYPE, paths.root)
@@ -174,6 +184,7 @@ commands = {
     'bundle': bundle,
     'build': build,
     'build_prod': build_prod,
+    'sig-gen': sig_gen,
     'pkg': pkg,
     'exe-sign': exe_sign,
     'pkg-sign': pkg_sign,
@@ -187,7 +198,7 @@ def usage():
     print('Usage: build.py [%s]' % ', '.join(commands.keys()))
     sys.exit(1)
 
-if len(sys.argv) != 2:
+if len(sys.argv) < 2:
     usage()
 
 ins = sys.argv[1]
@@ -204,4 +215,4 @@ options = load_options()
 
 print('Running %s' % ins)
 cmd = commands.get(ins)
-cmd()
+cmd(*(sys.argv[2:]))
