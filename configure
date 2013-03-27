@@ -142,6 +142,18 @@ def configure_virgo(o):
             o['variables']['RACKSPACE_CODESIGNING_KEYFILE'] = windows_key_loc
         else:
             o['variables']['RACKSPACE_CODESIGNING_KEYFILE'] = "pkg\\monitoring\\windows\\testss.pfx"
+    if sys.platform == "win32":
+        supported_openssl_toolset = [
+            {
+                'OPENSSL': "C:\\Program Files (x86)\\Git\\bin\\openssl.exe",
+            },
+        ]
+        # set defaults to missing
+        o['variables']['OPENSSL'] = '"tools\\win_tool_missing.bat" "openssl.exe"'
+
+        find_toolset(supported_openssl_toolsets, "OpenSSL", o['variables'])
+    else:
+        o['variables']['OPENSSL'] = 'openssl'
 
 
 def render_openssl_symlinks(src, dest):
