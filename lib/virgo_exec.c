@@ -138,7 +138,7 @@ virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
       status(v, "    exe: %s", latest_in_exe_path);
     }
     if (!bundle_err) {
-        status(v, "    bundle: %s", latest_in_bundle_path);
+      status(v, "    bundle: %s", latest_in_bundle_path);
     }
   }
 
