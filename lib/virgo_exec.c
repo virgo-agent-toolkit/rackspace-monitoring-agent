@@ -102,7 +102,7 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
 
 virgo_error_t*
 virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
-  virgo_error_t *exe_err, *bundle_err, *err;
+  virgo_error_t *exe_err, *err;
   char exe_path[VIRGO_PATH_MAX];
   char latest_in_exe_path[VIRGO_PATH_MAX];
   char bundle_path[VIRGO_PATH_MAX];
