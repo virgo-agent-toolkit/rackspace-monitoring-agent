@@ -180,8 +180,7 @@ virgo__service_upgrade(virgo_t *v)
     goto service_upgrade_end;
   }
 
-  /* Copy this service exe and bundle (which should be new) into place */
-  /* EXE */
+  /* Copy this service exe (which should be new) into place */
   err = virgo__paths_get(v, VIRGO_PATH_CURRENT_EXECUTABLE_PATH, origin, VIRGO_PATH_MAX);
   if (err != VIRGO_SUCCESS) {
     goto service_upgrade_end;
@@ -197,19 +196,6 @@ virgo__service_upgrade(virgo_t *v)
     }
   } else {
     virgo_log_warningf(v, "Win32 Service upgrade unneeded for %s", origin);    
-  }
-  /* Bundle */
-  err = virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, dest, VIRGO_PATH_MAX);
-  if (err != VIRGO_SUCCESS) {
-    goto service_upgrade_end;
-  }
-  if (strcmp(origin, dest) != 0) {
-    if (!CopyFile(v->lua_load_path, dest, FALSE)) {
-      err = virgo_error_os_create(VIRGO_EINVAL, GetLastError(), "Copy Bundle During Upgrade failed");
-      goto service_upgrade_end;
-    }
-  } else {
-    virgo_log_warningf(v, "Win32 Service upgrade unneeded for %s", origin);
   }
 
   /* Start the new service */
