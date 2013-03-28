@@ -213,12 +213,13 @@ service_upgrade_end:
   return err;
 }
 
-struct baton
+struct _virgo_baton_hack_t
 {
   virgo_t *v;
   virgo_error_t* (*wrapper)(virgo_t *v);
 };
-static struct baton virgo_baton_hack = {NULL, NULL};
+typedef struct _virgo_baton_hack_t virgo_baton_hack_t;
+static virgo_baton_hack_t virgo_baton_hack = {NULL, NULL};
 
 static VOID WINAPI virgo__win32_service_handler(DWORD dwControl)
 {
@@ -234,7 +235,7 @@ static VOID WINAPI virgo__win32_service_handler(DWORD dwControl)
 DWORD WINAPI virgo__win32_service_worker(PVOID baton)
 {
   virgo_error_t *err;
-  struct baton *virgo_baton = (struct baton *)baton;
+  virgo_baton_hack_t *virgo_baton = (virgo_baton_hack_t *)baton;
   err = virgo_baton->wrapper(virgo_baton->v);
   if (err != VIRGO_SUCCESS) {
     /* TODO: logging? better error handling? */
