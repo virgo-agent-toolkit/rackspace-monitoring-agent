@@ -104,19 +104,21 @@ virgo_error_t*
 virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
   virgo_error_t *exe_err, *bundle_err, *err;
   char exe_path[VIRGO_PATH_MAX];
-  char bundle_path[VIRGO_PATH_MAX];
   char latest_in_exe_path[VIRGO_PATH_MAX];
-  char latest_in_bundle_path[VIRGO_PATH_MAX];
+  char bundle_path[VIRGO_PATH_MAX];
   char *exe_path_version;
 
+  err = virgo__paths_get(v, VIRGO_PATH_BUNDLE, bundle_path, sizeof(bundle_path));
+  if (err) {
+      return err;
+  }
+
   exe_err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, latest_in_exe_path, sizeof(latest_in_exe_path));
-  bundle_err = virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR_LATEST, latest_in_bundle_path, sizeof(latest_in_bundle_path));
 
   virgo_error_clear(exe_err);
-  virgo_error_clear(bundle_err);
 
-  if (exe_err && bundle_err ) {
-    return virgo_error_create(VIRGO_ENOFILE, "No upgrades available");
+  if (exe_err) {
+    return virgo_error_create(VIRGO_ENOFILE, "No exe upgrades available");
   }
 
   /* Double check the upgraded version is greater than the running process */
@@ -137,17 +139,9 @@ virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
     if (!exe_err) {
       status(v, "    exe: %s", latest_in_exe_path);
     }
-    if (!bundle_err) {
-      status(v, "    bundle: %s", latest_in_bundle_path);
-    }
   }
 
   err = virgo__paths_get(v, VIRGO_PATH_EXE, exe_path, sizeof(exe_path));
-  if (err) {
-      return err;
-  }
-
-  err = virgo__paths_get(v, VIRGO_PATH_BUNDLE, bundle_path, sizeof(bundle_path));
   if (err) {
       return err;
   }
