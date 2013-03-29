@@ -25,7 +25,7 @@
 #define MAX_LOG_LINE_LENGTH 4000
 
 virgo_error_t*
-virgo__log_rotate(virgo_t *v)
+virgo_log_rotate(virgo_t *v)
 {
   FILE *old = v->log_fp;
   FILE *nxt = stderr;

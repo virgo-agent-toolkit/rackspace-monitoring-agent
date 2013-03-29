@@ -226,14 +226,14 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
   }
 
-  err = virgo__log_rotate(v);
+  err = virgo_log_rotate(v);
 
   if (err) {
     return err;
   }
 
 #ifdef _WIN32
-  err = virgo__service_handler(v, main_wrapper);
+  err = virgo_service_handler(v, main_wrapper);
 #else
   err =  main_wrapper(v);
 #endif

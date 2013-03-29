@@ -296,7 +296,7 @@ error:
 }
 
 virgo_error_t*
-virgo__service_handler(virgo_t *v, virgo_error_t* (*wrapper)(virgo_t *v))
+virgo_service_handler(virgo_t *v, virgo_error_t* (*wrapper)(virgo_t *v))
 {
   virgo_error_t *err;
 

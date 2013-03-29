@@ -20,7 +20,6 @@
 #include "virgo__conf.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
-#include "virgo__logging.h"
 #include "virgo__util.h"
 #include "uv.h"
 #include "luv.h"
