@@ -198,8 +198,9 @@ virgo__path_default_exe_file(virgo_t *v, char *buffer, size_t buffer_len) {
   /* this may need some coaxing */
   return join_path_with_name(&FOLDERID_ProgramFiles, VIRGO_DEFAULT_NAME ".exe", buffer, buffer_len);
 #else
-  FIXME - strncpy(buffer, VIRGO_DEFAULT_ZIP_UNIX_PATH, buffer_len);
-  return VIRGO_SUCCESS;
+  /* not implemented */
+  buffer[0] = '\0';
+  return virgo_error_create(VIRGO_ENOTIMPL, "virgo__path_default_exe_file only implemented on Windows");
 #endif
 }
 
