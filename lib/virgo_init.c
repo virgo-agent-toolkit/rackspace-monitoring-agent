@@ -49,7 +49,7 @@ static int global_virgo_init = 0;
 
 #ifndef __linux__
 
-void virgo__crash_reporter_init(virgo_t **p_v)
+void virgo__crash_reporter_init(virgo_t *p_v)
 {
 
 }
@@ -123,7 +123,7 @@ virgo_create(virgo_t **p_v, const char *default_module, int argc, char** argv)
 
   *p_v = v;
 
-  virgo__crash_reporter_init(&v);
+  virgo__crash_reporter_init(v);
 
   return VIRGO_SUCCESS;
 }
