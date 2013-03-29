@@ -102,7 +102,8 @@ function CrashReporter:submit(callback)
       end
     end
 
-    async.forEach(reports, send_and_delete, callback)
+    -- Only process 4 crash reports at once.
+    async.forEachLimit(reports, 4, send_and_delete, callback)
   end)
 end
 
