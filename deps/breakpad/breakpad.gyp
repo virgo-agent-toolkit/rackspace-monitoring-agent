@@ -526,65 +526,6 @@
           ],
         },
         {
-          'target_name': 'breakpad_unittests',
-          'type': 'executable',
-          'dependencies': [
-            '../testing/gtest.gyp:gtest',
-            '../testing/gtest.gyp:gtest_main',
-            '../testing/gmock.gyp:gmock',
-            'breakpad_client',
-            'breakpad_processor_support',
-            'linux_dumper_unittest_helper',
-          ],
-
-          'sources': [
-            'linux/breakpad_googletest_includes.h',
-            'src/client/linux/handler/exception_handler_unittest.cc',
-            'src/client/linux/minidump_writer/directory_reader_unittest.cc',
-            'src/client/linux/minidump_writer/line_reader_unittest.cc',
-            'src/client/linux/minidump_writer/linux_core_dumper_unittest.cc',
-            'src/client/linux/minidump_writer/linux_ptrace_dumper_unittest.cc',
-            'src/client/linux/minidump_writer/minidump_writer_unittest.cc',
-            'src/client/linux/minidump_writer/minidump_writer_unittest_utils.cc',
-            'src/common/linux/elf_core_dump_unittest.cc',
-            'src/common/linux/file_id_unittest.cc',
-            'src/common/linux/linux_libc_support_unittest.cc',
-            'src/common/linux/synth_elf.cc',
-            'src/common/linux/tests/crash_generator.cc',
-            'src/common/linux/tests/crash_generator.h',
-            'src/common/memory_range.h',
-            'src/common/memory_unittest.cc',
-            'src/common/test_assembler.cc',
-            'src/common/tests/file_utils.cc',
-            'src/common/tests/file_utils.h',
-            'src/tools/linux/md2core/minidump_memory_range.h',
-            'src/tools/linux/md2core/minidump_memory_range_unittest.cc',
-          ],
-
-          'include_dirs': [
-            'linux', # Use our copy of breakpad_googletest_includes.h
-            'src',
-            '..',
-            '.',
-          ],
-          'conditions': [
-            [ 'clang == 1', {
-              'cflags': [
-                # See http://crbug.com/138571#c18
-                '-Wno-unused-value',
-              ],
-            }],
-            ['OS=="android"', {
-              'libraries': [
-                '-llog',
-              ],
-              'include_dirs': [
-                'src/common/android/include',
-              ],
-            }],
-          ],
-        },
-        {
           'target_name': 'linux_dumper_unittest_helper',
           'type': 'executable',
           'dependencies': [
