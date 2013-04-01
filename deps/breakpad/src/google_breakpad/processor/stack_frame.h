@@ -83,12 +83,32 @@ struct StackFrame {
     }
   };
 
-  // The program counter location as an absolute virtual address.  For the
-  // innermost called frame in a stack, this will be an exact program counter
-  // or instruction pointer value.  For all other frames, this will be within
-  // the instruction that caused execution to branch to a called function,
-  // but may not necessarily point to the exact beginning of that instruction.
-  u_int64_t instruction;
+  // Return the actual return address, as saved on the stack or in a
+  // register. See the comments for 'instruction', below, for details.
+  virtual uint64_t ReturnAddress() const { return instruction; }
+
+  // The program counter location as an absolute virtual address.
+  //
+  // - For the innermost called frame in a stack, this will be an exact
+  //   program counter or instruction pointer value.
+  //
+  // - For all other frames, this address is within the instruction that
+  //   caused execution to branch to this frame's callee (although it may
+  //   not point to the exact beginning of that instruction). This ensures
+  //   that, when we look up the source code location for this frame, we
+  //   get the source location of the call, not of the point at which
+  //   control will resume when the call returns, which may be on the next
+  //   line. (If the compiler knows the callee never returns, it may even
+  //   place the call instruction at the very end of the caller's machine
+  //   code, such that the "return address" (which will never be used)
+  //   immediately after the call instruction is in an entirely different
+  //   function, perhaps even from a different source file.)
+  //
+  // On some architectures, the return address as saved on the stack or in
+  // a register is fine for looking up the point of the call. On others, it
+  // requires adjustment. ReturnAddress returns the address as saved by the
+  // machine.
+  uint64_t instruction;
 
   // The module in which the instruction resides.
   const CodeModule *module;
@@ -98,7 +118,7 @@ struct StackFrame {
 
   // The start address of the function, may be omitted if debug symbols
   // are not available.
-  u_int64_t function_base;
+  uint64_t function_base;
 
   // The source file name, may be omitted if debug symbols are not available.
   string source_file_name;
@@ -109,7 +129,7 @@ struct StackFrame {
 
   // The start address of the source line, may be omitted if debug symbols
   // are not available.
-  u_int64_t source_line_base;
+  uint64_t source_line_base;
 
   // Amount of trust the stack walker has in the instruction pointer
   // of this frame.

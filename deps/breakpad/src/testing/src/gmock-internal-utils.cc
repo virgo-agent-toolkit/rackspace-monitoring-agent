@@ -35,14 +35,14 @@
 // Mock.  They are subject to change without notice, so please DO NOT
 // USE THEM IN USER CODE.
 
-#include <gmock/internal/gmock-internal-utils.h>
+#include "gmock/internal/gmock-internal-utils.h"
 
 #include <ctype.h>
 #include <ostream>  // NOLINT
 #include <string>
-#include <gmock/gmock.h>
-#include <gmock/internal/gmock-port.h>
-#include <gtest/gtest.h>
+#include "gmock/gmock.h"
+#include "gmock/internal/gmock-port.h"
+#include "gtest/gtest.h"
 
 namespace testing {
 namespace internal {
@@ -51,20 +51,20 @@ namespace internal {
 // words.  Each maximum substring of the form [A-Za-z][a-z]*|\d+ is
 // treated as one word.  For example, both "FooBar123" and
 // "foo_bar_123" are converted to "foo bar 123".
-string ConvertIdentifierNameToWords(const char* id_name) {
+GTEST_API_ string ConvertIdentifierNameToWords(const char* id_name) {
   string result;
   char prev_char = '\0';
   for (const char* p = id_name; *p != '\0'; prev_char = *(p++)) {
     // We don't care about the current locale as the input is
     // guaranteed to be a valid C++ identifier name.
-    const bool starts_new_word = isupper(*p) ||
-        (!isalpha(prev_char) && islower(*p)) ||
-        (!isdigit(prev_char) && isdigit(*p));
+    const bool starts_new_word = IsUpper(*p) ||
+        (!IsAlpha(prev_char) && IsLower(*p)) ||
+        (!IsDigit(prev_char) && IsDigit(*p));
 
-    if (isalnum(*p)) {
+    if (IsAlNum(*p)) {
       if (starts_new_word && result != "")
         result += ' ';
-      result += tolower(*p);
+      result += ToLower(*p);
     }
   }
   return result;
@@ -77,17 +77,21 @@ class GoogleTestFailureReporter : public FailureReporterInterface {
  public:
   virtual void ReportFailure(FailureType type, const char* file, int line,
                              const string& message) {
-    AssertHelper(type == FATAL ? TPRT_FATAL_FAILURE : TPRT_NONFATAL_FAILURE,
-                 file, line, message.c_str()) = Message();
-    if (type == FATAL) {
-      abort();
+    AssertHelper(type == kFatal ?
+                 TestPartResult::kFatalFailure :
+                 TestPartResult::kNonFatalFailure,
+                 file,
+                 line,
+                 message.c_str()) = Message();
+    if (type == kFatal) {
+      posix::Abort();
     }
   }
 };
 
 // Returns the global failure reporter.  Will create a
 // GoogleTestFailureReporter and return it the first time called.
-FailureReporterInterface* GetFailureReporter() {
+GTEST_API_ FailureReporterInterface* GetFailureReporter() {
   // Points to the global failure reporter used by Google Mock.  gcc
   // guarantees that the following use of failure_reporter is
   // thread-safe.  We may need to add additional synchronization to
@@ -99,11 +103,11 @@ FailureReporterInterface* GetFailureReporter() {
 }
 
 // Protects global resources (stdout in particular) used by Log().
-static Mutex g_log_mutex(Mutex::NO_CONSTRUCTOR_NEEDED_FOR_STATIC_MUTEX);
+static GTEST_DEFINE_STATIC_MUTEX_(g_log_mutex);
 
 // Returns true iff a log with the given severity is visible according
 // to the --gmock_verbose flag.
-bool LogIsVisible(LogSeverity severity) {
+GTEST_API_ bool LogIsVisible(LogSeverity severity) {
   if (GMOCK_FLAG(verbose) == kInfoVerbosity) {
     // Always show the log if --gmock_verbose=info.
     return true;
@@ -113,7 +117,7 @@ bool LogIsVisible(LogSeverity severity) {
   } else {
     // If --gmock_verbose is neither "info" nor "error", we treat it
     // as "warning" (its default value).
-    return severity == WARNING;
+    return severity == kWarning;
   }
 }
 
@@ -124,8 +128,9 @@ bool LogIsVisible(LogSeverity severity) {
 // stack_frames_to_skip is treated as 0, since we don't know which
 // function calls will be inlined by the compiler and need to be
 // conservative.
-void Log(LogSeverity severity, const string& message,
-         int stack_frames_to_skip) {
+GTEST_API_ void Log(LogSeverity severity,
+                    const string& message,
+                    int stack_frames_to_skip) {
   if (!LogIsVisible(severity))
     return;
 
@@ -135,7 +140,7 @@ void Log(LogSeverity severity, const string& message,
   // "using ::std::cout;" doesn't work with Symbian's STLport, where cout is a
   // macro.
 
-  if (severity == WARNING) {
+  if (severity == kWarning) {
     // Prints a GMOCK WARNING marker to make the warnings easily searchable.
     std::cout << "\nGMOCK WARNING:";
   }

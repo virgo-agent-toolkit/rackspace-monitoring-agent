@@ -277,7 +277,7 @@ TEST_F(ExceptionHandlerTest, InstructionPointerMemory) {
 
   // These are defined here so the parent can use them to check the
   // data from the minidump afterwards.
-  const u_int32_t kMemorySize = 256;  // bytes
+  const uint32_t kMemorySize = 256;  // bytes
   const int kOffset = kMemorySize / 2;
   // This crashes with SIGILL on x86/x86-64/arm.
   const unsigned char instructions[] = { 0xff, 0xff, 0xff, 0xff };
@@ -346,32 +346,19 @@ TEST_F(ExceptionHandlerTest, InstructionPointerMemory) {
   MinidumpContext* context = exception->GetContext();
   ASSERT_TRUE(context);
 
-  u_int64_t instruction_pointer;
-  switch (context->GetContextCPU()) {
-  case MD_CONTEXT_X86:
-    instruction_pointer = context->GetContextX86()->eip;
-    break;
-  case MD_CONTEXT_AMD64:
-    instruction_pointer = context->GetContextAMD64()->rip;
-    break;
-  case MD_CONTEXT_ARM:
-    instruction_pointer = context->GetContextARM()->iregs[15];
-    break;
-  default:
-    FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-    break;
-  }
+  uint64_t instruction_pointer;
+  ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
   MinidumpMemoryRegion* region =
     memory_list->GetMemoryRegionForAddress(instruction_pointer);
   EXPECT_TRUE(region);
 
   EXPECT_EQ(kMemorySize, region->GetSize());
-  const u_int8_t* bytes = region->GetMemory();
+  const uint8_t* bytes = region->GetMemory();
   ASSERT_TRUE(bytes);
 
-  u_int8_t prefix_bytes[kOffset];
-  u_int8_t suffix_bytes[kMemorySize - kOffset - sizeof(instructions)];
+  uint8_t prefix_bytes[kOffset];
+  uint8_t suffix_bytes[kMemorySize - kOffset - sizeof(instructions)];
   memset(prefix_bytes, 0, sizeof(prefix_bytes));
   memset(suffix_bytes, 0, sizeof(suffix_bytes));
   EXPECT_TRUE(memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)) == 0);
@@ -389,7 +376,7 @@ TEST_F(ExceptionHandlerTest, InstructionPointerMemoryMinBound) {
 
   // These are defined here so the parent can use them to check the
   // data from the minidump afterwards.
-  const u_int32_t kMemorySize = 256;  // bytes
+  const uint32_t kMemorySize = 256;  // bytes
   const int kOffset = 0;
   // This crashes with SIGILL on x86/x86-64/arm.
   const unsigned char instructions[] = { 0xff, 0xff, 0xff, 0xff };
@@ -458,31 +445,18 @@ TEST_F(ExceptionHandlerTest, InstructionPointerMemoryMinBound) {
   MinidumpContext* context = exception->GetContext();
   ASSERT_TRUE(context);
 
-  u_int64_t instruction_pointer;
-  switch (context->GetContextCPU()) {
-  case MD_CONTEXT_X86:
-    instruction_pointer = context->GetContextX86()->eip;
-    break;
-  case MD_CONTEXT_AMD64:
-    instruction_pointer = context->GetContextAMD64()->rip;
-    break;
-  case MD_CONTEXT_ARM:
-    instruction_pointer = context->GetContextARM()->iregs[15];
-    break;
-  default:
-    FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-    break;
-  }
+  uint64_t instruction_pointer;
+  ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
   MinidumpMemoryRegion* region =
     memory_list->GetMemoryRegionForAddress(instruction_pointer);
   EXPECT_TRUE(region);
 
   EXPECT_EQ(kMemorySize / 2, region->GetSize());
-  const u_int8_t* bytes = region->GetMemory();
+  const uint8_t* bytes = region->GetMemory();
   ASSERT_TRUE(bytes);
 
-  u_int8_t suffix_bytes[kMemorySize / 2 - sizeof(instructions)];
+  uint8_t suffix_bytes[kMemorySize / 2 - sizeof(instructions)];
   memset(suffix_bytes, 0, sizeof(suffix_bytes));
   EXPECT_TRUE(memcmp(bytes + kOffset, instructions, sizeof(instructions)) == 0);
   EXPECT_TRUE(memcmp(bytes + kOffset + sizeof(instructions),
@@ -501,7 +475,7 @@ TEST_F(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
   // Use 4k here because the OS will hand out a single page even
   // if a smaller size is requested, and this test wants to
   // test the upper bound of the memory range.
-  const u_int32_t kMemorySize = 4096;  // bytes
+  const uint32_t kMemorySize = 4096;  // bytes
   // This crashes with SIGILL on x86/x86-64/arm.
   const unsigned char instructions[] = { 0xff, 0xff, 0xff, 0xff };
   const int kOffset = kMemorySize - sizeof(instructions);
@@ -570,21 +544,8 @@ TEST_F(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
   MinidumpContext* context = exception->GetContext();
   ASSERT_TRUE(context);
 
-  u_int64_t instruction_pointer;
-  switch (context->GetContextCPU()) {
-  case MD_CONTEXT_X86:
-    instruction_pointer = context->GetContextX86()->eip;
-    break;
-  case MD_CONTEXT_AMD64:
-    instruction_pointer = context->GetContextAMD64()->rip;
-    break;
-  case MD_CONTEXT_ARM:
-    instruction_pointer = context->GetContextARM()->iregs[15];
-    break;
-  default:
-    FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-    break;
-  }
+  uint64_t instruction_pointer;
+  ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
   MinidumpMemoryRegion* region =
     memory_list->GetMemoryRegionForAddress(instruction_pointer);
@@ -592,10 +553,10 @@ TEST_F(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
 
   const size_t kPrefixSize = 128;  // bytes
   EXPECT_EQ(kPrefixSize + sizeof(instructions), region->GetSize());
-  const u_int8_t* bytes = region->GetMemory();
+  const uint8_t* bytes = region->GetMemory();
   ASSERT_TRUE(bytes);
 
-  u_int8_t prefix_bytes[kPrefixSize];
+  uint8_t prefix_bytes[kPrefixSize];
   memset(prefix_bytes, 0, sizeof(prefix_bytes));
   EXPECT_TRUE(memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)) == 0);
   EXPECT_TRUE(memcmp(bytes + kPrefixSize,

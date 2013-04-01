@@ -35,9 +35,12 @@
 #include <elf.h>
 
 #include "breakpad_googletest_includes.h"
+#include "common/linux/elfutils.h"
 #include "common/linux/synth_elf.h"
 #include "common/using_std_string.h"
 
+using google_breakpad::ElfClass32;
+using google_breakpad::ElfClass64;
 using google_breakpad::synth_elf::ELF;
 using google_breakpad::synth_elf::StringTable;
 using google_breakpad::synth_elf::SymbolTable;
@@ -46,6 +49,7 @@ using google_breakpad::test_assembler::kBigEndian;
 using google_breakpad::test_assembler::kLittleEndian;
 using google_breakpad::test_assembler::Label;
 using ::testing::Test;
+using ::testing::Types;
 
 class StringTableTest : public Test {
 public:
@@ -55,7 +59,7 @@ public:
 };
 
 TEST_F(StringTableTest, Empty) {
-  EXPECT_EQ(1, table.Size());
+  EXPECT_EQ(1U, table.Size());
   string contents;
   ASSERT_TRUE(table.GetContents(&contents));
   const char* kExpectedContents = "\0";
@@ -63,7 +67,7 @@ TEST_F(StringTableTest, Empty) {
                       contents.c_str(),
                       contents.size()));
   ASSERT_TRUE(table.empty_string.IsKnownConstant());
-  EXPECT_EQ(0, table.empty_string.Value());
+  EXPECT_EQ(0U, table.empty_string.Value());
 }
 
 TEST_F(StringTableTest, Basic) {
@@ -84,7 +88,7 @@ TEST_F(StringTableTest, Basic) {
                       contents.size()));
   // empty_string is at zero, other strings start at 1.
   ASSERT_TRUE(l1.IsKnownConstant());
-  EXPECT_EQ(1, l1.Value());
+  EXPECT_EQ(1U, l1.Value());
   // Each string has an extra byte for a trailing null.
   EXPECT_EQ(1 + s1.length() + 1, l2.Value());
   EXPECT_EQ(1 + s1.length() + 1 + s2.length() + 1, l3.Value());
@@ -105,7 +109,7 @@ TEST_F(StringTableTest, Duplicates) {
   EXPECT_EQ(0, memcmp(kExpectedContents,
                       contents.c_str(),
                       contents.size()));
-  EXPECT_EQ(0, table.empty_string.Value());
+  EXPECT_EQ(0U, table.empty_string.Value());
   EXPECT_EQ(table.empty_string.Value(), l3.Value());
   EXPECT_EQ(l2.Value(), l4.Value());
 }
@@ -178,88 +182,82 @@ TEST_F(SymbolTableTest, Simple32) {
                       symbol_contents.size()));
 }
 
+template<typename ElfClass>
 class BasicElf : public Test {};
 
 // Doesn't seem worthwhile writing the tests to be endian-independent
 // when they're unlikely to ever be run on big-endian systems.
 #if defined(__i386__) || defined(__x86_64__)
 
-TEST_F(BasicElf, EmptyLE32) {
+typedef Types<ElfClass32, ElfClass64> ElfClasses;
+
+TYPED_TEST_CASE(BasicElf, ElfClasses);
+
+TYPED_TEST(BasicElf, EmptyLE) {
+  typedef typename TypeParam::Ehdr Ehdr;
+  typedef typename TypeParam::Phdr Phdr;
+  typedef typename TypeParam::Shdr Shdr;
   const size_t kStringTableSize = sizeof("\0.shstrtab");
   const size_t kStringTableAlign = 4 - kStringTableSize % 4;
-  const size_t kExpectedSize = sizeof(Elf32_Ehdr) +
+  const size_t kExpectedSize = sizeof(Ehdr) +
     // Two sections, SHT_NULL + the section header string table.
-    2 * sizeof(Elf32_Shdr) +
+    2 * sizeof(Shdr) +
     kStringTableSize + kStringTableAlign;
 
-  ELF elf(EM_386, ELFCLASS32, kLittleEndian);
+  // It doesn't really matter that the machine type is right for the class.
+  ELF elf(EM_386, TypeParam::kClass, kLittleEndian);
   elf.Finish();
   EXPECT_EQ(kExpectedSize, elf.Size());
 
   string contents;
   ASSERT_TRUE(elf.GetContents(&contents));
   ASSERT_EQ(kExpectedSize, contents.size());
-  const Elf32_Ehdr* header =
-    reinterpret_cast<const Elf32_Ehdr*>(contents.data());
+  const Ehdr* header =
+    reinterpret_cast<const Ehdr*>(contents.data());
   const uint8_t kIdent[] = {
     ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3,
-    ELFCLASS32, ELFDATA2LSB, EV_CURRENT, ELFOSABI_SYSV,
+    TypeParam::kClass, ELFDATA2LSB, EV_CURRENT, ELFOSABI_SYSV,
     0, 0, 0, 0, 0, 0, 0, 0
   };
   EXPECT_EQ(0, memcmp(kIdent, header->e_ident, sizeof(kIdent)));
   EXPECT_EQ(ET_EXEC, header->e_type);
   EXPECT_EQ(EM_386, header->e_machine);
-  EXPECT_EQ(EV_CURRENT, header->e_version);
-  EXPECT_EQ(0, header->e_entry);
-  EXPECT_EQ(0, header->e_phoff);
-  EXPECT_EQ(sizeof(Elf32_Ehdr) + kStringTableSize + kStringTableAlign,
+  EXPECT_EQ(static_cast<unsigned int>(EV_CURRENT), header->e_version);
+  EXPECT_EQ(0U, header->e_entry);
+  EXPECT_EQ(0U, header->e_phoff);
+  EXPECT_EQ(sizeof(Ehdr) + kStringTableSize + kStringTableAlign,
             header->e_shoff);
-  EXPECT_EQ(0, header->e_flags);
-  EXPECT_EQ(sizeof(Elf32_Ehdr), header->e_ehsize);
-  EXPECT_EQ(sizeof(Elf32_Phdr), header->e_phentsize);
+  EXPECT_EQ(0U, header->e_flags);
+  EXPECT_EQ(sizeof(Ehdr), header->e_ehsize);
+  EXPECT_EQ(sizeof(Phdr), header->e_phentsize);
   EXPECT_EQ(0, header->e_phnum);
-  EXPECT_EQ(sizeof(Elf32_Shdr), header->e_shentsize);
+  EXPECT_EQ(sizeof(Shdr), header->e_shentsize);
   EXPECT_EQ(2, header->e_shnum);
   EXPECT_EQ(1, header->e_shstrndx);
-}
 
-TEST_F(BasicElf, EmptyLE64) {
-  const size_t kStringTableSize = sizeof("\0.shstrtab");
-  const size_t kStringTableAlign = 4 - kStringTableSize % 4;
-  const size_t kExpectedSize = sizeof(Elf64_Ehdr) +
-    // Two sections, SHT_NULL + the section header string table.
-    2 * sizeof(Elf64_Shdr) +
-    kStringTableSize + kStringTableAlign;
+  const Shdr* shdr =
+    reinterpret_cast<const Shdr*>(contents.data() + header->e_shoff);
+  EXPECT_EQ(0U, shdr[0].sh_name);
+  EXPECT_EQ(static_cast<unsigned int>(SHT_NULL), shdr[0].sh_type);
+  EXPECT_EQ(0U, shdr[0].sh_flags);
+  EXPECT_EQ(0U, shdr[0].sh_addr);
+  EXPECT_EQ(0U, shdr[0].sh_offset);
+  EXPECT_EQ(0U, shdr[0].sh_size);
+  EXPECT_EQ(0U, shdr[0].sh_link);
+  EXPECT_EQ(0U, shdr[0].sh_info);
+  EXPECT_EQ(0U, shdr[0].sh_addralign);
+  EXPECT_EQ(0U, shdr[0].sh_entsize);
 
-  ELF elf(EM_X86_64, ELFCLASS64, kLittleEndian);
-  elf.Finish();
-  EXPECT_EQ(kExpectedSize, elf.Size());
-
-  string contents;
-  ASSERT_TRUE(elf.GetContents(&contents));
-  ASSERT_EQ(kExpectedSize, contents.size());
-  const Elf64_Ehdr* header =
-    reinterpret_cast<const Elf64_Ehdr*>(contents.data());
-  const uint8_t kIdent[] = {
-    ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3,
-    ELFCLASS64, ELFDATA2LSB, EV_CURRENT, ELFOSABI_SYSV,
-    0, 0, 0, 0, 0, 0, 0, 0
-  };
-  EXPECT_EQ(0, memcmp(kIdent, header->e_ident, sizeof(kIdent)));
-  EXPECT_EQ(ET_EXEC, header->e_type);
-  EXPECT_EQ(EM_X86_64, header->e_machine);
-  EXPECT_EQ(EV_CURRENT, header->e_version);
-  EXPECT_EQ(0, header->e_entry);
-  EXPECT_EQ(0, header->e_phoff);
-  EXPECT_EQ(sizeof(Elf64_Ehdr) + kStringTableSize + kStringTableAlign,
-            header->e_shoff);
-  EXPECT_EQ(0, header->e_flags);
-  EXPECT_EQ(sizeof(Elf64_Ehdr), header->e_ehsize);
-  EXPECT_EQ(sizeof(Elf64_Phdr), header->e_phentsize);
-  EXPECT_EQ(0, header->e_phnum);
-  EXPECT_EQ(sizeof(Elf64_Shdr), header->e_shentsize);
-  EXPECT_EQ(2, header->e_shnum);
-  EXPECT_EQ(1, header->e_shstrndx);
+  EXPECT_EQ(1U, shdr[1].sh_name);
+  EXPECT_EQ(static_cast<unsigned int>(SHT_STRTAB), shdr[1].sh_type);
+  EXPECT_EQ(0U, shdr[1].sh_flags);
+  EXPECT_EQ(0U, shdr[1].sh_addr);
+  EXPECT_EQ(sizeof(Ehdr), shdr[1].sh_offset);
+  EXPECT_EQ(kStringTableSize, shdr[1].sh_size);
+  EXPECT_EQ(0U, shdr[1].sh_link);
+  EXPECT_EQ(0U, shdr[1].sh_info);
+  EXPECT_EQ(0U, shdr[1].sh_addralign);
+  EXPECT_EQ(0U, shdr[1].sh_entsize);
 }
 
 #endif  // defined(__i386__) || defined(__x86_64__)

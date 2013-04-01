@@ -31,8 +31,6 @@
 #include "client/windows/common/ipc_protocol.h"
 
 static const wchar_t kCustomInfoProcessUptimeName[] = L"ptime";
-static const wchar_t kCustomDataStreamCustomFieldName[] = L"custom-data-stream";
-static const size_t kMaxCustomDataStreamSize = 100 * 1024 * 1024;
 static const size_t kMaxCustomInfoEntries = 4096;
 
 namespace google_breakpad {
@@ -50,7 +48,6 @@ ClientInfo::ClientInfo(CrashGenerationServer* crash_server,
       ex_info_(ex_info),
       assert_info_(assert_info),
       custom_client_info_(custom_client_info),
-      custom_data_stream_(NULL),
       thread_id_(thread_id),
       process_handle_(NULL),
       dump_requested_handle_(NULL),
@@ -88,21 +85,38 @@ bool ClientInfo::Initialize() {
   return dump_generated_handle_ != NULL;
 }
 
-ClientInfo::~ClientInfo() {
-  if (custom_data_stream_) {
-    delete custom_data_stream_;
-    custom_data_stream_ = NULL;
-  }
-
+void ClientInfo::UnregisterDumpRequestWaitAndBlockUntilNoPending() {
   if (dump_request_wait_handle_) {
     // Wait for callbacks that might already be running to finish.
     UnregisterWaitEx(dump_request_wait_handle_, INVALID_HANDLE_VALUE);
+    dump_request_wait_handle_ = NULL;
   }
+}
 
+void ClientInfo::UnregisterProcessExitWait(bool block_until_no_pending) {
   if (process_exit_wait_handle_) {
-    // Wait for the callback that might already be running to finish.
-    UnregisterWaitEx(process_exit_wait_handle_, INVALID_HANDLE_VALUE);
+    if (block_until_no_pending) {
+      // Wait for the callback that might already be running to finish.
+      UnregisterWaitEx(process_exit_wait_handle_, INVALID_HANDLE_VALUE);
+    } else {
+      UnregisterWait(process_exit_wait_handle_);
+    }
+    process_exit_wait_handle_ = NULL;
   }
+}
+
+ClientInfo::~ClientInfo() {
+  // Waiting for the callback to finish here is safe because ClientInfo's are
+  // never destroyed from the dump request handling callback.
+  UnregisterDumpRequestWaitAndBlockUntilNoPending();
+
+  // This is a little tricky because ClientInfo's may be destroyed by the same
+  // callback (OnClientEnd) and waiting for it to finish will cause a deadlock.
+  // Regardless of this complication, wait for any running callbacks to finish
+  // so that the common case is properly handled.  In order to avoid deadlocks,
+  // the OnClientEnd callback must call UnregisterProcessExitWait(false)
+  // before deleting the ClientInfo.
+  UnregisterProcessExitWait(true);
 
   if (process_handle_) {
     CloseHandle(process_handle_);
@@ -114,18 +128,6 @@ ClientInfo::~ClientInfo() {
 
   if (dump_generated_handle_) {
     CloseHandle(dump_generated_handle_);
-  }
-}
-
-void ClientInfo::UnregisterWaits() {
-  if (dump_request_wait_handle_) {
-    UnregisterWait(dump_request_wait_handle_);
-    dump_request_wait_handle_ = NULL;
-  }
-
-  if (process_exit_wait_handle_) {
-    UnregisterWait(process_exit_wait_handle_);
-    process_exit_wait_handle_ = NULL;
   }
 }
 
@@ -205,43 +207,6 @@ bool ClientInfo::PopulateCustomInfo() {
 
   SetProcessUptime();
   return (bytes_count != read_count);
-}
-
-bool ClientInfo::PopulateCustomDataStream() {
-  for (SIZE_T i = 0; i < custom_client_info_.count; ++i) {
-    if (_wcsicmp(kCustomDataStreamCustomFieldName,
-                 custom_client_info_.entries[i].name) != 0) {
-      continue;
-    }
-    wchar_t address_str[CustomInfoEntry::kValueMaxLength];
-    memcpy(address_str, custom_client_info_.entries[i].value,
-           CustomInfoEntry::kValueMaxLength);
-    wchar_t* size_str = wcschr(address_str, ':');
-    if (!size_str)
-      return false;
-
-    size_str[0] = 0;
-    ++size_str;
-    void* address = reinterpret_cast<void*>(_wcstoi64(address_str, NULL, 16));
-    long size = wcstol(size_str, NULL, 16);
-    if (size <= 0 || size > kMaxCustomDataStreamSize)
-      return false;
-
-    custom_data_stream_ = reinterpret_cast<CustomDataStream*>(
-        new u_int8_t[sizeof(CustomDataStream) + size - 1]);
-
-    SIZE_T bytes_count = 0;
-    if (!ReadProcessMemory(process_handle_, address,
-                           custom_data_stream_->stream, size, &bytes_count)) {
-      delete custom_data_stream_;
-      custom_data_stream_ = NULL;
-      return false;
-    }
-
-    return true;
-  }
-
-  return false;
 }
 
 CustomClientInfo ClientInfo::GetCustomInfo() const {

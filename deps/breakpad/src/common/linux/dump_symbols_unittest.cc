@@ -37,19 +37,19 @@
 #include <stdio.h>
 
 #include <sstream>
-#include <string>
 #include <vector>
 
 #include "breakpad_googletest_includes.h"
 #include "common/linux/synth_elf.h"
+#include "common/module.h"
 #include "common/using_std_string.h"
 
 namespace google_breakpad {
-bool WriteSymbolFileInternal(uint8_t* obj_file,
-                             const string &obj_filename,
-                             const string &debug_dir,
-                             bool cfi,
-                             std::ostream &sym_stream);
+bool ReadSymbolDataInternal(const uint8_t* obj_file,
+                            const string& obj_filename,
+                            const std::vector<string>& debug_dir,
+                            SymbolData symbol_data,
+                            Module** module);
 }
 
 using google_breakpad::synth_elf::ELF;
@@ -57,7 +57,8 @@ using google_breakpad::synth_elf::StringTable;
 using google_breakpad::synth_elf::SymbolTable;
 using google_breakpad::test_assembler::kLittleEndian;
 using google_breakpad::test_assembler::Section;
-using google_breakpad::WriteSymbolFileInternal;
+using google_breakpad::Module;
+using google_breakpad::ReadSymbolDataInternal;
 using std::stringstream;
 using std::vector;
 using ::testing::Test;
@@ -67,7 +68,7 @@ class DumpSymbols : public Test {
   void GetElfContents(ELF& elf) {
     string contents;
     ASSERT_TRUE(elf.GetContents(&contents));
-    ASSERT_LT(0, contents.size());
+    ASSERT_LT(0U, contents.size());
 
     elfdata_v.clear();
     elfdata_v.insert(elfdata_v.begin(), contents.begin(), contents.end());
@@ -81,17 +82,14 @@ class DumpSymbols : public Test {
 TEST_F(DumpSymbols, Invalid) {
   Elf32_Ehdr header;
   memset(&header, 0, sizeof(header));
-  stringstream s;
-  EXPECT_FALSE(WriteSymbolFileInternal(reinterpret_cast<uint8_t*>(&header),
-                                       "foo",
-                                       "",
-                                       true,
-                                       s));
+  Module* module;
+  EXPECT_FALSE(ReadSymbolDataInternal(reinterpret_cast<uint8_t*>(&header),
+                                      "foo",
+                                      vector<string>(),
+                                      ALL_SYMBOL_DATA,
+                                      &module));
 }
 
-// TODO(ted): Fix the dump_symbols code to deal with cross-word-size
-// ELF files.
-#if __ELF_NATIVE_CLASS == 32
 TEST_F(DumpSymbols, SimplePublic32) {
   ELF elf(EM_386, ELFCLASS32, kLittleEndian);
   // Zero out text section for simplicity.
@@ -116,19 +114,21 @@ TEST_F(DumpSymbols, SimplePublic32) {
   elf.Finish();
   GetElfContents(elf);
 
+  Module* module;
+  EXPECT_TRUE(ReadSymbolDataInternal(elfdata,
+                                     "foo",
+                                     vector<string>(),
+                                     ALL_SYMBOL_DATA,
+                                     &module));
+
   stringstream s;
-  ASSERT_TRUE(WriteSymbolFileInternal(elfdata,
-                                      "foo",
-                                      "",
-                                      true,
-                                      s));
+  module->Write(s, ALL_SYMBOL_DATA);
   EXPECT_EQ("MODULE Linux x86 000000000000000000000000000000000 foo\n"
             "PUBLIC 1000 0 superfunc\n",
             s.str());
+  delete module;
 }
-#endif
 
-#if __ELF_NATIVE_CLASS == 64
 TEST_F(DumpSymbols, SimplePublic64) {
   ELF elf(EM_X86_64, ELFCLASS64, kLittleEndian);
   // Zero out text section for simplicity.
@@ -153,14 +153,16 @@ TEST_F(DumpSymbols, SimplePublic64) {
   elf.Finish();
   GetElfContents(elf);
 
+  Module* module;
+  EXPECT_TRUE(ReadSymbolDataInternal(elfdata,
+                                     "foo",
+                                     vector<string>(),
+                                     ALL_SYMBOL_DATA,
+                                     &module));
+
   stringstream s;
-  ASSERT_TRUE(WriteSymbolFileInternal(elfdata,
-                                      "foo",
-                                      "",
-                                      true,
-                                      s));
+  module->Write(s, ALL_SYMBOL_DATA);
   EXPECT_EQ("MODULE Linux x86_64 000000000000000000000000000000000 foo\n"
             "PUBLIC 1000 0 superfunc\n",
             s.str());
 }
-#endif

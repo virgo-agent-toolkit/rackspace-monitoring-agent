@@ -28,11 +28,15 @@
         'include_dirs': [
           'src',
         ],
+        'defines': [
+          # Avoid the TerminateThread Application Verifier Failure.
+          'BREAKPAD_NO_TERMINATE_THREAD',
+        ],
       }],
     ],
   },
   'conditions': [
-    [ 'OS=="win"', {
+    ['OS=="win"', {
       'targets': [
         {
           'target_name': 'breakpad_handler',
@@ -47,29 +51,11 @@
               'src',
             ],
           },
-          'defines': [
-            # Avoid the TerminateThread Application Verifier Failure.
-            'BREAKPAD_NO_TERMINATE_THREAD',
-          ],
         },
-        {
-          # This alternate breakpad target builds a breakpad that is suitable
-          # for use with a DLL. It explicitly does NOT define
-          # BREAKPAD_NO_TERMINATE_THREAD as that define makes breakpad crash
-          # when created and destroyed in DllMain.
-          'target_name': 'breakpad_handler_dll',
-          'type': 'static_library',
-          'variables': {
-            'breakpad_handler_target': 1,
-          },
-          # TODO(gregoryd): direct_dependent_settings should be shared with the
-          # 64-bit target, but it doesn't work due to a bug in gyp
-          'direct_dependent_settings': {
-            'include_dirs': [
-              'src',
-            ],
-          },
-        },
+      ],
+    }],
+    ['OS=="win" and target_arch=="ia32"', {
+      'targets': [
         {
           'target_name': 'breakpad_handler_win64',
           'type': 'static_library',
@@ -83,10 +69,6 @@
               'src',
             ],
           },
-          'defines': [
-            # Avoid the TerminateThread Application Verifier Failure.
-            'BREAKPAD_NO_TERMINATE_THREAD',
-          ],
           'configurations': {
             'Common_Base': {
               'msvs_target_platform': 'x64',

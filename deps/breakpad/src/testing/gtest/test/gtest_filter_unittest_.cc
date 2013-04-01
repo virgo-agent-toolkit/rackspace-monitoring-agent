@@ -38,7 +38,7 @@
 // The program will be invoked from a Python unit test.  Don't run it
 // directly.
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 namespace {
 
@@ -92,19 +92,13 @@ TEST(BazTest, DISABLED_TestC) {
 // Test case HasDeathTest
 
 TEST(HasDeathTest, Test1) {
-#if GTEST_HAS_DEATH_TEST
-  EXPECT_DEATH({exit(1);},
-    ".*");
-#endif  // GTEST_HAS_DEATH_TEST
+  EXPECT_DEATH_IF_SUPPORTED(exit(1), ".*");
 }
 
 // We need at least two death tests to make sure that the all death tests
 // aren't on the first shard.
 TEST(HasDeathTest, Test2) {
-#if GTEST_HAS_DEATH_TEST
-  EXPECT_DEATH({exit(1);},
-    ".*");
-#endif  // GTEST_HAS_DEATH_TEST
+  EXPECT_DEATH_IF_SUPPORTED(exit(1), ".*");
 }
 
 // Test case FoobarTest

@@ -33,8 +33,8 @@
 #include <Windows.h>
 #include <DbgHelp.h>
 #include "client/windows/common/ipc_protocol.h"
+#include "common/scoped_ptr.h"
 #include "google_breakpad/common/minidump_format.h"
-#include "processor/scoped_ptr.h"
 
 namespace google_breakpad {
 
@@ -61,39 +61,32 @@ class ClientInfo {
   MINIDUMP_TYPE dump_type() const { return dump_type_; }
   EXCEPTION_POINTERS** ex_info() const { return ex_info_; }
   MDRawAssertionInfo* assert_info() const { return assert_info_; }
-  CustomDataStream* custom_data_stream() const { return custom_data_stream_; }
   DWORD* thread_id() const { return thread_id_; }
   HANDLE process_handle() const { return process_handle_; }
   HANDLE dump_requested_handle() const { return dump_requested_handle_; }
   HANDLE dump_generated_handle() const { return dump_generated_handle_; }
   DWORD crash_id() const { return crash_id_; }
 
-  HANDLE dump_request_wait_handle() const {
-    return dump_request_wait_handle_;
-  }
-
   void set_dump_request_wait_handle(HANDLE value) {
     dump_request_wait_handle_ = value;
-  }
-
-  HANDLE process_exit_wait_handle() const {
-    return process_exit_wait_handle_;
   }
 
   void set_process_exit_wait_handle(HANDLE value) {
     process_exit_wait_handle_ = value;
   }
 
-  // Unregister all waits for the client.
-  void UnregisterWaits();
+  // Unregister the dump request wait operation and wait for all callbacks
+  // that might already be running to complete before returning.
+  void UnregisterDumpRequestWaitAndBlockUntilNoPending();
+
+  // Unregister the process exit wait operation.  If block_until_no_pending is
+  // true, wait for all callbacks that might already be running to complete
+  // before returning.
+  void UnregisterProcessExitWait(bool block_until_no_pending);
 
   bool Initialize();
   bool GetClientExceptionInfo(EXCEPTION_POINTERS** ex_info) const;
   bool GetClientThreadId(DWORD* thread_id) const;
-
-  // Reads the custom data stream (if supplied) from the client process
-  // address space.
-  bool PopulateCustomDataStream();
 
   // Reads the custom information from the client process address space.
   bool PopulateCustomInfo();
@@ -134,9 +127,6 @@ class ClientInfo {
 
   // Custom information about the client.
   CustomClientInfo custom_client_info_;
-
-  // Custom data stream supplied by the client.
-  CustomDataStream* custom_data_stream_;
 
   // Contains the custom client info entries read from the client process
   // memory. This will be populated only if the method GetClientCustomInfo

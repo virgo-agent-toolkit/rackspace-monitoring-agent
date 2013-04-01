@@ -44,6 +44,7 @@
 #define TEMPDIR "/tmp"
 #else
 #define TEMPDIR "/data/local/tmp"
+#include "common/android/testing/mkdtemp.h"
 #endif
 
 namespace google_breakpad {
@@ -51,7 +52,7 @@ namespace google_breakpad {
 class AutoTempDir {
  public:
   AutoTempDir() {
-    char temp_dir[] = TEMPDIR "/breakpad.XXXXXXXXXX";
+    char temp_dir[] = TEMPDIR "/breakpad.XXXXXX";
     EXPECT_TRUE(mkdtemp(temp_dir) != NULL);
     path_.assign(temp_dir);
   }

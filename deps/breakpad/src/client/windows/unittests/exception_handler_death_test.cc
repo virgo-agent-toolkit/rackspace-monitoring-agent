@@ -35,11 +35,12 @@
 
 #include <string>
 
-#include "../../../breakpad_googletest_includes.h"
-#include "../../../../common/windows/string_utils-inl.h"
-#include "../crash_generation/crash_generation_server.h"
-#include "../handler/exception_handler.h"
-#include "../../../../google_breakpad/processor/minidump.h"
+#include "breakpad_googletest_includes.h"
+#include "client/windows/crash_generation/crash_generation_server.h"
+#include "client/windows/handler/exception_handler.h"
+#include "client/windows/unittests/exception_handler_test.h"
+#include "common/windows/string_utils-inl.h"
+#include "google_breakpad/processor/minidump.h"
 
 namespace {
 
@@ -122,6 +123,10 @@ TEST_F(ExceptionHandlerDeathTest, InProcTest) {
     new google_breakpad::ExceptionHandler(
     temp_path_, NULL, &MinidumpWrittenCallback, NULL,
     google_breakpad::ExceptionHandler::HANDLER_ALL);
+
+  // Disable GTest SEH handler
+  testing::DisableExceptionHandlerInScope disable_exception_handler;
+
   int *i = NULL;
   ASSERT_DEATH((*i)++, kSuccessIndicator);
   delete exc;
@@ -141,6 +146,10 @@ void ExceptionHandlerDeathTest::DoCrashAccessViolation() {
     temp_path_, NULL, NULL, NULL,
     google_breakpad::ExceptionHandler::HANDLER_ALL, MiniDumpNormal, kPipeName,
     NULL);
+
+  // Disable GTest SEH handler
+  testing::DisableExceptionHandlerInScope disable_exception_handler;
+
   // Although this is executing in the child process of the death test,
   // if it's not true we'll still get an error rather than the crash
   // being expected.
@@ -252,8 +261,11 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
           temp_path_, NULL, NULL, NULL,
           google_breakpad::ExceptionHandler::HANDLER_ALL);
 
+  // Disable GTest SEH handler
+  testing::DisableExceptionHandlerInScope disable_exception_handler;
+
   // Get some executable memory.
-  const u_int32_t kMemorySize = 256;  // bytes
+  const uint32_t kMemorySize = 256;  // bytes
   const int kOffset = kMemorySize / 2;
   // This crashes with SIGILL on x86/x86-64/arm.
   const unsigned char instructions[] = { 0xff, 0xff, 0xff, 0xff };
@@ -302,29 +314,19 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
     MinidumpContext* context = exception->GetContext();
     ASSERT_TRUE(context);
 
-    u_int64_t instruction_pointer;
-    switch (context->GetContextCPU()) {
-    case MD_CONTEXT_X86:
-      instruction_pointer = context->GetContextX86()->eip;
-      break;
-    case MD_CONTEXT_AMD64:
-      instruction_pointer = context->GetContextAMD64()->rip;
-      break;
-    default:
-      FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-      break;
-    }
+    uint64_t instruction_pointer;
+    ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
     MinidumpMemoryRegion* region =
         memory_list->GetMemoryRegionForAddress(instruction_pointer);
     ASSERT_TRUE(region);
 
     EXPECT_EQ(kMemorySize, region->GetSize());
-    const u_int8_t* bytes = region->GetMemory();
+    const uint8_t* bytes = region->GetMemory();
     ASSERT_TRUE(bytes);
 
-    u_int8_t prefix_bytes[kOffset];
-    u_int8_t suffix_bytes[kMemorySize - kOffset - sizeof(instructions)];
+    uint8_t prefix_bytes[kOffset];
+    uint8_t suffix_bytes[kMemorySize - kOffset - sizeof(instructions)];
     memset(prefix_bytes, 0, sizeof(prefix_bytes));
     memset(suffix_bytes, 0, sizeof(suffix_bytes));
     EXPECT_TRUE(memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)) == 0);
@@ -344,10 +346,13 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMinBound) {
           temp_path_, NULL, NULL, NULL,
           google_breakpad::ExceptionHandler::HANDLER_ALL);
 
+  // Disable GTest SEH handler
+  testing::DisableExceptionHandlerInScope disable_exception_handler;
+
   SYSTEM_INFO sSysInfo;         // Useful information about the system
   GetSystemInfo(&sSysInfo);     // Initialize the structure.
 
-  const u_int32_t kMemorySize = 256;  // bytes
+  const uint32_t kMemorySize = 256;  // bytes
   const DWORD kPageSize = sSysInfo.dwPageSize;
   const int kOffset = 0;
   // This crashes with SIGILL on x86/x86-64/arm.
@@ -402,28 +407,18 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMinBound) {
     MinidumpContext* context = exception->GetContext();
     ASSERT_TRUE(context);
 
-    u_int64_t instruction_pointer;
-    switch (context->GetContextCPU()) {
-    case MD_CONTEXT_X86:
-      instruction_pointer = context->GetContextX86()->eip;
-      break;
-    case MD_CONTEXT_AMD64:
-      instruction_pointer = context->GetContextAMD64()->rip;
-      break;
-    default:
-      FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-      break;
-    }
+    uint64_t instruction_pointer;
+    ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
     MinidumpMemoryRegion* region =
         memory_list->GetMemoryRegionForAddress(instruction_pointer);
     ASSERT_TRUE(region);
 
     EXPECT_EQ(kMemorySize / 2, region->GetSize());
-    const u_int8_t* bytes = region->GetMemory();
+    const uint8_t* bytes = region->GetMemory();
     ASSERT_TRUE(bytes);
 
-    u_int8_t suffix_bytes[kMemorySize / 2 - sizeof(instructions)];
+    uint8_t suffix_bytes[kMemorySize / 2 - sizeof(instructions)];
     memset(suffix_bytes, 0, sizeof(suffix_bytes));
     EXPECT_TRUE(memcmp(bytes + kOffset,
                        instructions, sizeof(instructions)) == 0);
@@ -440,6 +435,9 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMaxBound) {
       new google_breakpad::ExceptionHandler(
           temp_path_, NULL, NULL, NULL,
           google_breakpad::ExceptionHandler::HANDLER_ALL);
+
+  // Disable GTest SEH handler
+  testing::DisableExceptionHandlerInScope disable_exception_handler;
 
   SYSTEM_INFO sSysInfo;         // Useful information about the system
   GetSystemInfo(&sSysInfo);     // Initialize the structure.
@@ -494,18 +492,8 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMaxBound) {
     MinidumpContext* context = exception->GetContext();
     ASSERT_TRUE(context);
 
-    u_int64_t instruction_pointer;
-    switch (context->GetContextCPU()) {
-    case MD_CONTEXT_X86:
-      instruction_pointer = context->GetContextX86()->eip;
-      break;
-    case MD_CONTEXT_AMD64:
-      instruction_pointer = context->GetContextAMD64()->rip;
-      break;
-    default:
-      FAIL() << "Unknown context CPU: " << context->GetContextCPU();
-      break;
-    }
+    uint64_t instruction_pointer;
+    ASSERT_TRUE(context->GetInstructionPointer(&instruction_pointer));
 
     MinidumpMemoryRegion* region =
         memory_list->GetMemoryRegionForAddress(instruction_pointer);
@@ -513,10 +501,10 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemoryMaxBound) {
 
     const size_t kPrefixSize = 128;  // bytes
     EXPECT_EQ(kPrefixSize + sizeof(instructions), region->GetSize());
-    const u_int8_t* bytes = region->GetMemory();
+    const uint8_t* bytes = region->GetMemory();
     ASSERT_TRUE(bytes);
 
-    u_int8_t prefix_bytes[kPrefixSize];
+    uint8_t prefix_bytes[kPrefixSize];
     memset(prefix_bytes, 0, sizeof(prefix_bytes));
     EXPECT_TRUE(memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)) == 0);
     EXPECT_TRUE(memcmp(bytes + kPrefixSize,

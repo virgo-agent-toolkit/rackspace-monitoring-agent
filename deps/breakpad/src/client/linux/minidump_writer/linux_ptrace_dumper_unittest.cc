@@ -52,6 +52,7 @@
 #include "client/linux/minidump_writer/minidump_writer_unittest_utils.h"
 #include "common/linux/eintr_wrapper.h"
 #include "common/linux/file_id.h"
+#include "common/linux/ignore_ret.h"
 #include "common/linux/safe_readlink.h"
 #include "common/memory.h"
 #include "common/using_std_string.h"
@@ -159,7 +160,7 @@ TEST(LinuxPtraceDumperTest, MergedMappings) {
       // range.
       EXPECT_EQ(kMappingAddress, mapping.start_addr);
       EXPECT_EQ(kMappingSize, mapping.size);
-      EXPECT_EQ(0, mapping.offset);
+      EXPECT_EQ(0U, mapping.offset);
       mapping_count++;
     }
   }
@@ -211,7 +212,8 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
     ASSERT_EQ(1, r);
     ASSERT_TRUE(pfd.revents & POLLIN);
     uint8_t junk;
-    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)), sizeof(junk));
+    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)), 
+              static_cast<ssize_t>(sizeof(junk)));
   }
   close(fds[0]);
 
@@ -229,6 +231,10 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
   ThreadInfo one_thread;
   for (size_t i = 0; i < dumper.threads().size(); ++i) {
     EXPECT_TRUE(dumper.GetThreadInfoByIndex(i, &one_thread));
+    const void* stack;
+    size_t stack_len;
+    EXPECT_TRUE(dumper.GetStackInfo(&stack, &stack_len,
+        one_thread.stack_pointer));
     // In the helper program, we stored a pointer to the thread id in a
     // specific register. Check that we can recover its value.
 #if defined(__ARM_EABI__)
@@ -286,7 +292,8 @@ TEST(LinuxPtraceDumperTest, MappingsIncludeLinuxGate) {
   LinuxPtraceDumper dumper(getpid());
   ASSERT_TRUE(dumper.Init());
 
-  void* linux_gate_loc = dumper.FindBeginningOfLinuxGateSharedLibrary(getpid());
+  void* linux_gate_loc =
+    reinterpret_cast<void *>(dumper.auxv()[AT_SYSINFO_EHDR]);
   ASSERT_TRUE(linux_gate_loc);
   bool found_linux_gate = false;
 
@@ -343,7 +350,7 @@ TEST(LinuxPtraceDumperTest, LinuxGateMappingIDChild) {
     close(fds[1]);
     // Now wait forever for the parent.
     char b;
-    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
     syscall(__NR_exit);
   }
@@ -395,7 +402,7 @@ TEST(LinuxPtraceDumperTest, FileIDsMatch) {
     close(fds[1]);
     // Now wait forever for the parent.
     char b;
-    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    IGNORE_RET(HANDLE_EINTR(read(fds[0], &b, sizeof(b))));
     close(fds[0]);
     syscall(__NR_exit);
   }

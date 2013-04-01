@@ -37,21 +37,33 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
+#include "common/symbol_data.h"
 #include "common/using_std_string.h"
 
 namespace google_breakpad {
+
+class Module;
 
 // Find all the debugging information in OBJ_FILE, an ELF executable
 // or shared library, and write it to SYM_STREAM in the Breakpad symbol
 // file format.
 // If OBJ_FILE has been stripped but contains a .gnu_debuglink section,
-// then look for the debug file in DEBUG_DIR.
-// If CFI is set to false, then omit the CFI section.
+// then look for the debug file in DEBUG_DIRS.
+// SYMBOL_DATA allows limiting the type of symbol data written.
 bool WriteSymbolFile(const string &obj_file,
-                     const string &debug_dir,
-                     bool cfi,
+                     const std::vector<string>& debug_dirs,
+                     SymbolData symbol_data,
                      std::ostream &sym_stream);
+
+// As above, but simply return the debugging information in MODULE
+// instead of writing it to a stream. The caller owns the resulting
+// Module object and must delete it when finished.
+bool ReadSymbolData(const string& obj_file,
+                    const std::vector<string>& debug_dirs,
+                    SymbolData symbol_data,
+                    Module** module);
 
 }  // namespace google_breakpad
 

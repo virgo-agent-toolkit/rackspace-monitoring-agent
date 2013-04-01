@@ -32,7 +32,7 @@
 """Tests the text output of Google C++ Testing Framework.
 
 SYNOPSIS
-       gtest_output_test.py --gtest_build_dir=BUILD/DIR --gengolden
+       gtest_output_test.py --build_dir=BUILD/DIR --gengolden
          # where BUILD/DIR contains the built gtest_output_test_ file.
        gtest_output_test.py --gengolden
        gtest_output_test.py
@@ -42,37 +42,39 @@ __author__ = 'wan@google.com (Zhanyong Wan)'
 
 import os
 import re
-import string
 import sys
 import gtest_test_utils
 
 
 # The flag for generating the golden file
 GENGOLDEN_FLAG = '--gengolden'
+CATCH_EXCEPTIONS_ENV_VAR_NAME = 'GTEST_CATCH_EXCEPTIONS'
 
 IS_WINDOWS = os.name == 'nt'
 
-if IS_WINDOWS:
-  GOLDEN_NAME = 'gtest_output_test_golden_win.txt'
-else:
-  GOLDEN_NAME = 'gtest_output_test_golden_lin.txt'
+# TODO(vladl@google.com): remove the _lin suffix.
+GOLDEN_NAME = 'gtest_output_test_golden_lin.txt'
 
 PROGRAM_PATH = gtest_test_utils.GetTestExecutablePath('gtest_output_test_')
 
 # At least one command we exercise must not have the
 # --gtest_internal_skip_environment_and_ad_hoc_tests flag.
-COMMAND_LIST_TESTS = ({}, PROGRAM_PATH + ' --gtest_list_tests')
-COMMAND_WITH_COLOR = ({}, PROGRAM_PATH + ' --gtest_color=yes')
-COMMAND_WITH_TIME = ({}, PROGRAM_PATH + ' --gtest_print_time '
-                     '--gtest_internal_skip_environment_and_ad_hoc_tests '
-                     '--gtest_filter="FatalFailureTest.*:LoggingTest.*"')
-COMMAND_WITH_DISABLED = ({}, PROGRAM_PATH + ' --gtest_also_run_disabled_tests '
-                         '--gtest_internal_skip_environment_and_ad_hoc_tests '
-                         '--gtest_filter="*DISABLED_*"')
-COMMAND_WITH_SHARDING = ({'GTEST_SHARD_INDEX': '1', 'GTEST_TOTAL_SHARDS': '2'},
-                         PROGRAM_PATH +
-                         ' --gtest_internal_skip_environment_and_ad_hoc_tests '
-                         ' --gtest_filter="PassingTest.*"')
+COMMAND_LIST_TESTS = ({}, [PROGRAM_PATH, '--gtest_list_tests'])
+COMMAND_WITH_COLOR = ({}, [PROGRAM_PATH, '--gtest_color=yes'])
+COMMAND_WITH_TIME = ({}, [PROGRAM_PATH,
+                          '--gtest_print_time',
+                          '--gtest_internal_skip_environment_and_ad_hoc_tests',
+                          '--gtest_filter=FatalFailureTest.*:LoggingTest.*'])
+COMMAND_WITH_DISABLED = (
+    {}, [PROGRAM_PATH,
+         '--gtest_also_run_disabled_tests',
+         '--gtest_internal_skip_environment_and_ad_hoc_tests',
+         '--gtest_filter=*DISABLED_*'])
+COMMAND_WITH_SHARDING = (
+    {'GTEST_SHARD_INDEX': '1', 'GTEST_TOTAL_SHARDS': '2'},
+    [PROGRAM_PATH,
+     '--gtest_internal_skip_environment_and_ad_hoc_tests',
+     '--gtest_filter=PassingTest.*'])
 
 GOLDEN_PATH = os.path.join(gtest_test_utils.GetSourceDir(), GOLDEN_NAME)
 
@@ -120,18 +122,46 @@ def RemoveTime(output):
   return re.sub(r'\(\d+ ms', '(? ms', output)
 
 
+def RemoveTypeInfoDetails(test_output):
+  """Removes compiler-specific type info from Google Test program's output.
+
+  Args:
+       test_output:  the output of a Google Test program.
+
+  Returns:
+       output with type information normalized to canonical form.
+  """
+
+  # some compilers output the name of type 'unsigned int' as 'unsigned'
+  return re.sub(r'unsigned int', 'unsigned', test_output)
+
+
+def NormalizeToCurrentPlatform(test_output):
+  """Normalizes platform specific output details for easier comparison."""
+
+  if IS_WINDOWS:
+    # Removes the color information that is not present on Windows.
+    test_output = re.sub('\x1b\\[(0;3\d)?m', '', test_output)
+    # Changes failure message headers into the Windows format.
+    test_output = re.sub(r': Failure\n', r': error: ', test_output)
+    # Changes file(line_number) to file:line_number.
+    test_output = re.sub(r'((\w|\.)+)\((\d+)\):', r'\1:\3:', test_output)
+
+  return test_output
+
+
 def RemoveTestCounts(output):
   """Removes test counts from a Google Test program's output."""
 
-  output = re.sub(r'\d+ tests, listed below',
+  output = re.sub(r'\d+ tests?, listed below',
                   '? tests, listed below', output)
   output = re.sub(r'\d+ FAILED TESTS',
                   '? FAILED TESTS', output)
-  output = re.sub(r'\d+ tests from \d+ test cases',
+  output = re.sub(r'\d+ tests? from \d+ test cases?',
                   '? tests from ? test cases', output)
-  output = re.sub(r'\d+ tests from ([a-zA-Z_])',
+  output = re.sub(r'\d+ tests? from ([a-zA-Z_])',
                   r'? tests from \1', output)
-  return re.sub(r'\d+ tests\.', '? tests.', output)
+  return re.sub(r'\d+ tests?\.', '? tests.', output)
 
 
 def RemoveMatchingTests(test_output, pattern):
@@ -167,60 +197,25 @@ def NormalizeOutput(output):
   return output
 
 
-def IterShellCommandOutput(env_cmd, stdin_string=None):
-  """Runs a command in a sub-process, and iterates the lines in its STDOUT.
+def GetShellCommandOutput(env_cmd):
+  """Runs a command in a sub-process, and returns its output in a string.
 
   Args:
+    env_cmd: The shell command. A 2-tuple where element 0 is a dict of extra
+             environment variables to set, and element 1 is a string with
+             the command and any flags.
 
-    env_cmd:           The shell command. A 2-tuple where element 0 is a dict
-                       of extra environment variables to set, and element 1
-                       is a string with the command and any flags.
-    stdin_string:      The string to be fed to the STDIN of the sub-process;
-                       If None, the sub-process will inherit the STDIN
-                       from the parent process.
+  Returns:
+    A string with the command's combined standard and diagnostic output.
   """
 
   # Spawns cmd in a sub-process, and gets its standard I/O file objects.
   # Set and save the environment properly.
-  old_env_vars = dict(os.environ)
-  os.environ.update(env_cmd[0])
-  stdin_file, stdout_file = os.popen2(env_cmd[1], 'b')
-  os.environ.clear()
-  os.environ.update(old_env_vars)
+  environ = os.environ.copy()
+  environ.update(env_cmd[0])
+  p = gtest_test_utils.Subprocess(env_cmd[1], env=environ, capture_stderr=False)
 
-  # If the caller didn't specify a string for STDIN, gets it from the
-  # parent process.
-  if stdin_string is None:
-    stdin_string = sys.stdin.read()
-
-  # Feeds the STDIN string to the sub-process.
-  stdin_file.write(stdin_string)
-  stdin_file.close()
-
-  while True:
-    line = stdout_file.readline()
-    if not line:  # EOF
-      stdout_file.close()
-      break
-
-    yield line
-
-
-def GetShellCommandOutput(env_cmd, stdin_string=None):
-  """Runs a command in a sub-process, and returns its STDOUT in a string.
-
-  Args:
-
-    env_cmd:           The shell command. A 2-tuple where element 0 is a dict
-                       of extra environment variables to set, and element 1
-                       is a string with the command and any flags.
-    stdin_string:      The string to be fed to the STDIN of the sub-process;
-                       If None, the sub-process will inherit the STDIN
-                       from the parent process.
-  """
-
-  lines = list(IterShellCommandOutput(env_cmd, stdin_string))
-  return string.join(lines, '')
+  return p.output
 
 
 def GetCommandOutput(env_cmd):
@@ -234,8 +229,10 @@ def GetCommandOutput(env_cmd):
   """
 
   # Disables exception pop-ups on Windows.
-  os.environ['GTEST_CATCH_EXCEPTIONS'] = '1'
-  return NormalizeOutput(GetShellCommandOutput(env_cmd, ''))
+  environ, cmdline = env_cmd
+  environ = dict(environ)  # Ensures we are modifying a copy.
+  environ[CATCH_EXCEPTIONS_ENV_VAR_NAME] = '1'
+  return NormalizeOutput(GetShellCommandOutput((environ, cmdline)))
 
 
 def GetOutputOfAllCommands():
@@ -247,13 +244,15 @@ def GetOutputOfAllCommands():
           GetCommandOutput(COMMAND_WITH_SHARDING))
 
 
-test_list = GetShellCommandOutput(COMMAND_LIST_TESTS, '')
+test_list = GetShellCommandOutput(COMMAND_LIST_TESTS)
 SUPPORTS_DEATH_TESTS = 'DeathTest' in test_list
 SUPPORTS_TYPED_TESTS = 'TypedTest' in test_list
 SUPPORTS_THREADS = 'ExpectFailureWithThreadsTest' in test_list
 SUPPORTS_STACK_TRACES = False
 
-CAN_GENERATE_GOLDEN_FILE = SUPPORTS_DEATH_TESTS and SUPPORTS_TYPED_TESTS
+CAN_GENERATE_GOLDEN_FILE = (SUPPORTS_DEATH_TESTS and
+                            SUPPORTS_TYPED_TESTS and
+                            SUPPORTS_THREADS)
 
 
 class GTestOutputTest(gtest_test_utils.TestCase):
@@ -262,6 +261,8 @@ class GTestOutputTest(gtest_test_utils.TestCase):
       test_output = RemoveMatchingTests(test_output, 'DeathTest')
     if not SUPPORTS_TYPED_TESTS:
       test_output = RemoveMatchingTests(test_output, 'TypedTest')
+      test_output = RemoveMatchingTests(test_output, 'TypedDeathTest')
+      test_output = RemoveMatchingTests(test_output, 'TypeParamDeathTest')
     if not SUPPORTS_THREADS:
       test_output = RemoveMatchingTests(test_output,
                                         'ExpectFailureWithThreadsTest')
@@ -287,24 +288,31 @@ class GTestOutputTest(gtest_test_utils.TestCase):
 
     # We want the test to pass regardless of certain features being
     # supported or not.
+
+    # We still have to remove type name specifics in all cases.
+    normalized_actual = RemoveTypeInfoDetails(output)
+    normalized_golden = RemoveTypeInfoDetails(golden)
+
     if CAN_GENERATE_GOLDEN_FILE:
-      self.assert_(golden == output)
+      self.assertEqual(normalized_golden, normalized_actual)
     else:
-      normalized_actual = RemoveTestCounts(output)
-      normalized_golden = RemoveTestCounts(self.RemoveUnsupportedTests(golden))
+      normalized_actual = NormalizeToCurrentPlatform(
+          RemoveTestCounts(normalized_actual))
+      normalized_golden = NormalizeToCurrentPlatform(
+          RemoveTestCounts(self.RemoveUnsupportedTests(normalized_golden)))
 
-      # This code is very handy when debugging test differences so I left it
-      # here, commented.
-      # open(os.path.join(
-      #     gtest_test_utils.GetSourceDir(),
-      #     '_gtest_output_test_normalized_actual.txt'), 'wb').write(
-      #         normalized_actual)
-      # open(os.path.join(
-      #     gtest_test_utils.GetSourceDir(),
-      #     '_gtest_output_test_normalized_golden.txt'), 'wb').write(
-      #         normalized_golden)
+      # This code is very handy when debugging golden file differences:
+      if os.getenv('DEBUG_GTEST_OUTPUT_TEST'):
+        open(os.path.join(
+            gtest_test_utils.GetSourceDir(),
+            '_gtest_output_test_normalized_actual.txt'), 'wb').write(
+                normalized_actual)
+        open(os.path.join(
+            gtest_test_utils.GetSourceDir(),
+            '_gtest_output_test_normalized_golden.txt'), 'wb').write(
+                normalized_golden)
 
-      self.assert_(normalized_golden == normalized_actual)
+      self.assertEqual(normalized_golden, normalized_actual)
 
 
 if __name__ == '__main__':
@@ -317,14 +325,9 @@ if __name__ == '__main__':
     else:
       message = (
           """Unable to write a golden file when compiled in an environment
-that does not support all the required features (death tests""")
-      if IS_WINDOWS:
-        message += (
-            """\nand typed tests). Please check that you are using VC++ 8.0 SP1
-or higher as your compiler.""")
-      else:
-        message += """\nand typed tests).  Please generate the golden file
-using a binary built with those features enabled."""
+that does not support all the required features (death tests, typed tests,
+and multiple threads).  Please generate the golden file using a binary built
+with those features enabled.""")
 
       sys.stderr.write(message)
       sys.exit(1)

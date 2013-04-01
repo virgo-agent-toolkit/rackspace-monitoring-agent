@@ -81,7 +81,7 @@ GetInodeForProcPath(ino_t* inode_out, const char* path)
   assert(path);
 
   char buf[PATH_MAX];
-  if (!SafeReadLink(path, buf)) {
+  if (!google_breakpad::SafeReadLink(path, buf)) {
     return false;
   }
 
@@ -90,7 +90,7 @@ GetInodeForProcPath(ino_t* inode_out, const char* path)
   }
 
   char* endptr;
-  const u_int64_t inode_ul =
+  const uint64_t inode_ul =
       strtoull(buf + sizeof(kSocketLinkPrefix) - 1, &endptr, 10);
   if (*endptr != ']')
     return false;
@@ -396,10 +396,7 @@ CrashGenerationServer::ClientEvent(short revents)
   }
 
   if (dump_callback_) {
-    ClientInfo info;
-
-    info.crash_server_ = this;
-    info.pid_ = crashing_pid;
+    ClientInfo info(crashing_pid, this);
 
     dump_callback_(dump_context_, &info, &minidump_filename);
   }

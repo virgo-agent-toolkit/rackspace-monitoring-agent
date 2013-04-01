@@ -34,20 +34,35 @@ $$ This meta comment fixes auto-indentation in Emacs. }}
 
 // Implements a subset of TR1 tuple needed by Google Test and Google Mock.
 
-#ifndef GTEST_INCLUDE_GTEST_INTERAL_GTEST_TUPLE_H_
-#define GTEST_INCLUDE_GTEST_INTERAL_GTEST_TUPLE_H_
+#ifndef GTEST_INCLUDE_GTEST_INTERNAL_GTEST_TUPLE_H_
+#define GTEST_INCLUDE_GTEST_INTERNAL_GTEST_TUPLE_H_
 
 #include <utility>  // For ::std::pair.
+
+// The compiler used in Symbian has a bug that prevents us from declaring the
+// tuple template as a friend (it complains that tuple is redefined).  This
+// hack bypasses the bug by declaring the members that should otherwise be
+// private as public.
+// Sun Studio versions < 12 also have the above bug.
+#if defined(__SYMBIAN32__) || (defined(__SUNPRO_CC) && __SUNPRO_CC < 0x590)
+# define GTEST_DECLARE_TUPLE_AS_FRIEND_ public:
+#else
+# define GTEST_DECLARE_TUPLE_AS_FRIEND_ \
+    template <GTEST_$(n)_TYPENAMES_(U)> friend class tuple; \
+   private:
+#endif
 
 
 $range i 0..n-1
 $range j 0..n
 $range k 1..n
 // GTEST_n_TUPLE_(T) is the type of an n-tuple.
+#define GTEST_0_TUPLE_(T) tuple<>
 
-$for j [[
-$range m 0..j-1
-#define GTEST_$(j)_TUPLE_(T) tuple<$for m, [[T##$m]]>
+$for k [[
+$range m 0..k-1
+$range m2 k..n-1
+#define GTEST_$(k)_TUPLE_(T) tuple<$for m, [[T##$m]]$for m2 [[, void]]>
 
 ]]
 
@@ -103,8 +118,9 @@ struct TupleElement;
 
 $for i [[
 template <GTEST_$(n)_TYPENAMES_(T)>
-struct TupleElement<true, $i, GTEST_$(n)_TUPLE_(T)> [[]]
-{ typedef T$i type; };
+struct TupleElement<true, $i, GTEST_$(n)_TUPLE_(T)> {
+  typedef T$i type;
+};
 
 
 ]]
@@ -125,9 +141,8 @@ template <GTEST_$(k)_TYPENAMES_(T)>
 class $if k < n [[GTEST_$(k)_TUPLE_(T)]] $else [[tuple]] {
  public:
   template <int k> friend class gtest_internal::Get;
-  template <GTEST_$(n)_TYPENAMES_(U)> friend class tuple;
 
-  tuple() {}
+  tuple() : $for m, [[f$(m)_()]] {}
 
   explicit tuple($for m, [[GTEST_BY_REF_(T$m) f$m]]) : [[]]
 $for m, [[f$(m)_(f$m)]] {}
@@ -160,7 +175,8 @@ $if k == 2 [[
 
 ]]
 
- private:
+  GTEST_DECLARE_TUPLE_AS_FRIEND_
+
   template <GTEST_$(k)_TYPENAMES_(U)>
   tuple& CopyFrom(const GTEST_$(k)_TUPLE_(U)& t) {
 
@@ -205,7 +221,9 @@ template <typename Tuple> struct tuple_size;
 
 $for j [[
 template <GTEST_$(j)_TYPENAMES_(T)>
-struct tuple_size<GTEST_$(j)_TUPLE_(T)> { static const int value = $j; };
+struct tuple_size<GTEST_$(j)_TUPLE_(T)> {
+  static const int value = $j;
+};
 
 
 ]]
@@ -313,8 +331,9 @@ $for j [[
 
 ]]
 
+#undef GTEST_DECLARE_TUPLE_AS_FRIEND_
 #undef GTEST_BY_REF_
 #undef GTEST_ADD_REF_
 #undef GTEST_TUPLE_ELEMENT_
 
-#endif  // GTEST_INCLUDE_GTEST_INTERAL_GTEST_TUPLE_H_
+#endif  // GTEST_INCLUDE_GTEST_INTERNAL_GTEST_TUPLE_H_
