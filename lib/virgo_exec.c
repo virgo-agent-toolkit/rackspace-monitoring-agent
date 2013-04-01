@@ -116,8 +116,7 @@ virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb sta
       /* Skip the upgrade if the exe is less-than or equal than the currently
        * running process.
        */
-      return virgo_error_create(VIRGO_SKIPUPGRADE,
-                                "Skipping upgrade since the currently running process is newer.");
+      return VIRGO_SUCCESS;
     }
   }
 
