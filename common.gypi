@@ -3,6 +3,7 @@
     'without_ssl': 'false',
     'luvit_skinny': 'true',
     'linux_breakpad': 1,
+    'clang': 0,
   },
   'make_global_settings': [
     # chrome normally links using the C++ compiler, but all of our code
