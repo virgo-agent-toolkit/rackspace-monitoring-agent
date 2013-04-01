@@ -88,7 +88,7 @@ extern "C" {
 
   void virgo__crash_reporter_init(virgo_t *v) {
     if (virgo__argv_has_flag(v, NULL, "--production") == 1){
-      virgo_global_exception_handler = new google_breakpad::ExceptionHandler(path, NULL, dumpCallback, (void *)v, true);
+      virgo_global_exception_handler = new google_breakpad::ExceptionHandler(path, NULL, dumpCallback, (void *)v, true, -1);
     }
   };
 
