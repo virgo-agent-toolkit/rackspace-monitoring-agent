@@ -101,16 +101,22 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
 }
 
 virgo_error_t*
-virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
+virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb status) {
   virgo_error_t *exe_err, *err;
   char exe_path[VIRGO_PATH_MAX];
   char latest_in_exe_path[VIRGO_PATH_MAX];
   char bundle_path[VIRGO_PATH_MAX];
   char *exe_path_version;
 
+  *perform_upgrade = FALSE;
+
   err = virgo__paths_get(v, VIRGO_PATH_BUNDLE, bundle_path, sizeof(bundle_path));
   if (err) {
-      return err;
+    if (err->err == VIRGO_ENOFILE) {
+      virgo_error_clear(err);
+      err = VIRGO_SUCCESS;
+    }
+    return err;
   }
 
   exe_err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, latest_in_exe_path, sizeof(latest_in_exe_path));
@@ -129,8 +135,7 @@ virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
       /* Skip the upgrade if the exe is less-than or equal than the currently
        * running process.
        */
-      return virgo_error_create(VIRGO_SKIPUPGRADE,
-                                "Skipping upgrade since the currently running process is newer.");
+      return VIRGO_SUCCESS;
     }
   }
 
@@ -143,8 +148,14 @@ virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
 
   err = virgo__paths_get(v, VIRGO_PATH_EXE, exe_path, sizeof(exe_path));
   if (err) {
-      return err;
+    if (err->err == VIRGO_ENOFILE) {
+      virgo_error_clear(err);
+      err = VIRGO_SUCCESS;
+    }
+    return err;
   }
+
+  *perform_upgrade = TRUE;
 
 #ifdef _WIN32
   if (v->service_status.dwCurrentState == SERVICE_RUNNING) {

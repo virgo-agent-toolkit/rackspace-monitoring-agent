@@ -108,6 +108,7 @@ virgo_error_t *main_wrapper(virgo_t *v)
 {
   virgo_error_t *err;
   char path[VIRGO_PATH_MAX];
+  int perform_upgrade = FALSE;
 
   virgo__paths_get(v, VIRGO_PATH_DEFAULT_EXE, path, VIRGO_PATH_MAX);
   virgo_log_infof(v, "Default EXE Path: %s", path);
@@ -127,14 +128,10 @@ virgo_error_t *main_wrapper(virgo_t *v)
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
     /* Attempt upgrade. On success this process gets replaced. */
-    err = virgo__exec_upgrade(v, upgrade_status_cb);
-    if (err) {
-      if (err->err == VIRGO_ENOFILE || err->err == VIRGO_SKIPUPGRADE) {
-        virgo_log_infof(v, "Continuing Startup without Upgrade, %s", err->msg);
-      } else {
-        virgo_log_errorf(v, "Exec Error: %s", err->msg);
-        virgo_error_clear(err);
-      }
+    err = virgo__exec_upgrade(v, &perform_upgrade, &upgrade_status_cb);
+    if (err && perform_upgrade) {
+      virgo_log_errorf(v, "Exec Error: %s", err->msg);
+      virgo_error_clear(err);
     } else {
       /* this code never gets executed because of execve */
       return VIRGO_SUCCESS;
