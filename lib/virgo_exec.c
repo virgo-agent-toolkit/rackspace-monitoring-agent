@@ -20,6 +20,7 @@
 #include "virgo_error.h"
 #include "virgo_paths.h"
 #include "virgo_exec.h"
+#include "virgo_versions.h"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -81,26 +82,52 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
 }
 
 virgo_error_t*
-virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
+virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb status) {
   virgo_error_t* err;
   char exe_path[VIRGO_PATH_MAX];
   char bundle_path[VIRGO_PATH_MAX];
+  char *exe_path_version;
+
+  *perform_upgrade = FALSE;
 
   err = virgo__paths_get(v, VIRGO_PATH_EXE, exe_path, sizeof(exe_path));
   if (err) {
+    if (err->err == VIRGO_ENOFILE) {
+      virgo_error_clear(err);
+      err = VIRGO_SUCCESS;
+    }
     return err;
   }
 
   err = virgo__paths_get(v, VIRGO_PATH_BUNDLE, bundle_path, sizeof(bundle_path));
   if (err) {
+    if (err->err == VIRGO_ENOFILE) {
+      virgo_error_clear(err);
+      err = VIRGO_SUCCESS;
+    }
     return err;
   }
+
+  /* Double check the upgraded version is greater than the running process */
+  exe_path_version = strrchr(exe_path, '-');
+  if (exe_path_version) {
+    exe_path_version++; /* skip - */
+    if (virgo__versions_compare(exe_path_version, VIRGO_VERSION_FULL) <= 0) {
+      /* Skip the upgrade if the exe is less-than or equal than the currently
+       * running process.
+       */
+      return VIRGO_SUCCESS;
+    }
+  }
+
 
   if (status) {
     status(v, "Attempting upgrade to:");
     status(v, "    exe: %s", exe_path);
     status(v, "    bundle: %s", bundle_path);
   }
+
+  *perform_upgrade = TRUE;
 
   return virgo__exec(v, exe_path, bundle_path);
 }

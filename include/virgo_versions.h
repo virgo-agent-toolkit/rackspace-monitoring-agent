@@ -18,13 +18,15 @@
 #ifndef _virgo_versions_h_
 #define _virgo_versions_h_
 
+#define VIRGO_VERSION_FULL VERSION_FULL
+
 /* Comparison function for expected filenames */
 typedef int(*is_file_cmp)(const char *name);
 
 /* Return -1, 0, or 1 if a filename + version is less than, equal to or greater
  * than
  */
-VIRGO_API(int) virgo_compare_versions(const char *a, const char *b);
+VIRGO_API(int) virgo__versions_compare(const char *a, const char *b);
 
 /* Find the latest filename within a given path.
  * @return VIRGO_SUCCESS on success.

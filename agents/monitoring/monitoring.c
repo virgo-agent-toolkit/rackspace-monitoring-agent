@@ -97,6 +97,7 @@ int main(int argc, char* argv[])
   virgo_t *v;
   virgo_error_t *err;
   char path[VIRGO_PATH_MAX];
+  int perform_upgrade = FALSE;
 
   err = virgo_create(&v, "./init", argc, argv);
 
@@ -122,14 +123,10 @@ int main(int argc, char* argv[])
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
     /* Attempt upgrade. On success this process gets replaced. */
-    err = virgo__exec_upgrade(v, upgrade_status_cb);
-    if (err) {
-      if (err->err == VIRGO_ENOFILE) {
-        virgo_log_info(v, "Continuing Startup without Upgrade");
-      } else {
-        virgo_log_errorf(v, "Exec Error: %s", err->msg);
-        virgo_error_clear(err);
-      }
+    err = virgo__exec_upgrade(v, &perform_upgrade, upgrade_status_cb);
+    if (err && perform_upgrade == TRUE) {
+      virgo_log_errorf(v, "Exec Error: %s", err->msg);
+      virgo_error_clear(err);
     } else {
       /* this code never gets executed because of execve */
       return 0;
