@@ -18,7 +18,6 @@
 #include "virgo.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
-#include "virgo__logging.h"
 
 #define LOGGINGHANDLE "virgo.logging"
 
@@ -73,7 +72,7 @@ logging_log_crit(lua_State *L) {
 static int
 logging_rotate(lua_State *L) {
   virgo_t *v = virgo__lua_context(L);
-  (void) virgo__log_rotate(v);
+  (void) virgo_log_rotate(v);
   return 0;
 }
 

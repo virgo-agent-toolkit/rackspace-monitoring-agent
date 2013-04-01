@@ -23,6 +23,8 @@
 
 #ifndef WIN32
 #include "virgo_unix.h"
+#else
+#include "virgo_win.h"
 #endif
 
 #ifndef _virgo_h_
@@ -131,6 +133,11 @@ VIRGO_API(const char*) virgo_conf_get(virgo_t *v, const char *key);
  * Is the Virgo Bundle Valid?
  */
 VIRGO_API(virgo_error_t*) virgo__bundle_is_valid(virgo_t *ctxt);
+
+/**
+ * Log Init/Rotate
+ */
+VIRGO_API(virgo_error_t*) virgo_log_rotate(virgo_t *v);
 
 /**
  * Log levels.
