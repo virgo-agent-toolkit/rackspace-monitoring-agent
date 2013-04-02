@@ -20,7 +20,6 @@
 #include "virgo__conf.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
-#include "virgo__logging.h"
 #include "virgo__util.h"
 #include "uv.h"
 #include "luv.h"
@@ -154,6 +153,10 @@ virgo_init(virgo_t *v)
   if (virgo__argv_has_flag(v, NULL, "--service-delete") == 1) {
     return virgo__service_delete(v);
   }
+
+  if (virgo__argv_has_flag(v, NULL, "--service-upgrade") == 1) {
+    return virgo__service_upgrade(v);
+  }
 #endif
 
   err = virgo__lua_init(v);
@@ -184,11 +187,6 @@ virgo_run(virgo_t *v)
     }
   }
 #endif
-  err = virgo__log_rotate(v);
-
-  if (err) {
-    return err;
-  }
 
   err = virgo__conf_init(v);
 
@@ -196,12 +194,8 @@ virgo_run(virgo_t *v)
     return err;
   }
 
-#ifdef _WIN32
-  err = virgo__service_handler(v);
-#else
   /* TOOD: restart support */
   err = virgo__lua_run(v);
-#endif
 
   if (err) {
     return err;

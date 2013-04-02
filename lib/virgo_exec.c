@@ -20,6 +20,7 @@
 #include "virgo_error.h"
 #include "virgo_paths.h"
 #include "virgo_exec.h"
+#include "virgo_versions.h"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -48,14 +49,19 @@ copy_args(virgo_t *v, const char *bundle_path) {
   args[index++] = strdup("-z");
 #ifndef _WIN32
   args[index++] = strdup(bundle_path);
+  args[index++] = strdup("-o");
 #else
   {
     char quoted_bundle[MAX_PATH];
     snprintf(quoted_bundle, MAX_PATH, "\"%s\"", bundle_path);
     args[index++] = strdup(quoted_bundle);
   }
+  if (v->service_status.dwCurrentState == SERVICE_RUNNING) {
+    args[index++] = strdup("--service-upgrade");
+  } else {
+    args[index++] = strdup("-o");
+  }
 #endif
-  args[index++] = strdup("-o");
   args[index++] = NULL;
 
   return args;
@@ -67,40 +73,106 @@ static virgo_error_t*
 virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
   char **args = copy_args(v, bundle_path);
   int rc;
+  int win_sc_started = 0;
+  const char* name = "execve";
 
   args[0] = exe_path;
-  rc = execve(exe_path, args, environ);
-  if (rc < 0) { /* on success, does not execute, unless running windows */
-    return virgo_error_createf(VIRGO_ENOFILE, "execve failed errno=%i", errno);
+
+#ifdef _WIN32
+  /* when running windows from the service manager */
+  if (v->service_status.dwCurrentState == SERVICE_RUNNING) {
+    win_sc_started = 1;
+    name = "spawnve";
+  }
+  /* a child process must stop the service and perform the upgrade */
+  if (!win_sc_started) {
+    rc = execve(exe_path, args, environ);
   } else {
-    /* running windows, exit quick! */
-    exit(0);
+    rc = spawnve(P_NOWAIT, exe_path, args, environ);
+  }
+#else
+  rc = execve(exe_path, args, environ);
+#endif
+  if (rc < 0) {
+    return virgo_error_createf(VIRGO_ENOFILE, "%s failed errno=%i", name, errno);
   }
 
   return VIRGO_SUCCESS;
 }
 
 virgo_error_t*
-virgo__exec_upgrade(virgo_t *v, virgo__exec_upgrade_cb status) {
-  virgo_error_t* err;
+virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb status) {
+  virgo_error_t *exe_err, *err;
   char exe_path[VIRGO_PATH_MAX];
+  char latest_in_exe_path[VIRGO_PATH_MAX];
   char bundle_path[VIRGO_PATH_MAX];
+  char *exe_path_version;
 
-  err = virgo__paths_get(v, VIRGO_PATH_EXE, exe_path, sizeof(exe_path));
-  if (err) {
-    return err;
-  }
+  *perform_upgrade = FALSE;
 
   err = virgo__paths_get(v, VIRGO_PATH_BUNDLE, bundle_path, sizeof(bundle_path));
   if (err) {
+    if (err->err == VIRGO_ENOFILE) {
+      virgo_error_clear(err);
+      err = VIRGO_SUCCESS;
+    }
     return err;
   }
 
-  if (status) {
-    status(v, "Attempting upgrade to:");
-    status(v, "    exe: %s", exe_path);
-    status(v, "    bundle: %s", bundle_path);
+  exe_err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, latest_in_exe_path, sizeof(latest_in_exe_path));
+
+  virgo_error_clear(exe_err);
+
+  if (exe_err) {
+    return virgo_error_create(VIRGO_ENOFILE, "No exe upgrades available");
   }
 
-  return virgo__exec(v, exe_path, bundle_path);
+  /* Double check the upgraded version is greater than the running process */
+  exe_path_version = strrchr(exe_path, '-');
+  if (exe_path_version) {
+    exe_path_version++; /* skip - */
+    if (virgo__versions_compare(exe_path_version, VIRGO_VERSION_FULL) <= 0) {
+      /* Skip the upgrade if the exe is less-than or equal than the currently
+       * running process.
+       */
+      return VIRGO_SUCCESS;
+    }
+  }
+
+  if (status) {
+    status(v, "Attempting upgrade using new file(s):");
+    if (!exe_err) {
+      status(v, "    exe: %s", latest_in_exe_path);
+    }
+  }
+
+  err = virgo__paths_get(v, VIRGO_PATH_EXE, exe_path, sizeof(exe_path));
+  if (err) {
+    if (err->err == VIRGO_ENOFILE) {
+      virgo_error_clear(err);
+      err = VIRGO_SUCCESS;
+    }
+    return err;
+  }
+
+  *perform_upgrade = TRUE;
+
+#ifdef _WIN32
+  if (v->service_status.dwCurrentState == SERVICE_RUNNING) {
+    if (status) {
+      status(v, "Service Upgrading");
+    }
+
+    err = virgo__exec(v, exe_path, bundle_path);
+    if (!err) {
+      /* wait for the child to shut me down*/
+      Sleep(INFINITE);
+    }
+  } else {
+    err = virgo__exec(v, exe_path, bundle_path);
+  }
+#else
+  err = virgo__exec(v, exe_path, bundle_path);
+#endif
+  return err;
 }

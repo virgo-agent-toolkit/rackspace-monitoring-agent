@@ -25,7 +25,7 @@
 #define MAX_LOG_LINE_LENGTH 4000
 
 virgo_error_t*
-virgo__log_rotate(virgo_t *v)
+virgo_log_rotate(virgo_t *v)
 {
   FILE *old = v->log_fp;
   FILE *nxt = stderr;
@@ -56,7 +56,7 @@ virgo__log_rotate(virgo_t *v)
   }
 
   if (v->log_path) {
-    virgo_log_infof(v, "Log file started (path=%s)", v->log_path);
+    virgo_log_infof(v, "Log file started (pid %u, path=%s)", getpid(), v->log_path);
   }
 
   return VIRGO_SUCCESS;

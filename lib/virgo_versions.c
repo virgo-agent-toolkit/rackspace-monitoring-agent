@@ -81,8 +81,8 @@ virgo__versions_latest_file(virgo_t *v, const char *path, is_file_cmp file_compa
   virgo_error_t *err;
 
   rc = uv_fs_readdir(uv_default_loop(), &readdir_req, path, 0, NULL);
-  if (!rc) {
-    return virgo_error_create(-1, "readdir returned 0");
+  if (rc <= 0) {
+    return virgo_error_createf(-1, "readdir returned %u", rc);
   }
 
   ptr = readdir_req.ptr;
