@@ -34,4 +34,21 @@ exports['test_luacom_processor_list'] = function(test, asserts)
   end
 end
 
+exports['test_luacom_processor_system_data'] = function(test, asserts)
+  if os.type() == 'win32' then
+    local objWMIService = luacom.GetObject ("winmgmts:{impersonationLevel=Impersonate}!\\\\.\\root\\cimv2")
+    local colProcessors = objWMIService:ExecQuery("SELECT * FROM Win32_PerfRawData_PerfOS_System")
+    local success = False
+    for index,item in luacom.pairs (colProcessors) do
+      success = True
+      p("Processes", item:Processes())
+      p("ProcessorQueueLength", item:ProcessorQueueLength())
+    end
+    asserts.ok(success == True)
+    test.done()
+  else
+    test.skip("LuaCOM unsupported on " .. os.type())
+  end
+end
+
 return exports
