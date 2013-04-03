@@ -4,6 +4,7 @@
     'modules_agent': [
       'lib/lua',
       'deps/luvit/lib/luvit',
+      'deps/luacom/src/library/luacom5.lua',
       'modules/async',
       'modules/luvit-hsm',
       'modules/bourbon',

@@ -27,6 +27,13 @@
         ['OS=="win"', {
           'sources': [
             'virgo_win32_service.c',
+            'virgo_luacom_win.c',
+          ],
+          'dependencies': [
+            '../deps/luacom.gyp:luacom',
+          ],
+          'include_dirs': [
+            '../deps/luacom/include',
           ],
         }],
       ],

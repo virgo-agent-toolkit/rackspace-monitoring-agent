@@ -1,0 +1,5 @@
+  /* Hack to load a LuaCOM supplemental file into Virgo without lua2c */
+  lua_getglobal(L, "require");
+  lua_pushliteral(L, "luacom5.lua");
+  lua_pcall(L, 1, 0, 0);
+    

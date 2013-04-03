@@ -268,7 +268,9 @@ virgo__lua_init(virgo_t *v)
   virgo__lua_vfs_init(L);
   virgo__lua_loader_init(L);
   virgo__lua_debugger_init(L);
-
+#ifdef _WIN32
+  virgo__lua_luacom(L);
+#endif
   virgo__lua_luvit_init(v);
 
   return VIRGO_SUCCESS;
