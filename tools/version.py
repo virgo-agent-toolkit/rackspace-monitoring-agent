@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import sys
-
 from optparse import OptionParser
 from pkgutils import git_describe
 
@@ -27,22 +25,21 @@ def git_describe_fields(version):
     return dict(zip(fields, version))
 
 
-def version():
-    usage = "usage: %prog [field] [--sep=.]"
-    parser = OptionParser(usage=usage)
-    parser.add_option("-s", "--seperator", dest="seperator", default="-", help="version seperator", metavar="SEP")
-    parser.add_option("-d", "--directory", dest="directory", default=None, help="path to directory ")
-    (options, args) = parser.parse_args()
-
-    version = git_describe(is_exact=False, split=True, cwd=options.directory)
+def version(sep='-', cwd=None):
+    version = git_describe(is_exact=False, split=True, cwd=cwd)
     zeroed = zero_release(version)
     fields = git_describe_fields(zeroed)
 
-    if len(args) == 1:
-        print("%s" % fields.get(args[0], ""))
-        sys.exit(0)
+    if sep:
+        return sep.join(zeroed[:2])
 
-    print(options.seperator.join(zeroed[:2]))
+    return fields
 
 if __name__ == "__main__":
-    version()
+    usage = "usage: %prog [field] [--sep=.]"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-s", "--seperator", dest="seperator", default=None, help="version seperator")
+    parser.add_option("-d", "--directory", dest="directory", default=None, help="path to directory ")
+    (options, args) = parser.parse_args()
+
+    print version(options.seperator, options.directory)

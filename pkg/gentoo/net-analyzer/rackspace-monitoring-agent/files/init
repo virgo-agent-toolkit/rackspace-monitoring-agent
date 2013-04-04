@@ -3,7 +3,7 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: $
 
-PIDFILE=/var/run/monitoring-agent.pid
+PIDFILE=/var/run/$PKG_NAME.pid
 
 depend() {
     use net
@@ -11,15 +11,15 @@ depend() {
 }
 
 start() {
-    ebegin "Starting monitoring-agent"
-    start-stop-daemon --background --start --exec /usr/bin/rackspace-monitoring-agent \
+    ebegin "Starting $PKG_NAME"
+    start-stop-daemon --background --start --exec /usr/bin/$PKG_NAME \
       --make-pidfile --pidfile $PIDFILE
     eend $?
 }
 
 stop() {
-    ebegin "Stopping monitoring-agent"
-    start-stop-daemon --stop --exec /usr/bin/rackspace-monitoring-agent \
+    ebegin "Stopping $PKG_NAME"
+    start-stop-daemon --stop --exec /usr/bin/$PKG_NAME \
       --pidfile $PIDFILE
     eend $?
 }

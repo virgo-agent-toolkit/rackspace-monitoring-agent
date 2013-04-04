@@ -1,0 +1,9 @@
+[Unit]
+Description=$SHORT_DESCRIPTION
+Documentation=$DOCUMENTATION_LINK
+
+[Service]
+ExecStart=/usr/bin/$PKG_NAME -l /var/log/$PKG_NAME.log --production
+
+[Install]
+WantedBy=multi-user.target
