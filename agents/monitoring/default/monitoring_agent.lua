@@ -239,6 +239,16 @@ function MonitoringAgent:loadEndpoints(callback)
   local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
   local endpoints = config['monitoring_endpoints']
 
+  local region = config['dbass_snet_region']
+  if region ~= nil and region ~= "" then
+    for _, item in pairs(constants.DEFAULT_MONITORING_SRV_QUERIES) do
+      if string.find(item, region) ~= nil and string.find(item, region) == 23 then
+        queries = item
+        break
+      end
+    end
+  end
+
   local function _callback(err, endpoints)
     if err then return callback(err) end
 
