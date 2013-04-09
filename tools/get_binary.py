@@ -21,13 +21,15 @@ def main():
 
     dest = args[0]
     build_dir = pkgutils.package_builder_dir()
-
-    binary = os.path.join(build_dir, 'monitoring-agent')
+    binary_name = pkgutils.package_binary()
+    binary = os.path.join(build_dir, binary_name)
 
     dest = os.path.join(dest, '%s-monitoring-agent-%s' % (pkgutils.pkg_dir(),
       full_version))
     shutil.move(binary, dest)
-    shutil.move(binary + ".sig", dest + ".sig")
+
+    if pkgutils.pkg_type() != 'windows':
+        shutil.move(binary + ".sig", dest + ".sig")
 
 if __name__ == "__main__":
     main()
