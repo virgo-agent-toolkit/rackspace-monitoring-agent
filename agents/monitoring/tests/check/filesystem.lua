@@ -21,8 +21,6 @@ exports['test_filesystem_check'] = function(test, asserts)
     asserts.not_nil(metrics['free']['v'])
     asserts.not_nil(metrics['used']['v'])
     asserts.not_nil(metrics['avail']['v'])
-    asserts.not_nil(metrics['files']['v'])
-    asserts.not_nil(metrics['free_files']['v'])
 
     asserts.equal(metrics['total']['t'], 'int64')
     asserts.equal(metrics['free']['t'], 'int64')
@@ -36,6 +34,8 @@ exports['test_filesystem_check'] = function(test, asserts)
     -- These metrics are unavailalbe on Win32, see:
     -- http://www.hyperic.com/support/docs/sigar/org/hyperic/sigar/FileSystemUsage.html#getFiles()
     if os.type() ~= "win32" then
+      asserts.not_nil(metrics['files']['v'])
+      asserts.not_nil(metrics['free_files']['v'])
       asserts.equal(metrics['files']['t'], 'int64')
       asserts.equal(metrics['free_files']['t'], 'int64')
       asserts.ok(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
