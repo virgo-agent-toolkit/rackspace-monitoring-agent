@@ -30,6 +30,9 @@ def main():
 
     dest = os.path.join(dest, '%s-monitoring-agent-%s' % (pkgutils.pkg_dir(),
       full_version))
+    if pkgutils.pkg_type() == 'windows':
+        dest += '.msi'
+    print("Moving %s to %s" % (binary, dest))
     shutil.move(binary, dest)
 
     if pkgutils.pkg_type() != 'windows':
