@@ -109,30 +109,36 @@
     [ 'OS=="win"', {
       'targets': [
         {
-          'target_name': 'rackspace-monitoring-agent.msi',
+          'target_name': 'virgo.msi',
           'type': 'none',
           'dependencies': [
-            'monitoring-agent#host',
+            'virgo#host',
           ],
 
           'sources': [
-            'pkg/windows/RackspaceMonitoringAgent.wxs',
+            'pkg/windows/virgo.wxs',
           ],
 
           'actions': [ {
             'action_name': 'candle',
             'inputs': [
-              'pkg/windows/RackspaceMonitoringAgent.wxs',
+              'pkg/windows/virgo.wxs',
               '<(INTERMEDIATE_DIR)/version.wxi',
             ],
             'outputs': [
-              '<(INTERMEDIATE_DIR)/RackspaceMonitoringAgent.wixobj',
+              #'<(INTERMEDIATE_DIR)/virgo.wixobj',
+			  '<(INTERMEDIATE_DIR)/virgo.wixobj',
             ],
             'action': [
               '<(CANDLE_EXE)',
               '-out',
               '<@(_outputs)',
-              'pkg/windows/RackspaceMonitoringAgent.wxs',
+              'pkg/windows/virgo.wxs',
+			  '-dPRODUCTNAME=<(PRODUCTNAME)',
+			  '-dPRODUCTSHORTNAME=<(SHORT_NAME)',
+			  '-dPRODUCTDESCRIPTION=<(SHORT_DESCRIPTION)',
+			  '-dPRODUCTSERVICEDESCRIPTION=<(LONG_DESCRIPTION)',
+			  '-dPRODUCTAUTHOR=<(AUTHOR)',
               '-dVERSIONFULL=<(VERSION_FULL)',
               '-dPRODUCTDIR=<(PRODUCT_DIR)',
               '-dREPODIR=<(RULE_INPUT_DIRNAME)',
@@ -143,15 +149,15 @@
             'action_name': 'light',
             'extension': 'wxs',
             'inputs': [
-              '<(INTERMEDIATE_DIR)/RackspaceMonitoringAgent.wixobj',
-              '<(PRODUCT_DIR)/monitoring-agent.exe',
+              '<(INTERMEDIATE_DIR)/virgo.wixobj',
+              '<(PRODUCT_DIR)/virgo.exe',
             ],
             'outputs': [
-              '<(PRODUCT_DIR)/rackspace-monitoring-agent.msi',
+              '<(PRODUCT_DIR)virgo.msi',
             ],
             'action': [
               '<(LIGHT_EXE)',
-              '<(INTERMEDIATE_DIR)/RackspaceMonitoringAgent.wixobj',
+              '<(INTERMEDIATE_DIR)/virgo.wixobj',
               '-ext', 'WixUIExtension',
               '-ext', 'WixUtilExtension',
               '-out', '<@(_outputs)',

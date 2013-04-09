@@ -121,7 +121,7 @@ def configure_pkg(platform, pkg_vars):
     if mapping['PKG_TYPE'] == 'deb':
         root = os.path.join('pkg', 'debian')
         for f in os.listdir(root):
-            render(os.path.join(root, f), os.path.join(out_dir, f))
+            render (os.path.join(root, f), os.path.join(out_dir, f))
         log = debian_changelog(mapping['CHANGELOG'], **mapping)
 
         open(os.path.join(out_dir, 'changelog'), 'wb').\
@@ -132,7 +132,8 @@ def configure_pkg(platform, pkg_vars):
         render('pkg/systemd/agent.service', 'out/%s.service' % name)
         render('pkg/sysv-redhat/agent', 'out/sysv-%s' % name)
     mapping['WARNING'] = '# autogened by gyp, do not edit by hand'
-    render(os.path.join('pkg', 'include.mk.in'), os.path.join('out', 'include.mk'))
+    if sys.platform != "win32":
+        render(os.path.join('pkg', 'include.mk.in'), os.path.join('out', 'include.mk'))
 
 
 def pkg_config(pkg):

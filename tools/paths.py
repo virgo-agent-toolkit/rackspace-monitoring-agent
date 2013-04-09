@@ -5,7 +5,6 @@ import optloader
 
 AGENT = None
 LUVIT = None
-BUNDLE_NAME = None
 BUNDLE_DIR = None
 
 
@@ -17,10 +16,10 @@ _options = optloader.load_options('platform.gypi')
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 BUNDLE_DIR = _abs_path(ROOT, _options['variables']['BUNDLE_DIR'])
-BUNDLE_NAME = _options['variables']['BUNDLE_NAME']
 
 if sys.platform == "win32":
-    BUILDTYPE = 'Debug' if _options['variables']['virgo_debug'] == 'true' else 'Release'
+	#TEMPORARY HACK - this is in options.gypi
+    BUILDTYPE = 'Release' #'Debug' if _options['variables']['virgo_debug'] == 'true' else 'Release'
     BUILD_DIR = _abs_path(ROOT, BUILDTYPE)
     LUVIT = _abs_path(BUILD_DIR, 'luvit.exe')
     AGENT = _abs_path(BUILD_DIR, 'virgo.exe')
