@@ -20,6 +20,10 @@ def main():
         sys.exit(1)
 
     dest = args[0]
+
+    shutil.rmtree(dest, True)
+    os.mkdir(dest)
+
     build_dir = pkgutils.package_builder_dir()
     binary_name = pkgutils.package_binary()
     binary = os.path.join(build_dir, binary_name)
