@@ -32,7 +32,7 @@ def main():
     print("Moving %s to %s" % (binary, dest))
     shutil.move(binary, dest)
 
-    onlyfiles = [f for f in os.listdir(orig_dest) if isfile(join(orig_dest, f))]
+    onlyfiles = [f for f in os.listdir(orig_dest) if os.path.isfile(join(orig_dest, f))]
     for f in onlyfiles:
         print(f)
 
