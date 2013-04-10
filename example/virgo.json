@@ -1,0 +1,23 @@
+{
+  "PKG_NAME": "example",
+  "SHORT_DESCRIPTION": "Example Agent",
+  "SHORT_NAME": "Example",
+  "DOCUMENTATION_LINK": "http://www.example.com",
+  "REPO": "https://github.com/racker/virgo.git",
+  "LICENSE": "Apache-2.0",
+  "AUTHOR": "Rackspace Hosting, Inc.",
+  "EMAIL": "monitoring@rackspace.com",
+  "MAINTAINER": "Rackspace Cloud Monitoring <monitoring@rackspace.com>",
+  "LONG_DESCRIPTION": "This is an example package.",
+  "CHANGELOG": [
+    {
+      "version": "0.0.1",
+      "date": "2013-01-22 14:45:43 -0800",
+      "RELEASE": "unstable",
+      "URGENCY": "low",
+      "changes": [
+        "Hello world"
+      ]
+    },
+  ]
+}
