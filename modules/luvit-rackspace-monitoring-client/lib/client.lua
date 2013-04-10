@@ -318,9 +318,7 @@ function Client:requestPaginated(path, callback)
         return
       end
 
-      if data.metadata.next_marker ~= nil then
-        startMarker = data.metadata.next_marker
-      end
+      startMarker = data.metadata.next_marker
 
       for k, v in pairs(data.values) do
         table.insert(results, v)
