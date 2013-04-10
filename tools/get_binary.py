@@ -31,6 +31,10 @@ def main():
     print("Moving %s to %s" % (binary, dest))
     shutil.move(binary, dest)
 
+    onlyfiles = [ f for f in listdir(mypath) if isfile(join(mypath,f)) ]
+    for f in onlyfiles:
+        print(f)
+
     if pkgutils.pkg_type() != 'windows':
         shutil.move(binary + ".sig", dest + ".sig")
 
