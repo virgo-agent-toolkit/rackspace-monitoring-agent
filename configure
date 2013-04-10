@@ -211,6 +211,7 @@ def configure_virgo_platform(bundle_dir, platform_vars):
 
     variables = {}
     variables['BUNDLE_DIR'] = bundle_dir
+    variables['BUNDLE_NAME'] = os.path.basename(bundle_dir)
     variables['VIRGO_HEAD_SHA'] = pkgutils.git_head()
     versions = version.version(sep=None)
     variables['PKG_TYPE'] = pkgutils.pkg_type() or ""

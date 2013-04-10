@@ -50,7 +50,8 @@
         '../deps/luvit/luvit.gyp:libluvit',
         '../deps/sigar.gyp:sigar',
         '../deps/sigar.gyp:lua_sigar',
-        './copy_luajiters.gyp:*'
+        './copy_luajiters.gyp:*',
+        '../bundle.gyp:*',
       ],
       'export_dependent_settings': [
         '../deps/luvit/luvit.gyp:libluvit',
