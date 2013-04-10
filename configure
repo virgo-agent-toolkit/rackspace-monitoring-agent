@@ -122,7 +122,7 @@ def configure_pkg(platform, pkg_vars):
     if mapping['PKG_TYPE'] == 'deb':
         root = os.path.join('pkg', 'debian')
         for f in os.listdir(root):
-            render (os.path.join(root, f), os.path.join(out_dir, f))
+            render(os.path.join(root, f), os.path.join(out_dir, f))
         log = debian_changelog(mapping['CHANGELOG'], **mapping)
 
         open(os.path.join(out_dir, 'changelog'), 'wb').\
@@ -296,6 +296,13 @@ def render_openssl_symlinks(src, dest):
 
 def main():
     print 'Creating GYP include files (.gypi)'
+    out_dir = os.path.join('out')
+    try:
+        os.mkdir(out_dir)
+    except OSError as e:
+        if e.errno != 17:
+            raise
+
     options_gypi = configure_virgo()
     write_gypi(options_gypi, 'options.gypi')
 
