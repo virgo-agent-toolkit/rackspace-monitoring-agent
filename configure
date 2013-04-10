@@ -99,7 +99,6 @@ def debian_changelog(changes, **kwargs):
 def configure_pkg(platform, pkg_vars):
     """slurps up variables from various sources and renders package files
     eg the debian changelog."""
-
     mapping = pkg_vars.copy()
     for k, v in platform['variables'].items():
         mapping[k] = v
@@ -309,16 +308,21 @@ def main():
 
     # are we being built inside a package (ie, these options should be burned in)
     # TODO: what if a package calls make clean (ie, we won't regenerate out/include.mk because this file exists)
-    if not os.path.exists(os.path.join(root_dir, 'no_gen_platform_gypi')):
+    if os.path.exists(os.path.join(root_dir, 'no_gen_platform_gypi')):
+        platform = ast.literal_eval(open('platform.gypi').read())
+        bundle_dir = platform['variables']['BUNDLE_DIR']
+        virgo_json = os.path.join(bundle_dir, 'virgo.json')
+        pkg_vars = ast.literal_eval(open(virgo_json, 'rb').read())
+    else:
         if not options.bundle:
             options.bundle = "example"
             print('\nWarning: no bundle path was specified.  The example bundle will be used.\n')
         bundle_dir = os.path.relpath(options.bundle, '.')
-        pkg_vars = open(os.path.join(bundle_dir, 'virgo.json'), 'rb').read()
-        pkg_vars = ast.literal_eval(pkg_vars)
+        virgo_json = os.path.join(bundle_dir, 'virgo.json')
+        pkg_vars = ast.literal_eval(open(virgo_json, 'rb').read())
         platform = configure_virgo_platform(bundle_dir, pkg_vars)
         write_gypi(platform, 'platform.gypi')
-        configure_pkg(platform, pkg_vars)
+    configure_pkg(platform, pkg_vars)
 
     if os.path.isdir(os.path.join('.', '.git')):
         print "Updating git submodules...."
