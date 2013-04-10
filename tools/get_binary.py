@@ -20,6 +20,7 @@ def main():
         sys.exit(1)
 
     dest = args[0]
+    orig_dest = dest
     build_dir = pkgutils.package_builder_dir()
     binary_name = pkgutils.package_binary()
     binary = os.path.join(build_dir, binary_name)
@@ -31,7 +32,7 @@ def main():
     print("Moving %s to %s" % (binary, dest))
     shutil.move(binary, dest)
 
-    onlyfiles = [ f for f in os.listdir(dest) if isfile(join(dest, f)) ]
+    onlyfiles = [ f for f in os.listdir(orig_dest) if isfile(join(orig_dest, f)) ]
     for f in onlyfiles:
         print(f)
 
