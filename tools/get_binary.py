@@ -31,7 +31,7 @@ def main():
     print("Moving %s to %s" % (binary, dest))
     shutil.move(binary, dest)
 
-    onlyfiles = [ f for f in os.listdir(mypath) if isfile(join(mypath,f)) ]
+    onlyfiles = [ f for f in os.listdir(dest) if isfile(join(dest, f)) ]
     for f in onlyfiles:
         print(f)
 
