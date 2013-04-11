@@ -27,12 +27,15 @@ def main():
 
     dest = os.path.join(dest, '%s-monitoring-agent-%s' % (pkgutils.pkg_dir(),
       full_version))
+
     if pkgutils.pkg_type() == 'windows':
         dest += '.msi'
+        hard_file = os.path.join(orig_dest, 'rackspace-monitoring-agent.msi')
+        shutil.copyfile(binary, hard_file)
 
     print("Current Working Directory: %s" % os.getcwd())
     print("Moving %s to %s" % (binary, os.path.abspath(dest)))
-    shutil.move(binary, dest)
+    shutil.copyfile(binary, dest)
 
     onlyfiles = [f for f in os.listdir(orig_dest) if os.path.isfile(os.path.join(orig_dest, f))]
     for f in onlyfiles:

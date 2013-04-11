@@ -149,7 +149,7 @@ def package_builder_dir():
         buildDirArgs += ('rpmbuild', 'BUILD', "virgo-%s" % ("-".join(git_describe())))
         buildDirArgs += ('out', 'Debug')
     elif pkgType == 'windows':
-        buildDirArgs = [basePath]
+        buildDirArgs = [basePath, 'Release']
     else:
         raise AttributeError('Unsupported pkg type, %s' % (pkgType))
 
