@@ -138,7 +138,6 @@
               '-dSHORT_NAME=<(SHORT_NAME)',
               '-dPRODUCTDESCRIPTION=<(SHORT_DESCRIPTION)',
               '-dLONG_DESCRIPTION=<(LONG_DESCRIPTION)',
-              '-dAUTHOR=<(AUTHOR)',
               '-dBUNDLE_NAME=<(BUNDLE_NAME)',
               '-dBUNDLE_DIR=<(BUNDLE_DIR)',
               '-dWIN_SERVICE_DESCRIPTION=<(WIN_SERVICE_DESCRIPTION)',

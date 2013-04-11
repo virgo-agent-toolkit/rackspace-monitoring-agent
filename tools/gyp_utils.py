@@ -105,7 +105,8 @@ def bundle_list(root):
                 continue
             if name in [".git", ".gitignore", ".gitmodules"]:
                 continue
-            file_list.append(file_path)
+            file_list.append("'%s'" % file_path)
+            
     return file_list
 
 
