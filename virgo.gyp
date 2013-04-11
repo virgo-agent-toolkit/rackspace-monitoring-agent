@@ -134,7 +134,7 @@
               '-out',
               '<@(_outputs)',
               'pkg/windows/virgo.wxs',
-			  '-dPRODUCTNAME=<(PRODUCTNAME)',
+			  '-dPRODUCTNAME=<(SHORT_DESCRIPTION)',
 			  '-dPRODUCTSHORTNAME=<(SHORT_NAME)',
 			  '-dPRODUCTDESCRIPTION=<(SHORT_DESCRIPTION)',
 			  '-dPRODUCTSERVICEDESCRIPTION=<(LONG_DESCRIPTION)',
