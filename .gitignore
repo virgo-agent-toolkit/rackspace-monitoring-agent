@@ -27,3 +27,5 @@ include/generated/*.h
 *.mk
 virgo_exports.c
 *.dist
+no_gen_platform_gypi
+pkg/out/*
