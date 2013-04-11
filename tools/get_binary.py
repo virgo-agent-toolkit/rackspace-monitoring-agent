@@ -31,7 +31,7 @@ def main():
         dest += '.msi'
 
     print("Current Working Directory: %s" % os.getcwd())
-    print("Moving %s to %s" % (binary, dest))
+    print("Moving %s to %s" % (binary, os.path.abspath(dest)))
     shutil.move(binary, dest)
 
     onlyfiles = [f for f in os.listdir(orig_dest) if os.path.isfile(os.path.join(orig_dest, f))]
