@@ -9,6 +9,7 @@
   "EMAIL": "monitoring@rackspace.com",
   "MAINTAINER": "Rackspace Cloud Monitoring <monitoring@rackspace.com>",
   "LONG_DESCRIPTION": "This is an example package.",
+  "WIN_PRODUCT_DESCRIPTION": "This is the example agent that runs on the server.",
   "CHANGELOG": [
     {
       "version": "0.0.1",
@@ -18,6 +19,6 @@
       "changes": [
         "Hello world"
       ]
-    },
+    }
   ]
 }

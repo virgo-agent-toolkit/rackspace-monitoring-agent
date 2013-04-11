@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <?define ProductVersion = $(var.VERSIONFULL) ?>
-    <?define ProductName = "Rackspace Monitoring Agent" ?>
-    <?define ProductShortName = "Rackspace Monitoring" ?>
-    <?define ProductDescription = "Rackspace Monitoring Agent is the component that runs on the monitored server." ?>
-    <?define ProductServiceDescription = "Provides Rackspace Monitoring Agent. The agent can record disk, bandwidth, CPU usage, and more. Data collected from the agent goes into Rackspace Cloud Monitoring's systems." ?>
-    <?define ProductAuthor = "Rackspace Hosting, Inc." ?>
+    <?define ProductName = $(var.SHORT_DESCRIPTION) ?>
+    <?define ProductShortName = $(var.SHORT_NAME) ?>
+    <?define ProductDescription = $(var.WIN_PRODUCT_DESCRIPTION) ?>
+    <?define ProductServiceDescription = $(var.LONG_DESCRIPTION) ?>
+    <?define ProductAuthor = $(var.AUTHOR) ?>
     <?define ProductDir = $(var.PRODUCTDIR) ?>
     <?define RepoDir = $(var.REPODIR) ?>
+    <?define BundleName = $(var.BUNDLE_NAME) ?>
 <!--    <?define ProductDir = $(var.PRODUCTDIR) ?> -->
 <!--    <?define ProductDir='C:\data\virgo\Debug' ?> -->
     <?define SourceDir = $(var.RepoDir) ?>
@@ -19,33 +20,34 @@
         <InstallExecuteSequence>
             <RemoveExistingProducts Before="InstallInitialize" />
         </InstallExecuteSequence>
-        <Media Id="1" Cabinet="RackspaceMonitoringAgentInstaller.cab" EmbedCab="yes" />
+        <Media Id="1" Cabinet="$(var.ProductName)Installer.cab" EmbedCab="yes" />
 
         <Directory Id="TARGETDIR" Name="SourceDir">
             <Directory Id="ProgramFilesFolder" Name="PFiles">
                 <Directory Id="RAXMONAGENT" Name="$(var.ProductShortName)">
-                    <Component Id="MonitoringZip" Guid="F40E81F0-1044-4BF7-A4E6-0F3B0995E074">
-                        <File Id="monitoring_zip"
-                                Name="monitoring.zip"
+                    <Component Id="ZipBundle" Guid="F40E81F0-1044-4BF7-A4E6-0F3B0995E074">
+                        <File Id="zip"
+                                Name="$(var.BundleName)"
                                 DiskId="1"
-                                Source='$(var.ProductDir)\monitoring.zip' KeyPath="yes">
+                                Source='$(var.ProductDir)\$(var.BundleName)-bundle.zip' KeyPath="yes">
                         </File>
                     </Component>
                     <Component Id="MainExecutable" Guid="F044290F-E32E-438D-8E1A-C628E0353BD4">
+                        <!--TODO: build the exe with the correct name or link it or something -->
                         <File Id="agent_exe"
-                                Name="rackspace-monitoring-agent.exe"
+                                Name="virgo.exe"
                                 DiskId="1"
-                                Source='$(var.ProductDir)\monitoring-agent.exe' KeyPath="yes">
+                                Source='$(var.ProductDir)\virgo.exe' KeyPath="yes">
                         </File>
                         <!--  Vital="yes" Removed until we can fixup more services integration. -->
                         <!--  Suppress upgrading until it it firther tested, hard code a log file for the short term -->
-                        <ServiceInstall Id="InstallRackspaceMonitoringAgent"
+                        <ServiceInstall Id="Install$(var.ProductName)"
                             Name="$(var.ProductName)"
                             DisplayName="$(var.ProductName)"
                             Type="ownProcess"
                             Start="auto"
                             ErrorControl="normal"
-                            Arguments='--logfile "C:\ProgramData\Rackspace Monitoring\log.txt"'
+                            Arguments='--logfile "C:\ProgramData\$(var.ProductShortName)\log.txt"'
                             Description="$(var.ProductServiceDescription)">
                             <util:ServiceConfig
                                 FirstFailureActionType="restart"
@@ -74,12 +76,12 @@
             </Directory>
         </Directory>
         <Feature Id="Complete" Level="1">
-            <ComponentRef Id="MonitoringZip" />
+            <ComponentRef Id="ZipBundle" />
             <ComponentRef Id="MainExecutable" />
             <ComponentRef Id="PluginDirectory" />
             <ComponentRef Id="ConfigDirectory" />
         </Feature>
-    <Icon Id="agent_icon" SourceFile="$(var.ProductDir)\..\agents\monitoring\rackspace-monitoring-agent.ico" />
+    <Icon Id="agent_icon" SourceFile="$(var.BUNDLE_DIR)\agent.ico" />
     <Property Id="ARPPRODUCTICON" Value="agent_icon" />
 <!--
         <UI>
