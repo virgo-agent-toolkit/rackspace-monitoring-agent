@@ -29,6 +29,8 @@ def main():
       full_version))
     if pkgutils.pkg_type() == 'windows':
         dest += '.msi'
+
+    print("Current Working Directory: %s" % os.getcwd())
     print("Moving %s to %s" % (binary, dest))
     shutil.move(binary, dest)
 
