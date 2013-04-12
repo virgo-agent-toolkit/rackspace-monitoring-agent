@@ -22,6 +22,7 @@ local fs = require('fs')
 local timer = require('timer')
 local JSON = require('json')
 local table = require('table')
+local version = require('./util/version')
 
 local async = require('async')
 local ask = require('./util/prompt').ask
@@ -200,7 +201,9 @@ function Setup:run(callback)
     end,
     -- fetch all tokens
     function(username, token, callback)
-      client = maas.Client:new(username, token)
+      local options = {}
+      options.user_agent = fmt('agent/virgo process:%s bundle:%s', version.process, version.bundle)
+      client = maas.Client:new(username, token, options)
       client.agent_tokens.get(callback)
     end,
     -- is there a token for the host
