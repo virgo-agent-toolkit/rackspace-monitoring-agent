@@ -16,27 +16,47 @@ limitations under the License.
 
 
 local exec = require('virgo_exec')
+local string = require('string')
 
 local exports = {}
 
-exports['test_virgo_exec_upgrade_logic'] = function(test, asserts)
-  asserts.not_ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222', '0.1.7-222'))
-  asserts.not_ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222', '0.1.9-222'))
-  asserts.not_ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222', '0.2.7-222'))
-  asserts.not_ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222', '1.1.7-222'))
+local function test_instance_is_newer_logic(exe, version)
+  newer = exec.is_new_exe(exe, version)
+  p('exe:', exe, 'version:', version, 'newer:', newer)
+  return newer
+end
 
-  asserts.not_ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222.exe', '0.1.7-222'))
-  asserts.not_ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222.exe', '0.1.9-222'))
-  asserts.not_ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222.exe', '0.2.7-222'))
-  asserts.not_ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222.exe', '1.1.7-222'))
+exports['test_virgo_exec_upgrade_is_newer_logic'] = function(test, asserts)
+  local prefix = '/foo/rackspace-monitoring-agent'
+  local version_format = '%d.%d.%d-%d'
+  local extensions = {'', '.exe'}
 
-  asserts.ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222', '0.1.7-221'))
-  asserts.ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222', '0.1.6-222'))
-  asserts.ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222', '0.0.7-222'))
+  --Move each number in the file version up 1, up 11, and down 1, alternating with a file extension 
 
-  asserts.ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222.exe', '0.1.7-221'))
-  asserts.ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222.exe', '0.1.6-222'))
-  asserts.ok(exec.is_new_exe('/foo/rackspace-monitoring-agent-0.1.7-222.exe', '0.0.7-222'))
+  for x, extension in ipairs(extensions) do
+    local movements = {1, 11, -1}
+    for y, movement in ipairs(movements) do
+      for i = 1,4 do
+        local current_versions = {5, 5, 5, 5}
+        local file_versions = {5, 5, 5, 5}
+        file_versions[i] = file_versions[i] + movement
+        exe = string.format('%s' .. '-' .. version_format .. '%s', prefix, file_versions[1], file_versions[2], file_versions[3], file_versions[4], extension) 
+        version = string.format(version_format, current_versions[1], current_versions[2], current_versions[3], current_versions[4])
+        newer = test_instance_is_newer_logic(exe, version)
+        if movement < 0 then
+          asserts.not_ok(newer)
+        else
+          asserts.ok(newer)
+        end
+      end
+    end
+
+    --check plain filename
+    asserts.not_ok(test_instance_is_newer_logic(prefix .. extension, string.format(version_format, 5, 5, 5, 5)))
+  end
+
+  --check no filename
+  asserts.not_ok(test_instance_is_newer_logic('', string.format(version_format, 5, 5, 5, 5)))
 
   test.done()
 end

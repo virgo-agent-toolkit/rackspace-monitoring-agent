@@ -36,6 +36,4 @@ VIRGO_API(virgo_error_t*) virgo__exec_upgrade(virgo_t *v,
 /* Check that the exe_path is newer than the current internal exe version */
 int virgo__is_new_exe(const char* exe_path, const char* version);
 
-
-
 #endif
