@@ -100,6 +100,27 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
   return VIRGO_SUCCESS;
 }
 
+int
+virgo__is_new_exe(const char* exe_path, const char* version)
+{
+  virgo_error_t *err = VIRGO_SUCCESS;
+  const char* exe_path_version;
+
+  /* Double check the upgraded version is greater than the running process */
+  exe_path_version = strrchr(exe_path, '-');
+  if (exe_path_version) {
+    exe_path_version++; /* skip - */
+    if (virgo__versions_compare(exe_path_version, version) <= 0) {
+      /* Skip the upgrade if the exe is less-than or equal than the currently
+       * running process.
+       */
+      return 1;
+    }
+  }
+  return 0;
+}
+
+
 virgo_error_t*
 virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb status) {
   virgo_error_t *exe_err, *err;
@@ -141,15 +162,11 @@ virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb sta
   }
 
   /* Double check the upgraded version is greater than the running process */
-  exe_path_version = strrchr(exe_path, '-');
-  if (exe_path_version) {
-    exe_path_version++; /* skip - */
-    if (virgo__versions_compare(exe_path_version, VIRGO_VERSION_FULL) <= 0) {
-      /* Skip the upgrade if the exe is less-than or equal than the currently
-       * running process.
-       */
-      return VIRGO_SUCCESS;
-    }
+  if (!virgo__is_new_exe(exe_path, VIRGO_VERSION_FULL)) {
+    /* Skip the upgrade if the exe is less-than or equal than the currently
+     * running process.
+     */
+    return VIRGO_SUCCESS;
   }
 
   /* a bit of info for the user */
