@@ -105,19 +105,27 @@ virgo__is_new_exe(const char* exe_path, const char* version)
 {
   virgo_error_t *err = VIRGO_SUCCESS;
   const char* exe_path_version;
+  const char* trailing_name = "-agent-";
+  const int trailing_name_len = strlen(trailing_name);
+  int ret = 1;
 
   /* Double check the upgraded version is greater than the running process */
-  exe_path_version = strrchr(exe_path, '-');
+  exe_path_version = strstr(exe_path, trailing_name);
   if (exe_path_version) {
-    exe_path_version++; /* skip - */
-    if (virgo__versions_compare(exe_path_version, version) <= 0) {
+    char* duped_exe_version = strdup(exe_path_version + trailing_name_len); /* skip -agent- and duplicate */
+    char* extension = strstr(duped_exe_version, ".exe");
+    if (extension) {
+      *extension = '\0';
+    }
+    if (virgo__versions_compare(duped_exe_version, version) <= 0) {
       /* Skip the upgrade if the exe is less-than or equal than the currently
        * running process.
        */
-      return 1;
+      ret = 0;
     }
+    free(duped_exe_version);
   }
-  return 0;
+  return ret;
 }
 
 
