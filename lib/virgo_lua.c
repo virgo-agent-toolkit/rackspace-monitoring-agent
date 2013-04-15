@@ -48,6 +48,7 @@
 #include "lcrypto.h"
 
 extern int luaopen_sigar (lua_State *L);
+extern int virgo__lua_exec(lua_State *L);
 
 static void
 virgo__lua_luvit_init(virgo_t *v)
@@ -268,6 +269,7 @@ virgo__lua_init(virgo_t *v)
   virgo__lua_vfs_init(L);
   virgo__lua_loader_init(L);
   virgo__lua_debugger_init(L);
+  virgo__lua_exec(L);
 
   virgo__lua_luvit_init(v);
 
