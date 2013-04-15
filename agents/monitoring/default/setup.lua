@@ -202,7 +202,7 @@ function Setup:run(callback)
     -- fetch all tokens
     function(username, token, callback)
       local options = {}
-      options.user_agent = fmt('agent/virgo process:%s bundle:%s', version.process, version.bundle)
+      options.user_agent = fmt('rackspace-monitoring-agent/%s:%s; %s', version.process, version.bundle, username)
       client = maas.Client:new(username, token, options)
       client.agent_tokens.get(callback)
     end,
