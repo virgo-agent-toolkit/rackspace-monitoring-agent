@@ -20,8 +20,14 @@ local string = require('string')
 
 local exports = {}
 
+local function test_instance_is_newer_logic(exe, version)
+  newer = exec.is_new_exe(exe, version)
+  p('exe:', exe, 'version:', version, 'newer:', newer)
+  return newer
+end
+
 exports['test_virgo_exec_upgrade_is_newer_logic'] = function(test, asserts)
-  local prefix = '/foo/rackspace-monitoring-agent-'
+  local prefix = '/foo/rackspace-monitoring-agent'
   local version_format = '%d.%d.%d-%d'
   local extensions = {'', '.exe'}
 
@@ -31,13 +37,12 @@ exports['test_virgo_exec_upgrade_is_newer_logic'] = function(test, asserts)
     local movements = {1, 11, -1}
     for y, movement in ipairs(movements) do
       for i = 1,4 do
-        local exe_versions = {5, 5, 5, 5}
+        local current_versions = {5, 5, 5, 5}
         local file_versions = {5, 5, 5, 5}
         file_versions[i] = file_versions[i] + movement
-        exe = string.format('%s' .. version_format .. '%s', prefix, file_versions[1], file_versions[2], file_versions[3], file_versions[4], extension) 
-        version = string.format(version_format, exe_versions[1], exe_versions[2], exe_versions[3], exe_versions[4])
-        newer = exec.is_new_exe(exe, version)
-        p('exe:', exe, 'version:', version, 'newer:', newer)
+        exe = string.format('%s' .. '-' .. version_format .. '%s', prefix, file_versions[1], file_versions[2], file_versions[3], file_versions[4], extension) 
+        version = string.format(version_format, current_versions[1], current_versions[2], current_versions[3], current_versions[4])
+        newer = test_instance_is_newer_logic(exe, version)
         if movement < 0 then
           asserts.not_ok(newer)
         else
@@ -45,7 +50,13 @@ exports['test_virgo_exec_upgrade_is_newer_logic'] = function(test, asserts)
         end
       end
     end
+
+    --check plain filename
+    asserts.not_ok(test_instance_is_newer_logic(prefix .. extension, string.format(version_format, 5, 5, 5, 5)))
   end
+
+  --check no filename
+  asserts.not_ok(test_instance_is_newer_logic('', string.format(version_format, 5, 5, 5, 5)))
 
   test.done()
 end

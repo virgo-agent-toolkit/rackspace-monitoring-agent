@@ -107,7 +107,7 @@ virgo__is_new_exe(const char* exe_path, const char* version)
   const char* exe_path_version;
   const char* trailing_name = "-agent-";
   const int trailing_name_len = strlen(trailing_name);
-  int ret = 1;
+  int ret = 0;
 
   /* Double check the upgraded version is greater than the running process */
   exe_path_version = strstr(exe_path, trailing_name);
@@ -117,11 +117,9 @@ virgo__is_new_exe(const char* exe_path, const char* version)
     if (extension) {
       *extension = '\0';
     }
-    if (virgo__versions_compare(duped_exe_version, version) <= 0) {
-      /* Skip the upgrade if the exe is less-than or equal than the currently
-       * running process.
-       */
-      ret = 0;
+    if (virgo__versions_compare(duped_exe_version, version) > 0) {
+      /* Perform the upgrade if the exe is greater-than the currently running process. */
+      ret = 1;
     }
     free(duped_exe_version);
   }
@@ -130,38 +128,8 @@ virgo__is_new_exe(const char* exe_path, const char* version)
 
 
 virgo_error_t*
-virgo__exec_upgrade_check(virgo_t *v, int *perform_upgrade, const char* latest_in_exe_path, const char* exe_path, const char* version) {
-
-  *perform_upgrade = FALSE;
-
-  /* if no latest exe is found, return and we'll keep running this one */
-  if (!latest_in_exe_path || latest_in_exe_path[0] == '\0') {
-    return virgo_error_create(VIRGO_ENOFILE, "No exe upgrades available");
-  }
-
-  /* no, exe_path, keep using the current */
-  if (!exe_path || exe_path[0] == '\0') {
-    return VIRGO_SUCCESS;
-  }
-
-  /* Double check the upgraded version is greater than the running process */
-  if (!virgo__is_new_exe(exe_path, version)) {
-    /* Skip the upgrade if the exe is less-than or equal than the currently
-     * running process.
-     */
-    return VIRGO_SUCCESS;
-  }
-
-  *perform_upgrade = TRUE;
-
-  return VIRGO_SUCCESS;
-}
-
-
-virgo_error_t*
 virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb status) {
-  virgo_error_t *latest_exe_err, *err;
-  char exe_path[VIRGO_PATH_MAX] = { '\0' };
+  virgo_error_t *err;
   char latest_in_exe_path[VIRGO_PATH_MAX] = { '\0' };
   char bundle_path[VIRGO_PATH_MAX];
 
@@ -177,33 +145,27 @@ virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb sta
     return err;
   }
 
-  /* get the latest exe, an upgrade */
-  latest_exe_err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, latest_in_exe_path, sizeof(latest_in_exe_path));
-  virgo_error_clear(latest_exe_err);
+  /* get the latest exe from the upgrade path */
+  virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, latest_in_exe_path, sizeof(latest_in_exe_path));
 
-  /* get the exe, latest or default */
-  err = virgo__paths_get(v, VIRGO_PATH_EXE, exe_path, sizeof(exe_path));
-  if (err && err->err != VIRGO_ENOFILE) {
-    return err;
+  /* Double check the upgraded version is greater than the running process */
+  if (!virgo__is_new_exe(latest_in_exe_path, VIRGO_VERSION_FULL)) {
+    /* Skip the upgrade if the exe is less-than or equal than the currently
+     * running process.
+     */
+    return VIRGO_SUCCESS;
   }
 
-  /* ready for upgrade check */
-  virgo_error_clear(err);
-  err = VIRGO_SUCCESS;
+  *perform_upgrade = TRUE;
 
-  /* check the data paths for an upgrade */
-  err = virgo__exec_upgrade_check(v, perform_upgrade, latest_in_exe_path, exe_path, VIRGO_VERSION_FULL);
-  if (err || !*perform_upgrade) {
-    return err;
-  }
+  /* now we definately have an upgrade to run */
 
   /* a bit of info for the user */
-  if (status && !latest_exe_err) {
+  if (status) {
     status(v, "Attempting upgrade using new file(s):");
     status(v, "    exe: %s", latest_in_exe_path);
   }
 
-  /* now we definately have an upgrade to run */
 #ifdef _WIN32
   if (v->service_status.dwCurrentState == SERVICE_RUNNING) {
     /* we're running as a service so we need to upgrade the exe into its proper place */
@@ -212,18 +174,18 @@ virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb sta
     }
 
     /* we run a child of the new exe to shut this service down and upgrade this exe file */
-    err = virgo__exec(v, exe_path, bundle_path);
+    err = virgo__exec(v, latest_in_exe_path, bundle_path);
     if (!err) {
       /* wait for the child to shut me down*/
       Sleep(INFINITE);
     }
   } else {
     /* we're not a service, behave like unix and execve the new exe */
-    err = virgo__exec(v, exe_path, bundle_path);
+    err = virgo__exec(v, latest_in_exe_path, bundle_path);
   }
 #else
   /* execve the new exe */
-  err = virgo__exec(v, exe_path, bundle_path);
+  err = virgo__exec(v, latest_in_exe_path, bundle_path);
 #endif
   return err;
 }

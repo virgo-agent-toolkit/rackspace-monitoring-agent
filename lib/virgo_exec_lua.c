@@ -37,29 +37,8 @@ is_new_exe(lua_State *L) {
   return 1;
 }
 
-static int
-upgrade_check(lua_State *L) {
-  virgo_t *v = virgo__lua_context(L);
-  const char *latest_in_exe_path = luaL_checkstring(L, 1);
-  const char *exe_path = luaL_checkstring(L, 2);
-  const char *version = luaL_checkstring(L, 3);
-  int perform_upgrade = FALSE;
-  virgo_error_t* err = virgo__exec_upgrade_check(v, &perform_upgrade, latest_in_exe_path, exe_path, version);
-  lua_pushboolean(L, perform_upgrade != 0);
-  if (err == NULL) {
-    lua_pushboolean(L, TRUE);
-    return 2;
-  } else {
-    lua_pushboolean(L, FALSE);
-    lua_pushinteger(L, err->err);
-    lua_pushstring(L, err->msg);
-    return 4;
-  }
-}
-
 static const luaL_reg virgo_exec[] = {
   {"is_new_exe", is_new_exe},
-  {"upgrade_check", upgrade_check},
   {NULL, NULL}
 };
 
