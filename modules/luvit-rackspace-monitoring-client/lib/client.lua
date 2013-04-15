@@ -61,7 +61,7 @@ function ClientBase:initialize(host, port, version, options)
   self.headers = {}
   self.options = misc.merge({}, options)
 
-  self.headers['User-Agent'] = 'agent/virgo'
+  self.headers['User-Agent'] = options.user_agent or 'agent/luvit-keystone-client'
   self.headers['Accept'] = 'application/json'
   self.headers['Content-Type'] = 'application/json'
 end
