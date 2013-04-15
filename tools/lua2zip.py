@@ -39,6 +39,7 @@ def main():
     rackspace_monitoring_client_lua = os.path.join('modules', 'luvit-rackspace-monitoring-client')
     luvit_keystone_client_lua = os.path.join('modules', 'luvit-keystone-client')
     luvit_lua = os.path.join('deps', 'luvit', 'lib', 'luvit')
+    luacom = os.path.join('deps', 'luacom', 'src', 'library', 'luacom5.lua')
     monitoring_lua = os.path.join('agents', 'monitoring', 'default')
     collector_lua = os.path.join('agents', 'monitoring', 'collector')
     crash_lua = os.path.join('agents', 'monitoring', 'crash')
@@ -66,6 +67,8 @@ def main():
             generate_bundle_map('', 'lib/lua', True),
         luvit_lua:
             generate_bundle_map('', 'deps/luvit/lib/luvit', True),
+        luacom:
+            [{'os_filename': "deps/luacom/src/library/luacom5.lua", "bundle_filename": "modules/luacom5.lua"}],
         monitoring_lua:
             generate_bundle_map('modules/monitoring/default', 'agents/monitoring/default'),
         collector_lua:

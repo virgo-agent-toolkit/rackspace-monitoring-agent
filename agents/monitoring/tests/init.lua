@@ -52,7 +52,8 @@ local TESTS_TO_RUN = {
   './fs',
   './schedule',
   './virgo',
-  './net'
+  './net',
+  './luacom'
 }
 
 if process.env['TEST_FILES'] then

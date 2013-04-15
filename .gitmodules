@@ -6,3 +6,6 @@
 	path = deps/sigar
 	url = https://github.com/racker/sigar.git
 	ignore = dirty
+[submodule "deps/luacom"]
+	path = deps/luacom
+	url = https://github.com/davidm/luacom.git
