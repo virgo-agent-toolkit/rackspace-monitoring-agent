@@ -54,6 +54,7 @@
         'virgo_conf.c',
         'virgo_error.c',
         'virgo_exec.c',
+        'virgo_exec_lua.c',
         'virgo_init.c',
         'virgo_lua.c',
         'virgo_lua_loader.c',
