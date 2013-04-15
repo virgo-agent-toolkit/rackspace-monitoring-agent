@@ -46,10 +46,10 @@ local RedisCheck = BaseCheck:extend()
 function RedisCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.redis', params)
 
-  self._host = params.details.host and params.details.host or 'localhost'
-  self._port = params.details.port and params.details.port or 6379
-  self._password = params.details.password and params.details.password or nil
-  self._timeout = params.details.timeout and params.details.timeout or 5000
+  self._host = params.details.host or 'localhost'
+  self._port = params.details.port or 6379
+  self._password = params.details.password or nil
+  self._timeout = params.details.timeout or 5000
 end
 
 function RedisCheck:_parseResponse(data)
