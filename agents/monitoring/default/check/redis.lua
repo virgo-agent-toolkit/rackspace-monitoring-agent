@@ -67,7 +67,7 @@ function RedisCheck:_parseResponse(data)
 
     if mapItem ~= nil then
       name = mapItem['alias'] and mapItem['alias'] or item['key']
-      result[item['key']] = {name = name, type = mapItem['type'],
+      result[name] = {name = name, type = mapItem['type'],
                              value = item['value']}
     end
   end
