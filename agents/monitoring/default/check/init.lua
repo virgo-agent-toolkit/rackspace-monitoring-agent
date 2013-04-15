@@ -117,6 +117,7 @@ exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
 exports.MySQLCheck = MySQLCheck
 exports.PluginCheck = PluginCheck
+exports.RedisCheck = RedisCheck
 exports.LoadAverageCheck = LoadAverageCheck
 exports.ApacheCheck = ApacheCheck
 exports.NullCheck = NullCheck
