@@ -130,12 +130,40 @@ virgo__is_new_exe(const char* exe_path, const char* version)
 
 
 virgo_error_t*
+virgo__exec_upgrade_check(virgo_t *v, int *perform_upgrade, const char* latest_in_exe_path, const char* exe_path, const char* version) {
+
+  *perform_upgrade = FALSE;
+
+  /* if no latest exe is found, return and we'll keep running this one */
+  if (!latest_in_exe_path || latest_in_exe_path[0] == '\0') {
+    return virgo_error_create(VIRGO_ENOFILE, "No exe upgrades available");
+  }
+
+  /* no, exe_path, keep using the current */
+  if (!exe_path || exe_path[0] == '\0') {
+    return VIRGO_SUCCESS;
+  }
+
+  /* Double check the upgraded version is greater than the running process */
+  if (!virgo__is_new_exe(exe_path, version)) {
+    /* Skip the upgrade if the exe is less-than or equal than the currently
+     * running process.
+     */
+    return VIRGO_SUCCESS;
+  }
+
+  *perform_upgrade = TRUE;
+
+  return VIRGO_SUCCESS;
+}
+
+
+virgo_error_t*
 virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb status) {
-  virgo_error_t *exe_err, *err;
-  char exe_path[VIRGO_PATH_MAX];
-  char latest_in_exe_path[VIRGO_PATH_MAX];
+  virgo_error_t *latest_exe_err, *err;
+  char exe_path[VIRGO_PATH_MAX] = { '\0' };
+  char latest_in_exe_path[VIRGO_PATH_MAX] = { '\0' };
   char bundle_path[VIRGO_PATH_MAX];
-  char *exe_path_version;
 
   *perform_upgrade = FALSE;
 
@@ -150,40 +178,30 @@ virgo__exec_upgrade(virgo_t *v, int *perform_upgrade, virgo__exec_upgrade_cb sta
   }
 
   /* get the latest exe, an upgrade */
-  exe_err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, latest_in_exe_path, sizeof(latest_in_exe_path));
-
-  virgo_error_clear(exe_err);
-
-  /* if no latest exe is found, return and we'll keep running this one */
-  if (exe_err) {
-    return virgo_error_create(VIRGO_ENOFILE, "No exe upgrades available");
-  }
+  latest_exe_err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, latest_in_exe_path, sizeof(latest_in_exe_path));
+  virgo_error_clear(latest_exe_err);
 
   /* get the exe, latest or default */
   err = virgo__paths_get(v, VIRGO_PATH_EXE, exe_path, sizeof(exe_path));
-  if (err) {
-    if (err->err == VIRGO_ENOFILE) {
-      virgo_error_clear(err);
-      err = VIRGO_SUCCESS;
-    }
+  if (err && err->err != VIRGO_ENOFILE) {
     return err;
   }
 
-  /* Double check the upgraded version is greater than the running process */
-  if (!virgo__is_new_exe(exe_path, VIRGO_VERSION_FULL)) {
-    /* Skip the upgrade if the exe is less-than or equal than the currently
-     * running process.
-     */
-    return VIRGO_SUCCESS;
+  /* ready for upgrade check */
+  virgo_error_clear(err);
+  err = VIRGO_SUCCESS;
+
+  /* check the data paths for an upgrade */
+  err = virgo__exec_upgrade_check(v, perform_upgrade, latest_in_exe_path, exe_path, VIRGO_VERSION_FULL);
+  if (err || !*perform_upgrade) {
+    return err;
   }
 
   /* a bit of info for the user */
-  if (status && ! exe_err) {
+  if (status && !latest_exe_err) {
     status(v, "Attempting upgrade using new file(s):");
     status(v, "    exe: %s", latest_in_exe_path);
   }
-
-  *perform_upgrade = TRUE;
 
   /* now we definately have an upgrade to run */
 #ifdef _WIN32

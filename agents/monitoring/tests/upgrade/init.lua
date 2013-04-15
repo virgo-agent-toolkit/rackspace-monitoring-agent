@@ -20,15 +20,15 @@ local string = require('string')
 
 local exports = {}
 
-exports['test_virgo_exec_upgrade_logic'] = function(test, asserts)
+exports['test_virgo_exec_upgrade_is_newer_logic'] = function(test, asserts)
   local prefix = '/foo/rackspace-monitoring-agent-'
   local version_format = '%d.%d.%d-%d'
   local extensions = {'', '.exe'}
 
-  --Move each number in the file version up and down, alternating with a file extension 
+  --Move each number in the file version up 1, up 11, and down 1, alternating with a file extension 
 
   for x, extension in ipairs(extensions) do
-    local movements = {1, -1}
+    local movements = {1, 11, -1}
     for y, movement in ipairs(movements) do
       for i = 1,4 do
         local exe_versions = {5, 5, 5, 5}
