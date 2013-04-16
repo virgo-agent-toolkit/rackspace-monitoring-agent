@@ -38,11 +38,13 @@ local MySQLTests = require('./mysql')
 local ApacheTests = require('./apache')
 local FileSystemTests = require('./filesystem')
 local LoadTests = require('./load_average')
+local RedisTests = require('./redis')
 
 local exports = merge(MySQLTests, {})
 exports = merge(exports, ApacheTests)
 exports = merge(exports, FileSystemTests)
 exports = merge(exports, LoadTests)
+exports = merge(exports, RedisTests)
 
 exports['test_base_check'] = function(test, asserts)
   local check = BaseCheck:new('test', {id='foo', period=30})
