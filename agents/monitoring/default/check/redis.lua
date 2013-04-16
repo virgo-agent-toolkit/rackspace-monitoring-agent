@@ -26,6 +26,8 @@ local CheckResult = require('./base').CheckResult
 local split = require('../util/misc').split
 local fireOnce = require('../util/misc').fireOnce
 
+local MAX_BUFFER_LENGTH = 1024 * 1024 * 512 -- 512 MB
+
 local METRICS_MAP = {
   redis_version = { type = 'string', alias = 'version' },
   uptime_in_seconds = { type = 'uint32' },
@@ -123,6 +125,8 @@ function RedisCheck:run(callback)
           callback()
         elseif buffer:lower():find('-err invalid password') then
           callback(Error:new('Could not authenticate. Invalid password.'))
+        elseif buffer:len() > MAX_BUFFER_LENGTH then
+          callback(Error:new('Maximum buffer length reached'))
         end
       end)
 
