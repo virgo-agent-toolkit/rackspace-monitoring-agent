@@ -81,7 +81,7 @@ def _split_path(p):
 def stupid_find(root):
     file_list = []
     for base_path, _, files in os.walk(root):
-        file_list += [os.path.join(base_path, f) for f in files]
+        file_list += ["%s/%s" % (base_path, f) for f in files]
     return file_list
 
 

@@ -131,6 +131,7 @@
             ],
             'action': [
               '<(CANDLE_EXE)',
+              '-ext', 'WixUtilExtension',
               '-out',
               '<@(_outputs)',
               'pkg/windows/virgo.wxs',

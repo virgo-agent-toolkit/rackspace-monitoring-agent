@@ -55,9 +55,10 @@ luaopen_sigar (lua_State *L);
 static void
 virgo__lua_luvit_init(virgo_t *v) {
   /* Hack to keep the linker from killing symbols that luajit pulls in at runtime :( */
+  lua_State *L;
   virgo__suck_in_symbols();
   luvit__suck_in_symbols();
-  lua_State *L = v->L;
+  L = v->L;
 
   luvit_init(L, uv_default_loop(), v->argc, v->argv);
 
