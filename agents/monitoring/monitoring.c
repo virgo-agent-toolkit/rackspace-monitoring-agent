@@ -42,7 +42,6 @@ handle_error(virgo_t *v, const char *msg, virgo_error_t *err)
   fprintf(stderr, buf, err->file, err->line, err->err, err->msg);
   fputs("\n", stderr);
   fflush(stderr);
-  virgo_error_clear(err);
 }
 
 static void
@@ -106,7 +105,7 @@ upgrade_status_cb(virgo_t *v, const char *fmt, ...) {
 
 virgo_error_t *main_wrapper(virgo_t *v)
 {
-  virgo_error_t *err;
+  virgo_error_t *err = NULL;
   char path[VIRGO_PATH_MAX];
   int perform_upgrade = FALSE;
 
@@ -195,7 +194,7 @@ virgo_error_t *main_wrapper(virgo_t *v)
 int main(int argc, char* argv[])
 {
   virgo_t *v;
-  virgo_error_t *err;
+  virgo_error_t *err = NULL;
   int ret;
 
   err = virgo_create(&v, "./init", argc, argv);
@@ -229,11 +228,12 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
   err = virgo_service_handler(v, main_wrapper);
 #else
-  err =  main_wrapper(v);
+  err = main_wrapper(v);
 #endif
 
   handle_error(v, "Main exiting", err);
-  
+  virgo_error_clear(err);
+
   if (err == VIRGO_SUCCESS) {
     ret = 0;
   } else {
