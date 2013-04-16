@@ -24,6 +24,7 @@ local FileSystemCheck = require('./filesystem').FileSystemCheck
 local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
 local MySQLCheck = require('./mysql').MySQLCheck
+local RedisCheck = require('./redis').RedisCheck
 local NullCheck = require('./null').NullCheck
 local LoadAverageCheck = require('./load_average').LoadAverageCheck
 local PluginCheck = require('./plugin').PluginCheck
@@ -60,6 +61,8 @@ function create(checkData)
     return MySQLCheck:new(obj)
   elseif checkType == 'agent.load_average' then
     return LoadAverageCheck:new(obj)
+  elseif checkType == 'agent.redis' then
+    return RedisCheck:new(obj)
   elseif checkType == 'agent.null' then
     return NullCheck:new(obj)
   else
@@ -114,6 +117,7 @@ exports.MemoryCheck = MemoryCheck
 exports.NetworkCheck = NetworkCheck
 exports.MySQLCheck = MySQLCheck
 exports.PluginCheck = PluginCheck
+exports.RedisCheck = RedisCheck
 exports.LoadAverageCheck = LoadAverageCheck
 exports.ApacheCheck = ApacheCheck
 exports.NullCheck = NullCheck
