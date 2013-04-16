@@ -141,7 +141,9 @@ function RedisCheck:run(callback)
 
       -- Retrieve stats
       client:on('data', function(data)
-        buffer = buffer .. data
+        if buffer:len() < MAX_BUFFER_LENGTH then
+          buffer = buffer .. data
+        end
       end)
 
       client:on('end', function()

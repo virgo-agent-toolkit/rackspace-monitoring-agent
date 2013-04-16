@@ -17,6 +17,7 @@ limitations under the License.
 local fs = require('fs')
 local path = require('path')
 
+local string = require('string')
 local async = require('async')
 
 local RedisCheck = require('monitoring/default/check').RedisCheck
@@ -224,6 +225,47 @@ exports['test_redis_error_invalid_password'] = function(test, asserts)
 
         asserts.equal(result:getState(), 'unavailable')
         asserts.equal(result:getStatus(), 'Could not authenticate. Invalid password.')
+
+        callback()
+      end)
+    end
+  },
+
+  function(err)
+    if server then
+      server:close()
+    end
+
+    asserts.equals(err, nil)
+    test.done()
+  end)
+end
+
+exports['test_redis_max_line_limit'] = function(test, asserts)
+  local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8586, password='invalid'}})
+  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','redis_invalid_password.txt')
+  local commandMap = {}
+  local longString = string.rep('a', 1024*1024*1 + 1)
+  local server = nil
+
+  commandMap['AUTH invalid\r'] = function()
+    return longString
+  end
+
+  async.series({
+    function(callback)
+      testUtil.runTestTCPServer(8586, '127.0.0.1', commandMap, function(err, _server)
+        server = _server
+        callback(err)
+      end)
+    end,
+
+    function(callback)
+      check:run(function(result)
+        local metrics = result:getMetrics()['none']
+
+        asserts.equal(result:getState(), 'unavailable')
+        asserts.equal(result:getStatus(), 'Maximum buffer length reached')
 
         callback()
       end)
