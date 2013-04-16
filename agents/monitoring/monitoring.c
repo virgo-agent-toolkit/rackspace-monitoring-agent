@@ -129,12 +129,8 @@ virgo_error_t *main_wrapper(virgo_t *v)
   if (virgo_try_upgrade(v)) {
     /* Attempt upgrade. On success this process gets replaced. */
     err = virgo__exec_upgrade(v, &perform_upgrade, &upgrade_status_cb);
-    if (err && perform_upgrade) {
-      virgo_log_errorf(v, "Exec Error: %s", err->msg);
-      virgo_error_clear(err);
-    } else {
-      /* this code never gets executed because of execve */
-      return VIRGO_SUCCESS;
+    if (err) {
+      return err;
     }
   }
 
@@ -226,7 +222,8 @@ int main(int argc, char* argv[])
   err = virgo_log_rotate(v);
 
   if (err) {
-    return err;
+    handle_error(v, "Error rotating logs", err);
+    return EXIT_FAILURE;
   }
 
 #ifdef _WIN32
@@ -235,6 +232,8 @@ int main(int argc, char* argv[])
   err =  main_wrapper(v);
 #endif
 
+  handle_error(v, "Main exiting", err);
+  
   if (err == VIRGO_SUCCESS) {
     ret = 0;
   } else {
