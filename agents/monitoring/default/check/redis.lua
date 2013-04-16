@@ -26,7 +26,7 @@ local CheckResult = require('./base').CheckResult
 local split = require('../util/misc').split
 local fireOnce = require('../util/misc').fireOnce
 
-local MAX_BUFFER_LENGTH = 1024 * 1024 * 512 -- 512 MB
+local MAX_BUFFER_LENGTH = 1024 * 1024 * 1 -- 1 MB
 
 local METRICS_MAP = {
   redis_version = { type = 'string', alias = 'version' },
