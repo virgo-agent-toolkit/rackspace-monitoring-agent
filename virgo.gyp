@@ -156,7 +156,7 @@
               '<(PRODUCT_DIR)/virgo.exe',
             ],
             'outputs': [
-              '<(PRODUCT_DIR)virgo.msi',
+              '<(PRODUCT_DIR)/virgo.msi',
             ],
             'action': [
               '<(LIGHT_EXE)',
@@ -164,6 +164,7 @@
               '-ext', 'WixUIExtension',
               '-ext', 'WixUtilExtension',
               '-out', '<@(_outputs)',
+              '-sval',
             ],
             'process_outputs_as_sources': 1,
           }]
