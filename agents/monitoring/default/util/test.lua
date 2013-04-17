@@ -23,15 +23,20 @@ local LineEmitter = require('line-emitter').LineEmitter
 -- Simple test TCP servers which responds to commands with a pre-defined
 -- response.
 function runTestTCPServer(port, host, commandMap, callback)
-  local lineEmitter = LineEmitter:new()
   local server
 
   server = net.createServer(function(client)
+    local lineEmitter = LineEmitter:new()
     client:pipe(lineEmitter)
 
     lineEmitter:on('data', function(data)
-      if commandMap[data] then
+      if type(commandMap[data]) == 'string' then
         client:write(commandMap[data])
+        timer.setTimeout(2000, function()
+          client:destroy()
+        end)
+      elseif type(commandMap[data]) == 'function' then
+        client:write(commandMap[data]())
         timer.setTimeout(2000, function()
           client:destroy()
         end)
