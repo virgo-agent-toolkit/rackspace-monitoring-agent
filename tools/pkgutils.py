@@ -22,6 +22,9 @@ def pkg_type():
     if dist in rpm:
         return "rpm"
 
+    if sys.platform == "win32":
+        return "windows"
+
     return None
 
 
@@ -33,6 +36,12 @@ def pkg_dir():
         system = system + platform.release().lower()[0]
     if system == "linux":
         dist = platform.dist()
+
+        if dist[0] == 'debian':
+            if dist[1][0] == '6':
+                dist = [dist[0], 'squeeze']
+            else:
+                dist = [dist[0], 'undefined']
         # Lower case everyting (looking at you Ubuntu)
         dist = tuple([x.lower() for x in dist])
 
@@ -74,6 +83,13 @@ def mkdir_p(path):
             pass
         else:
             raise
+
+
+def package_binary():
+    pkgType = pkg_type()
+    if pkgType == 'windows':
+        return 'rackspace-monitoring-agent.msi'
+    return 'monitoring-agent'
 
 
 def system_info():
@@ -139,16 +155,19 @@ def package_builder_dir():
 
     pkgType = pkg_type()
     basePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    buildDirArgs = [basePath, 'out']
 
     if pkgType == 'deb':
+        buildDirArgs = [basePath, 'out']
         buildDirArgs += ('debbuild', 'rackspace-monitoring-agent')
+        buildDirArgs += ('out', 'Debug')
     elif pkgType == 'rpm':
+        buildDirArgs = [basePath, 'out']
         buildDirArgs += ('rpmbuild', 'BUILD', "virgo-%s" % ("-".join(git_describe())))
+        buildDirArgs += ('out', 'Debug')
+    elif pkgType == 'windows':
+        buildDirArgs = [basePath, 'Release']
     else:
         raise AttributeError('Unsupported pkg type, %s' % (pkgType))
-
-    buildDirArgs += ('out', 'Debug')
 
     return os.path.join(*buildDirArgs)
 

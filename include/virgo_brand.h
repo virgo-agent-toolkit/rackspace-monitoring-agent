@@ -26,7 +26,7 @@
   "rackspace-monitoring-agent"
 
 #define VIRGO_DEFAULT_EXE_NAME_PREFIX \
-  "rackspace-monitoring"
+  "monitoring-agent"
 
 #define VIRGO_DEFAULT_BUNDLE_NAME_PREFIX \
   "monitoring"
@@ -38,7 +38,7 @@
   VIRGO_DEFAULT_BUNDLE_NAME_PREFIX VIRGO_DEFAULT_BUNDLE_NAME_SUFFIX
 
 #define VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY \
-  "Rackspace Agent"
+  "Rackspace Monitoring"
 
 #define VIRGO_DEFAULT_CONFIG_FILENAME \
   VIRGO_DEFAULT_NAME \

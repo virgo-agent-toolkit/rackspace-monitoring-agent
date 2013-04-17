@@ -49,8 +49,8 @@
 #include "luvit_exports.h"
 #include "virgo_exports.h"
 
-extern int
-luaopen_sigar (lua_State *L);
+extern int luaopen_sigar(lua_State *L);
+extern int virgo__lua_exec(lua_State *L);
 
 static void
 virgo__lua_luvit_init(virgo_t *v) {
@@ -88,6 +88,27 @@ virgo__push_function(lua_State *L, const char *name, lua_CFunction cfunc) {
   lua_getglobal(L, "virgo");
   lua_pushcfunction(L, cfunc);
   lua_setfield(L, -2, name);
+}
+
+static int
+virgo__lua_restart_on_upgrade(lua_State *L) {
+#ifndef _WIN32
+  int pid;
+
+  pid = fork();
+  if (pid < 0) {
+    luaL_error(L, strerror(errno));
+    return 0;
+  }
+
+  if (pid > 0) {
+    setsid();
+    system("/etc/init.d/rackspace-monitoring-agent restart");
+    exit(0);
+  }
+
+#endif
+  return 0;
 }
 
 static int
@@ -182,6 +203,32 @@ virgo__lua_win32_get_associated_exe(lua_State *L) {
 }
 #endif
 
+static int
+virgo__lua_is_stdio_available(lua_State *L) {
+  virgo_t* v = virgo__lua_context(L);
+  int ret = 1;
+
+#ifdef _WIN32
+  int i;
+  DWORD ios[3] = {STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE};
+  for(i = 0; i < 3 && ret; i++) {
+    HANDLE h = GetStdHandle(ios[i]);
+    ret = (h != NULL) && (h != INVALID_HANDLE_VALUE);
+  }
+#endif
+
+  lua_pushboolean(L, ret);
+  return 1;
+}
+
+static int
+virgo__lua_get_log_fileno(lua_State *L) {
+  virgo_t* v = virgo__lua_context(L);
+
+  lua_pushnumber(L, fileno(v->log_fp));
+  return 1;
+}
+
 virgo_error_t*
 virgo__lua_init(virgo_t *v)
 {
@@ -199,16 +246,20 @@ virgo__lua_init(virgo_t *v)
   virgo__push_function(L, "force_crash", virgo__lua_force_crash);
   virgo__push_function(L, "gmtnow", virgo_time_now);
   virgo__push_function(L, "force_dump", virgo__lua_force_dump);
+  virgo__push_function(L, "perform_restart_on_upgrade", virgo__lua_restart_on_upgrade);
 
 #ifdef _WIN32
   virgo__push_function(L, "win32_get_associated_exe", virgo__lua_win32_get_associated_exe);
 #endif
-
+  virgo__push_function(L, "is_stdio_available", virgo__lua_is_stdio_available);
+  virgo__push_function(L, "get_log_fileno", virgo__lua_get_log_fileno);
   virgo__set_virgo_key(L, "os", VIRGO_OS);
   virgo__set_virgo_key(L, "version", VIRGO_VERSION);
   virgo__set_virgo_key(L, "platform", VIRGO_PLATFORM);
   virgo__set_virgo_key(L, "default_name", VIRGO_DEFAULT_NAME);
   virgo__set_virgo_key(L, "default_config_filename", VIRGO_DEFAULT_CONFIG_FILENAME);
+  virgo__set_virgo_key(L, "exit_on_upgrade", v->exit_on_upgrade ? "true" : "false");
+  virgo__set_virgo_key(L, "restart_on_upgrade", v->restart_on_upgrade ? "true" : "false");
 
   luaL_openlibs(L);
   luaopen_sigar(L);
@@ -217,6 +268,7 @@ virgo__lua_init(virgo_t *v)
   virgo__lua_vfs_init(L);
   virgo__lua_loader_init(L);
   virgo__lua_debugger_init(L);
+  virgo__lua_exec(L);
 
   virgo__lua_luvit_init(v);
 

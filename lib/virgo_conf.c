@@ -92,6 +92,14 @@ virgo_conf_args(virgo_t *v)
     v->try_upgrade = FALSE;
   }
 
+  if (virgo__argv_has_flag(v, "-r", "--exit-on-upgrade")) {
+    v->exit_on_upgrade = TRUE;
+  }
+
+  if (virgo__argv_has_flag(v, "-p", "--restart-sysv-on-upgrade")) {
+    v->restart_on_upgrade = TRUE;
+  }
+
   arg = virgo__argv_get_value(v, "-l", "--logfile");
   if (arg != NULL) {
     v->log_path = strdup(arg);
@@ -237,21 +245,21 @@ static virgo_error_t*
 virgo__conf_get_path(virgo_t *v, const char **p_path)
 {
 #ifdef _WIN32
-  char *programfiles;
+  char *programdata;
   const char *path;
 
   path = virgo__argv_get_value(v, "-c", "--config");
 
   if (path == NULL) {
     char gen_path[512];
-    programfiles = getenv("ProgramFiles");
+    programdata = getenv("ProgramData");
 
-    if (programfiles == NULL) {
-      return virgo_error_create(VIRGO_EINVAL, "Unable to get environment variable: \"ProgramFiles\"\n");
+    if (programdata == NULL) {
+      return virgo_error_create(VIRGO_EINVAL, "Unable to get environment variable: \"ProgramData\"\n");
     }
 
-    sprintf(gen_path, "%s\\%s\\etc\\",
-            programfiles,
+    sprintf(gen_path, "%s\\%s\\config\\%s",
+            programdata,
             VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY,
             VIRGO_DEFAULT_CONFIG_FILENAME);
 

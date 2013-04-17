@@ -52,7 +52,7 @@ static virgo_error_t*
 
   WideCharToMultiByte(CP_UTF8, 0, tmp, -1, buf, sizeof(buf), 0, NULL);
   CoTaskMemFree(tmp);
-  snprintf(buffer, buffer_len, "%s"SEP"%s"SEP"%s", buf, VIRGO_DEFAULT_NAME, addition);
+  snprintf(buffer, buffer_len, "%s"SEP"%s"SEP"%s", buf,  VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY, addition);
   return VIRGO_SUCCESS;
 }
 #endif
@@ -137,31 +137,37 @@ virgo__path_config_dir(virgo_t *v, char *buffer, size_t buffer_len) {
 
 static int
 is_bundle_file(const char *name) {
-  return strstr(name, VIRGO_DEFAULT_BUNDLE_NAME_PREFIX) != NULL;
+  return (strstr(name, VIRGO_DEFAULT_BUNDLE_NAME_PREFIX) != NULL) &&
+    (strstr(name, ".sig") == NULL);
 }
 
 static int
 is_exe_file(const char *name) {
-  return strstr(name, VIRGO_DEFAULT_EXE_NAME_PREFIX) != NULL;
+  return (strstr(name, VIRGO_DEFAULT_EXE_NAME_PREFIX) != NULL) &&
+    (strstr(name, ".sig") == NULL);
 }
 
 virgo_error_t*
-virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
+virgo__path_zip_file_latest(virgo_t *v, char *buffer, size_t buffer_len) {
   virgo_error_t *err = VIRGO_SUCCESS;
   char path[VIRGO_PATH_MAX];
 
   /* Fetch the BUNDLE directory */
   err = virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR, path, sizeof(path));
   if (err) {
-    virgo_error_clear(err);
-    goto default_bundle;
+    return err;
   }
 
-  err = virgo__versions_latest_file(v,
-                                    path,
-                                    is_bundle_file,
-                                    buffer,
-                                    buffer_len);
+  err = virgo__versions_latest_file(v, path, is_bundle_file, buffer, buffer_len);
+  return err;
+}
+
+virgo_error_t*
+virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
+  virgo_error_t *err = VIRGO_SUCCESS;
+
+  /* Fetch the BUNDLE directory */
+  err = virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR_LATEST, buffer, buffer_len);
   if (err) {
     virgo_error_clear(err);
     goto default_bundle;
@@ -171,6 +177,12 @@ virgo__path_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
 
 default_bundle:
   /* use the default path */
+  return virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, buffer, buffer_len);
+}
+
+virgo_error_t*
+virgo__path_default_zip_file(virgo_t *v, char *buffer, size_t buffer_len) {
+  /* get the default zip path */
 #ifdef _WIN32
   return join_path_with_name(&FOLDERID_ProgramFiles, VIRGO_DEFAULT_ZIP_FILENAME, buffer, buffer_len);
 #else
@@ -180,7 +192,20 @@ default_bundle:
 }
 
 virgo_error_t*
-virgo__path_exe_file(virgo_t* v, char *buffer, size_t buffer_len) {
+virgo__path_default_exe_file(virgo_t *v, char *buffer, size_t buffer_len) {
+  /* get the default exe path */
+#ifdef _WIN32
+  /* this may need some coaxing */
+  return join_path_with_name(&FOLDERID_ProgramFiles, VIRGO_DEFAULT_NAME ".exe", buffer, buffer_len);
+#else
+  /* not implemented */
+  buffer[0] = '\0';
+  return virgo_error_create(VIRGO_ENOTIMPL, "virgo__path_default_exe_file only implemented on Windows");
+#endif
+}
+
+virgo_error_t*
+virgo__path_exe_file_latest(virgo_t* v, char *buffer, size_t buffer_len) {
   virgo_error_t *err;
   char path[VIRGO_PATH_MAX];
 
@@ -190,6 +215,14 @@ virgo__path_exe_file(virgo_t* v, char *buffer, size_t buffer_len) {
   }
 
   err = virgo__versions_latest_file(v, path, is_exe_file, buffer, buffer_len);
+  return err;
+}
+
+virgo_error_t*
+virgo__path_exe_file(virgo_t* v, char *buffer, size_t buffer_len) {
+  virgo_error_t *err;
+
+  err = virgo__paths_get(v, VIRGO_PATH_EXE_DIR_LATEST, buffer, buffer_len);
   if (err) {
     /* on error, use the current executable */
     virgo_error_clear(err);
@@ -216,6 +249,12 @@ virgo__paths_get(virgo_t *v, virgo_path_e type, char *buffer, size_t buffer_len)
   case VIRGO_PATH_EXE_DIR:
     err = virgo__path_exe_dir(v, buffer, buffer_len);
     break;
+  case VIRGO_PATH_BUNDLE_DIR_LATEST:
+    err = virgo__path_zip_file_latest(v, buffer, buffer_len);
+    break;
+  case VIRGO_PATH_EXE_DIR_LATEST:
+    err = virgo__path_exe_file_latest(v, buffer, buffer_len);
+    break;
   case VIRGO_PATH_PERSISTENT_DIR:
     err = virgo__path_persistent_dir(v, buffer, buffer_len);
     break;
@@ -236,6 +275,12 @@ virgo__paths_get(virgo_t *v, virgo_path_e type, char *buffer, size_t buffer_len)
     break;
   case VIRGO_PATH_EXE:
     err = virgo__path_exe_file(v, buffer, buffer_len);
+    break;
+  case VIRGO_PATH_DEFAULT_BUNDLE:
+    err = virgo__path_default_zip_file(v, buffer, buffer_len);
+    break;
+  case VIRGO_PATH_DEFAULT_EXE:
+    err = virgo__path_default_exe_file(v, buffer, buffer_len);
     break;
   default:
     err = virgo_error_create(-1, "Unknown path type");

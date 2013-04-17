@@ -247,7 +247,9 @@ def configure_virgo():
     variables['luvit_prefix'] = options.prefix if options.prefix else ''
     variables['host_arch'] = options.host_arch if options.host_arch else host_arch()
     variables['target_arch'] = options.target_arch if options.target_arch else target_arch()
-    if sys.platform == "win32":
+    if sys.platform != "win32":
+        variables['OPENSSL'] = 'openssl'
+    else:
         supported_wix_toolsets = [
             {
                 'LIGHT_EXE': "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin\\light.exe",
@@ -270,6 +272,15 @@ def configure_virgo():
             variables['RACKSPACE_CODESIGNING_KEYFILE'] = windows_key_loc
         else:
             variables['RACKSPACE_CODESIGNING_KEYFILE'] = "pkg\\monitoring\\windows\\testss.pfx"
+        supported_openssl_toolsets = [
+            {
+                'OPENSSL': "C:\\Program Files (x86)\\Git\\bin\\openssl.exe",
+            },
+        ]
+        # set defaults to missing
+        variables['OPENSSL'] = '"tools\\win_tool_missing.bat" "openssl.exe"'
+
+        find_toolset(supported_openssl_toolsets, "OpenSSL", variables)
     return gypi
 
 

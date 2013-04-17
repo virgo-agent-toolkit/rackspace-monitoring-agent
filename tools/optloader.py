@@ -1,23 +1,12 @@
 import os
-import json
-import re
+import ast
 
 root_dir = os.path.dirname(__file__)
 
-# Regular expression for comments
-comment_re = re.compile('^#(.+)$')
 
-
-def load_options(options="options.gypi"):
+def load_options(options):
     options_filename = os.path.join(root_dir, '..', options)
+    with open(options_filename, 'rb') as fd:
+        gypi = fd.read()
 
-    opts = {}
-    f = open(options_filename, 'rb')
-    content = ''
-    for line in f.readlines():
-        #TODO: this is dumb.  Maybe just write json or something?
-        content += line.split("#")[0]
-    opts = json.loads(content)
-    f.close()
-
-    return opts
+    return ast.literal_eval(gypi)

@@ -20,7 +20,6 @@
 #include "virgo__conf.h"
 #include "virgo__types.h"
 #include "virgo__lua.h"
-#include "virgo__logging.h"
 #include "virgo__util.h"
 #include "uv.h"
 #include "luv.h"
@@ -49,7 +48,7 @@ static int global_virgo_init = 0;
 
 #ifndef __linux__
 
-void virgo__crash_reporter_init(virgo_t **p_v)
+void virgo__crash_reporter_init(virgo_t *p_v)
 {
 
 }
@@ -123,7 +122,7 @@ virgo_create(virgo_t **p_v, const char *default_module, int argc, char** argv)
 
   *p_v = v;
 
-  virgo__crash_reporter_init(&v);
+  virgo__crash_reporter_init(v);
 
   return VIRGO_SUCCESS;
 }
@@ -153,6 +152,10 @@ virgo_init(virgo_t *v)
 
   if (virgo__argv_has_flag(v, NULL, "--service-delete") == 1) {
     return virgo__service_delete(v);
+  }
+
+  if (virgo__argv_has_flag(v, NULL, "--service-upgrade") == 1) {
+    return virgo__service_upgrade(v);
   }
 #endif
 
@@ -184,11 +187,6 @@ virgo_run(virgo_t *v)
     }
   }
 #endif
-  err = virgo__log_rotate(v);
-
-  if (err) {
-    return err;
-  }
 
   err = virgo__conf_init(v);
 
@@ -196,12 +194,8 @@ virgo_run(virgo_t *v)
     return err;
   }
 
-#ifdef _WIN32
-  err = virgo__service_handler(v);
-#else
   /* TOOD: restart support */
   err = virgo__lua_run(v);
-#endif
 
   if (err) {
     return err;

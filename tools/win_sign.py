@@ -14,7 +14,7 @@ from optloader import load_options
 # Test CA Cert Import
 # certutil -user -addstore Root testca.cer
 
-options = load_options()
+options = load_options("options.gypi")
 
 build = 'Debug' if options['variables']['virgo_debug'] == 'true' else 'Release'
 signtool = "C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v7.0A\\bin\\signtool.exe"

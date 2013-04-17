@@ -20,7 +20,7 @@
 #ifndef _virgo__util_h_
 #define _virgo__util_h_
 
-void virgo__crash_reporter_init(virgo_t **v);
+void virgo__crash_reporter_init(virgo_t *v);
 void virgo__crash_reporter_destroy();
 void virgo__force_dump();
 
@@ -36,7 +36,8 @@ int virgo__argv_has_flag(virgo_t *v,
 
 virgo_error_t* virgo__service_install(virgo_t *v);
 virgo_error_t* virgo__service_delete(virgo_t *v);
-virgo_error_t* virgo__service_handler(virgo_t *v);
+virgo_error_t* virgo__service_upgrade(virgo_t *v);
+virgo_error_t* virgo__service_handler(virgo_t *v, virgo_error_t* (*wrapper)(virgo_t *v));
 
 #endif
 

@@ -3,7 +3,7 @@
 import os
 import subprocess
 import sys
-
+import optloader
 import paths
 
 
@@ -12,14 +12,27 @@ def _call(cmd, **kwargs):
     sys.exit(subprocess.call(cmd, shell=True, **kwargs))
 
 
-def build():
+def _build(prod=False):
+    env_str = ''
+    if prod:
+        env_str = 'PRODUCTION=1'
     if sys.platform.find('freebsd') == 0:
-        cmd = 'gmake -C %s' % paths.ROOT
+        cmd = '%s gmake -C %s' % (env_str, paths.root)
     elif sys.platform != "win32":
-        cmd = 'make -C %s' % paths.ROOT
+        cmd = '%s make -C %s' % (env_str, paths.root)
     else:
-        cmd = 'tools\win_build.bat %s' % paths.BUILDTYPE
+        if prod:
+            env_str = 'Production'
+        cmd = 'tools\win_build.bat %s %s' % (paths.BUILDTYPE, env_str)
     _call(cmd)
+
+
+def build():
+    _build()
+
+
+def build_prod():
+    _build(True)
 
 
 def pkg():
@@ -30,6 +43,17 @@ def pkg():
     else:
         cmd = 'tools\win_pkg.bat %s' % paths.BUILDTYPE
 
+    print cmd
+    sys.exit(subprocess.call(cmd, shell=True))
+
+
+def sig_gen(signingkey, filename, sigfilename):
+    if not filename or not sigfilename:
+        print "sig-gen requires additioanl parameters of <filename> <signature_filename>"
+        sys.exit(1)
+    options = optloader.load_options('options.gyi')
+    cmd = '%s dgst -sha256 -sign %s %s > %s' % (
+        options['variables']['OPENSSL'], signingkey, filename, sigfilename)
     print cmd
     sys.exit(subprocess.call(cmd, shell=True))
 
@@ -81,6 +105,8 @@ def crash():
 commands = {
     'crash': crash,
     'build': build,
+    'build_prod': build_prod,
+    'sig-gen': sig_gen,
     'pkg': pkg,
     'exe-sign': exe_sign,
     'pkg-sign': pkg_sign,
@@ -91,10 +117,10 @@ commands = {
 
 
 def main():
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         raise ValueError('Usage: build.py [%s]' % ', '.join(commands.keys()))
 
-    command = commands.get(sys.argv[1], None)
+    command = commands.get(sys.argv[2:], None)
 
     if command is None:
         raise ValueError('Invalid command: %s' % sys.argv[1])

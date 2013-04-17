@@ -44,6 +44,12 @@ static bool dumpCallback(const char* dump_path, const char* minidump_id, void* c
     printf("FATAL ERROR: Crash Dump written to: %s\n", dump_file);
   }
 
+  v = (virgo_t *)context;
+  if (v == NULL) {
+    printf("NULL virgo context in dumpCallback");
+    return succeeded;
+  }
+
   fp = fopen(dump_file, "ab");
   if (fp == NULL) {
     return succeeded;
@@ -55,12 +61,14 @@ static bool dumpCallback(const char* dump_path, const char* minidump_id, void* c
 
   if (!L){
     printf("No lua found.");
+    fclose(fp);
     return succeeded;
   }
   lua_getglobal(L, "dump_lua");
   rv = lua_pcall(L, 0, 1, 0);
   if (rv != 0) {
     printf("Error with lua dump: %s\n", lua_tostring(L, -1));
+    fclose(fp);
     return succeeded;
   }
 
@@ -77,10 +85,9 @@ extern "C" {
   virgo_t *v = NULL;
   virgo_error_t *err = virgo__paths_get(v, VIRGO_PATH_PERSISTENT_DIR, path, VIRGO_PATH_MAX);
 
-  void virgo__crash_reporter_init(virgo_t **p_v) {
-    virgo_t* v = *p_v;
+  void virgo__crash_reporter_init(virgo_t *v) {
     if (virgo__argv_has_flag(v, NULL, "--production") == 1){
-      virgo_global_exception_handler = new google_breakpad::ExceptionHandler(path, NULL, dumpCallback, (void *)p_v, true);
+      virgo_global_exception_handler = new google_breakpad::ExceptionHandler(path, NULL, dumpCallback, (void *)v, true);
     }
   };
 

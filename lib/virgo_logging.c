@@ -25,7 +25,7 @@
 #define MAX_LOG_LINE_LENGTH 4000
 
 virgo_error_t*
-virgo__log_rotate(virgo_t *v)
+virgo_log_rotate(virgo_t *v)
 {
   FILE *old = v->log_fp;
   FILE *nxt = stdout;
@@ -56,7 +56,7 @@ virgo__log_rotate(virgo_t *v)
   }
 
   if (v->log_path) {
-    virgo_log_infof(v, "Log file started (path=%s)", v->log_path);
+    virgo_log_infof(v, "Log file started (pid %u, path=%s)", getpid(), v->log_path);
   }
 
   return VIRGO_SUCCESS;
@@ -101,6 +101,14 @@ virgo_log(virgo_t *v, virgo_log_level_e level, const char *str)
     struct tm tm;
     struct tm *ptm;
     const char *llstr = NULL;
+
+#ifdef _WIN32
+    const char *EOL = "\r\n\0";
+    size_t EOL_LEN = 3;
+#else
+    const char *EOL = "\n\0";
+    size_t EOL_LEN = 2;
+#endif
 
     slen = strlen(str);
     t = time(NULL);
@@ -156,7 +164,7 @@ virgo_log(virgo_t *v, virgo_log_level_e level, const char *str)
     memcpy(&buf[0] + blen, str, slen);
     blen += slen;
 
-    memcpy(&buf[0] + blen, "\n\0", 2);
+    memcpy(&buf[0] + blen, EOL, EOL_LEN);
     blen += 2;
 
     virgo__log_buf(v, &buf[0], blen);

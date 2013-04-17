@@ -14,12 +14,19 @@
  *  limitations under the License.
  *
  */
-
-#include "virgo.h"
-
-#ifndef _virgo__logging_h_
-#define _virgo__logging_h_
-
-virgo_error_t* virgo__log_rotate(virgo_t *v);
-
-#endif
+#ifndef _virgo_win_h_
+#define _virgo_win_h_
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+/** Opaque context of a Virgo Instance. */
+typedef struct virgo_t virgo_t;
+/*
+ * Start the service instance (only Windows right now)
+ */
+VIRGO_API(virgo_error_t*)
+virgo_service_handler(virgo_t *v, virgo_error_t* (*wrapper)(virgo_t *v));
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+#endif /* _virgo_win_h_ */

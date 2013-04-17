@@ -4,8 +4,19 @@ DESTDIR ?=
 # we do this because gyp sucks
 include include.mk
 
+ifndef PRODUCTION
+SIGNING_KEY=tests/ca/server.key.insecure
+else
+SIGNING_KEY=/home/buildslave/server.key
+endif
+
+%.zip.sig: $(zip_files)
+	python tools/build.py sig-gen ${SIGNING_KEY} $(patsubst %.zip.sig, %.zip, $@) out/${BUILDTYPE}/$@
+ 	-ln -fs out/${BUILDTYPE}/$@ $@
+
 all: out/Makefile
 	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
+	python tools/build.py sig-gen ${SIGNING_KEY} ${PKG_NAME} out/${BUILDTYPE}/${PKG_NAME}.sig
 #	openssl dgst -sha256 -sign tests/ca/server.key.insecure ${PKG_NAME} > out/${BUILDTYPE}/${PKG_NAME}.sig
 #	-ln -fs out/${BUILDTYPE}/${PKG_NAME}.sig ${PKG_NAME}.sig
 
