@@ -48,9 +48,6 @@ def pkg():
 
 
 def sig_gen(signingkey, filename, sigfilename):
-    if not filename or not sigfilename:
-        print "sig-gen requires additioanl parameters of <filename> <signature_filename>"
-        sys.exit(1)
     options = optloader.load_options('options.gypi')
     cmd = '%s dgst -sha256 -sign %s %s > %s' % (
         options['variables']['OPENSSL'], signingkey, filename, sigfilename)
