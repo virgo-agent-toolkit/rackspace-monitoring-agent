@@ -24,6 +24,9 @@ local vutils = require('virgo_utils')
 
 local exports = {}
 local Error = core.Error;
+
+local BUNDLE_PREFIX = virgo.default_name ..'-bundle'
+
 local times = {
   --   T1          T2          T3           T4     Delta
   {1234567890, 1234567890, 1234567890, 1234567890, 0       },
@@ -39,6 +42,7 @@ local dump_bundle = function(dir, name, cb)
       return cb(err)
     end
     local file_path = path.join(abs_dir, name)
+
     fs.writeFile(file_path, "", function(err)
       return cb(err, file_path)
     end)
@@ -97,7 +101,7 @@ local bundle_iter = function(dir, name, asserts, cb)
 end
 
 exports['test_bundle_path_a'] = function(test, asserts)
-  async.forEachSeries({'monitoring-0.0.0.zip', 'monitoring-0.0.1.zip', 'monitoring-0.0.2.zip', 'monitoring-0.0.3.zip'},
+  async.forEachSeries({BUNDLE_PREFIX .. '-0.0.0.zip', BUNDLE_PREFIX .. '-0.0.1.zip', BUNDLE_PREFIX .. '-0.0.2.zip', BUNDLE_PREFIX .. '-0.0.3.zip'},
     function(name, cb)
       return bundle_iter('a', name, asserts, cb)
     end,
@@ -109,7 +113,7 @@ exports['test_bundle_path_a'] = function(test, asserts)
 end
 
 exports['test_bundle_path_b'] = function(test, asserts)
-  async.forEachSeries({'monitoring-0.0.1.zip', 'monitoring-1.0.1.zip'},
+  async.forEachSeries({BUNDLE_PREFIX .. '-0.0.1.zip', BUNDLE_PREFIX .. '-1.0.1.zip'},
     function(name, cb)
       return bundle_iter('b', name, asserts, cb)
     end,
@@ -122,7 +126,7 @@ end
 
 exports['test_bundle_path_c'] = function(test, asserts)
   dump_bundle('c', 'collector-1.0.0.zip', function()
-    async.forEachSeries({'monitoring-0.0.5.zip', 'monitoring-0.1.0.zip'},
+    async.forEachSeries({BUNDLE_PREFIX .. '-0.0.5.zip', BUNDLE_PREFIX .. '-0.1.0.zip'},
       function(name, cb)
         return bundle_iter('c', name, asserts, cb)
       end,
