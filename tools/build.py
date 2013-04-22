@@ -51,7 +51,7 @@ def sig_gen(signingkey, filename, sigfilename):
     if not filename or not sigfilename:
         print "sig-gen requires additioanl parameters of <filename> <signature_filename>"
         sys.exit(1)
-    options = optloader.load_options('options.gyi')
+    options = optloader.load_options('options.gypi')
     cmd = '%s dgst -sha256 -sign %s %s > %s' % (
         options['variables']['OPENSSL'], signingkey, filename, sigfilename)
     print cmd
@@ -120,7 +120,7 @@ def main():
     if len(sys.argv) < 2:
         raise ValueError('Usage: build.py [%s]' % ', '.join(commands.keys()))
 
-    command = commands.get(sys.argv[2:], None)
+    command = commands.get(sys.argv[1], None)
 
     if command is None:
         raise ValueError('Invalid command: %s' % sys.argv[1])
@@ -131,7 +131,7 @@ def main():
 
     print('Running %s' % sys.argv[1])
 
-    command()
+    command(*sys.argv[2:])
 
 if __name__ == "__main__":
     main()

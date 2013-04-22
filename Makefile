@@ -12,13 +12,12 @@ endif
 
 %.zip.sig: $(zip_files)
 	python tools/build.py sig-gen ${SIGNING_KEY} $(patsubst %.zip.sig, %.zip, $@) out/${BUILDTYPE}/$@
- 	-ln -fs out/${BUILDTYPE}/$@ $@
+ 	#ln -fs out/${BUILDTYPE}/$@ $@
 
 all: out/Makefile
 	$(MAKE) -C out BUILDTYPE=$(BUILDTYPE) -j4
-	python tools/build.py sig-gen ${SIGNING_KEY} ${PKG_NAME} out/${BUILDTYPE}/${PKG_NAME}.sig
-#	openssl dgst -sha256 -sign tests/ca/server.key.insecure ${PKG_NAME} > out/${BUILDTYPE}/${PKG_NAME}.sig
-#	-ln -fs out/${BUILDTYPE}/${PKG_NAME}.sig ${PKG_NAME}.sig
+	mv out/${BUILDTYPE}/virgo out/${BUILDTYPE}/${PKG_NAME}
+	python tools/build.py sig-gen ${SIGNING_KEY} out/${BUILDTYPE}/${PKG_NAME} out/${BUILDTYPE}/${PKG_NAME}.sig
 
 out/Makefile:
 	./configure
@@ -45,7 +44,7 @@ install: all
 	install -d ${BINDIR}
 	install -d ${ETCDIR}
 	install -d ${SHAREDIR}
-	install out/${BUILDTYPE}/virgo ${BINDIR}/${PKG_NAME}
+	install out/${BUILDTYPE}/${PKG_NAME} ${BINDIR}/${PKG_NAME}
 	install out/${BUILDTYPE}/${BUNDLE_NAME}-bundle.zip ${SHAREDIR}/${BUNDLE_NAME}-${BUNDLE_VERSION}.zip
 #	install out/${BUILDTYPE}/bundle-test.zip ${SHAREDIR}
 
