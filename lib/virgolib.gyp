@@ -61,6 +61,9 @@
         'VIRGO_PLATFORM="<!(python ../tools/virgo_platform.py)"',
         'VIRGO_VERSION="<(VIRGO_HEAD_SHA)"',
         'VERSION_FULL="<(VERSION_FULL)"',
+        'PKG_NAME="<(PKG_NAME)"',
+        'BUNDLE_NAME="<(BUNDLE_NAME)"',
+        'SHORT_NAME="<(SHORT_NAME)"',
       ],
       'sources': [
         'virgo_agent_conf.c',

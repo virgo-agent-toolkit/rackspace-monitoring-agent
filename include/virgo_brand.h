@@ -23,13 +23,15 @@
 #define _virgo_brand_h_
 
 #define VIRGO_DEFAULT_NAME \
-  "rackspace-monitoring-agent"
+  PKG_NAME
 
 #define VIRGO_DEFAULT_EXE_NAME_PREFIX \
-  "monitoring-agent"
+  PKG_NAME
+/* "monitoring-agent" */
 
 #define VIRGO_DEFAULT_BUNDLE_NAME_PREFIX \
-  "monitoring"
+  BUNDLE_NAME \
+  "-bundle"
 
 #define VIRGO_DEFAULT_BUNDLE_NAME_SUFFIX \
   ".zip"
@@ -38,7 +40,8 @@
   VIRGO_DEFAULT_BUNDLE_NAME_PREFIX VIRGO_DEFAULT_BUNDLE_NAME_SUFFIX
 
 #define VIRGO_DEFAULT_CONFIG_WINDOWS_DIRECTORY \
-  "Rackspace Monitoring"
+  SHORT_NAME
+  /* previously "Rackspace Monitoring" */
 
 #define VIRGO_DEFAULT_CONFIG_FILENAME \
   VIRGO_DEFAULT_NAME \
@@ -70,7 +73,8 @@
   VIRGO_DEFAULT_NAME
 
 #define VIRGO_DEFAULT_ZIP_FILENAME \
-  "monitoring.zip"
+  VIRGO_DEFAULT_BUNDLE_NAME_PREFIX \
+  ".zip"
 
 #define VIRGO_DEFAULT_ZIP_UNIX_PATH \
   "/usr/share/" \
