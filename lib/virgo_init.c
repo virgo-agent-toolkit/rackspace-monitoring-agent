@@ -114,7 +114,7 @@ virgo_create(virgo_t **p_v, const char *default_module, int argc, char** argv)
 
   v = calloc(1, sizeof(virgo_t));
   v->lua_default_module = strdup(default_module);
-  v->log_level = VIRGO_LOG_EVERYTHING;
+  v->log_level = VIRGO_LOG_INFO;
   v->try_upgrade = TRUE;
 
   v->argc = argc;

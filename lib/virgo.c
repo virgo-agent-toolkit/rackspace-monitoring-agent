@@ -83,7 +83,7 @@ static void
 service_maintenance(virgo_t *v)
 {
   const char *msg = "Service Maintenance Complete";
-  virgo_log_infof(v, msg);
+  virgo_log_debugf(v, msg);
   printf("%s\n", msg);
   fflush(stdout);
 }
@@ -110,19 +110,19 @@ virgo_error_t *main_wrapper(virgo_t *v)
   int perform_upgrade = FALSE;
 
   virgo__paths_get(v, VIRGO_PATH_DEFAULT_EXE, path, VIRGO_PATH_MAX);
-  virgo_log_infof(v, "Default EXE Path: %s", path);
+  virgo_log_debugf(v, "Default EXE Path: %s", path);
   virgo__paths_get(v, VIRGO_PATH_DEFAULT_BUNDLE, path, VIRGO_PATH_MAX);
-  virgo_log_infof(v, "Default Bundle Path: %s", path);
+  virgo_log_debugf(v, "Default Bundle Path: %s", path);
 
   virgo__paths_get(v, VIRGO_PATH_EXE, path, VIRGO_PATH_MAX);
-  virgo_log_infof(v, "EXE Path: %s", path);
+  virgo_log_debugf(v, "EXE Path: %s", path);
   virgo__paths_get(v, VIRGO_PATH_BUNDLE, path, VIRGO_PATH_MAX);
-  virgo_log_infof(v, "Bundle Path: %s", path);
+  virgo_log_debugf(v, "Bundle Path: %s", path);
 
   virgo__paths_get(v, VIRGO_PATH_EXE_DIR, path, VIRGO_PATH_MAX);
-  virgo_log_infof(v, "Latest EXE Path: %s", path);
+  virgo_log_debugf(v, "Latest EXE Path: %s", path);
   virgo__paths_get(v, VIRGO_PATH_BUNDLE_DIR, path, VIRGO_PATH_MAX);
-  virgo_log_infof(v, "Latest Bundle Path: %s", path);
+  virgo_log_debugf(v, "Latest Bundle Path: %s", path);
 
   /* See if we are upgrading */
   if (virgo_try_upgrade(v)) {
@@ -139,7 +139,7 @@ virgo_error_t *main_wrapper(virgo_t *v)
     return err;
   }
 
-  // virgo_log_infof(v, "Process Executable: %s", path);
+  // virgo_log_debugf(v, "Process Executable: %s", path);
 
   /* Check to see if bundle is valid */
   err = virgo__bundle_is_valid(v);
@@ -148,7 +148,7 @@ virgo_error_t *main_wrapper(virgo_t *v)
     return err;
   }
 
-  // virgo_log_infof(v, "Bundle: %s", virgo_get_load_path(v));
+  // virgo_log_debugf(v, "Bundle: %s", virgo_get_load_path(v));
 
   /* Setup Lua Contexts for Luvit and Libuv runloop */
   err = virgo_init(v);
