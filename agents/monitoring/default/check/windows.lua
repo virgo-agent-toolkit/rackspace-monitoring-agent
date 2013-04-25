@@ -37,8 +37,21 @@ end
 
 --[[
 # So this should create a Perf.csv file in the temp directory
-powershell "\$env:PERF = \$env:TEMP + \"\\Perf.csv\" ; get-wmiobject Win32_PerfFormattedData_PerfOS_System | Export-Csv \$env:PERF ; type \$env:PERF"
+powershell "$env:PERF = $env:TEMP + "\Perf.csv" ; (get-wmiobject -Class Win32_PerfFormattedData_PerfOS_System).Properties | Export-Csv $env:PERF ; type $env:PERF"
 --]]
+
+local numeric_wmi_types = { uint8=true, uint16=true, uint32=true, uint64=true, sint8=true, sint16=true, sint32=true, sint64=true, real32=true, real64=true }
+local PerfOS_System_Properties_Ignore = {
+  Caption=true,
+  Description=true,
+  Name=true,
+  Frequency_Object=true,
+  Frequency_PerfTime=true,
+  Frequency_Sys100NS=true,
+  Timestamp_Object=true,
+  Timestamp_PerfTime=true,
+  Timestamp_Sys100NS=true
+  }
 
 function WindowsPerfOSCheck:run(callback)
   -- Set up
@@ -48,36 +61,38 @@ function WindowsPerfOSCheck:run(callback)
 
   -- Perform Check
   local options = {}
-  local child = spawn('powershell.exe', {'$env:PERF = $env:TEMP + "\\Perf.csv" ; get-wmiobject Win32_PerfFormattedData_PerfOS_System | Export-Csv $env:PERF ; type $env:PERF'}, options)
+  local child = spawn('powershell.exe', {'$env:PERF = $env:TEMP + "\\Perf.csv" ; (get-wmiobject -Class Win32_PerfFormattedData_PerfOS_System).Properties | Export-Csv $env:PERF ; type $env:PERF'}, options)
   child.stdout:on('data', function(chunk)
     -- aggregate the output
     block_data = block_data .. chunk
   end)
   child:on('exit', function(exit_code)
     -- Build Dataset from Block Data
-    local headings = {}
-    local values = {}
     local data_lines = lines(block_data)
     local count = 0
+    local headings = {}
     for x, line in pairs(data_lines) do
       if string.sub(line,1,1) ~= '#' then
         count = count + 1
         if count == 1 then
-          headings = parseCSVLine(line)
-        end
-        if count == 2 then
-          values = parseCSVLine(line)
+          local temp = parseCSVLine(line)
+          local i = 0
+          -- Map headings to indexes
+          for x, heading in pairs(temp) do
+            i = i + 1
+            headings[heading] = i
+          end
+        else
+          -- Parse Data, coverting to numbers when needed
+          local entry = parseCSVLine(line)
+          if entry[headings['Name']] ~= nil and PerfOS_System_Properties_Ignore[entry[headings['Name']]] ~= true then
+            if entry[headings['Type']] ~= nil and numeric_wmi_types[string.lower(entry[headings['Type']])] then
+               entry[headings['Value']] = tonumber(entry[headings['Value']])
+            end
+            checkResult:addMetric(entry[headings['Name']], nil, 'gauge', entry[headings['Value']], '')
+          end
         end
       end
-    end
-
-    -- Input metrics into Result
-    for i = 1, table.getn(headings) do
-      local v = tonumber(values[i])
-      if v == nil and values[i] ~= nil then
-        v = values[i]
-      end
-      checkResult:addMetric(headings[i], nil, 'gauge', values[i], '')
     end
 
     -- Return Result
