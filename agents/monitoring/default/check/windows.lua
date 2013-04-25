@@ -29,9 +29,9 @@ local function lines(str)
   return t
 end
 
-local WindowsPerfOS = BaseCheck:extend()
+local WindowsPerfOSCheck = BaseCheck:extend()
 
-function WindowsPerfOS:initialize(params)
+function WindowsPerfOSCheck:initialize(params)
   BaseCheck.initialize(self, 'agent.windows_perfos', params)
 end
 
@@ -40,7 +40,7 @@ end
 powershell "\$env:PERF = \$env:TEMP + \"\\Perf.csv\" ; get-wmiobject Win32_PerfFormattedData_PerfOS_System | Export-Csv \$env:PERF ; type \$env:PERF"
 --]]
 
-function WindowsPerfOS:run(callback)
+function WindowsPerfOSCheck:run(callback)
   -- Set up
   local callback = fireOnce(callback)
   local checkResult = CheckResult:new(self, {})
@@ -73,7 +73,11 @@ function WindowsPerfOS:run(callback)
 
     -- Input metrics into Result
     for i = 1, table.getn(headings) do
-      checkResult:addMetric(headings[i], nil, 'gauge', values[i], 'none')
+      local v = tonumber(values[i])
+      if v == nil and values[i] ~= nil then
+        v = values[i]
+      end
+      checkResult:addMetric(headings[i], nil, 'gauge', values[i], '')
     end
 
     -- Return Result
@@ -90,5 +94,5 @@ function WindowsPerfOS:run(callback)
 end
 
 local exports = {}
-exports.WindowsPerfOS = WindowsPerfOS
+exports.WindowsPerfOSCheck = WindowsPerfOSCheck
 return exports
