@@ -220,12 +220,18 @@ def configure_virgo_platform(bundle_dir, platform_vars):
     variables['VERSION_RELEASE'] = versions['release']
     variables['VERSION_PATCH'] = versions['patch']
     variables['BUNDLE_VERSION'] = version.version(cwd=bundle_dir)
+    # pass these guys onto breakpad :(
+    defines = [
+        'PKG_NAME="<(PKG_NAME)"',
+        'BUNDLE_NAME="<(BUNDLE_NAME)"',
+        'SHORT_NAME="<(SHORT_NAME)"',
+    ]
 
     for k, v in platform_vars.items():
         if k != "CHANGELOG":
             variables[k] = v
 
-    return {'variables': variables}
+    return {'variables': variables, 'defines': defines}
 
 
 def configure_virgo():
