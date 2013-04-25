@@ -37,7 +37,7 @@ end
 
 --[[
 # So this should create a Perf.csv file in the temp directory
-powershell "$env:PERF = $env:TEMP + "\Perf.csv" ; (get-wmiobject -Class Win32_PerfFormattedData_PerfOS_System).Properties | Export-Csv $env:PERF ; type $env:PERF"
+powershell "(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
 --]]
 
 local numeric_wmi_types = { uint8=true, uint16=true, uint32=true, uint64=true, sint8=true, sint16=true, sint32=true, sint64=true, real32=true, real64=true }
@@ -61,7 +61,7 @@ function WindowsPerfOSCheck:run(callback)
 
   -- Perform Check
   local options = {}
-  local child = spawn('powershell.exe', {'$env:PERF = $env:TEMP + "\\Perf.csv" ; (get-wmiobject -Class Win32_PerfFormattedData_PerfOS_System).Properties | Export-Csv $env:PERF ; type $env:PERF'}, options)
+  local child = spawn('powershell.exe', {'(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv'}, options)
   child.stdout:on('data', function(chunk)
     -- aggregate the output
     block_data = block_data .. chunk
