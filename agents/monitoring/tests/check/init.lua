@@ -46,6 +46,11 @@ exports = merge(exports, FileSystemTests)
 exports = merge(exports, LoadTests)
 exports = merge(exports, RedisTests)
 
+if os.type() == 'win32' then
+  local WindowsTests = require('./windows')
+  exports = merge(exports, WindowsTests)
+end
+
 exports['test_base_check'] = function(test, asserts)
   local check = BaseCheck:new('test', {id='foo', period=30})
   asserts.ok(check:getSummary() == '(id=foo, type=test)')
