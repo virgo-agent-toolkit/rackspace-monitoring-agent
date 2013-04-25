@@ -21,6 +21,7 @@ local fireOnce = require('../util/misc').fireOnce
 local parseCSVLine = require('../util/misc').parseCSVLine
 local table = require('table')
 local string = require('string')
+local os = require('os')
 
 local function lines(str)
   local t = {}
@@ -58,6 +59,15 @@ function WindowsPerfOSCheck:run(callback)
   local callback = fireOnce(callback)
   local checkResult = CheckResult:new(self, {})
   local block_data = ''
+
+  if os.type() ~= 'win32' then
+    checkResult:setStatus("err agent.windows_perfos available only on Windows platforms")
+
+    -- Return Result
+    self._lastResult = checkResult
+    callback(checkResult)
+    return
+  end
 
   -- Perform Check
   local options = {}

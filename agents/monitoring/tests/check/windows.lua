@@ -11,11 +11,15 @@ exports['test_windowsperfos_check'] = function(test, asserts)
   check:run(function(result)
     asserts.ok(result ~= nil)
     asserts.ok(check._lastResult ~= nil)
-    asserts.ok(#check._lastResult:serialize() > 0)
 
-    local metrics = result:getMetrics()['none']
-    asserts.ok(tonumber(metrics['Processes']['v']) > 0)
-
+    if os.type() == 'win32' then
+      asserts.ok(result:getStatus() == 'success')
+      asserts.ok(#check._lastResult:serialize() > 0)
+      local metrics = result:getMetrics()['none']
+      asserts.ok(tonumber(metrics['Processes']['v']) > 0)
+    else
+      asserts.ok(result:getStatus() ~= 'success')
+    end
     test.done()
   end)
 end

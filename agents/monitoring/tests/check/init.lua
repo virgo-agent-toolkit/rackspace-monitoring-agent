@@ -39,17 +39,15 @@ local ApacheTests = require('./apache')
 local FileSystemTests = require('./filesystem')
 local LoadTests = require('./load_average')
 local RedisTests = require('./redis')
+local WindowsTests = require('./windows')
 
 local exports = merge(MySQLTests, {})
 exports = merge(exports, ApacheTests)
 exports = merge(exports, FileSystemTests)
 exports = merge(exports, LoadTests)
 exports = merge(exports, RedisTests)
+exports = merge(exports, WindowsTests)
 
-if os.type() == 'win32' then
-  local WindowsTests = require('./windows')
-  exports = merge(exports, WindowsTests)
-end
 
 exports['test_base_check'] = function(test, asserts)
   local check = BaseCheck:new('test', {id='foo', period=30})
