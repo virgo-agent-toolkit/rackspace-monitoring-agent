@@ -16,6 +16,8 @@ exports['test_windowsperfos_check'] = function(test, asserts)
       asserts.ok(result:getStatus() == 'success')
       asserts.ok(#check._lastResult:serialize() > 0)
       local metrics = result:getMetrics()['none']
+      asserts.ok(metrics['Processes']['t'] == 'uint32')
+      -- Values always become strings internally
       asserts.ok(tonumber(metrics['Processes']['v']) > 0)
     else
       asserts.ok(result:getStatus() ~= 'success')

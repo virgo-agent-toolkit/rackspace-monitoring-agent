@@ -41,7 +41,7 @@ end
 powershell "(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
 --]]
 
-local numeric_wmi_types = { uint8=true, uint16=true, uint32=true, uint64=true, sint8=true, sint16=true, sint32=true, sint64=true, real32=true, real64=true }
+local wmi_type_map = { uint8='uint32', uint16='uint32', uint32='uint32', uint64='uint64', sint8='int32', sint16='int32', sint32='int32', sint64='int64', real32='double', real64='double' }
 local PerfOS_System_Properties_Ignore = {
   Caption=true,
   Description=true,
@@ -96,10 +96,12 @@ function WindowsPerfOSCheck:run(callback)
           -- Parse Data, coverting to numbers when needed
           local entry = parseCSVLine(line)
           if entry[headings['Name']] ~= nil and PerfOS_System_Properties_Ignore[entry[headings['Name']]] ~= true then
-            if entry[headings['Type']] ~= nil and numeric_wmi_types[string.lower(entry[headings['Type']])] then
+            local type = 'string'
+            if entry[headings['Type']] ~= nil and wmi_type_map[string.lower(entry[headings['Type']])] ~=nil then
                entry[headings['Value']] = tonumber(entry[headings['Value']])
+               type = wmi_type_map[string.lower(entry[headings['Type']])]
             end
-            checkResult:addMetric(entry[headings['Name']], nil, 'gauge', entry[headings['Value']], '')
+            checkResult:addMetric(entry[headings['Name']], nil, type, entry[headings['Value']], '')
           end
         end
       end
