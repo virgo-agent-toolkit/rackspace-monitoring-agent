@@ -112,7 +112,6 @@ function WindowsPerfOSCheck:run(callback)
           if entry[headings['Name']] ~= nil and PerfOS_System_Properties_Ignore[entry[headings['Name']]] ~= true then
             local type = 'string'
             if entry[headings['Type']] ~= nil and wmi_type_map[string.lower(entry[headings['Type']])] ~=nil then
-               entry[headings['Value']] = tonumber(entry[headings['Value']])
                type = wmi_type_map[string.lower(entry[headings['Type']])]
             end
             checkResult:addMetric(entry[headings['Name']], nil, type, entry[headings['Value']], '')
