@@ -25,7 +25,10 @@ local os = require('os')
 
 local function lines(str)
   local t = {}
-  local function helper(line) table.insert(t, line) return "" end
+  local function helper(line)
+    table.insert(t, line)
+    return ""
+  end
   helper((str:gsub("(.-)\r?\n", helper)))
   return t
 end
@@ -41,7 +44,18 @@ end
 powershell "(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
 --]]
 
-local wmi_type_map = { uint8='uint32', uint16='uint32', uint32='uint32', uint64='uint64', sint8='int32', sint16='int32', sint32='int32', sint64='int64', real32='double', real64='double' }
+local wmi_type_map = {
+  uint8='uint32',
+  uint16='uint32',
+  uint32='uint32',
+  uint64='uint64',
+  sint8='int32',
+  sint16='int32',
+  sint32='int32',
+  sint64='int64',
+  real32='double',
+  real64='double'
+  }
 local PerfOS_System_Properties_Ignore = {
   Caption=true,
   Description=true,
