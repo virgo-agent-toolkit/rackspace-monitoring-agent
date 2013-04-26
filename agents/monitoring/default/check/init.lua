@@ -28,6 +28,7 @@ local RedisCheck = require('./redis').RedisCheck
 local NullCheck = require('./null').NullCheck
 local LoadAverageCheck = require('./load_average').LoadAverageCheck
 local PluginCheck = require('./plugin').PluginCheck
+local WindowsPerfOSCheck = require('./windows').WindowsPerfOSCheck
 
 local Error = require('core').Error
 
@@ -65,6 +66,8 @@ function create(checkData)
     return RedisCheck:new(obj)
   elseif checkType == 'agent.null' then
     return NullCheck:new(obj)
+  elseif checkType == 'agent.windows_perfos' then
+    return WindowsPerfOSCheck:new(obj)
   else
     return nil
   end
@@ -121,6 +124,7 @@ exports.RedisCheck = RedisCheck
 exports.LoadAverageCheck = LoadAverageCheck
 exports.ApacheCheck = ApacheCheck
 exports.NullCheck = NullCheck
+exports.WindowsPerfOSCheck = WindowsPerfOSCheck
 
 exports.create = create
 exports.test = test
