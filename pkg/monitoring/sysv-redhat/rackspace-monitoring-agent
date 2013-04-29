@@ -20,7 +20,7 @@ case "$1" in
         echo -n "Starting $DAEMON: "
         daemon $DAEMON -D -p $PIDFILE -l $LOG --production --restart-sysv-on-upgrade
         echo
-        touch /var/lock/subsys/process-name
+        touch /var/lock/subsys/rackspace-monitoring-agent
         ;;
   stop)
         echo -n "Shutting down $DAEMON: "
