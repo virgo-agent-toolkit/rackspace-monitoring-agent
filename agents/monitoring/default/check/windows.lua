@@ -86,6 +86,7 @@ function WindowsPerfOSCheck:run(callback)
   -- Perform Check
   local options = {}
   local child = spawn('powershell.exe', {'(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv'}, options)
+  child.stdin:close() -- NEEDED for Powershell 2.0 to exit
   child.stdout:on('data', function(chunk)
     -- aggregate the output
     block_data = block_data .. chunk
