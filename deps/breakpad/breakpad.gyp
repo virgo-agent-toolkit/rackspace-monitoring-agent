@@ -469,7 +469,11 @@
         {
           'target_name': 'breakpad_client',
           'type': 'static_library',
-
+          'defines': [
+            'PKG_NAME="<(PKG_NAME)"',
+            'BUNDLE_NAME="<(BUNDLE_NAME)"',
+            'SHORT_NAME="<(SHORT_NAME)"',
+          ],
           'sources': [
             'src/client/linux/crash_generation/crash_generation_client.cc',
             'src/client/linux/crash_generation/crash_generation_client.h',
