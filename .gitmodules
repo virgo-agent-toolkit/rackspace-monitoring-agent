@@ -1,0 +1,3 @@
+[submodule "virgo-base"]
+	path = virgo-base
+	url = https://github.com/racker/virgo-base.git
