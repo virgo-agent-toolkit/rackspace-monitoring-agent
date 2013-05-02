@@ -33,18 +33,46 @@ exports.SHUTDOWN_UPGRADE = 1
 exports.SHUTDOWN_RATE_LIMIT = 2
 exports.SHUTDOWN_RESTART = 3
 
+-- if process.env.STAGING then
+--   exports.DEFAULT_MONITORING_SRV_QUERIES = {
+--     '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com',
+--     '_monitoringagent._tcp.ord1.stage.monitoring.api.rackspacecloud.com',
+--     '_monitoringagent._tcp.lon3.stage.monitoring.api.rackspacecloud.com'
+--   }
+-- else
+--   exports.DEFAULT_MONITORING_SRV_QUERIES = {
+--     '_monitoringagent._tcp.dfw1.prod.monitoring.api.rackspacecloud.com',
+--     '_monitoringagent._tcp.ord1.prod.monitoring.api.rackspacecloud.com',
+--     '_monitoringagent._tcp.lon3.prod.monitoring.api.rackspacecloud.com'
+--   }
+-- end
+
 if process.env.STAGING then
   exports.DEFAULT_MONITORING_SRV_QUERIES = {
-    '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com',
-    '_monitoringagent._tcp.ord1.stage.monitoring.api.rackspacecloud.com',
-    '_monitoringagent._tcp.lon3.stage.monitoring.api.rackspacecloud.com'
-  }
+    dfw = {
+      '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com',
+    },
+    ord = {
+      '_monitoringagent._tcp.ord1.stage.monitoring.api.rackspacecloud.com'
+    },
+    lon = {
+      '_monitoringagent._tcp.lon3.stage.monitoring.api.rackspacecloud.com'
+    }
+}
 else
   exports.DEFAULT_MONITORING_SRV_QUERIES = {
-    '_monitoringagent._tcp.dfw1.prod.monitoring.api.rackspacecloud.com',
-    '_monitoringagent._tcp.ord1.prod.monitoring.api.rackspacecloud.com',
-    '_monitoringagent._tcp.lon3.prod.monitoring.api.rackspacecloud.com'
-  }
+    dfw = {
+      '_monitoringagent._tcp.dfw1.prod.monitoring.api.rackspacecloud.com',
+      '_monitoringagent._tcp.dfw2.prod.monitoring.api.rackspacecloud.com',  --for test, so use the fake dns dfw2
+      '_monitoringagent._tcp.dfw3.prod.monitoring.api.rackspacecloud.com'   --for test, so use the fake dns dfw3
+    },
+    ord = {
+      '_monitoringagent._tcp.ord1.prod.monitoring.api.rackspacecloud.com'
+    },
+    lon = {
+      '_monitoringagent._tcp.lon3.prod.monitoring.api.rackspacecloud.com'
+    }
+}
 end
 
 local PERSISTENT_DIR = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
