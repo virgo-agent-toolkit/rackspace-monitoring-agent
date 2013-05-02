@@ -28,6 +28,7 @@ local async = require('async')
 local ask = require('./util/prompt').ask
 local errors = require('./errors')
 local constants = require('./util/constants')
+local UUID = require('./util/uuid')
 local sigarCtx = require('./sigar').ctx
 
 local maas = require('rackspace-monitoring')
@@ -43,6 +44,7 @@ function Setup:initialize(argv, configFile, agent)
     self._receivedPromotion = true
   end)
   self._addresses = {}
+  self._agentId = nil
 
   -- build a "set" (table keyed by address) of local IP addresses
   local netifs = sigarCtx:netifs()
@@ -55,6 +57,19 @@ function Setup:initialize(argv, configFile, agent)
     if info['addres6'] then
       self._addresses[info['address6']] = true
     end
+  end
+
+  -- generate a new agent ID
+  for i=1, #netifs do
+    local eth = netifs[i]:info()
+    if eth['type'] ~= 'Local Loopback' then
+      self._agentId = UUID:new(eth.hwaddr):toString()
+    end
+  end
+
+  if self._agentId == nil then
+    self:_out('Error: unable to locate loopback interface, unable to proceed')
+    process.exit(1)
   end
 end
 
@@ -69,10 +84,10 @@ function Setup:saveTest(callback)
   end)
 end
 
-function Setup:save(token, hostname, callback)
+function Setup:save(token, callback)
   process.stdout:write(fmt('Writing token to %s: ', self._configFile))
   local data = fmt('monitoring_token %s\n', token)
-  data = data .. fmt('monitoring_id %s\n', hostname)
+  data = data .. fmt('monitoring_id %s\n', self._agentId)
 
   --[[
   1. We are using an environment variable because we thought adding special hidden
@@ -105,7 +120,7 @@ function Setup:_getOsStartString()
 end
 
 function Setup:_isLocalEntity(entity)
-  if entity.label == os.hostname() then
+  if entity.label:lower() == os.hostname():lower() then
     return true
   end
 
@@ -123,7 +138,7 @@ function Setup:_isLocalEntity(entity)
   return false
 end
 
-function Setup:_buildLocalEntity(agentId)
+function Setup:_buildLocalEntity(hostname)
   local addresses = {}
   local netifs = sigarCtx:netifs()
 
@@ -140,8 +155,8 @@ function Setup:_buildLocalEntity(agentId)
   end
 
   return {
-    label = agentId,
-    agent_id = agentId,
+    label = hostname,
+    agent_id = self._agentId,
     ip_addresses = addresses
   }
 end
@@ -153,7 +168,7 @@ function Setup:run(callback)
   hostname = os.hostname()
   self:_out('')
   self:_out('Setup Settings:')
-  self:_out(fmt('  Agent ID: %s', hostname))
+  self:_out(fmt('  Agent ID: %s', self._agentId))
   self:_out(fmt('  Config File: %s', self._configFile))
   self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
   self:_out('')
@@ -165,7 +180,7 @@ function Setup:run(callback)
         return
       end
       self._agent:setConfig({ ['monitoring_token'] = token })
-      self:save(token, hostname, callback)
+      self:save(token, callback)
     end)
   end
 
@@ -223,7 +238,7 @@ function Setup:run(callback)
         self:_out(fmt('Found existing Agent Token for %s', hostname))
         self:_out('')
         self._agent:setConfig({ ['monitoring_token'] = agentToken })
-        self:save(agentToken, hostname, callback)
+        self:save(agentToken, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
          createToken(callback)
@@ -251,7 +266,7 @@ function Setup:run(callback)
           local validatedIndex = tonumber(index) -- validate response
           if validatedIndex >= 1 and validatedIndex <= #tokens.values then
             self._agent:setConfig({ ['monitoring_token'] = tokens.values[validatedIndex].id })
-            self:save(tokens.values[validatedIndex].id, hostname, callback)
+            self:save(tokens.values[validatedIndex].id, callback)
           elseif validatedIndex == (#tokens.values + 1) then
             createToken(callback)
           else
@@ -332,11 +347,6 @@ function Setup:run(callback)
           end
 
           for i, entity in ipairs(entities.values) do
-            if (entity.agent_id == hostname) then
-              self:_out(fmt('Agent already associated Entity with id=%s and label=%s', entity.id, entity.label))
-              callback(nil)
-              return
-            end
             if self:_isLocalEntity(entity) then
               table.insert(localEntities, entity)
             end
@@ -345,7 +355,7 @@ function Setup:run(callback)
           function entitySelection()
             self:_out('Please select the Entity that corresponds to this server:')
             displayEntities()
-            self:_out(fmt('  %i. Create a new Entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
+            self:_out(fmt('  %i. Create an new Entity for this server (WARNING: not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
             self:_out(fmt('  %i. Do not associate with an Entity', #localEntities + 2))
             self:_out('')
 
@@ -379,7 +389,7 @@ function Setup:run(callback)
               elseif validatedIndex == #localEntities + 2 then
                 callback()
               elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
-                client.entities.update(localEntities[validatedIndex].id, { agent_id = hostname }, callback)
+                client.entities.update(localEntities[validatedIndex].id, { agent_id = self._agentId }, callback)
               else
                 self:_out('')
                 self:_out('Invalid selection')
@@ -388,6 +398,14 @@ function Setup:run(callback)
             end)
           end
 
+          -- This server matches exactly 1 entity and it has a URI. Just use it.
+          if #localEntities == 1 and localEntities[1].uri ~= nil then
+            self:_out(fmt('This server matches entity %s, binding to it...', localEntities[1].id))
+            client.entities.update(localEntities[1].id, { agent_id = self._agentId }, callback)
+            return
+          end
+
+          -- Otherwise prompt the user
           entitySelection()
         end
       }, callback)
