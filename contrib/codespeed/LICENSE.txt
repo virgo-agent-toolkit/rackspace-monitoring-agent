@@ -1,1 +1,0 @@
-syrupy.py is licensed under GPLv3: https://github.com/jeetsukumaran/Syrupy
