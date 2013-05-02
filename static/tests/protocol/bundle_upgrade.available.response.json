@@ -1,0 +1,8 @@
+{
+  "v": "1",
+  "id": 8,
+  "source": "agentA",
+  "target": "endpoint",
+  "result": 0,
+  "error": null
+}

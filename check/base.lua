@@ -25,7 +25,7 @@ local logging = require('logging')
 local os = require('os')
 local table = require('table')
 local timer = require('timer')
-local vtime = require('virgo-time')
+local vutils = require('virgo_utils')
 local utils = require('utils')
 
 local constants = require('../util/constants')
@@ -268,7 +268,7 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
     if state == 'ok' or state == 'warn' or state == 'err' then
       -- Assume this is an old Cloudkick agent plugin which also outputs plugin state,
       -- formatted like so: "status ok Everything is normal"
-      -- We parse and set the status message here, and additionally inclue state as a 
+      -- We parse and set the status message here, and additionally inclue state as a
       -- string metric. This is purely a compatability convenience.
       self:_addMetric(runCtx, checkResult, 'legacy_state', nil, 'string', state, nil)
       table.remove(splitString, 1)
@@ -466,13 +466,12 @@ function SubProcCheck:run(callback)
   local args = {
     '-o',
     '-e',
-    'default/check_runner',
+    'check_runner',
     '--zip',
     virgo.loaded_zip_path,
     '-x',
     self:getType()
   }
-
   local cenv = self:_childEnv()
   local child = self:_runChild(process.execPath, args, cenv, callback)
 
@@ -501,8 +500,6 @@ function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
     end
   end
 
-  -- TODO: path grepping with patterns and paths
-
   local mocker = env.get('VIRGO_SUBPROC_MOCK')
   if mocker ~= nil then
     local mock = require(mocker)
@@ -521,7 +518,7 @@ function CheckResult:initialize(check, options)
   self._status = DEFAULT_STATUS
   self._check = check
   self:setTimestamp(self._options.timestamp)
-  self._timestamp = vtime.now()
+  self._timestamp = vutils.gmtNow()
 end
 
 function CheckResult:getTimestamp()
@@ -529,7 +526,7 @@ function CheckResult:getTimestamp()
 end
 
 function CheckResult:setTimestamp(timestamp)
-  self._timestamp = timestamp or vtime.now()
+  self._timestamp = timestamp or vutils.gmtNow()
   return self._timestamp
 end
 

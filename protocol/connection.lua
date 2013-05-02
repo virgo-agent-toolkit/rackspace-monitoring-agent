@@ -30,7 +30,7 @@ local table = require('table')
 local utils = require('utils')
 local hostInfo = require('../host_info')
 local check = require('../check')
-local vtime = require('virgo-time')
+local vutils = require('virgo_utils')
 
 -- Response timeouts in ms
 local HANDSHAKE_TIMEOUT = 30000

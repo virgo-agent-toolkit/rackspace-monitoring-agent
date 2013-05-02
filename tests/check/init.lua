@@ -17,12 +17,15 @@ limitations under the License.
 local JSON = require('json')
 local path = require('path')
 local os = require('os')
+local fs = require('fs')
+local async = require('async')
 
-local Check = require('monitoring/default/check')
-local Metric = require('monitoring/default/check/base').Metric
-local constants = require('monitoring/default/util/constants')
-local merge = require('monitoring/default/util/misc').merge
-local msg = require ('monitoring/default/protocol/messages')
+local fixtures = require('/tests/fixtures')
+local Check = require('/check')
+local Metric = require('/check/base').Metric
+local constants = require('/util/constants')
+local merge = require('/util/misc').merge
+local msg = require ('/protocol/messages')
 
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
@@ -48,6 +51,58 @@ exports = merge(exports, LoadTests)
 exports = merge(exports, RedisTests)
 exports = merge(exports, WindowsTests)
 
+constants.DEFAULT_CUSTOM_PLUGINS_PATH = TEST_DIR
+
+local dump_check = function(name, perms, cb)
+  local check = fixtures['custom_plugins'][name]
+  if not check then
+    return cb('no plugin named: ' .. name)
+  end
+  async.waterfall({
+    function(cb)
+      fs.open(path.join(TEST_DIR, name), 'w', perms, cb)
+    end,
+    function(fd, cb)
+      fs.write(fd, 0, check, function(err, written)
+        return cb(err, written, fd)
+      end)
+    end,
+    function(written, fd, cb)
+      if written ~= #check then
+        return cb("did not write it all " .. written .. " " .. #check)
+      end
+      fs.close(fd, cb)
+    end},
+  cb)
+end
+
+local plugin_test = function(name, status, state, optional)
+  local optional = optional or {}
+  return function(test, asserts)
+    if os.type() == 'win32' then
+      return test.skip('Unsupported Platform for custom plugins')
+    end
+    local perms = optional.perms or '0777'
+    local period = optional.period or 30
+    local details = optional.details or {}
+    details.file = name
+
+    dump_check(name, perms, function(err, res)
+      asserts.ok(err == nil, err)
+      local check = PluginCheck:new({id=name, period=period, details=details})
+      asserts.ok(check._lastResult == nil, check._lastResult)
+      check:run(function(result)
+        asserts.ok(result ~= nil)
+        asserts.equals(result:getStatus(), status, name)
+        asserts.equals(result:getState(), state)
+        if optional.cb then
+          return optional.cb(test, asserts, result:getMetrics())
+        end
+        test.done()
+      end)
+    end)
+  end
+end
 
 exports['test_base_check'] = function(test, asserts)
   local check = BaseCheck:new('test', {id='foo', period=30})
@@ -267,67 +322,18 @@ exports['test_checkresult_serialization'] = function(test, asserts)
   test.done()
 end
 
-exports['test_custom_plugin_timeout'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
+exports['test_custom_plugin_timeout'] = plugin_test('timeout.py',
+  'Plugin didn\'t finish in 0.5 seconds', 'unavailable', {details={timeout=500}})
 
-  local check = PluginCheck:new({id='foo', period=30,
-                                details={timeout=500, file='timeout.py'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Plugin didn\'t finish in 0.5 seconds')
-    asserts.equals(result:getState(), 'unavailable')
-    test.done()
-  end)
-end
+exports['test_custom_plugin_file_not_executable'] = plugin_test('not_executable.sh',
+  'Plugin exited with non-zero status code (code=127)', 'unavailable', {perms='0444'})
 
-exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
-  if os.type() == 'win32' then
-    test.skip('Unsupported Platform for custom plugins')
-    return
-  end
+exports['test_custom_plugin_non_zero_exit_code_with_status'] = plugin_test('non_zero_with_status.sh',
+  'ponies > unicorns', 'unavailable')
 
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='not_executable.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=127)')
-    asserts.equals(result:getState(), 'unavailable')
-    test.done()
-  end)
-end
-
-exports['test_custom_plugin_non_zero_exit_code_with_status'] = function(test, asserts)
-  if os.type() == 'win32' then
-    test.skip('Unsupported Platform for custom plugins')
-    return
-  end
-
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='non_zero_with_status.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'ponies > unicorns')
-    asserts.equals(result:getState(), 'unavailable')
-    test.done()
-  end)
-end
 
 exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='doesnt_exist.sh'}})
+  local check = PluginCheck:new({id='foo', period=30, details={file='magical_ranibow_pony.sh'}})
   asserts.ok(check._lastResult == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
@@ -337,56 +343,31 @@ exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
   end)
 end
 
-exports['test_custom_plugin_cmd_arguments'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='plugin_custom_arguments.sh',
-                                 args={'foo_bar', 'a', 'b', 'c'}}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()['none']
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'arguments test')
-    asserts.equals(result:getState(), 'available')
-
+exports['test_custom_plugin_cmd_arguments'] = plugin_test('plugin_custom_arguments.sh',
+  'arguments test', 'available', {details = {args = {'foo_bar', 'a', 'b', 'c'}}, cb = function(test, asserts, metrics)
+    metrics = metrics['none']
     asserts.dequals(metrics['foo_bar'], {t = 'string', v = '0'})
     asserts.dequals(metrics['a'], {t = 'string', v = '1'})
     asserts.dequals(metrics['b'], {t ='string', v = '2'})
     asserts.dequals(metrics['c'], {t ='string', v = '3'})
     test.done()
-  end)
-end
+  end}
+)
 
-exports['test_custom_plugin_all_types'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                details={file='plugin_1.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()['none']
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Everything is OK')
-    asserts.equals(result:getState(), 'available')
-
+exports['test_custom_plugin_all_types'] = plugin_test('plugin_1.sh',
+  'Everything is OK', 'available', {cb = function(test, asserts, metrics)
+    metrics = metrics['none']
     asserts.dequals(metrics['logged_users'], {t = 'int64', v = '7'})
     asserts.dequals(metrics['active_processes'], {t = 'int64', v = '200'})
     asserts.dequals(metrics['avg_wait_time'], {t = 'double', v = '100.7'})
     asserts.dequals(metrics['something'], {t = 'string', v = 'foo bar foo'})
     asserts.dequals(metrics['packet_count'], {t = 'gauge', v = '150000'})
     test.done()
-  end)
-end
+  end}
+)
 
 exports['test_custom_plugin_all_types_reschedueling'] = function(test, asserts)
   -- Verify that custom plugin checks correctly re-schedule itself
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
 
   local check = PluginCheck:new({id='foo', period=2,
                                 details={file='plugin_1.sh'}})
@@ -406,218 +387,117 @@ exports['test_custom_plugin_all_types_reschedueling'] = function(test, asserts)
   end)
 end
 
-exports['test_custom_plugin_dimensions'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='plugin_dimensions.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Total logged users: 66')
-    asserts.equals(result:getState(), 'available')
-
+exports['test_custom_plugin_dimensions'] = plugin_test('plugin_dimensions.sh',
+  'Total logged users: 66', 'available', {cb = function(test, asserts, metrics)
     asserts.dequals(metrics['host1']['logged_users'], {t = 'int64', v = '10'})
     asserts.dequals(metrics['host2']['logged_users'], {t = 'int64', v = '17'})
     asserts.dequals(metrics['host3']['logged_users'], {t = 'int64', v = '10'})
     asserts.dequals(metrics['host4']['logged_users'], {t = 'int64', v = '22'})
     test.done()
-  end)
-end
+  end}
+)
 
-exports['test_custom_plugin_metric_line_with_units'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='plugin_units.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Total logged users: 66')
-    asserts.equals(result:getState(), 'available')
-
-    asserts.dequals(metrics['host1']['logged_users'], {t = 'int64', v = '66', u = 'users'})
-    asserts.dequals(metrics['host1']['data_out'], {t = 'int64', v = '1024', u = 'bytes'})
-    asserts.dequals(metrics['host1']['no_units'], {t = 'int64', v = '1'})
+exports['test_custom_plugin_metric_line_with_units'] = plugin_test('plugin_units.sh',
+  'Total logged users: 66', 'available', {cb = function(test, asserts, metrics)
+    metrics = metrics['host1']
+    asserts.dequals(metrics['logged_users'], {t = 'int64', v = '66', u = 'users'})
+    asserts.dequals(metrics['data_out'], {t = 'int64', v = '1024', u = 'bytes'})
+    asserts.dequals(metrics['no_units'], {t = 'int64', v = '1'})
     test.done()
-  end)
-end
+  end}
+)
 
-exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='cloudkick_agent_custom_plugin_1.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Service is not responding')
-    asserts.equals(result:getState(), 'available')
-
-    asserts.dequals(metrics['none']['legacy_state'], {t = 'string', v = 'err'})
-    asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
-    asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
+exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_1'] = plugin_test(
+  'cloudkick_agent_custom_plugin_1.sh', 'Service is not responding', 'available',
+    {cb = function(test, asserts, metrics)
+    metrics = metrics['none']
+    asserts.dequals(metrics['legacy_state'], {t = 'string', v = 'err'})
+    asserts.dequals(metrics['logged_users'], {t = 'int64', v = '7'})
+    asserts.dequals(metrics['active_processes'], {t = 'int64', v = '200'})
     test.done()
-  end)
-end
+  end}
+)
 
-exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      '/agents/monitoring/tests/fixtures/custom_plugins')
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='cloudkick_agent_custom_plugin_2.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), '')
-    asserts.equals(result:getState(), 'available')
-
-    asserts.dequals(metrics['none']['legacy_state'], {t = 'string', v = 'warn'})
-    asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
-    asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
+exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = plugin_test(
+  'cloudkick_agent_custom_plugin_2.sh', '', 'available', {cb = function(test, asserts, metrics)
+    metrics = metrics['none']
+    asserts.dequals(metrics['legacy_state'], {t = 'string', v = 'warn'})
+    asserts.dequals(metrics['logged_users'], {t = 'int64', v = '7'})
+    asserts.dequals(metrics['active_processes'], {t = 'int64', v = '200'})
     test.done()
-  end)
-end
+  end}
+)
 
 exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
-
   local counter = 0
-  local check = PluginCheck:new({id='foo', period=2,
-                                 details={file='repeated_status_line.sh'}})
-  asserts.ok(check._lastResult == nil)
 
-  check:schedule()
-  check:on('completed', function(check, result)
-    local metrics = result:getMetrics()
-    counter = counter + 1
+  dump_check('repeated_status_line.sh', "0777", function(err)
+    local check = PluginCheck:new({id='foo', period=2, details={file='repeated_status_line.sh'}})
+    asserts.ok(check._lastResult == nil)
 
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'First status line')
-    asserts.equals(result:getState(), 'available')
-    asserts.ok(result:getTimestamp() > 1343400000)
+    check:schedule()
+    check:on('completed', function(check, result)
+      local metrics = result:getMetrics()
+      counter = counter + 1
 
-    asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
-    asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
+      asserts.ok(result ~= nil)
+      asserts.equals(result:getStatus(), 'First status line')
+      asserts.equals(result:getState(), 'available')
+      asserts.ok(result:getTimestamp() > 1343400000)
 
-    if counter == 3 then
-      check:clearSchedule()
-      test.done()
-    end
+      asserts.dequals(metrics['none']['logged_users'], {t = 'int64', v = '7'})
+      asserts.dequals(metrics['none']['active_processes'], {t = 'int64', v = '200'})
+
+      if counter == 3 then
+        check:clearSchedule()
+        test.done()
+      end
+    end)
   end)
 end
 
-exports['test_custom_plugin_partial_output_sleep'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='partial_output_with_sleep.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()['none']
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Everything is OK')
-    asserts.equals(result:getState(), 'available')
-
+exports['test_custom_plugin_partial_output_sleep'] = plugin_test('partial_output_with_sleep.sh',
+  'Everything is OK', 'available', {cb = function(test, asserts, metrics)
+    metrics = metrics['none']
     asserts.dequals(metrics['logged_users'], {t = 'int64', v = '7'})
     asserts.dequals(metrics['active_processes'], {t = 'int64', v = '200'})
     asserts.dequals(metrics['avg_wait_time'], {t = 'double', v = '100.7'})
     asserts.dequals(metrics['something'], {t = 'string', v = 'foo bar foo'})
     asserts.dequals(metrics['packet_count'], {t = 'gauge', v = '150000'})
     test.done()
-  end)
-end
+  end})
 
-exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='invalid_metric_lines_1.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Invalid type "intfoo" for metric "metric1"')
-    asserts.equals(result:getState(), 'unavailable')
-
+exports['test_custom_plugin_invalid_metric_line_invalid_metric_type'] = plugin_test(
+  'invalid_metric_lines_1.sh', 'Invalid type "intfoo" for metric "metric1"', 'unavailable',
+    {cb = function(test, asserts, metrics)
     asserts.dequals(metrics, {})
     test.done()
-  end)
-end
+  end}
+)
 
-exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='invalid_metric_lines_2.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Metric line not in the following format: metric <name> <type> <value> [<unit>]')
-    asserts.equals(result:getState(), 'unavailable')
-
+exports['test_custom_plugin_invalid_metric_line_not_a_valid_format'] = plugin_test(
+  'invalid_metric_lines_2.sh', 'Metric line not in the following format: metric <name> <type> <value> [<unit>]',
+  'unavailable', {cb = function(test, asserts, metrics)
     asserts.dequals(metrics, {})
     test.done()
-  end)
-end
+  end}
+)
 
-exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_metric'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='invalid_metric_lines_3.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Invalid "<value> [<unit>]" combination "100 200 bytes" for a non-string metric')
-    asserts.equals(result:getState(), 'unavailable')
-
+exports['test_custom_plugin_invalid_metric_line_invalid_value_for_non_string_metric'] = plugin_test(
+  'invalid_metric_lines_3.sh', 'Invalid "<value> [<unit>]" combination "100 200 bytes" for a non-string metric',
+  'unavailable',{cb = function(test, asserts, metrics)
     asserts.dequals(metrics, {})
     test.done()
-  end)
-end
+  end}
+)
 
-exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = function(test, asserts)
-  constants.DEFAULT_CUSTOM_PLUGINS_PATH = path.join(process.cwd(),
-                      path.join('agents', 'monitoring', 'tests', 'fixtures', 'custom_plugins'))
-
-  local check = PluginCheck:new({id='foo', period=30,
-                                 details={file='invalid_metric_lines_4.sh'}})
-  asserts.ok(check._lastResult == nil)
-  check:run(function(result)
-    local metrics = result:getMetrics()
-
-    asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Unrecognized line "some unknown line"')
-    asserts.equals(result:getState(), 'unavailable')
-
+exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = plugin_test(
+  'invalid_metric_lines_4.sh', 'Unrecognized line "some unknown line"',
+  'unavailable', {cb = function(test, asserts, metrics)
     asserts.dequals(metrics, {})
     test.done()
-  end)
-end
+  end}
+)
 
 exports['test_check_metrics_post_serialization'] = function(test, asserts)
   local check = MemoryCheck:new({id='foo', period=30})

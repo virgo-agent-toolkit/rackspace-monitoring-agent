@@ -1,8 +1,6 @@
 local os = require('os')
-local myCheck = require('monitoring/default/check').LoadAverageCheck
-
+local myCheck = require('/check').LoadAverageCheck
 local exports = {}
-
 exports['test_load_average_check'] = function(test, asserts)
 --  test.done()
   local check = myCheck:new({id='foo',period=30})
@@ -31,5 +29,4 @@ exports['test_load_average_check'] = function(test, asserts)
     end
   end)
 end
-
 return exports

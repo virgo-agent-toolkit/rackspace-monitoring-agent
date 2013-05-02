@@ -1,7 +1,7 @@
 local math = require('math')
 local os = require('os')
 
-local FileSystemCheck = require('monitoring/default/check').FileSystemCheck
+local FileSystemCheck = require('/check').FileSystemCheck
 
 local exports = {}
 

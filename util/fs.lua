@@ -4,7 +4,7 @@ local table = require('table')
 local async = require('async')
 local os = require('os')
 
-local sigarutil = require('monitoring/default/util/sigar')
+local sigarutil = require('/util/sigar')
 
 local exports = {}
 

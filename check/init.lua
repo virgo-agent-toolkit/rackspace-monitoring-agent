@@ -30,6 +30,7 @@ local LoadAverageCheck = require('./load_average').LoadAverageCheck
 local PluginCheck = require('./plugin').PluginCheck
 local WindowsPerfOSCheck = require('./windows').WindowsPerfOSCheck
 
+
 local Error = require('core').Error
 
 local fmt = require('string').format

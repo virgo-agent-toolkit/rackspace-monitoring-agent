@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local fmt = require('string').format
+local table = require('table')
 
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
-local table = require('table')
 
-local sigarutil = require('monitoring/default/util/sigar')
+local sigarutil = require('/util/sigar')
 
 local DiskCheck = BaseCheck:extend()
 

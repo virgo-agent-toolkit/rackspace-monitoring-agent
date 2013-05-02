@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-
 local string = require('string')
 local utils = require('utils')
 local JSON = require('json')
@@ -24,22 +23,20 @@ local os = require('os')
 local path = require('path')
 local table = require('table')
 local Object = require('core').Object
-
 local fmt = require('string').format
 local Emitter = require('core').Emitter
-local async = require('async')
-local sigarCtx = require('./sigar').ctx
 
-local constants = require('./util/constants')
-local misc = require('./util/misc')
-local fsutil = require('./util/fs')
-local UUID = require('./util/uuid')
-local version = require('./util/version')
+local async = require('async')
+local sigarCtx = require('/sigar').ctx
+
+local constants = require('/util/constants')
+local misc = require('/util/misc')
+local fsutil = require('/util/fs')
+local UUID = require('/util/uuid')
 local logging = require('logging')
-local vtime = require('virgo-time')
-local Endpoint = require('./endpoint').Endpoint
-local ConnectionStream = require('./client/connection_stream').ConnectionStream
-local CrashReporter = require('./crashreport').CrashReporter
+local Endpoint = require('/endpoint').Endpoint
+local ConnectionStream = require('/client/connection_stream').ConnectionStream
+local CrashReporter = require('/crashreport').CrashReporter
 local MonitoringAgent = Emitter:extend()
 
 function MonitoringAgent:initialize(options)
@@ -68,7 +65,7 @@ function MonitoringAgent:start(options)
     function(callback)
       local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
       local endpoints = self._config['monitoring_endpoints']
-      local reporter = CrashReporter:new(version.process, version.bundle, virgo.platform, dump_dir, endpoints)
+      local reporter = CrashReporter:new(virgo.virgo_version, virgo.bundle_version, virgo.platform, dump_dir, endpoints)
       reporter:submit(function(err, res)
         callback()
       end)
@@ -112,7 +109,7 @@ function MonitoringAgent:connect(callback)
   self._streams:on('promote', function()
     self:emit('promote')
   end)
-  self._streams:on('shutdown', utils.bind(MonitoringAgent._onShutdown, self))
+
   self._streams:createConnections(endpoints, callback)
 end
 
@@ -167,20 +164,7 @@ function MonitoringAgent:setConfig(config)
   self._config = config
 end
 
-function MonitoringAgent:getStreams()
-  return self._streams
-end
-
-function MonitoringAgent:getConfig()
-  return self._config
-end
-
-function MonitoringAgent:setConfig(config)
-  self._config = config
-end
-
 function MonitoringAgent:_preConfig(callback)
-
   if self._config['monitoring_token'] == nil then
     logging.error("'monitoring_token' is missing from 'config'")
     process.exit(1)
@@ -226,8 +210,8 @@ function MonitoringAgent:_preConfig(callback)
       logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
                       self._config['monitoring_id'],
                       self._config['monitoring_guid'],
-                      version.process,
-                      version.bundle)
+                      virgo.virgo_version,
+                      virgo.bundle_version)
       callback()
     end
   }, callback)

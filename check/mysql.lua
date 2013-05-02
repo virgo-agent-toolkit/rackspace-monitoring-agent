@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local ffi = require('ffi')
+
 local fmt = require('string').format
 
 local SubProcCheck = require('./base').SubProcCheck
@@ -37,7 +39,6 @@ end
 
 local loadedCDEF = false
 local function loadMySQL()
-  local ffi = require('ffi')
 
   if loadedCDEF == true then
     return
@@ -131,7 +132,6 @@ local stat_map = {
 }
 
 function MySQLCheck:_runCheckInChild(callback)
-  local ffi = require('ffi')
   local cr = CheckResult:new(self, {})
 
   local mysqlexact = {

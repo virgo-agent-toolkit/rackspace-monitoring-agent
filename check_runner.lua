@@ -18,7 +18,7 @@ limitations under the License.
 local async = require('async')
 local Emitter = require('core').Emitter
 local JSON = require('json')
-local checks = require('monitoring/default/check')
+local checks = require('/check')
 
 local exports = {}
 

@@ -20,10 +20,10 @@ local utils = require('utils')
 local timer = require('timer')
 local string = require('string')
 
-local Scheduler = require('monitoring/default/schedule').Scheduler
-local BaseCheck = require('monitoring/default/check/base').BaseCheck
-local NullCheck = require('monitoring/default/check/null').NullCheck
-local misc = require('monitoring/default/util/misc')
+local Scheduler = require('/schedule').Scheduler
+local BaseCheck = require('/check/base').BaseCheck
+local NullCheck = require('/check/null').NullCheck
+local misc = require('/util/misc')
 
 local exports = {}
 

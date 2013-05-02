@@ -16,16 +16,20 @@ limitations under the License.
 
 local fs = require('fs')
 local JSON = require('json')
-local errors = require('monitoring/default/errors')
+local errors = require('/errors')
 local Emitter = require('core').Emitter
 
-local AgentProtocolConnection = require('monitoring/default/protocol/connection')
-local loggingUtil = require ('monitoring/default/util/logging')
+local AgentProtocolConnection = require('/protocol/connection')
+local loggingUtil = require ('/util/logging')
 local instanceof = require('core').instanceof
 
-local fixtures = require('../fixtures/protocol')
+local fixtures = require('/tests/fixtures')
 
 local exports = {}
+
+local prepareJson = function(msg)
+  return JSON.stringify(msg):gsub('\n', " ")
+end
 
 exports['test_completion_key'] = function(test, asserts)
   local sock = Emitter:new()
@@ -97,7 +101,7 @@ exports['test_unexpected_response_and_hello_timeout'] = function(test, asserts)
 
   msg.id = 4
 
-  data = fixtures.prepareJson(msg)
+  data = prepareJson(msg)
   sock.write = function()
     sock:emit('data', data .. "\n")
   end

@@ -1,18 +1,17 @@
 local table = require('table')
 local async = require('async')
-local ConnectionStream = require('monitoring/default/client/connection_stream').ConnectionStream
-local misc = require('monitoring/default/util/misc')
+local ConnectionStream = require('/client/connection_stream').ConnectionStream
+local misc = require('/util/misc')
 local helper = require('../helper')
 local timer = require('timer')
-local fixtures = require('../fixtures')
 local constants = require('constants')
-local consts = require('../../default/util/constants')
-local Endpoint = require('../../default/endpoint').Endpoint
+local consts = require('../../util/constants')
+local Endpoint = require('../../endpoint').Endpoint
 local path = require('path')
 local os = require('os')
 
 local exports = {}
-local child
+local AEP
 
 exports['test_reconnects'] = function(test, asserts)
 
@@ -41,35 +40,35 @@ exports['test_reconnects'] = function(test, asserts)
   end)
 
   local endpoints = {}
-  for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+  for _, address in pairs(TESTING_AGENT_ENDPOINTS) do
     -- split ip:port
     table.insert(endpoints, Endpoint:new(address))
   end
 
   async.series({
     function(callback)
-      child = helper.start_server(callback)
+      AEP = helper.start_server(callback)
     end,
     function(callback)
       client:on('handshake_success', misc.nCallbacks(callback, 3))
       local endpoints = {}
-      for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+      for _, address in pairs(TESTING_AGENT_ENDPOINTS) do
         -- split ip:port
         table.insert(endpoints, Endpoint:new(address))
       end
       client:createConnections(endpoints, function() end)
     end,
     function(callback)
-      helper.stop_server(child)
+      AEP:kill(9)
       client:on('reconnect', misc.nCallbacks(callback, 3))
     end,
     function(callback)
-      child = helper.start_server(function()
+      AEP = helper.start_server(function()
         client:on('handshake_success', misc.nCallbacks(callback, 3))
       end)
     end,
   }, function()
-    helper.stop_server(child)
+    AEP:kill(9)
     asserts.ok(clientEnd > 0)
     asserts.ok(reconnect > 0)
     test.done()
@@ -94,14 +93,14 @@ exports['test_upgrades'] = function(test, asserts)
   }
 
   local endpoints = {}
-  for _, address in pairs(fixtures.TESTING_AGENT_ENDPOINTS) do
+  for _, address in pairs(TESTING_AGENT_ENDPOINTS) do
     -- split ip:port
     table.insert(endpoints, Endpoint:new(address))
   end
 
   async.series({
     function(callback)
-      child = helper.start_server(callback)
+      AEP = helper.start_server(callback)
     end,
     function(callback)
       client = ConnectionStream:new('id', 'token', 'guid', false, options)
@@ -113,7 +112,7 @@ exports['test_upgrades'] = function(test, asserts)
       client:getUpgrade():forceUpgradeCheck({test = true})
     end
   }, function()
-    helper.stop_server(child)
+    AEP:kill(9)
     client:done()
     test.done()
   end)

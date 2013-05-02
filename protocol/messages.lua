@@ -15,10 +15,8 @@ limitations under the License.
 --]]
 
 local Object = require('core').Object
-local version = require('../util/version')
 
 --[[ Message ]]--
-
 local Message = Object:extend()
 function Message:initialize()
   self.id = '1'
@@ -93,8 +91,8 @@ function HandshakeHello:initialize(token, agentId)
   self.params.token = token
   self.params.agent_id = agentId
   self.params.agent_name = 'Rackspace Monitoring Agent'
-  self.params.process_version = version.process
-  self.params.bundle_version = version.bundle
+  self.params.process_version = virgo.virgo_version
+  self.params.bundle_version = virgo.bundle_version
 end
 
 --[[ Heartbeat ]]--

@@ -18,13 +18,13 @@ local Object = require('core').Object
 local JSON = require('json')
 
 local fs = require('fs')
-local misc = require('./util/misc')
+local misc = require('/util/misc')
 local os = require('os')
 local table = require('table')
-local vtime = require('virgo-time')
+local vutils = require('virgo_utils')
 
-local sigarCtx = require('./sigar').ctx
-local sigarutil = require('monitoring/default/util/sigar')
+local sigarCtx = require('/sigar').ctx
+local sigarutil = require('/util/sigar')
 
 --[[ HostInfo ]]--
 local HostInfo = Object:extend()
@@ -35,7 +35,7 @@ end
 function HostInfo:serialize()
   return {
     metrics = self._params,
-    timestamp = vtime.now()
+    timestamp = vutils.gmtNow()
   }
 end
 

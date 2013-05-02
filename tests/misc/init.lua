@@ -18,11 +18,11 @@ exports = {}
 no = {}
 
 local fs = require('fs')
-local Uuid = require('monitoring/default/util/uuid')
-local splitAddress = require('monitoring/default/util/misc').splitAddress
-local writePid = require('monitoring/default/util/misc').writePid
-local lastIndexOf = require('monitoring/default/util/misc').lastIndexOf
-local compareVersions = require('monitoring/default/util/misc').compareVersions
+local Uuid = require('/util/uuid')
+local splitAddress = require('/util/misc').splitAddress
+local writePid = require('/util/misc').writePid
+local lastIndexOf = require('/util/misc').lastIndexOf
+local compareVersions = require('/util/misc').compareVersions
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')

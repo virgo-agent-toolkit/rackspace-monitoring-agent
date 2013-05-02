@@ -9,13 +9,13 @@ local async = require('async')
 
 local helper = require('../helper')
 local fixtures = require('../fixtures')
-local Endpoint = require('../../default/endpoint').Endpoint
-local CrashReporter = require('../../default/crashreport').CrashReporter
+local Endpoint = require('/endpoint').Endpoint
+local CrashReporter = require('/crashreport').CrashReporter
 
 local exports = {}
-local child
 
 exports['test_makes_dump'] = function(test, asserts)
+  local AEP
 
   local options = {
     datacenter = 'test',
@@ -32,7 +32,7 @@ exports['test_makes_dump'] = function(test, asserts)
       fs.writeFile(dump_path, "harro\n", callback)
     end,
     function(callback)
-      child = helper.start_server(callback)
+      AEP = helper.start_server(callback)
     end,
     function(callback)
       local endpoints = {Endpoint:new(options.host, options.port)}
@@ -47,7 +47,7 @@ exports['test_makes_dump'] = function(test, asserts)
       end)
     end
   }, function(err)
-    helper.stop_server(child)
+    AEP:kill(9)
     asserts.ok(err==nil, tostring(err))
     test.done()
   end)

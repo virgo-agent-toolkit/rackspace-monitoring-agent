@@ -2,10 +2,6 @@
 options.gypi
 build/*
 out/*
-Debug/
-Release/
-ipch/
-*.suo
 .scons*
 *.o
 *.pyc
@@ -29,4 +25,3 @@ scheduler.state
 rpmbuild/*
 agents/monitoring/default/util/version.lua
 agents/monitoring/monitoring.rc
-agents/monitoring/default/code_cert.lua

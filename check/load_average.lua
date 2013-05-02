@@ -3,7 +3,6 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local logging = require('logging')
 
-
 local LoadAverageCheck = BaseCheck:extend()
 
 function LoadAverageCheck:initialize(params)
@@ -24,7 +23,6 @@ function LoadAverageCheck:run(callback)
     return
   end
 
-
   if err == true then
     for key, value in pairs(load) do
       checkResult:addMetric(key, nil, 'double', value)
@@ -36,7 +34,6 @@ function LoadAverageCheck:run(callback)
   self._lastResult = checkResult
   callback(checkResult)
 end
-
 
 local exports = {}
 exports.LoadAverageCheck = LoadAverageCheck

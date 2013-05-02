@@ -1,0 +1,7 @@
+{
+  "v": "1",
+  "id": 3,
+  "source": "endpoint",
+  "target": "agentA",
+  "method": "check_schedule.changed"
+}

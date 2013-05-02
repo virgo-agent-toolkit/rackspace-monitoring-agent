@@ -22,13 +22,17 @@ local path = require('path')
 local fs = require('fs')
 local table = require('table')
 
-local split = require('monitoring/default/util/misc').split
+local helper = require('./helper')
+local constants = require('constants')
+local split = require('/util/misc').split
 
 local exports = {}
 
 local failed = 0
 
-_G['TEST_DIR'] = path.join(process.cwd(), 'tests', 'tmp')
+_G.TESTING_CERTS = require('./code_cert.test.lua')
+_G.TEST_DIR = path.join(process.cwd(), 'tests', 'tmp')
+_G.TESTING_AGENT_ENDPOINTS = {'127.0.0.1:50041', '127.0.0.1:50051', '127.0.0.1:50061'}
 
 local function remove_tmp(callback)
   fs.readdir(TEST_DIR, function(err, files)
@@ -43,7 +47,6 @@ end
 
 local TESTS_TO_RUN = {
   './crash-dump',
-  './collector',
   './tls',
   './agent-protocol',
   './crypto',
@@ -52,7 +55,6 @@ local TESTS_TO_RUN = {
   './fs',
   './schedule',
   './upgrade',
-  './virgo',
   './net'
 }
 
@@ -83,23 +85,28 @@ exports.run = function()
   -- set the exitCode to error in case we trigger some
   -- bug that causes us to exit the loop early
   process.exitCode = 1
+  remove_tmp(function()
+    fs.mkdir(TEST_DIR, "0755", function()
+      -- local agent = helper.start_agent()
 
-  fs.mkdir(TEST_DIR, "0755", function()
-    async.forEachSeries(TESTS_TO_RUN, runit, function(err)
-      if err then
-        p(err)
-        debugm.traceback(err)
+      async.forEachSeries(TESTS_TO_RUN, runit, function(err)
+        -- agent:kill(9)
+        if err then
+          p(err)
+          debugm.traceback(err)
+          remove_tmp(function()
+            process.exit(1)
+          end)
+        end
+
+        process.exitCode = 0
         remove_tmp(function()
-          process.exit(1)
+          process.exit(failed)
         end)
-      end
-
-      process.exitCode = 0
-      remove_tmp(function()
-        process.exit(failed)
       end)
     end)
   end)
+
 end
 
 return exports

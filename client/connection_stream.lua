@@ -25,16 +25,15 @@ local dns = require('dns')
 local ConnectionMessages = require('./connection_messages').ConnectionMessages
 local UpgradePollEmitter = require('./upgrade').UpgradePollEmitter
 
-local Scheduler = require('../schedule').Scheduler
+local Scheduler = require('/schedule').Scheduler
 local AgentClient = require('./client').AgentClient
 local logging = require('logging')
-local consts = require('../util/constants')
-local misc = require('../util/misc')
-local vtime = require('virgo-time')
+local consts = require('/util/constants')
+local misc = require('/util/misc')
+local vutils = require('virgo_utils')
 local path = require('path')
 local utils = require('utils')
-local version = require('../util/version')
-local request = require('../protocol/request')
+local request = require('/protocol/request')
 
 local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options)
@@ -71,8 +70,8 @@ end
 
 function ConnectionStream:_onUpgrade()
   local client = self:getClient()
-  local bundleVersion = version.bundle
-  local processVersion = version.process
+  local bundleVersion = virgo.bundle_version
+  local processVersion = virgo.virgo_version
   local uri_path, options
 
   if not self._upgradeEnabled then
@@ -100,7 +99,7 @@ function ConnectionStream:_onUpgrade()
     version = misc.trim(version)
     client:log(logging.DEBUG, fmt('(upgrade) -> Current Version: %s', bundleVersion))
     client:log(logging.DEBUG, fmt('(upgrade) -> Upstream Version: %s', version))
-    if misc.compareVersions(version, bundleVersion) > 0 then
+    if misc.compareVersions(version, bundleVersion) < 0 then
       client:log(logging.INFO, fmt('(upgrade) -> Performing upgrade to %s', version))
       self._messages:getUpgrade(version, client, function(err)
         if err then
@@ -254,7 +253,7 @@ function ConnectionStream:reconnect(options)
   local datacenter = options.datacenter
   local delay = self:_setDelay(datacenter)
 
-  logging.infof('%s %s:%d -> Retrying connection in %dms', 
+  logging.infof('%s %s:%d -> Retrying connection in %dms',
                 datacenter, options.host, options.port, delay)
   self:emit('reconnect', options)
   timer.setTimeout(delay, function()
@@ -332,7 +331,7 @@ function ConnectionStream:_attachTimeSyncEvent(client)
     return
   end
   client:on('time_sync', function(timeObj)
-    vtime.timesync(timeObj.agent_send_timestamp, timeObj.server_receive_timestamp,
+    vutils.timesync(timeObj.agent_send_timestamp, timeObj.server_receive_timestamp,
                    timeObj.server_response_timestamp, timeObj.agent_recv_timestamp)
   end)
 end

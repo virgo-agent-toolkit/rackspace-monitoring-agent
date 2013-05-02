@@ -1,9 +1,36 @@
-local spawn = require('childprocess').spawn
-local constants = require('constants')
-local misc = require('monitoring/default/util/misc')
+#!/usr/bin/env luvit
 
-function runner(name)
-  return spawn('python', {'agents/monitoring/runner.py', name})
+local spawn = require('childprocess').spawn
+local fs = require('fs')
+local path = require('path')
+
+local misc = require('/util/misc')
+local constants = require('constants')
+local vutils = require('virgo_utils')
+
+local agent
+
+function start_agent()
+  local config_path = path.join(TEST_DIR, 'monitoring-agent-localhost.cfg')
+  local args = {
+    '-o',
+    '-s', TEST_DIR,
+    '-z', virgo.loaded_zip_path,
+    '-c', config_path
+  }
+
+  local config = get_static('/static/tests/monitoring-agent-localhost.cfg')
+  fs.writeFileSync(config_path, config)
+
+  local agent = spawn(process.execPath, args)
+
+  agent.stderr:on('data', function(d)
+    process.stderr:write(d)
+  end)
+  agent.stdout:on('data', function(d)
+    process.stdout:write(d)
+  end)
+  return agent
 end
 
 local child
@@ -11,35 +38,55 @@ local child
 local function start_server(callback)
   local data = ''
   callback = misc.fireOnce(callback)
-  child = runner('server_fixture_blocking')
+
+  local pprint = function(d)
+    print('[* AEP *]: ' .. d)
+  end
+
+  print('starting mock AEP server ...')
+  local args = {
+    '-o',
+    '-s', TEST_DIR,
+    '-z', virgo.loaded_zip_path,
+    '-e', 'tests/server.lua'
+  }
+  child = spawn(process.execPath, args)
   child.stderr:on('data', function(d)
-    p(d)
+    pprint('got stderr' .. d)
     callback(d)
   end)
-
+  local fired = false
   child.stdout:on('data', function(chunk)
-    p(chunk)
-    data = data .. chunk
-    if data:find('TLS fixture server listening on port 50061') then
-      callback()
+    pprint(chunk)
+    if not fired then
+      data = data .. chunk
+      if data:find('TLS fixture server listening on port 50061') then
+        callback()
+        fired = true
+      end
     end
   end)
   return child
 end
 
-local function stop_server(child)
-  if not child then return end
+local function at_exit(child)
   pcall(function()
-    child:kill(constants.SIGUSR1) -- USR1
+    if not child then return end
+    child:kill(9)
+  end)
+
+  pcall(function()
+    if not agent then return end
+    agent:kill(9)
   end)
 end
 
 process:on('exit', function()
-  stop_server(child)
+  at_exit(child)
 end)
 
 process:on("error", function(e)
-  stop_server(child)
+  at_exit(child)
 end)
 
 -- This will skip all the functions in an export list but still be able to call them individually
@@ -53,9 +100,14 @@ local function skip_all(exports, reason)
   return exports
 end
 
+if not virgo then
+  -- parse argv and stuff here
+  return
+end
+
 local exports = {}
 exports.runner = runner
 exports.start_server = start_server
-exports.stop_server = stop_server
 exports.skip_all = skip_all
+exports.start_agent = start_agent
 return exports

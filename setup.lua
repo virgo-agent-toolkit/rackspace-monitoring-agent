@@ -22,13 +22,12 @@ local fs = require('fs')
 local timer = require('timer')
 local JSON = require('json')
 local table = require('table')
-local version = require('./util/version')
 
 local async = require('async')
-local ask = require('./util/prompt').ask
-local errors = require('./errors')
-local constants = require('./util/constants')
-local sigarCtx = require('./sigar').ctx
+local ask = require('/util/prompt').ask
+local errors = require('errors')
+local constants = require('/util/constants')
+local sigarCtx = require('sigar').ctx
 
 local maas = require('rackspace-monitoring')
 
@@ -202,7 +201,7 @@ function Setup:run(callback)
     -- fetch all tokens
     function(username, token, callback)
       local options = {}
-      options.user_agent = fmt('rackspace-monitoring-agent/%s:%s; %s', version.process, version.bundle, username)
+      options.user_agent = fmt('rackspace-monitoring-agent/%s:%s; %s', virgo.virgo_version, virgo.bundle_version, username)
       client = maas.Client:new(username, token, options)
       client.agent_tokens.get(callback)
     end,
@@ -345,7 +344,7 @@ function Setup:run(callback)
           function entitySelection()
             self:_out('Please select the Entity that corresponds to this server:')
             displayEntities()
-            self:_out(fmt('  %i. Create a new Entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
+            self:_out(fmt('  %i. Create an new Entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
             self:_out(fmt('  %i. Do not associate with an Entity', #localEntities + 2))
             self:_out('')
 
@@ -361,11 +360,9 @@ function Setup:run(callback)
                   if err then
                     return callback(err)
                   end
-
                   if resp:lower() ~= 'y' and resp:lower() ~= 'yes' then
                     return entitySelection()
                   end
-
                   client.entities.create(self:_buildLocalEntity(hostname), function(err, entity)
                     if err then
                       callback(err)
