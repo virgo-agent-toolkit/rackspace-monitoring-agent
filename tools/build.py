@@ -174,7 +174,8 @@ def bundle(directory=DEFAULT_BUNDLE_PATH):
     version_file_name = os.path.join(directory, 'VERSION')
     print "Creating %s" % (version_file_name)
     version_file = open(version_file_name, "w")
-    version_file.write(version)
+    # version_file.write(version)
+    version_file.write("0.0.0-0")
     version_file.write('\n')
     version_file.close()
 
