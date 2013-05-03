@@ -236,9 +236,24 @@ end
 
 function MonitoringAgent:loadEndpoints(callback)
   local config = self._config
-  local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
+  p(config)
+  --local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
   local endpoints = config['monitoring_endpoints']
 
+  local region = config['dbass_snet_region']
+  local region_q = ''
+  if region ~= nil and region ~= "" then
+    region_q = table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES[region], ',')
+  else
+    for _, item in pairs(constants.DEFAULT_MONITORING_SRV_QUERIES) do
+      region_q = region_q .. table.concat(item, ',') .. ','
+    end
+    region_q = string.sub(region_q, 1, string.len(region_q) - 1)
+  end
+  local queries = config['monitoring_query_endpoints'] or region_q
+  
+  p("***************************")
+  p(queries)
   local function _callback(err, endpoints)
     if err then return callback(err) end
 
