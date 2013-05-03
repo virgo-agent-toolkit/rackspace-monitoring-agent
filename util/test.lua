@@ -26,10 +26,10 @@ function runTestTCPServer(port, host, commandMap, callback)
   local server
 
   server = net.createServer(function(client)
+    local lineEmitter = LineEmitter:new()
     client:pipe(lineEmitter)
 
     lineEmitter:on('data', function(data)
-      local lineEmitter = LineEmitter:new()
       if type(commandMap[data]) == 'string' then
         client:write(commandMap[data])
         timer.setTimeout(2000, function()
@@ -41,6 +41,7 @@ function runTestTCPServer(port, host, commandMap, callback)
           client:destroy()
         end)
       else
+        print('nothing')
         client:destroy()
       end
     end)

@@ -194,7 +194,6 @@ end
 
 exports['test_redis_max_line_limit'] = function(test, asserts)
   local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8586, password='invalid'}})
-  local filePath = path.join(process.cwd(), 'agents','monitoring','tests','fixtures','checks','redis_invalid_password.txt')
   local commandMap = {}
   local longString = string.rep('a', 1024*1024*1 + 1)
   local server = nil

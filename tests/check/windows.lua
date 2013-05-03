@@ -1,7 +1,7 @@
 local math = require('math')
 local os = require('os')
 
-local WindowsPerfOSCheck = require('monitoring/default/check/windows').WindowsPerfOSCheck
+local WindowsPerfOSCheck = require('/check/windows').WindowsPerfOSCheck
 
 local exports = {}
 
