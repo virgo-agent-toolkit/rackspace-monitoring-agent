@@ -41,6 +41,7 @@ function runTestTCPServer(port, host, commandMap, callback)
           client:destroy()
         end)
       else
+        print('nothing')
         client:destroy()
       end
     end)

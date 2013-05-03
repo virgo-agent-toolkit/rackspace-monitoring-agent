@@ -205,7 +205,6 @@ exports['test_redis_max_line_limit'] = function(test, asserts)
   async.series({
     function(callback)
       testUtil.runTestTCPServer(8586, '127.0.0.1', commandMap, function(err, _server)
-        print('asdf')
         server = _server
         callback(err)
       end)
@@ -213,7 +212,6 @@ exports['test_redis_max_line_limit'] = function(test, asserts)
 
     function(callback)
       check:run(function(result)
-        print('ran')
         local metrics = result:getMetrics()['none']
 
         asserts.equal(result:getState(), 'unavailable')
