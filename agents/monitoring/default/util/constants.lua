@@ -50,7 +50,7 @@ exports.SHUTDOWN_RESTART = 3
 if process.env.STAGING then
   exports.DEFAULT_MONITORING_SRV_QUERIES = {
     dfw = {
-      '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com',
+      '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com'
     },
     ord = {
       '_monitoringagent._tcp.ord1.stage.monitoring.api.rackspacecloud.com'
