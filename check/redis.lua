@@ -143,6 +143,7 @@ function RedisCheck:run(callback)
       client:on('data', function(data)
         if buffer:len() < MAX_BUFFER_LENGTH then
           buffer = buffer .. data
+        end
       end)
 
       client:on('end', function()
