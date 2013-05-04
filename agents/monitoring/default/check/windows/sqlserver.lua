@@ -16,38 +16,6 @@ limitations under the License.
 
 local WindowsPowershellCmdletCheck = require('./winbase').WindowsPowershellCmdletCheck
 
-local WindowsPerfOSCheck = WindowsPowershellCmdletCheck:extend()
-
-local function WindowsPerfOSCheck:initialize(params)
-  local cmd = "(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
-
-  local wmi_type_map = {
-    uint8='uint32',
-    uint16='uint32',
-    uint32='uint32',
-    uint64='uint64',
-    sint8='int32',
-    sint16='int32',
-    sint32='int32',
-    sint64='int64',
-    real32='double',
-    real64='double'
-  }
-
-  local PerfOS_System_Properties_Ignore = {
-    Caption=true,
-    Description=true,
-    Name=true,
-    Frequency_Object=true,
-    Frequency_PerfTime=true,
-    Frequency_Sys100NS=true,
-    Timestamp_Object=true,
-    Timestamp_PerfTime=true,
-    Timestamp_Sys100NS=true
-  }
-
-  WindowsPowershellCmdletCheck.initialize(self, 'agent.windows_perfos', cmd, PerfOS_System_Properties_Ignore, wmi_type_map, params)
-end
 
 local function invokesql_notfound(callback)
   local cr = CheckResult:new(self, {})
@@ -69,7 +37,7 @@ end
 
 local MSSQLServerInvokeSQLCmdCheck = WindowsPowershellCmdletCheck:extend()
 
-local function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, metric_blacklist, metric_type_map, params)
+function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, metric_blacklist, metric_type_map, params)
   local cmd = "if (Get-Command Invoke-Sqlcmd -errorAction SilentlyContinue) { Invoke-Sqlcmd -Query \"" .. query .. "\" -QueryTimeout 3 | ConvertTo-Csv }"
 
   WindowsPowershellCmdletCheck.initialize(self, checkType, cmd, metric_blacklist, metric_type_map, params)
@@ -79,7 +47,7 @@ end
 
 local MSSQLServerVersionCheck = MSSQLServerInvokeSQLCmdCheck:extend()
 
-local function MSSQLServerVersionCheck:initialize(params)
+function MSSQLServerVersionCheck:initialize(params)
   local query = "select 'ProductVersion' as Name, SERVERPROPERTY('productversion') as Value, 'string' as Type; select 'ProductLevel' as Name, SERVERPROPERTY('productlevel') as Value, 'string' as Type; select 'Edition' as Name, SERVERPROPERTY('edition') as Value, 'string' as Type;"
 
   MSSQLServerInvokeSQLCmdCheck.initialize(self, 'agent.mssql_version', query, {}, {}, params)
@@ -89,7 +57,7 @@ end
 
 local MSSQLServerDatabaseCheck = MSSQLServerInvokeSQLCmdCheck:extend()
 
-local function MSSQLServerDatabaseCheck:initialize(params)
+function MSSQLServerDatabaseCheck:initialize(params)
   local query = ""
   if params.details == nil then
     params.details = {}
@@ -109,7 +77,6 @@ local function MSSQLServerDatabaseCheck:initialize(params)
 end
 
 local exports = {}
-exports.WindowsPerfOSCheck = WindowsPerfOSCheck
 exports.MSSQLServerVersionCheck = MSSQLServerVersionCheck
 exports.MSSQLServerDatabaseCheck = MSSQLServerDatabaseCheck
 return exports

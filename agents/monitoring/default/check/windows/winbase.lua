@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local BaseCheck = require('./base').BaseCheck
-local CheckResult = require('./base').CheckResult
+local BaseCheck = require('../base').BaseCheck
+local CheckResult = require('../base').CheckResult
 local spawn = require('childprocess').spawn
-local fireOnce = require('../util/misc').fireOnce
-local parseCSVLine = require('../util/misc').parseCSVLine
+local fireOnce = require('../../util/misc').fireOnce
+local parseCSVLine = require('../../util/misc').parseCSVLine
 local table = require('table')
 local string = require('string')
 local os = require('os')
