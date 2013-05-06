@@ -88,7 +88,9 @@ function MSSQLServerDatabaseCheck:initialize(params)
   else
     local q1 = "select unpvt.N as Name, unpvt.Value, 'string' as Type from (select * from sys.databases where name = '" .. params.details.db .. "') p UNPIVOT (Value for N in (state_desc, recovery_model_desc, page_verify_option_desc) ) unpvt;"
     local q2 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.databases where name = '" .. params.details.db .. "') p UNPIVOT (Value for N in (state, recovery_model, page_verify_option) ) unpvt;"
-    query = q1 .. q2
+    local q3 = "select unpvt.N as Name, unpvt.Value, 'string' as Type from (select * from sys.master_files where name = '" .. params.details.db .. "' and file_id = 1) p UNPIVOT (Value for N in (physical_name) ) unpvt;"
+    local q4 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.master_files where name = '" .. params.details.db .. "' and file_id = 1) p UNPIVOT (Value for N in (size, growth) ) unpvt;"
+    query = q1 .. q2 .. q3 .. q4
   end
 
   MSSQLServerInvokeSQLCmdCheck.initialize(self, 'agent.mssql_version', query, {}, {int="int64"}, params)
