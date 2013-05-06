@@ -38,7 +38,25 @@ end
 local MSSQLServerInvokeSQLCmdCheck = WindowsPowershellCmdletCheck:extend()
 
 function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, metric_blacklist, metric_type_map, params)
-  local cmd = "if (Get-Command Invoke-Sqlcmd -errorAction SilentlyContinue) { Invoke-Sqlcmd -Query \"" .. query .. "\" -QueryTimeout 3 | ConvertTo-Csv }"
+  if params.details == nil then
+    params.details = {}
+  end
+
+  local hostname_option = ""
+  local username_option = ""
+  local password_option = ""
+
+  if params.details.hostname != nil and params.details.hostname ~= "" then
+    hostname_option = "-H \"" .. params.details.hostname .. "\" "
+  end
+  if params.details.username != nil and params.details.username ~= "" then
+    hostname_option = "-U \"" .. params.details.username .. "\" "
+  end
+  if params.details.password != nil and params.details.password ~= "" then
+    hostname_option = "-P \"" .. params.details.password .. "\" "
+  end
+
+  local cmd = "if (Get-Command Invoke-Sqlcmd -errorAction SilentlyContinue) { Invoke-Sqlcmd " .. hostname_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 3 | ConvertTo-Csv }"
 
   WindowsPowershellCmdletCheck.initialize(self, checkType, cmd, metric_blacklist, metric_type_map, params)
 end
