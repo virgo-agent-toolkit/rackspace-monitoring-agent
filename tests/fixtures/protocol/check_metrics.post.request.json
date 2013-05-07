@@ -1,0 +1,75 @@
+{
+    "v": "1",
+    "id": 4,
+    "source": "agentA",
+    "target": "endpoint",
+    "method": "check_metrics.post",
+    "params": {
+        "check_id": "chAAAAA",
+        "check_type": "agent.memory",
+        "state": "available",
+        "status": "",
+        "metrics": [
+            [
+                null,
+                {
+                    "actual_free": {
+                        "t": "int64",
+                        "v": "8338522112",
+                        "u": "bytes"
+                    },
+                    "actual_used": {
+                        "t": "int64",
+                        "v": "8369401856",
+                        "u": "bytes"
+                    },
+                    "free": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "ram": {
+                        "t": "int64",
+                        "v": "15936",
+                        "u": "megabytes"
+                    },
+                    "swap_free": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "swap_page_in": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "swap_page_out": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "swap_total": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "swap_used": {
+                        "t": "int64",
+                        "v": "955637760",
+                        "u": "bytes"
+                    },
+                    "total": {
+                        "t": "int64",
+                        "v": "16707923968",
+                        "u": "bytes"
+                    },
+                    "used": {
+                        "t": "int64",
+                        "v": "15752286208",
+                        "u": "bytes"
+                    }
+                }
+            ]
+        ]
+    }
+}

@@ -1,0 +1,136 @@
+$1253
+# Server
+redis_version:2.5.7
+redis_git_sha1:00000000
+redis_git_dirty:0
+os:Linux 3.2.0-31-generic x86_64
+arch_bits:64
+multiplexing_api:epoll
+gcc_version:4.6.3
+process_id:27582
+run_id:c61554b918ddc4ae4351a8f3d7cf56dab95a45b3
+tcp_port:6379
+uptime_in_seconds:5
+uptime_in_days:0
+lru_clock:654647
+
+# Clients
+connected_clients:1
+client_longest_output_list:0
+client_biggest_input_buf:0
+blocked_clients:0
+
+# Memory
+used_memory:528992
+used_memory_human:516.59K
+used_memory_rss:1830912
+used_memory_peak:491336
+used_memory_peak_human:479.82K
+used_memory_lua:30720
+mem_fragmentation_ratio:3.46
+mem_allocator:jemalloc-2.2.5
+
+# Persistence
+loading:0
+aof_enabled:0
+changes_since_last_save:0
+bgsave_in_progress:0
+last_save_time:1348723746
+last_bgsave_status:ok
+bgrewriteaof_in_progress:0
+bgrewriteaof_scheduled:0
+
+# Stats
+total_connections_received:1
+total_commands_processed:0
+instantaneous_ops_per_sec:0
+rejected_connections:0
+expired_keys:0
+evicted_keys:0
+keyspace_hits:0
+keyspace_misses:0
+pubsub_channels:0
+pubsub_patterns:0
+latest_fork_usec:0
+
+# Replication
+role:master
+connected_slaves:0
+
+# CPU
+used_cpu_sys:0.01
+used_cpu_user:0.00
+used_cpu_sys_children:0.00
+used_cpu_user_children:0.00
+
+# Keyspace
+
+INFO
+$1253
+# Server
+redis_version:2.5.7
+redis_git_sha1:00000000
+redis_git_dirty:0
+os:Linux 3.2.0-31-generic x86_64
+arch_bits:64
+multiplexing_api:epoll
+gcc_version:4.6.3
+process_id:27582
+run_id:c61554b918ddc4ae4351a8f3d7cf56dab95a45b3
+tcp_port:6379
+uptime_in_seconds:7
+uptime_in_days:0
+lru_clock:654647
+
+# Clients
+connected_clients:1
+client_longest_output_list:0
+client_biggest_input_buf:0
+blocked_clients:0
+
+# Memory
+used_memory:528992
+used_memory_human:516.59K
+used_memory_rss:1830912
+used_memory_peak:528192
+used_memory_peak_human:515.81K
+used_memory_lua:30720
+mem_fragmentation_ratio:3.46
+mem_allocator:jemalloc-2.2.5
+
+# Persistence
+loading:0
+aof_enabled:0
+changes_since_last_save:0
+bgsave_in_progress:0
+last_save_time:1348723746
+last_bgsave_status:ok
+bgrewriteaof_in_progress:0
+bgrewriteaof_scheduled:0
+
+# Stats
+total_connections_received:1
+total_commands_processed:1
+instantaneous_ops_per_sec:0
+rejected_connections:0
+expired_keys:0
+evicted_keys:0
+keyspace_hits:0
+keyspace_misses:0
+pubsub_channels:0
+pubsub_patterns:0
+latest_fork_usec:0
+
+# Replication
+role:master
+connected_slaves:0
+
+# CPU
+used_cpu_sys:0.01
+used_cpu_user:0.00
+used_cpu_sys_children:0.00
+used_cpu_user_children:0.00
+
+# Keyspace
+
+

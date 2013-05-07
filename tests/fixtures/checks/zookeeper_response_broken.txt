@@ -1,0 +1,6 @@
+zk_version	3.4.4--1, built on 09/24/2012 22:48 GMT
+zk_avg_latenc bar
+zk_max_late
+zk_packets_receiv342
+zk_packets_sen50
+zk_num_alive_connections	4		44zk_num_alive_conntections	4
