@@ -46,15 +46,17 @@ function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, metric_blackl
   local username_option = ""
   local password_option = ""
 
-  if params.details.hostname != nil and params.details.hostname ~= "" then
+  if params.details.hostname ~= nil and params.details.hostname ~= "" then
     hostname_option = "-H \"" .. params.details.hostname .. "\" "
   end
-  if params.details.username != nil and params.details.username ~= "" then
+  if params.details.username ~= nil and params.details.username ~= "" then
     hostname_option = "-U \"" .. params.details.username .. "\" "
   end
-  if params.details.password != nil and params.details.password ~= "" then
+  if params.details.password ~= nil and params.details.password ~= "" then
     hostname_option = "-P \"" .. params.details.password .. "\" "
   end
+
+  -- Note: we might need to "add-pssnapin sqlservercmdletsnapin100" with SQL Server 2008
 
   local cmd = "if (Get-Command Invoke-Sqlcmd -errorAction SilentlyContinue) { Invoke-Sqlcmd " .. hostname_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 3 | ConvertTo-Csv }"
 
@@ -88,12 +90,11 @@ function MSSQLServerDatabaseCheck:initialize(params)
   else
     local q1 = "select unpvt.N as Name, unpvt.Value, 'string' as Type from (select * from sys.databases where name = '" .. params.details.db .. "') p UNPIVOT (Value for N in (state_desc, recovery_model_desc, page_verify_option_desc) ) unpvt;"
     local q2 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.databases where name = '" .. params.details.db .. "') p UNPIVOT (Value for N in (state, recovery_model, page_verify_option) ) unpvt;"
-    local q3 = "select unpvt.N as Name, unpvt.Value, 'string' as Type from (select * from sys.master_files where name = '" .. params.details.db .. "' and file_id = 1) p UNPIVOT (Value for N in (physical_name) ) unpvt;"
-    local q4 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.master_files where name = '" .. params.details.db .. "' and file_id = 1) p UNPIVOT (Value for N in (size, growth) ) unpvt;"
-    query = q1 .. q2 .. q3 .. q4
+    local q3 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.master_files where name = '" .. params.details.db .. "' and file_id = 1) p UNPIVOT (Value for N in (size, growth) ) unpvt;"
+    query = q1 .. q2 .. q3
   end
 
-  MSSQLServerInvokeSQLCmdCheck.initialize(self, 'agent.mssql_version', query, {}, {int="int64"}, params)
+  MSSQLServerInvokeSQLCmdCheck.initialize(self, 'agent.mssql_database', query, {}, {int="int64"}, params)
 end
 
 local exports = {}
