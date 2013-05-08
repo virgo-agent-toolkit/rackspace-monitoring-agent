@@ -199,7 +199,9 @@ static void breakpoint_clear(const char *name, int line)
       tmp =  prev;
     }
     prev = tmp;
-    tmp = tmp->next;
+    if (tmp) {
+        tmp = tmp->next;
+    }
   }
 }
 
