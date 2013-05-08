@@ -67,6 +67,15 @@ copy_args(virgo_t *v, const char *bundle_path) {
   return args;
 }
 
+static void
+free_args(char** args) {
+  char** i;
+  for (i = args; (*i) != NULL; ++i) {
+    free(*i);
+  }
+  free(args);
+}
+
 extern char **environ;
 
 static virgo_error_t*
@@ -93,6 +102,7 @@ virgo__exec(virgo_t *v, char *exe_path, const char *bundle_path) {
 #else
   rc = execve(exe_path, args, environ);
 #endif
+  free_args(args);
   if (rc < 0) {
     return virgo_error_createf(VIRGO_ENOFILE, "%s failed errno=%i", name, errno);
   }
