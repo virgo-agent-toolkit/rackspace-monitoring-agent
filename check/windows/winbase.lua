@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local BaseCheck = require('./base').BaseCheck
-local CheckResult = require('./base').CheckResult
+local BaseCheck = require('../base').BaseCheck
+local CheckResult = require('../base').CheckResult
 local spawn = require('childprocess').spawn
-local fireOnce = require('../util/misc').fireOnce
-local parseCSVLine = require('../util/misc').parseCSVLine
+local fireOnce = require('../../util/misc').fireOnce
+local parseCSVLine = require('../../util/misc').parseCSVLine
 local table = require('table')
 local string = require('string')
 local os = require('os')
@@ -33,49 +33,35 @@ local function lines(str)
   return t
 end
 
-local WindowsPerfOSCheck = BaseCheck:extend()
+local WindowsPowershellCmdletCheck = BaseCheck:extend()
 
-function WindowsPerfOSCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.windows_perfos', params)
+function WindowsPowershellCmdletCheck:initialize(checkType, powershell_cmd, metric_blacklist, metric_type_map, params)
+  self._powershell_cmd = powershell_cmd
+  self._metric_blacklist = metric_blacklist
+  self._metric_type_map = metric_type_map
+  BaseCheck.initialize(self, checkType, params)
 end
 
---[[
-# So this should create a Perf.csv file in the temp directory
-powershell "(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
---]]
+function WindowsPowershellCmdletCheck:getPowershellCmd()
+  return self._powershell_cmd
+end
 
-local wmi_type_map = {
-  uint8='uint32',
-  uint16='uint32',
-  uint32='uint32',
-  uint64='uint64',
-  sint8='int32',
-  sint16='int32',
-  sint32='int32',
-  sint64='int64',
-  real32='double',
-  real64='double'
-  }
-local PerfOS_System_Properties_Ignore = {
-  Caption=true,
-  Description=true,
-  Name=true,
-  Frequency_Object=true,
-  Frequency_PerfTime=true,
-  Frequency_Sys100NS=true,
-  Timestamp_Object=true,
-  Timestamp_PerfTime=true,
-  Timestamp_Sys100NS=true
-  }
+function WindowsPowershellCmdletCheck:getMetricBlacklist()
+  return self._metric_blacklist
+end
 
-function WindowsPerfOSCheck:run(callback)
+function WindowsPowershellCmdletCheck:getMetricTypeMap()
+  return self._metric_type_map
+end
+
+function WindowsPowershellCmdletCheck:run(callback)
   -- Set up
   local callback = fireOnce(callback)
   local checkResult = CheckResult:new(self, {})
   local block_data = ''
 
   if os.type() ~= 'win32' then
-    checkResult:setStatus("err agent.windows_perfos available only on Windows platforms")
+    checkResult:setStatus("err " .. self.getType() .. " available only on Windows platforms")
 
     -- Return Result
     self._lastResult = checkResult
@@ -85,7 +71,7 @@ function WindowsPerfOSCheck:run(callback)
 
   -- Perform Check
   local options = {}
-  local child = spawn('powershell.exe', {'(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv'}, options)
+  local child = spawn('powershell.exe', {self:getPowershellCmd()}, options)
   child.stdin:close() -- NEEDED for Powershell 2.0 to exit
   child.stdout:on('data', function(chunk)
     -- aggregate the output
@@ -110,10 +96,10 @@ function WindowsPerfOSCheck:run(callback)
         else
           -- Parse Data, coverting to numbers when needed
           local entry = parseCSVLine(line)
-          if entry[headings['Name']] ~= nil and PerfOS_System_Properties_Ignore[entry[headings['Name']]] ~= true then
+          if entry[headings['Name']] ~= nil and self:getMetricBlacklist()[entry[headings['Name']]] ~= true then
             local type = 'string'
-            if entry[headings['Type']] ~= nil and wmi_type_map[string.lower(entry[headings['Type']])] ~=nil then
-               type = wmi_type_map[string.lower(entry[headings['Type']])]
+            if entry[headings['Type']] ~= nil and self:getMetricTypeMap()[string.lower(entry[headings['Type']])] ~=nil then
+               type = self:getMetricTypeMap()[string.lower(entry[headings['Type']])]
             end
             checkResult:addMetric(entry[headings['Name']], nil, type, entry[headings['Value']], '')
           end
@@ -134,6 +120,7 @@ function WindowsPerfOSCheck:run(callback)
   end)
 end
 
+
 local exports = {}
-exports.WindowsPerfOSCheck = WindowsPerfOSCheck
+exports.WindowsPowershellCmdletCheck = WindowsPowershellCmdletCheck
 return exports

@@ -1,7 +1,9 @@
 local math = require('math')
 local os = require('os')
 
-local WindowsPerfOSCheck = require('/check/windows').WindowsPerfOSCheck
+local WindowsPerfOSCheck = require('monitoring/default/check/windows').checks.WindowsPerfOSCheck
+local MSSQLServerVersionCheck = require('monitoring/default/check/windows').checks.MSSQLServerVersionCheck
+local MSSQLServerDatabaseCheck = require('monitoring/default/check/windows').checks.MSSQLServerDatabaseCheck
 
 local exports = {}
 
