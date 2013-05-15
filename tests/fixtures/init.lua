@@ -1,9 +1,15 @@
+local os = require('os')
 local path = require('path')
 local string = require('string')
 
 local statics = require('/lua_modules').statics
 
 local load_fixtures = function(dir, is_json)
+  -- Convert the \ to / so path.posix works
+  if os.type() == 'win32' then
+    dir = dir:gsub("\\", "/")
+  end
+
   if is_json then
     finder = '(.*).json'
   else
