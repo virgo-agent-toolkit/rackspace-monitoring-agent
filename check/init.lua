@@ -32,6 +32,7 @@ local Windows = require('./windows')
 
 local Error = require('core').Error
 
+local merge = require('/util/misc').merge
 local fmt = require('string').format
 
 function create(checkData)
