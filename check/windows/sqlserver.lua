@@ -15,9 +15,13 @@ limitations under the License.
 --]]
 
 local WindowsPowershellCmdletCheck = require('./winbase').WindowsPowershellCmdletCheck
+local CheckResult = require('../base').CheckResult
 
+-- A wrapper around an SQL Server Query
 
-local function invokesql_notfound(callback)
+local MSSQLServerInvokeSQLCmdCheck = WindowsPowershellCmdletCheck:extend()
+
+function MSSQLServerInvokeSQLCmdCheck:_invokesql_notfound(callback)
   local cr = CheckResult:new(self, {})
   cr:setError("Invoke-SqlCmd not found")
   self._lastResult = cr
@@ -25,41 +29,31 @@ local function invokesql_notfound(callback)
   return
 end
 
-local function db_unspec(callback)
-  local cr = CheckResult:new(self, {})
-  cr:setError("Database unspecified")
-  self._lastResult = cr
-  callback(cr)
-  return
-end
-
--- A wrapper around an SQL Server Query
-
-local MSSQLServerInvokeSQLCmdCheck = WindowsPowershellCmdletCheck:extend()
-
 function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, metric_blacklist, metric_type_map, params)
   if params.details == nil then
     params.details = {}
   end
 
+  local serverinstance_option = ""
   local hostname_option = ""
   local username_option = ""
   local password_option = ""
 
   if params.details.hostname ~= nil and params.details.hostname ~= "" then
-    hostname_option = "-H \"" .. params.details.hostname .. "\" "
+    hostname_option = "-Hostname \"" .. params.details.hostname .. "\" "
+  end
+  if params.details.serverinstance ~= nil and params.details.serverinstance ~= "" then
+    serverinstance_option = "-ServerInstance \"" .. params.details.serverinstance .. "\" "
   end
   if params.details.username ~= nil and params.details.username ~= "" then
-    hostname_option = "-U \"" .. params.details.username .. "\" "
+    username_option = "-Username \"" .. params.details.username .. "\" "
   end
   if params.details.password ~= nil and params.details.password ~= "" then
-    hostname_option = "-P \"" .. params.details.password .. "\" "
+    password_option = "-Password \"" .. params.details.password .. "\" "
   end
 
-  -- Note: we might need to "add-pssnapin sqlservercmdletsnapin100" with SQL Server 2008
-
-  local cmd = "if (Get-Command Invoke-Sqlcmd -errorAction SilentlyContinue) { Invoke-Sqlcmd " .. hostname_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 3 | ConvertTo-Csv }"
-
+  local cmd = "add-pssnapin -errorAction SilentlyContinue sqlservercmdletsnapin100 ; if (Get-Command Invoke-Sqlcmd -errorAction SilentlyContinue) { Invoke-Sqlcmd " .. hostname_option .. serverinstance_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 10 | ConvertTo-Csv }"
+  
   WindowsPowershellCmdletCheck.initialize(self, checkType, cmd, metric_blacklist, metric_type_map, params)
 end
 
@@ -77,6 +71,14 @@ end
 
 local MSSQLServerDatabaseCheck = MSSQLServerInvokeSQLCmdCheck:extend()
 
+function MSSQLServerDatabaseCheck:_db_unspec(callback)
+  local cr = CheckResult:new(self, {})
+  cr:setError("Database unspecified")
+  self._lastResult = cr
+  callback(cr)
+  return
+end
+
 function MSSQLServerDatabaseCheck:initialize(params)
   local query = ""
   if params.details == nil then
@@ -86,7 +88,7 @@ function MSSQLServerDatabaseCheck:initialize(params)
   local query = ""
   if params.details.db == nil then
     -- Set the check to error if no db was specified
-    self.run = db_unspec
+    self.run = self._db_unspec
   else
     local q1 = "select unpvt.N as Name, unpvt.Value, 'string' as Type from (select * from sys.databases where name = '" .. params.details.db .. "') p UNPIVOT (Value for N in (state_desc, recovery_model_desc, page_verify_option_desc) ) unpvt;"
     local q2 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.databases where name = '" .. params.details.db .. "') p UNPIVOT (Value for N in (state, recovery_model, page_verify_option) ) unpvt;"
