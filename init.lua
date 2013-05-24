@@ -70,7 +70,7 @@ function Entry.run()
 
   if argv.args.i then
     options.tls = {
-      rejectUnauthorized = true,
+      rejectUnauthorized = false,
       ca = require('./certs').caCertsDebug
     }
   end
