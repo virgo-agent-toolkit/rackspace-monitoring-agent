@@ -27,7 +27,7 @@ local async = require('async')
 local ask = require('/util/prompt').ask
 local errors = require('errors')
 local constants = require('/util/constants')
-local sigarCtx = require('sigar').ctx
+local sigarCtx = require('/sigar').ctx
 
 local maas = require('rackspace-monitoring')
 

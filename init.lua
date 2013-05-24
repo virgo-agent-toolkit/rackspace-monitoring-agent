@@ -82,7 +82,7 @@ function Entry.run()
 
   local agent = MonitoringAgent:new(options)
 
-  if not argv.u then
+  if not argv.args.u then
     return agent:start(options)
   end
 
