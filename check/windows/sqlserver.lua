@@ -99,7 +99,35 @@ function MSSQLServerDatabaseCheck:initialize(params)
   MSSQLServerInvokeSQLCmdCheck.initialize(self, 'agent.mssql_database', query, {}, {int="int64"}, params)
 end
 
+-- Get Server Buffer Manager Performance Data
+local MSSQLServerBufferManagerCheck = WindowsPowershellCmdletCheck:extend()
+
+function MSSQLServerBufferManagerCheck:initialize(params)
+  if params.details == nil then
+    params.details = {}
+  end
+
+  local cmd = '(get-counter -counter "SQLServer:Buffer Manager\*" -comp localhost).CounterSamples | Select @{name="Name";expression={$_.Path.Replace("\\localhost\sqlserver:buffer manager\","").Replace("/", " per ").Replace(" ","_") }}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int64"}} | ConvertTo-CSV'
+  
+  WindowsPowershellCmdletCheck.initialize(self, 'agent.mssql_buffer_manager', cmd, {}, {}, params)
+end
+
+-- Get Server SQL Statistics Data
+local MSSQLServerSQLStatisticsCheck = WindowsPowershellCmdletCheck:extend()
+
+function MSSQLServerSQLStatisticsCheck:initialize(params)
+  if params.details == nil then
+    params.details = {}
+  end
+
+  local cmd = '(get-counter -counter "SQLServer:SQL Statistics\*" -comp localhost).CounterSamples | Select @{name="Name";expression={$_.Path.Replace("\\localhost\sqlserver:sql statistics\","").Replace("/", " per ").Replace(" ","_") }}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int64"}} | ConvertTo-CSV'
+  
+  WindowsPowershellCmdletCheck.initialize(self, 'agent.mssql_sql_statistics', cmd, {}, {}, params)
+end
+
+
 local exports = {}
 exports.MSSQLServerVersionCheck = MSSQLServerVersionCheck
 exports.MSSQLServerDatabaseCheck = MSSQLServerDatabaseCheck
+exports.MSSQLServerBufferManagerCheck = MSSQLServerBufferManagerCheck
 return exports
