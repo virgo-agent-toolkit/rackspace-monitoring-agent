@@ -99,30 +99,55 @@ function MSSQLServerDatabaseCheck:initialize(params)
   MSSQLServerInvokeSQLCmdCheck.initialize(self, 'agent.mssql_database', query, {}, {int="int64"}, params)
 end
 
--- Get Server Buffer Manager Performance Data
-local MSSQLServerBufferManagerCheck = WindowsPowershellCmdletCheck:extend()
+-- Get Counter Metrics
+local WindowsGetCounterCheck = WindowsPowershellCmdletCheck:extend()
 
-function MSSQLServerBufferManagerCheck:initialize(params)
+function WindowsGetCounterCheck:initialize(check_type, counter_path, params)
   if params.details == nil then
     params.details = {}
   end
 
-  local cmd = '(get-counter -counter "SQLServer:Buffer Manager\*" -comp localhost).CounterSamples | Select @{name="Name";expression={$_.Path.Replace("\\localhost\sqlserver:buffer manager\","").Replace("/", " per ").Replace(" ","_") }}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int64"}} | ConvertTo-CSV'
+  local serverinstance_option = "SQLServer"
+  local computer_option = "-comp localhost"
+
+  if params.details.serverinstance ~= nil and params.details.serverinstance ~= "" then
+    serverinstance_option = "-ServerInstance \"" .. params.details.serverinstance .. "\" "
+  end
+  if params.details.computer ~= nil and params.details.computer ~= "" then
+    computer_option = "-comp \"" .. params.details.computer .. "\" "
+  end
+
+  local cmd = '(get-counter -counter "' .. serverinstance_option .. ':' .. counter_path .. '" ' .. computer_option .. ' ).CounterSamples | Select @{name="Name";expression={($_.Path -replace ".*\\\\","").Replace("/", " per ").Replace(" ","_") }}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int"}} | ConvertTo-CSV'
   
-  WindowsPowershellCmdletCheck.initialize(self, 'agent.mssql_buffer_manager', cmd, {}, {}, params)
+  WindowsPowershellCmdletCheck.initialize(self, check_type, cmd, {}, {int="int64"}, params)
+end
+
+-- Get Server Buffer Manager Performance Data
+local MSSQLServerBufferManagerCheck = WindowsGetCounterCheck:extend()
+
+function MSSQLServerBufferManagerCheck:initialize(params)
+  WindowsGetCounterCheck.initialize(self, 'agent.mssql_buffer_manager', "Buffer Manager\\*", params)
 end
 
 -- Get Server SQL Statistics Data
-local MSSQLServerSQLStatisticsCheck = WindowsPowershellCmdletCheck:extend()
+local MSSQLServerSQLStatisticsCheck = WindowsGetCounterCheck:extend()
 
 function MSSQLServerSQLStatisticsCheck:initialize(params)
-  if params.details == nil then
-    params.details = {}
-  end
+  WindowsGetCounterCheck.initialize(self, 'agent.mssql_sql_statistics', "SQL Statistics\\*", params)
+end
 
-  local cmd = '(get-counter -counter "SQLServer:SQL Statistics\*" -comp localhost).CounterSamples | Select @{name="Name";expression={$_.Path.Replace("\\localhost\sqlserver:sql statistics\","").Replace("/", " per ").Replace(" ","_") }}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int64"}} | ConvertTo-CSV'
-  
-  WindowsPowershellCmdletCheck.initialize(self, 'agent.mssql_sql_statistics', cmd, {}, {}, params)
+-- Get Server Memory Manager Data
+local MSSQLServerMemoryManagerCheck = WindowsGetCounterCheck:extend()
+
+function MSSQLServerMemoryManagerCheck:initialize(params)
+  WindowsGetCounterCheck.initialize(self, 'agent.mssql_memory_manager', "Memory Manager\\*", params)
+end
+
+-- Get Server Plan Cache Data
+local MSSQLServerPlanCacheCheck = WindowsGetCounterCheck:extend()
+
+function MSSQLServerPlanCacheCheck:initialize(params)
+  WindowsGetCounterCheck.initialize(self, 'agent.mssql_plan_cache', "Plan Cache(*)\\*", params)
 end
 
 
@@ -130,4 +155,8 @@ local exports = {}
 exports.MSSQLServerVersionCheck = MSSQLServerVersionCheck
 exports.MSSQLServerDatabaseCheck = MSSQLServerDatabaseCheck
 exports.MSSQLServerBufferManagerCheck = MSSQLServerBufferManagerCheck
+exports.MSSQLServerSQLStatisticsCheck = MSSQLServerSQLStatisticsCheck
+exports.MSSQLServerMemoryManagerCheck = MSSQLServerMemoryManagerCheck
+exports.MSSQLServerPlanCacheCheck = MSSQLServerPlanCacheCheck
+
 return exports

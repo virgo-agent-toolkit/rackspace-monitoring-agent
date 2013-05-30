@@ -15,8 +15,7 @@ limitations under the License.
 --]]
 
 local WindowsPerfOSCheck = require('./os').WindowsPerfOSCheck
-local MSSQLServerVersionCheck = require('./sqlserver').MSSQLServerVersionCheck
-local MSSQLServerDatabaseCheck = require('./sqlserver').MSSQLServerDatabaseCheck
+local MSSQLServer = require('./sqlserver')
 
 local exports = {}
 
@@ -24,9 +23,17 @@ exports.create = function(checkType, obj)
   if checkType == 'agent.windows_perfos' then
     return WindowsPerfOSCheck:new(obj)
   elseif checkType == 'agent.sqlserver_version' then
-    return MSSQLServerVersionCheck:new(obj)
+    return MSSQLServer.MSSQLServerVersionCheck:new(obj)
   elseif checkType == 'agent.sqlserver_database' then
-    return MSSQLServerDatabaseCheck:new(obj)
+    return MSSQLServer.MSSQLServerDatabaseCheck:new(obj)
+  elseif checkType == 'agent.mssql_buffer_manager' then
+    return MSSQLServer.MSSQLServerBufferManagerCheck:new(obj)
+  elseif checkType == 'agent.mssql_sql_statistics' then
+    return MSSQLServer.MSSQLServerSQLStatisticsCheck:new(obj)
+  elseif checkType == 'agent.mssql_memory_manager' then
+    return MSSQLServer.MSSQLServerMemoryManagerCheck:new(obj)
+  elseif checkType == 'agent.mssql_plan_cache' then
+    return MSSQLServer.MSSQLServerPlanCacheCheck:new(obj)
   else
     return nil
   end
@@ -34,8 +41,12 @@ end
 
 exports.checks = {
   WindowsPerfOSCheck = WindowsPerfOSCheck,
-  MSSQLServerVersionCheck = MSSQLServerVersionCheck,
-  MSSQLServerDatabaseCheck = MSSQLServerDatabaseCheck
+  MSSQLServerVersionCheck = MSSQLServer.MSSQLServerVersionCheck,
+  MSSQLServerDatabaseCheck = MSSQLServer.MSSQLServerDatabaseCheck,
+  MSSQLServerBufferManagerCheck = MSSQLServer.MSSQLServerBufferManagerCheck,
+  MSSQLServerSQLStatisticsCheck = MSSQLServer.MSSQLServerSQLStatisticsCheck,
+  MSSQLServerMemoryManagerCheck = MSSQLServer.MSSQLServerMemoryManagerCheck,
+  MSSQLServerPlanCacheCheck = MSSQLServer.MSSQLServerPlanCacheCheck
   }
 
 return exports
