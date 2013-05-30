@@ -102,13 +102,14 @@ end
 -- Get Counter Metrics
 local WindowsGetCounterCheck = WindowsPowershellCmdletCheck:extend()
 
-function WindowsGetCounterCheck:initialize(check_type, counter_path, params)
+function WindowsGetCounterCheck:initialize(check_type, counter_path, params, name_replacement)
   if params.details == nil then
     params.details = {}
   end
 
   local serverinstance_option = "SQLServer"
   local computer_option = "-comp localhost"
+  local name_replacement_option = '($_.Path -replace ".*\\\\","").Replace("/", " per ").Replace(" ","_")'
 
   if params.details.serverinstance ~= nil and params.details.serverinstance ~= "" then
     serverinstance_option = "-ServerInstance \"" .. params.details.serverinstance .. "\" "
@@ -116,8 +117,11 @@ function WindowsGetCounterCheck:initialize(check_type, counter_path, params)
   if params.details.computer ~= nil and params.details.computer ~= "" then
     computer_option = "-comp \"" .. params.details.computer .. "\" "
   end
+  if name_replacement ~= nil and name_replacement ~= "" then
+    name_replacement_option = name_replacement
+  end
 
-  local cmd = '(get-counter -counter "' .. serverinstance_option .. ':' .. counter_path .. '" ' .. computer_option .. ' ).CounterSamples | Select @{name="Name";expression={($_.Path -replace ".*\\\\","").Replace("/", " per ").Replace(" ","_") }}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int"}} | ConvertTo-CSV'
+  local cmd = '(get-counter -counter "' .. serverinstance_option .. ':' .. counter_path .. '" ' .. computer_option .. ' ).CounterSamples | Select @{name="Name";expression={' .. name_replacement_option ..'}}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int"}} | ConvertTo-CSV'
   
   WindowsPowershellCmdletCheck.initialize(self, check_type, cmd, {}, {int="int64"}, params)
 end
@@ -147,7 +151,7 @@ end
 local MSSQLServerPlanCacheCheck = WindowsGetCounterCheck:extend()
 
 function MSSQLServerPlanCacheCheck:initialize(params)
-  WindowsGetCounterCheck.initialize(self, 'agent.mssql_plan_cache', "Plan Cache(*)\\*", params)
+  WindowsGetCounterCheck.initialize(self, 'agent.mssql_plan_cache', "Plan Cache(*)\\*", params, '($_.Path -replace ".*\\(","").Replace("/", " per ").Replace(")\\","_").Replace(" ","_")')
 end
 
 
