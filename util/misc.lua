@@ -112,6 +112,12 @@ function calcJitter(n, jitter)
   return math.floor(n + (jitter * math.random()))
 end
 
+function calcJitterMultiplier(n, multiplier)
+  local sig = math.floor(math.log10(n)) - 1
+  local jitter = multiplier * math.pow(10, sig)
+  return math.floor(n + (jitter * math.random()))
+end
+
 -- merge tables
 function merge(...)
   local args = {...}
@@ -321,6 +327,7 @@ end
 local exports = {}
 exports.copyFile = copyFile
 exports.calcJitter = calcJitter
+exports.calcJitterMultiplier = calcJitterMultiplier
 exports.merge = merge
 exports.splitAddress = splitAddress
 exports.split = split

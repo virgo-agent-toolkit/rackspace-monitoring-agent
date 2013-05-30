@@ -192,7 +192,7 @@ end
 
 function AgentClient:startHeartbeatInterval()
   function startInterval(this)
-    local timeout = misc.calcJitter(this._heartbeat_interval, consts.HEARTBEAT_INTERVAL_JITTER)
+    local timeout = misc.calcJitterMultiplier(this._heartbeat_interval, consts.HEARTBEAT_INTERVAL_JITTER_MULTIPLIER)
 
     if this:isDestroyed() then
       return
