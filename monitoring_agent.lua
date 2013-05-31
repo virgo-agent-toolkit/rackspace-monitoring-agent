@@ -87,9 +87,12 @@ end
 function MonitoringAgent:connect(callback)
   local endpoints = self._config['monitoring_endpoints']
   local upgradesEnabled = true
-  local upgradeStr = string.lower(self._config['monitoring_upgrade'])
-  if upgradeStr == 'false' or upgradeStr == 'disabled' then
-    upgradesEnabled = false
+  local upgradeStr = self._config['monitoring_upgrade']
+  if upgradeStr then
+    upgradeStr = upgradeStr:lower()
+    if upgradeStr == 'false' or upgradeStr == 'disabled' then
+      upgradesEnabled = false
+    end
   end
 
   if #endpoints <= 0 then
