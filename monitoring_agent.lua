@@ -47,6 +47,7 @@ function MonitoringAgent:initialize(options)
   self._stateDirectory = options.stateDirectory
   self._config = virgo.config
   self._options = options
+  self._upgradesEnabled = true
 end
 
 function MonitoringAgent:start(options)
@@ -86,12 +87,11 @@ end
 
 function MonitoringAgent:connect(callback)
   local endpoints = self._config['monitoring_endpoints']
-  local upgradesEnabled = true
   local upgradeStr = self._config['monitoring_upgrade']
   if upgradeStr then
     upgradeStr = upgradeStr:lower()
     if upgradeStr == 'false' or upgradeStr == 'disabled' then
-      upgradesEnabled = false
+      self._upgradesEnabled = false
     end
   end
 
@@ -103,12 +103,12 @@ function MonitoringAgent:connect(callback)
     return
   end
 
-  logging.info(fmt('Upgrades are %s', upgradesEnabled and 'enabled' or 'disabled'))
+  logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
 
   self._streams = ConnectionStream:new(self._config['monitoring_id'],
                                        self._config['monitoring_token'],
                                        self._config['monitoring_guid'],
-                                       upgradesEnabled,
+                                       self._upgradesEnabled,
                                        self._options)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
@@ -161,6 +161,10 @@ end
 
 function MonitoringAgent:getStreams()
   return self._streams
+end
+
+function MonitoringAgent:disableUpgrades()
+  self._upgradesEnabled = false
 end
 
 function MonitoringAgent:getConfig()
