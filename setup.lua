@@ -43,6 +43,9 @@ function Setup:initialize(argv, configFile, agent)
   end)
   self._addresses = {}
 
+  -- disable upgrades on setup
+  self._agent:disableUpgrades()
+
   -- build a "set" (table keyed by address) of local IP addresses
   local netifs = sigarCtx:netifs()
 
