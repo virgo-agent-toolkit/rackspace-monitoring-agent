@@ -56,7 +56,7 @@ end
 
 function writePid(pidFile, callback)
   if pidFile then
-    logging.info('Writing PID to ' .. pidFile)
+    logging.debug('Writing PID to: ' .. pidFile)
     fs.writeFile(pidFile, tostring(process.pid), function(err)
       if err then
         logging.error('Failed writing PID')
