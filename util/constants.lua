@@ -59,11 +59,13 @@ exports.DEFAULT_PERSISTENT_VARIABLE_PATH = path.join(PERSISTENT_DIR, 'variables'
 exports.DEFAULT_CONFIG_PATH = path.join(CONFIG_DIR, 'rackspace-monitoring-agent.cfg')
 exports.DEFAULT_STATE_PATH = path.join(RUNTIME_DIR, 'states')
 exports.DEFAULT_DOWNLOAD_PATH = path.join(RUNTIME_DIR, 'downloads')
+exports.DEFAULT_RUNTIME_PATH = RUNTIME_DIR
 
 exports.DEFAULT_VERIFIED_BUNDLE_PATH = BUNDLE_DIR
 exports.DEFAULT_UNVERIFIED_BUNDLE_PATH = path.join(exports.DEFAULT_DOWNLOAD_PATH, 'unverified')
 exports.DEFAULT_VERIFIED_EXE_PATH = EXE_DIR
 exports.DEFAULT_UNVERIFIED_EXE_PATH = path.join(exports.DEFAULT_DOWNLOAD_PATH, 'unverified')
+exports.DEFAULT_PID_FILE = '/var/run/rackspace-monitoring-agent.pid'
 
 -- Custom plugins related settings
 
