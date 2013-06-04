@@ -72,6 +72,11 @@ function MonitoringAgent:start(options)
       end)
     end,
     function(callback)
+      if os.type() ~= 'win32' then
+        if not options.pidFile then
+          options.pidFile = constants.DEFAULT_PID_FILE_PATH
+        end
+      end
       misc.writePid(options.pidFile, callback)
     end,
     function(callback)
