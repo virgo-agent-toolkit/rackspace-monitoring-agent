@@ -35,10 +35,8 @@ end
 
 local WindowsPowershellCmdletCheck = BaseCheck:extend()
 
-function WindowsPowershellCmdletCheck:initialize(checkType, powershell_cmd, metric_blacklist, metric_type_map, params)
+function WindowsPowershellCmdletCheck:initialize(checkType, powershell_cmd, params)
   self._powershell_cmd = powershell_cmd
-  self._metric_blacklist = metric_blacklist
-  self._metric_type_map = metric_type_map
   BaseCheck.initialize(self, checkType, params)
 end
 
@@ -46,13 +44,8 @@ function WindowsPowershellCmdletCheck:getPowershellCmd()
   return self._powershell_cmd
 end
 
-function WindowsPowershellCmdletCheck:getMetricBlacklist()
-  return self._metric_blacklist
-end
-
-function WindowsPowershellCmdletCheck:getMetricTypeMap()
-  return self._metric_type_map
-end
+--Requires inherited classes to define handle_entry(entry) to return a metric.
+-- See entry_handlers.lua   
 
 function WindowsPowershellCmdletCheck:run(callback)
   -- Set up
@@ -95,13 +88,15 @@ function WindowsPowershellCmdletCheck:run(callback)
           end
         else
           -- Parse Data, coverting to numbers when needed
-          local entry = parseCSVLine(line)
-          if entry[headings['Name']] ~= nil and self:getMetricBlacklist()[entry[headings['Name']]] ~= true then
-            local type = 'string'
-            if entry[headings['Type']] ~= nil and self:getMetricTypeMap()[string.lower(entry[headings['Type']])] ~=nil then
-               type = self:getMetricTypeMap()[string.lower(entry[headings['Type']])]
-            end
-            checkResult:addMetric(entry[headings['Name']], nil, type, entry[headings['Value']], '')
+          local entry_array = parseCSVLine(line)
+          local entry = {}
+          for field, i in pairs(headings) do
+            entry[field] = entry_array[i]
+          end
+
+          local metric = self:handle_entry(entry)
+          if metric then
+            checkResult:addMetric(metric.Name, metric.Dimension, metric.Type, metric.Value, metric.Unit)
           end
         end
       end

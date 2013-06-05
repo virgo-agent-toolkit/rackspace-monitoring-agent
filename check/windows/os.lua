@@ -15,38 +15,59 @@ limitations under the License.
 --]]
 
 local WindowsPowershellCmdletCheck = require('./winbase').WindowsPowershellCmdletCheck
+local string = require('string')
 
 local WindowsPerfOSCheck = WindowsPowershellCmdletCheck:extend()
 
 function WindowsPerfOSCheck:initialize(params)
   local cmd = "(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
 
-  local wmi_type_map = {
-    uint8='uint32',
-    uint16='uint32',
-    uint32='uint32',
-    uint64='uint64',
-    sint8='int32',
-    sint16='int32',
-    sint32='int32',
-    sint64='int64',
-    real32='double',
-    real64='double'
-  }
+  WindowsPowershellCmdletCheck.initialize(self, 'agent.windows_perfos', cmd, params)
+end
 
-  local PerfOS_System_Properties_Ignore = {
-    Caption=true,
-    Description=true,
-    Name=true,
-    Frequency_Object=true,
-    Frequency_PerfTime=true,
-    Frequency_Sys100NS=true,
-    Timestamp_Object=true,
-    Timestamp_PerfTime=true,
-    Timestamp_Sys100NS=true
-  }
+function WindowsPerfOSCheck:handle_entry(entry)
+  local metric = nil
+  if entry.Name then
+    local blacklist = {
+      Caption=true,
+      Description=true,
+      Name=true,
+      Frequency_Object=true,
+      Frequency_PerfTime=true,
+      Frequency_Sys100NS=true,
+      Timestamp_Object=true,
+      Timestamp_PerfTime=true,
+      Timestamp_Sys100NS=true
+    }
+    local type_map = {
+      uint8='uint32',
+      uint16='uint32',
+      uint32='uint32',
+      uint64='uint64',
+      sint8='int32',
+      sint16='int32',
+      sint32='int32',
+      sint64='int64',
+      real32='double',
+      real64='double'
+    }
 
-  WindowsPowershellCmdletCheck.initialize(self, 'agent.windows_perfos', cmd, PerfOS_System_Properties_Ignore, wmi_type_map, params)
+    if not blacklist[entry.Name] then
+      local type = 'string'
+      if type_map[string.lower(entry.Type)] then
+        type = type_map[string.lower(entry.Type)]
+      end
+
+      metric = {
+        Name = entry.Name,
+        Dimension = nil,
+        Type = type,
+        Value = entry.Value,
+        unit = ''
+      }
+    end
+  end
+  return metric
 end
 
 
