@@ -108,6 +108,9 @@ function MonitoringAgent:connect(callback)
     return
   end
 
+  -- ReEnable upgrades when we have a handle on them
+  self._upgradesEnabled = false
+
   logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
 
   self._streams = ConnectionStream:new(self._config['monitoring_id'],
