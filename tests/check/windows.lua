@@ -15,7 +15,7 @@ exports['test_windowsperfos_check'] = function(test, asserts)
     asserts.ok(check._lastResult ~= nil)
 
     if os.type() == 'win32' then
-      asserts.ok(result:getStatus() == 'success')
+      asserts.ok(result:getStatus() == 'success', result:getStatus())
       asserts.ok(#check._lastResult:serialize() > 0)
       local metrics = result:getMetrics()['none']
       asserts.ok(metrics['Processes']['t'] == 'uint32')
@@ -52,7 +52,7 @@ local function mssql_test_common(check, test, asserts, specific_tests)
     asserts.ok(check._lastResult ~= nil)
 
     if os.type() == 'win32' then
-      asserts.ok(result:getStatus() == 'success')
+      asserts.ok(result:getStatus() == 'success', result:getStatus())
       asserts.ok(#check._lastResult:serialize() > 0)
       --local metrics = result:getMetrics()['none']
       --p(metrics)
@@ -109,7 +109,7 @@ exports = add_iterative_test(exports, 'test_mssql_plan_cache', function(test, as
     test, asserts, function(result, test, asserts)
       local metrics = result:getMetrics()['none']
       -- Values always become strings internally
-      --asserts.ok(tonumber(metrics['_total_cache_pages']['v']) > 0)
+      asserts.ok(tonumber(metrics['total_cache_pages']['v']) > 0)
     end
   )
 end)

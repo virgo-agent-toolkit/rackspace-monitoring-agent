@@ -54,7 +54,6 @@ exports.simple = function(self, entry)
       unit = ''
     }
   end
-  p(metric)
   return metric
 end
 

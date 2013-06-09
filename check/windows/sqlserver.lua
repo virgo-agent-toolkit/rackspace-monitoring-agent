@@ -175,7 +175,6 @@ function mem_handle_entry(self, entry)
       unit = unit
     }
   end
-  p(metric)
   return metric
 end
 
