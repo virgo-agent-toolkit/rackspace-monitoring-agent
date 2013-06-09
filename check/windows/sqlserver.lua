@@ -54,7 +54,7 @@ function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, params)
     password_option = "-Password \"" .. self:escapeString(params.details.password) .. "\" "
   end
 
-  local cmd = "add-pssnapin -errorAction SilentlyContinue sqlservercmdletsnapin100 ; if (Get-Command Invoke-Sqlcmd -errorAction SilentlyContinue) { Invoke-Sqlcmd " .. hostname_option .. serverinstance_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 30 | ConvertTo-Csv }"
+  local cmd = "add-pssnapin -errorAction SilentlyContinue sqlservercmdletsnapin100 ; Invoke-Sqlcmd -ErrorVariable virgo_err " .. hostname_option .. serverinstance_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 30 | ConvertTo-Csv"
   WindowsPowershellCmdletCheck.initialize(self, checkType, cmd, params)
   self.handle_entry = entry_handlers.simple
 end
@@ -125,7 +125,7 @@ function WindowsGetCounterCheck:initialize(check_type, counter_path, params, pow
     name_replacement_option = powershell_name_replacement
   end
 
-  local cmd = '(get-counter -counter "' .. serverinstance_option .. ':' .. counter_path .. '" ' .. computer_option .. ' ).CounterSamples | Select @{name="Name";expression={' .. name_replacement_option ..'}}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int"}} | ConvertTo-CSV'
+  local cmd = '(get-counter -ErrorVariable virgo_err -counter "' .. serverinstance_option .. ':' .. counter_path .. '" ' .. computer_option .. ' ).CounterSamples | Select @{name="Name";expression={' .. name_replacement_option ..'}}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int"}} | ConvertTo-CSV'
   
   WindowsPowershellCmdletCheck.initialize(self, check_type, cmd, params)
   self.handle_entry = entry_handlers.simple

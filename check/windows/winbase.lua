@@ -45,7 +45,15 @@ function WindowsPowershellCmdletCheck:getPowershellCmd()
 end
 
 --Requires inherited classes to define handle_entry(entry) to return a metric.
--- See entry_handlers.lua   
+-- See entry_handlers.lua
+
+function WindowsPowershellCmdletCheck:checkForError(entry)
+  local err = nil
+  if entry.Name and entry.Name == '__VIRGO_ERROR' then
+    err = entry.Value
+  end
+  return err
+end
 
 function WindowsPowershellCmdletCheck:escapeString(s)
   return string.gsub(s, "([$\"'`])", "`%1")
@@ -68,7 +76,8 @@ function WindowsPowershellCmdletCheck:run(callback)
 
   -- Perform Check
   local options = {}
-  local child = spawn('powershell.exe', {self:getPowershellCmd()}, options)
+  local wrapper = self:getPowershellCmd() .. ' ; if ($virgo_err[0]) { $virgo_err[0] | Select @{name="Name";expression={"__VIRGO_ERROR"}}, @{name="Value";expression={($_.Exception -replace "`n.*", "") -replace "`r",""}}, @{name="Type";expression={"string"}} | ConvertTo-CSV }'
+  local child = spawn('powershell.exe', {wrapper}, options)
   child.stdin:close() -- NEEDED for Powershell 2.0 to exit
   child.stdout:on('data', function(chunk)
     -- aggregate the output
@@ -79,6 +88,7 @@ function WindowsPowershellCmdletCheck:run(callback)
     local data_lines = lines(block_data)
     local count = 0
     local headings = {}
+    local error = nil
     for x, line in pairs(data_lines) do
       if string.sub(line,1,1) ~= '#' then
         count = count + 1
@@ -98,12 +108,21 @@ function WindowsPowershellCmdletCheck:run(callback)
             entry[field] = entry_array[i]
           end
 
+          error = self:checkForError(entry)
+          if error then
+            break;
+          end
+
           local metric = self:handle_entry(entry)
           if metric then
             checkResult:addMetric(metric.Name, metric.Dimension, metric.Type, metric.Value, metric.Unit)
           end
         end
       end
+    end
+
+    if error then
+      checkResult:setStatus("err " .. error)
     end
 
     -- Return Result

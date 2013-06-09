@@ -20,7 +20,7 @@ local string = require('string')
 local WindowsPerfOSCheck = WindowsPowershellCmdletCheck:extend()
 
 function WindowsPerfOSCheck:initialize(params)
-  local cmd = "(get-wmiobject Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
+  local cmd = "(get-wmiobject -ErrorVariable virgo_err Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
 
   WindowsPowershellCmdletCheck.initialize(self, 'agent.windows_perfos', cmd, params)
 end
