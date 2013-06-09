@@ -189,7 +189,7 @@ end
 local MSSQLServerPlanCacheCheck = WindowsGetCounterCheck:extend()
 
 function MSSQLServerPlanCacheCheck:initialize(params)
-  WindowsGetCounterCheck.initialize(self, 'agent.mssql_plan_cache', "Plan Cache(*)\\*", params, '($_.Path -replace ".*\\(","").Replace("/", " per ").Replace(")\\","_").Replace(" ","_").Replace("-","_")')
+  WindowsGetCounterCheck.initialize(self, 'agent.mssql_plan_cache', "Plan Cache(*)\\*", params, '($_.Path -replace ".*\\(","").Replace("/", " per ").Replace(")\\","_").Replace(" ","_").Replace("-","_").Replace("_total_cache_","total_cache_")')
 end
 
 
