@@ -36,26 +36,25 @@ function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, params)
     params.details = {}
   end
 
-  local serverinstance_option = ""
+  local serverinstance_option = "-ServerInstance \"localhost\\sqlexpress\" "
   local hostname_option = ""
   local username_option = ""
   local password_option = ""
 
   if params.details.hostname ~= nil and params.details.hostname ~= "" then
-    hostname_option = "-Hostname \"" .. params.details.hostname .. "\" "
+    hostname_option = "-Hostname \"" .. self:escapeString(params.details.hostname) .. "\" "
   end
   if params.details.serverinstance ~= nil and params.details.serverinstance ~= "" then
-    serverinstance_option = "-ServerInstance \"" .. params.details.serverinstance .. "\" "
+    serverinstance_option = "-ServerInstance \"" .. self:escapeString(params.details.serverinstance) .. "\" "
   end
   if params.details.username ~= nil and params.details.username ~= "" then
-    username_option = "-Username \"" .. params.details.username .. "\" "
+    username_option = "-Username \"" .. self:escapeString(params.details.username) .. "\" "
   end
   if params.details.password ~= nil and params.details.password ~= "" then
-    password_option = "-Password \"" .. params.details.password .. "\" "
+    password_option = "-Password \"" .. self:escapeString(params.details.password) .. "\" "
   end
 
   local cmd = "add-pssnapin -errorAction SilentlyContinue sqlservercmdletsnapin100 ; if (Get-Command Invoke-Sqlcmd -errorAction SilentlyContinue) { Invoke-Sqlcmd " .. hostname_option .. serverinstance_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 30 | ConvertTo-Csv }"
-  
   WindowsPowershellCmdletCheck.initialize(self, checkType, cmd, params)
   self.handle_entry = entry_handlers.simple
 end
@@ -93,9 +92,10 @@ function MSSQLServerDatabaseCheck:initialize(params)
     -- Set the check to error if no db was specified
     self.run = self._db_unspec
   else
-    local q1 = "select unpvt.N as Name, unpvt.Value, 'string' as Type from (select * from sys.databases where name = '" .. params.details.db .. "') p UNPIVOT (Value for N in (state_desc, recovery_model_desc, page_verify_option_desc) ) unpvt;"
-    local q2 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.databases where name = '" .. params.details.db .. "') p UNPIVOT (Value for N in (state, recovery_model, page_verify_option) ) unpvt;"
-    local q3 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.master_files where name = '" .. params.details.db .. "' and file_id = 1) p UNPIVOT (Value for N in (size, growth) ) unpvt;"
+    local db_name = string.gsub(params.details.db, "(['\\])", "\\%1")
+    local q1 = "select unpvt.N as Name, unpvt.Value, 'string' as Type from (select * from sys.databases where name = '" .. db_name .. "') p UNPIVOT (Value for N in (state_desc, recovery_model_desc, page_verify_option_desc) ) unpvt;"
+    local q2 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.databases where name = '" .. db_name .. "') p UNPIVOT (Value for N in (state, recovery_model, page_verify_option) ) unpvt;"
+    local q3 = "select unpvt.N as Name, unpvt.Value, 'int' as Type from (select * from sys.master_files where name = '" .. db_name .. "' and file_id = 1) p UNPIVOT (Value for N in (size, growth) ) unpvt;"
     query = q1 .. q2 .. q3
   end
 
@@ -110,16 +110,17 @@ function WindowsGetCounterCheck:initialize(check_type, counter_path, params, pow
     params.details = {}
   end
 
-  local serverinstance_option = "SQLServer"
+  local serverinstance_option = "MSSQL`$SQLEXPRESS"
   local computer_option = "-comp localhost"
   local name_replacement_option = '($_.Path -replace ".*\\\\","").Replace("/", " per ").Replace(" ","_").Replace("-","_")'
 
   if params.details.serverinstance ~= nil and params.details.serverinstance ~= "" then
-    serverinstance_option = params.details.serverinstance
+    serverinstance_option = self:escapeString(params.details.serverinstance)
   end
   if params.details.computer ~= nil and params.details.computer ~= "" then
-    computer_option = "-comp \"" .. params.details.computer .. "\" "
+    computer_option = "-comp \"" .. self:escapeString(params.details.computer) .. "\" "
   end
+  -- passed in from a derived class
   if powershell_name_replacement ~= nil and powershell_name_replacement ~= "" then
     name_replacement_option = powershell_name_replacement
   end

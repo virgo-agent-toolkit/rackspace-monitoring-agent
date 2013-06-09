@@ -47,6 +47,10 @@ end
 --Requires inherited classes to define handle_entry(entry) to return a metric.
 -- See entry_handlers.lua   
 
+function WindowsPowershellCmdletCheck:escapeString(s)
+  return string.gsub(s, "([$\"'`])", "`%1")
+end
+
 function WindowsPowershellCmdletCheck:run(callback)
   -- Set up
   local callback = fireOnce(callback)
