@@ -19,7 +19,7 @@ local Object = require('core').Object
 --[[ Message ]]--
 local Message = Object:extend()
 function Message:initialize()
-  self.id = '1'
+  self.id = 1
   self.target = ''
   self.source = ''
 end
