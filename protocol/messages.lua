@@ -123,7 +123,7 @@ end
 --[[ System Info ]]--
 local SystemInfoResponse = Response:extend()
 function SystemInfoResponse:initialize(replyToMsg, result)
-  Response.initialize(self)
+  Response.initialize(self, replyToMsg)
 
   local s = sigar:new()
   local cpus = s:cpus()
