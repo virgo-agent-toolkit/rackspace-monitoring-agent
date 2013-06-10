@@ -37,10 +37,10 @@ local WindowsPowershellCmdletCheck = BaseCheck:extend()
 
 function WindowsPowershellCmdletCheck:initialize(checkType, powershell_cmd, params)
   self._powershell_cmd = powershell_cmd
-  # Powershell 2.0 carries the screen width to stdio and adds \r\n at the console width
+  -- Powershell 2.0 carries the screen width to stdio and adds \r\n at the console width
   self.width_needed = 2000
   self.screen_settings = 'if( $Host -and $Host.UI -and $Host.UI.RawUI ) { $rawUI = $Host.UI.RawUI; $oldSize = $rawUI.BufferSize; $typeName = $oldSize.GetType( ).FullName; $newSize = New-Object $typeName (' .. self.width_needed .. ', $oldSize.Height); $rawUI.BufferSize = $newSize ;} ;'
-  # Dump the error when the core command fails
+  -- Dump the error when the core command fails
   self.error_output = ' ; if ($virgo_err[0]) { $virgo_err[0] | Select @{name="Name";expression={"__VIRGO_ERROR"}}, @{name="Value";expression={$_.Exception}}, @{name="Type";expression={"string"}} | ConvertTo-CSV }'
   BaseCheck.initialize(self, checkType, params)
 end
