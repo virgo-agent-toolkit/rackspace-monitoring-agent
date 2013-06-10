@@ -102,7 +102,7 @@ local function skip_all(exports, reason)
   return exports
 end
 
-local test_configs = nil
+local test_configs = {}
 if process.env['TEST_CFG_DATA_FILE'] then
   local f = io.open(process.env['TEST_CFG_DATA_FILE'], "r")
   if f ~= nil then
