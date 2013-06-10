@@ -19,7 +19,7 @@ local Object = require('core').Object
 --[[ Message ]]--
 local Message = Object:extend()
 function Message:initialize()
-  self.id = 1
+  self.id = '1'
   self.target = ''
   self.source = ''
 end
@@ -57,7 +57,7 @@ function Request:initialize()
 end
 
 function Request:serialize(msgId)
-  self.id = msgId
+  self.id = tostring(msgId)
 
   return {
     v = '1',
