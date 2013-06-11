@@ -365,8 +365,9 @@ function ConnectionStream:createConnection(options, callback)
     guid = self._guid,
     timeout = consts.CONNECT_TIMEOUT
   }, options)
+  local host_or_ip = opts.ip or opts.host
 
-  dns.lookup(options.host, function(err, ip)
+  dns.lookup(host_or_ip, function(err, ip)
     if err then
       return callback(err)
     end
