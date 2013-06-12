@@ -323,6 +323,18 @@ function parseCSVLine (line,sep)
 end
 
 
+function isStaging()
+  local b = virgo.config['monitoring_staging']
+  if b then
+    b = (b:lower() == 'true')
+  end
+  if process.env.STAGING then
+    b = true
+  end
+  return b
+end
+
+
 --[[ Exports ]]--
 local exports = {}
 exports.copyFile = copyFile
@@ -341,4 +353,5 @@ exports.nCallbacks = nCallbacks
 exports.compareVersions = compareVersions
 exports.propagateEvents = propagateEvents
 exports.parseCSVLine = parseCSVLine
+exports.isStaging = isStaging
 return exports
