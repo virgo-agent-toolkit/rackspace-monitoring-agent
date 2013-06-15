@@ -29,7 +29,7 @@ exports['test_windowsperfos_check'] = function(test, asserts)
 end
 
 local function add_iterative_test(original_test_set, test_name, test_function)
-  if helper.test_configs[test_name] == nil then
+  if helper.test_configs == nil or helper.test_configs[test_name] == nil then
     original_test_set[test_name] = function(test, asserts)
       test.skip(test_name .. ' requires at least one config file entry')
     end
