@@ -15,7 +15,7 @@ exports['test_windowsperfos_check'] = function(test, asserts)
     asserts.ok(check._lastResult ~= nil)
 
     if os.type() == 'win32' then
-      asserts.ok(result:getStatus() == 'success', result:getStatus())
+      asserts.equals(result:getStatus(), 'success')
       asserts.ok(#check._lastResult:serialize() > 0)
       local metrics = result:getMetrics()['none']
       asserts.ok(metrics['Processes']['t'] == 'uint32')
@@ -52,8 +52,8 @@ local function mssql_test_common(check, test, asserts, specific_tests)
     asserts.ok(check._lastResult ~= nil)
 
     if os.type() == 'win32' then
-      asserts.ok(result:getStatus() == 'success', result:getStatus())
-      asserts.ok(#check._lastResult:serialize() > 0)
+      asserts.equals(result:getStatus(), 'success')
+      asserts.ok(#check._lastResult:serialize() > 0, "no metrics")
       --local metrics = result:getMetrics()['none']
       --p(metrics)
       specific_tests(result, test, asserts)

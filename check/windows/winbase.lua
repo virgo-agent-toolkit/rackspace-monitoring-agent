@@ -37,6 +37,11 @@ local WindowsPowershellCmdletCheck = BaseCheck:extend()
 
 function WindowsPowershellCmdletCheck:initialize(checkType, powershell_cmd, params)
   self._powershell_cmd = powershell_cmd
+  -- Powershell 2.0 carries the screen width to stdio and adds \r\n at the console width
+  self.width_needed = 2000
+  self.screen_settings = 'if( $Host -and $Host.UI -and $Host.UI.RawUI ) { $rawUI = $Host.UI.RawUI; $oldSize = $rawUI.BufferSize; $typeName = $oldSize.GetType( ).FullName; $newSize = New-Object $typeName (' .. self.width_needed .. ', $oldSize.Height); $rawUI.BufferSize = $newSize ;} ;'
+  -- Dump the error when the core command fails
+  self.error_output = ' ; if ($virgo_err[0]) { $virgo_err[0] | Select @{name="Name";expression={"__VIRGO_ERROR"}}, @{name="Value";expression={$_.Exception}}, @{name="Type";expression={"string"}} | ConvertTo-CSV }'
   BaseCheck.initialize(self, checkType, params)
 end
 
@@ -76,7 +81,7 @@ function WindowsPowershellCmdletCheck:run(callback)
 
   -- Perform Check
   local options = {}
-  local wrapper = self:getPowershellCmd() .. ' ; if ($virgo_err[0]) { $virgo_err[0] | Select @{name="Name";expression={"__VIRGO_ERROR"}}, @{name="Value";expression={($_.Exception -replace "`n.*", "") -replace "`r",""}}, @{name="Type";expression={"string"}} | ConvertTo-CSV }'
+  local wrapper = self.screen_settings .. self:getPowershellCmd() .. self.error_output
   local child = spawn('powershell.exe', {wrapper}, options)
   child.stdin:close() -- NEEDED for Powershell 2.0 to exit
   child.stdout:on('data', function(chunk)

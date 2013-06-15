@@ -54,7 +54,7 @@ function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, params)
     password_option = "-Password \"" .. self:escapeString(params.details.password) .. "\" "
   end
 
-  local cmd = "add-pssnapin -errorAction SilentlyContinue sqlservercmdletsnapin100 ; Invoke-Sqlcmd -ErrorVariable virgo_err " .. hostname_option .. serverinstance_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 30 | ConvertTo-Csv"
+  local cmd = "add-pssnapin -errorAction SilentlyContinue sqlservercmdletsnapin100 ; if (Get-Command -ErrorVariable virgo_err Invoke-Sqlcmd) { Invoke-Sqlcmd -ErrorVariable virgo_err " .. hostname_option .. serverinstance_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 30 | ConvertTo-Csv } "
   WindowsPowershellCmdletCheck.initialize(self, checkType, cmd, params)
   self.handle_entry = entry_handlers.simple
 end
