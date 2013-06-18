@@ -1,4 +1,5 @@
 local os = require('os')
+local misc = require('./misc')
 local path = require('path')
 
 local exports = {}
@@ -33,7 +34,7 @@ exports.SHUTDOWN_UPGRADE = 1
 exports.SHUTDOWN_RATE_LIMIT = 2
 exports.SHUTDOWN_RESTART = 3
 
-if process.env.STAGING then
+if misc.isStaging() then
   exports.DEFAULT_MONITORING_SRV_QUERIES = {
     '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com',
     '_monitoringagent._tcp.ord1.stage.monitoring.api.rackspacecloud.com',
