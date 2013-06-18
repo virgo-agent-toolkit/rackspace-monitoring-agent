@@ -324,6 +324,9 @@ end
 
 
 function isStaging()
+  if not virgo.config then
+    virgo.config = {}
+  end
   local b = virgo.config['monitoring_use_staging']
   b = process.env.STAGING or (b and b:lower() == 'true')
   if b then
