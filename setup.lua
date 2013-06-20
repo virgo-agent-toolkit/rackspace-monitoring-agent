@@ -27,7 +27,7 @@ local async = require('async')
 local ask = require('/util/prompt').ask
 local errors = require('errors')
 local constants = require('/util/constants')
-local sigarCtx = require('sigar').ctx
+local sigarCtx = require('/sigar').ctx
 
 local maas = require('rackspace-monitoring')
 
@@ -42,6 +42,9 @@ function Setup:initialize(argv, configFile, agent)
     self._receivedPromotion = true
   end)
   self._addresses = {}
+
+  -- disable upgrades on setup
+  self._agent:disableUpgrades()
 
   -- build a "set" (table keyed by address) of local IP addresses
   local netifs = sigarCtx:netifs()

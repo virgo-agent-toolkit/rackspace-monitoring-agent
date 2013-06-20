@@ -56,7 +56,7 @@ end
 
 function writePid(pidFile, callback)
   if pidFile then
-    logging.info('Writing PID to ' .. pidFile)
+    logging.debug('Writing PID to: ' .. pidFile)
     fs.writeFile(pidFile, tostring(process.pid), function(err)
       if err then
         logging.error('Failed writing PID')
@@ -109,6 +109,12 @@ function toString(tbl)
 end
 
 function calcJitter(n, jitter)
+  return math.floor(n + (jitter * math.random()))
+end
+
+function calcJitterMultiplier(n, multiplier)
+  local sig = math.floor(math.log10(n)) - 1
+  local jitter = multiplier * math.pow(10, sig)
   return math.floor(n + (jitter * math.random()))
 end
 
@@ -317,10 +323,24 @@ function parseCSVLine (line,sep)
 end
 
 
+function isStaging()
+  if not virgo.config then
+    virgo.config = {}
+  end
+  local b = virgo.config['monitoring_use_staging']
+  b = process.env.STAGING or (b and b:lower() == 'true')
+  if b then
+    process.env.STAGING = 1
+  end
+  return b
+end
+
+
 --[[ Exports ]]--
 local exports = {}
 exports.copyFile = copyFile
 exports.calcJitter = calcJitter
+exports.calcJitterMultiplier = calcJitterMultiplier
 exports.merge = merge
 exports.splitAddress = splitAddress
 exports.split = split
@@ -334,4 +354,5 @@ exports.nCallbacks = nCallbacks
 exports.compareVersions = compareVersions
 exports.propagateEvents = propagateEvents
 exports.parseCSVLine = parseCSVLine
+exports.isStaging = isStaging
 return exports

@@ -47,6 +47,7 @@ function MonitoringAgent:initialize(options)
   self._stateDirectory = options.stateDirectory
   self._config = virgo.config
   self._options = options
+  self._upgradesEnabled = true
 end
 
 function MonitoringAgent:start(options)
@@ -71,6 +72,11 @@ function MonitoringAgent:start(options)
       end)
     end,
     function(callback)
+      if os.type() ~= 'win32' then
+        if not options.pidFile then
+          options.pidFile = constants.DEFAULT_PID_FILE_PATH
+        end
+      end
       misc.writePid(options.pidFile, callback)
     end,
     function(callback)
@@ -86,7 +92,13 @@ end
 
 function MonitoringAgent:connect(callback)
   local endpoints = self._config['monitoring_endpoints']
-  local upgradesEnabled = self._config['monitoring_upgrade'] or true
+  local upgradeStr = self._config['monitoring_upgrade']
+  if upgradeStr then
+    upgradeStr = upgradeStr:lower()
+    if upgradeStr == 'false' or upgradeStr == 'disabled' then
+      self._upgradesEnabled = false
+    end
+  end
 
   if #endpoints <= 0 then
     logging.error('no endpoints')
@@ -96,12 +108,15 @@ function MonitoringAgent:connect(callback)
     return
   end
 
-  logging.info(fmt('Upgrades are %s', upgradesEnabled and 'enabled' or 'disabled'))
+  -- ReEnable upgrades when we have a handle on them
+  self._upgradesEnabled = false
+
+  logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
 
   self._streams = ConnectionStream:new(self._config['monitoring_id'],
                                        self._config['monitoring_token'],
                                        self._config['monitoring_guid'],
-                                       upgradesEnabled,
+                                       self._upgradesEnabled,
                                        self._options)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
@@ -154,6 +169,10 @@ end
 
 function MonitoringAgent:getStreams()
   return self._streams
+end
+
+function MonitoringAgent:disableUpgrades()
+  self._upgradesEnabled = false
 end
 
 function MonitoringAgent:getConfig()

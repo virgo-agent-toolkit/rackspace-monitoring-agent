@@ -99,6 +99,10 @@ function ConnectionStream:_onUpgrade()
     version = misc.trim(version)
     client:log(logging.DEBUG, fmt('(upgrade) -> Current Version: %s', bundleVersion))
     client:log(logging.DEBUG, fmt('(upgrade) -> Upstream Version: %s', version))
+    if version == '0.0.0-0' then
+      client:log(logging.INFO, fmt('(upgrade) -> Upgrades Disabled'))
+      return
+    end
     if misc.compareVersions(version, bundleVersion) < 0 then
       client:log(logging.INFO, fmt('(upgrade) -> Performing upgrade to %s', version))
       self._messages:getUpgrade(version, client, function(err)
@@ -126,25 +130,18 @@ established.
 --]]
 function ConnectionStream:createConnections(endpoints, callback)
   local iter = function(endpoint, callback)
-    dns.lookup(endpoint.host, function(err, ip)
-      if (err) then
-        callback(err)
-        return
-      end
-      local options = misc.merge({
-        host = endpoint.host,
-        port = endpoint.port,
-        ip = ip,
-        id = self._id,
-        datacenter = tostring(endpoint),
-        token = self._token,
-        guid = self._guid,
-        timeout = consts.CONNECT_TIMEOUT
-      }, self._options)
+    local baseOptions = misc.merge({}, self._options)
+    local options = misc.merge(baseOptions, {
+      host = endpoint.host,
+      port = endpoint.port,
+      id = self._id,
+      datacenter = tostring(endpoint),
+      token = self._token,
+      guid = self._guid,
+      timeout = consts.CONNECT_TIMEOUT
+    })
 
-      self:createConnection(options)
-      callback()
-    end)
+    self:createConnection(options, callback)
   end
 
   async.series({
@@ -257,7 +254,12 @@ function ConnectionStream:reconnect(options)
                 datacenter, options.host, options.port, delay)
   self:emit('reconnect', options)
   timer.setTimeout(delay, function()
-    self:createConnection(options)
+    self:createConnection(options, function(err)
+      if err then
+        logging.errorf('%s %s:%d -> Error reconnecting (%s)',
+          datacenter, options.host, options.port, tostring(err))
+      end
+    end)
   end)
 end
 
@@ -356,17 +358,24 @@ host - Hostname.
 port - Port.
 callback - Callback called with (err)
 ]]--
-function ConnectionStream:createConnection(options)
+function ConnectionStream:createConnection(options, callback)
   local opts = misc.merge({
     id = self._id,
     token = self._token,
     guid = self._guid,
     timeout = consts.CONNECT_TIMEOUT
   }, options)
+  local host_or_ip = opts.ip or opts.host
 
-  local client = self:_createConnection(options)
-  client:connect()
-  return client
+  dns.lookup(host_or_ip, function(err, ip)
+    if err then
+      return callback(err)
+    end
+    opts.ip = ip
+    local client = self:_createConnection(opts)
+    client:connect()
+    callback()
+  end)
 end
 
 local exports = {}

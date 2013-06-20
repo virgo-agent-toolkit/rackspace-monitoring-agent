@@ -1,4 +1,5 @@
 local os = require('os')
+local misc = require('./misc')
 local path = require('path')
 
 local exports = {}
@@ -9,7 +10,7 @@ exports.DEFAULT_CHANNEL = 'stable'
 
 exports.CONNECT_TIMEOUT = 6000
 exports.SOCKET_TIMEOUT = 10000
-exports.HEARTBEAT_INTERVAL_JITTER = 7000
+exports.HEARTBEAT_INTERVAL_JITTER_MULTIPLIER = 7
 
 exports.UPGRADE_INTERVAL = 86400000 -- 24hrs
 exports.UPGRADE_INTERVAL_JITTER = 3600000 -- 1 hr
@@ -33,7 +34,7 @@ exports.SHUTDOWN_UPGRADE = 1
 exports.SHUTDOWN_RATE_LIMIT = 2
 exports.SHUTDOWN_RESTART = 3
 
-if process.env.STAGING then
+if misc.isStaging() then
   exports.DEFAULT_MONITORING_SRV_QUERIES = {
     '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com',
     '_monitoringagent._tcp.ord1.stage.monitoring.api.rackspacecloud.com',
@@ -59,11 +60,13 @@ exports.DEFAULT_PERSISTENT_VARIABLE_PATH = path.join(PERSISTENT_DIR, 'variables'
 exports.DEFAULT_CONFIG_PATH = path.join(CONFIG_DIR, 'rackspace-monitoring-agent.cfg')
 exports.DEFAULT_STATE_PATH = path.join(RUNTIME_DIR, 'states')
 exports.DEFAULT_DOWNLOAD_PATH = path.join(RUNTIME_DIR, 'downloads')
+exports.DEFAULT_RUNTIME_PATH = RUNTIME_DIR
 
 exports.DEFAULT_VERIFIED_BUNDLE_PATH = BUNDLE_DIR
 exports.DEFAULT_UNVERIFIED_BUNDLE_PATH = path.join(exports.DEFAULT_DOWNLOAD_PATH, 'unverified')
 exports.DEFAULT_VERIFIED_EXE_PATH = EXE_DIR
 exports.DEFAULT_UNVERIFIED_EXE_PATH = path.join(exports.DEFAULT_DOWNLOAD_PATH, 'unverified')
+exports.DEFAULT_PID_FILE_PATH = '/var/run/rackspace-monitoring-agent.pid'
 
 -- Custom plugins related settings
 

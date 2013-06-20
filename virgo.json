@@ -2,7 +2,7 @@
   "PKG_NAME": "rackspace-monitoring-agent",
   "SHORT_DESCRIPTION": "Rackspace Cloud Monitoring Agent",
   "SHORT_NAME": "Rackspace Monitoring",
-  "DOCUMENTATION_LINK": "http://www.rackspace.com/cloud/public/monitoring/",
+  "DOCUMENTATION_LINK": "http://www.rackspace.com/cloud/cloud_hosting_products/monitoring/",
   "REPO": "https://github.com/racker/virgo.git",
   "LICENSE": "Apache-2.0",
   "AUTHOR": "Rackspace Hosting, Inc.",

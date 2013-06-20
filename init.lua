@@ -70,7 +70,7 @@ function Entry.run()
 
   if argv.args.i then
     options.tls = {
-      rejectUnauthorized = true,
+      rejectUnauthorized = false,
       ca = require('./certs').caCertsDebug
     }
   end
@@ -82,7 +82,7 @@ function Entry.run()
 
   local agent = MonitoringAgent:new(options)
 
-  if not argv.u then
+  if not argv.args.u then
     return agent:start(options)
   end
 
