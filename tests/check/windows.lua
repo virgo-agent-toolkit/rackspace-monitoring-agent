@@ -28,14 +28,15 @@ exports['test_windowsperfos_check'] = function(test, asserts)
   end)
 end
 
-local function add_iterative_test(original_test_set, test_name, test_function)
-  if helper.test_configs == nil or helper.test_configs['test_' .. test_name] == nil then
-    original_test_set['test_' .. test_name] = function(test, asserts)
-      test.skip('test_' .. test_name .. ' requires at least one config file entry')
+local function add_iterative_test(original_test_set, base_name, test_function)
+  local test_name = 'test_' .. base_name
+  if helper.test_configs == nil or helper.test_configs[test_name] == nil then
+    original_test_set[test_name] = function(test, asserts)
+      test.skip(test_name .. ' requires at least one config file entry')
     end
   else
-    for i, config in ipairs(helper.test_configs['test_' .. test_name]) do
-      original_test_set[string.format('test_%s_%u', test_name, i)] = function(test, asserts)
+    for i, config in ipairs(helper.test_configs[test_name]) do
+      original_test_set[string.format('%s_%u', test_name, i)] = function(test, asserts)
         return test_function(test, asserts, config)
       end
     end
@@ -44,18 +45,19 @@ local function add_iterative_test(original_test_set, test_name, test_function)
   return original_test_set
 end
 
-local function add_iterative_and_fixture_test(original_test_set, test_name, test_function)
-  if fixtures[test_name .. ".txt"] == nil then
-    original_test_set['test_' .. test_name .. '_fixture'] = function(test, asserts)
-      test.skip('test_' .. test_name .. '_fixture, fixture is missing')
+local function add_iterative_and_fixture_test(original_test_set, base_name, test_function)
+  local test_name = 'test_' .. base_name
+  if not fixtures[base_name .. ".txt"] then
+    original_test_set[test_name .. '_fixture'] = function(test, asserts)
+      test.skip(test_name .. '_fixture, fixture is missing')
     end
   else
-    original_test_set['test_' .. test_name .. '_fixture'] = function(test, asserts)
-      return test_function(test, asserts, {db='foo', powershell_csv_fixture=fixtures[test_name .. ".txt"]})
+    original_test_set[test_name .. '_fixture'] = function(test, asserts)
+      return test_function(test, asserts, {db='foo', powershell_csv_fixture=fixtures[base_name .. ".txt"]})
     end
   end
 
-  return add_iterative_test(original_test_set, test_name, test_function)
+  return add_iterative_test(original_test_set, base_name, test_function)
 end
 
 local function mssql_test_common(check, test, asserts, specific_tests)
