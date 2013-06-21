@@ -37,6 +37,9 @@ local WindowsPowershellCmdletCheck = BaseCheck:extend()
 
 function WindowsPowershellCmdletCheck:initialize(checkType, powershell_cmd, params)
   self._powershell_cmd = powershell_cmd
+  if params.details and #params.details then
+    self._powershell_csv_fixture = params.details.powershell_csv_fixture
+  end
   -- Powershell 2.0 carries the screen width to stdio and adds \r\n at the console width
   self.width_needed = 2000
   self.screen_settings = 'if( $Host -and $Host.UI -and $Host.UI.RawUI ) { $rawUI = $Host.UI.RawUI; $oldSize = $rawUI.BufferSize; $typeName = $oldSize.GetType( ).FullName; $newSize = New-Object $typeName (' .. self.width_needed .. ', $oldSize.Height); $rawUI.BufferSize = $newSize ;} ;'
@@ -47,6 +50,10 @@ end
 
 function WindowsPowershellCmdletCheck:getPowershellCmd()
   return self._powershell_cmd
+end
+
+function WindowsPowershellCmdletCheck:getPowershellCSVFixture()
+  return self._powershell_csv_fixture
 end
 
 --Requires inherited classes to define handle_entry(entry) to return a metric.
@@ -70,25 +77,7 @@ function WindowsPowershellCmdletCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   local block_data = ''
 
-  if os.type() ~= 'win32' then
-    checkResult:setStatus("err " .. self.getType() .. " available only on Windows platforms")
-
-    -- Return Result
-    self._lastResult = checkResult
-    callback(checkResult)
-    return
-  end
-
-  -- Perform Check
-  local options = {}
-  local wrapper = self.screen_settings .. self:getPowershellCmd() .. self.error_output
-  local child = spawn('powershell.exe', {wrapper}, options)
-  child.stdin:close() -- NEEDED for Powershell 2.0 to exit
-  child.stdout:on('data', function(chunk)
-    -- aggregate the output
-    block_data = block_data .. chunk
-  end)
-  child:on('exit', function(exit_code)
+  function handle_data(exit_code)
     -- Build Dataset from Block Data
     local data_lines = lines(block_data)
     local count = 0
@@ -133,14 +122,39 @@ function WindowsPowershellCmdletCheck:run(callback)
     -- Return Result
     self._lastResult = checkResult
     callback(checkResult)
-  end)
-  child:on('error', function(err)
-    checkResult:setStatus("err " .. err)
+  end
 
-    -- Return Result
-    self._lastResult = checkResult
-    callback(checkResult)
-  end)
+  if not self:getPowershellCSVFixture() then
+    if os.type() ~= 'win32' then
+      checkResult:setStatus("err " .. self.getType() .. " available only on Windows platforms")
+
+      -- Return Result
+      self._lastResult = checkResult
+      callback(checkResult)
+      return
+    end
+
+    -- Perform Check
+    local options = {}
+    local wrapper = self.screen_settings .. self:getPowershellCmd() .. self.error_output
+    local child = spawn('powershell.exe', {wrapper}, options)
+    child.stdin:close() -- NEEDED for Powershell 2.0 to exit
+    child.stdout:on('data', function(chunk)
+      -- aggregate the output
+      block_data = block_data .. chunk
+    end)
+    child:on('exit', handle_data)
+    child:on('error', function(err)
+      checkResult:setStatus("err " .. err)
+
+      -- Return Result
+      self._lastResult = checkResult
+      callback(checkResult)
+    end)
+  else
+    block_data = self:getPowershellCSVFixture()
+    handle_data(0)
+  end
 end
 
 
