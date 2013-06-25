@@ -22,9 +22,9 @@ local exports = {}
 exports.create = function(checkType, obj)
   if checkType == 'agent.windows_perfos' then
     return WindowsPerfOSCheck:new(obj)
-  elseif checkType == 'agent.sqlserver_version' then
+  elseif checkType == 'agent.mssql_version' then
     return MSSQLServer.MSSQLServerVersionCheck:new(obj)
-  elseif checkType == 'agent.sqlserver_database' then
+  elseif checkType == 'agent.mssql_database' then
     return MSSQLServer.MSSQLServerDatabaseCheck:new(obj)
   elseif checkType == 'agent.mssql_buffer_manager' then
     return MSSQLServer.MSSQLServerBufferManagerCheck:new(obj)
