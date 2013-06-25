@@ -103,7 +103,7 @@ function ConnectionStream:_onUpgrade()
       client:log(logging.INFO, fmt('(upgrade) -> Upgrades Disabled'))
       return
     end
-    if misc.compareVersions(version, bundleVersion) < 0 then
+    if misc.compareVersions(version, bundleVersion) > 0 then
       client:log(logging.INFO, fmt('(upgrade) -> Performing upgrade to %s', version))
       self._messages:getUpgrade(version, client, function(err)
         if err then
