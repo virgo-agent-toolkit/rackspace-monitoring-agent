@@ -3,6 +3,8 @@
 local spawn = require('childprocess').spawn
 local fs = require('fs')
 local path = require('path')
+local io = require('io')
+local json = require('json')
 
 local misc = require('/util/misc')
 local constants = require('constants')
@@ -100,6 +102,16 @@ local function skip_all(exports, reason)
   return exports
 end
 
+local test_configs = {}
+if process.env['TEST_CFG_DATA_FILE'] then
+  local f = io.open(process.env['TEST_CFG_DATA_FILE'], "r")
+  if f ~= nil then
+    local content = f:read("*all")
+    f:close()
+    test_configs = json.parse(content)
+  end
+end
+
 if not virgo then
   -- parse argv and stuff here
   return
@@ -110,4 +122,5 @@ exports.runner = runner
 exports.start_server = start_server
 exports.skip_all = skip_all
 exports.start_agent = start_agent
+exports.test_configs = test_configs
 return exports
