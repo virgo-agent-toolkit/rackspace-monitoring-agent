@@ -67,7 +67,7 @@ local function mssql_test_common(check, test, asserts, specific_tests)
     asserts.ok(result ~= nil)
     asserts.ok(check._lastResult ~= nil)
 
-    if os.type() == 'win32' then
+    if os.type() == 'win32' or check:getPowershellCSVFixture() then
       asserts.equals(result:getStatus(), 'success')
       asserts.ok(#check._lastResult:serialize() > 0, "no metrics")
       --local metrics = result:getMetrics()['none']
