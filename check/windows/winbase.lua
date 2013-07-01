@@ -126,7 +126,7 @@ function WindowsPowershellCmdletCheck:run(callback)
 
   if not self:getPowershellCSVFixture() then
     if os.type() ~= 'win32' then
-      checkResult:setStatus("err " .. self.getType() .. " available only on Windows platforms")
+      checkResult:setStatus("err " .. self:getType() .. " available only on Windows platforms")
 
       -- Return Result
       self._lastResult = checkResult
