@@ -136,26 +136,28 @@ function MySQLCheck:_runCheckInChild(callback)
 
   local mysqlexact = {
     'libmysqlclient_r',
-    'libmysqlclient',
-  }
-
-  local mysqlpattern = {
-    'libmysqlclient_r%.so.*',
-    'libmysqlclient_r%.dylib.*',
-    'libmysqlclient_r%.dll.*',
-    'libmysqlclient%.so.*',
-    'libmysqlclient%.dylib.*',
-    'libmysqlclient%.dll.*',
+    'libmysqlclient'
   }
 
   local mysqlpaths = {
     '/usr/lib',
+    '/usr/lib/mysql',
     '/usr/local/lib',
     '/usr/local/mysql/lib',
     '/opt/local/lib',
+    '/usr/lib64',
+    '/usr/lib64/mysql', -- RHEL5, thanks guys.
+    '/usr/lib/x86_64-linux-gnu', -- ubuntu, thanks guys.
   }
 
-  local clib = self:_findLibrary(mysqlexact, mysqlpattern, mysqlpaths)
+  local osexts = {
+    '', -- default to no os extension
+    '.16', 
+    '.17', 
+    '.18'
+  }
+
+  local clib = self:_findLibrary(mysqlexact, mysqlpaths, osexts)
   if clib == nil then
     cr:setError("Couldn't find libmysqlclient_r")
     callback(cr)
