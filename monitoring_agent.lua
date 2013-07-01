@@ -240,6 +240,7 @@ end
 function MonitoringAgent:loadEndpoints(callback)
   local config = self._config
   local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
+  local snetregion = config['monitoring_snet_region']
   local endpoints = config['monitoring_endpoints']
 
   local function _callback(err, endpoints)
@@ -255,7 +256,33 @@ function MonitoringAgent:loadEndpoints(callback)
     callback(nil, endpoints)
   end
 
-  if queries and not endpoints then
+  if snetregion and endpoints then
+    logging.errorf("Invalid configuration: monitoring_snet_region and monitoring_endpoints cannot be set at the same time.")
+    process.exit(1)
+  end
+
+  if snetregion then
+    local domains = {}
+
+    local function matcher(v)
+      return v == snetregion
+    end
+
+    if not misc.tableContains(matcher, constants.VALID_SNET_REGION_NAMES) then
+      logging.errorf("Invalid configuration: monitoring_snet_region '%s' is not supported.", snetregion)
+      process.exit(1)
+    end
+
+    logging.info(fmt('Using ServiceNet endpoints in %s region', snetregion))
+
+    for _, address in ipairs(constants.SNET_MONITORING_TEMPLATE_SRV_QUERIES) do
+      address = address:gsub('${region}', snetregion)
+      logging.debug(fmt('Endpoint SRV %s', address))
+      table.insert(domains, address)
+    end
+
+    return self:_queryForEndpoints(domains, _callback)
+  elseif queries and not endpoints then
     local domains = misc.split(queries, '[^,]+')
     return self:_queryForEndpoints(domains, _callback)
   end
