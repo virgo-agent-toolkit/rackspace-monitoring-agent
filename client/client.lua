@@ -51,9 +51,11 @@ function AgentClient:initialize(options, scheduler, connectionStream)
   self._token = options.token
   self._guid = options.guid
   self._target = 'endpoint'
+  self._endpoint = options.endpoint
   self._ip = options.ip
   self._port = options.port
   self._host = options.host
+
   self._timeout = options.timeout or 5000
 
   self._machine = ConnectionStateMachine:new(connectionStream)
