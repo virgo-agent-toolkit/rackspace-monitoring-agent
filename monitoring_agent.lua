@@ -247,9 +247,11 @@ function MonitoringAgent:loadEndpoints(callback)
     if err then return callback(err) end
 
     for _, ep in pairs(endpoints) do
-      if not ep.host or not ep.port then
-        logging.errorf("Invalid endpoint: %s, %s", ep.host or "", ep.port or  "")
-        process.exit(1)
+      if not ep.srv_query then
+        if not ep.host or not ep.port then
+          logging.errorf("Invalid endpoint: %s, %s", ep.host or "", ep.port or  "")
+          process.exit(1)
+        end
       end
     end
     config['monitoring_endpoints'] = endpoints
@@ -304,29 +306,13 @@ function MonitoringAgent:loadEndpoints(callback)
 end
 
 function MonitoringAgent:_queryForEndpoints(domains, callback)
-  function iter(domain, callback)
-    dns.resolve(domain, 'SRV', function(err, results)
-      if err then
-        logging.errorf('Could not lookup SRV record from %s', domain)
-        callback()
-        return
-      end
-      callback(nil, results)
-    end)
-  end
+  local endpoint, _
   local endpoints = {}
-  async.map(domains, iter, function(err, results)
-    local endpoint, _
-    for _, endpoint in pairs(results) do
-      -- results are wrapped in a table...
-      endpoint = endpoint[1]
-      -- get anem and port
-      endpoint = Endpoint:new(endpoint.name, endpoint.port)
-      logging.infof('found endpoint: %s', tostring(endpoint))
-      table.insert(endpoints, endpoint)
-    end
-    callback(nil, endpoints)
-  end)
+  for _, endpoint in pairs(domains) do
+    endpoint = Endpoint:new(nil, nil, endpoint)
+    table.insert(endpoints, endpoint)
+  end
+  callback(nil, endpoints)
 end
 
 function MonitoringAgent:_getSystemId()
