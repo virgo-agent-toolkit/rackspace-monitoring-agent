@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local us  = require('../util/underscore')
 local Emitter = require('core').Emitter
 local JSON = require('json')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -27,6 +28,7 @@ local table = require('table')
 local timer = require('timer')
 local vutils = require('virgo_utils')
 local utils = require('utils')
+local path = require('path')
 
 local constants = require('../util/constants')
 local loggingUtil = require('../util/logging')
@@ -481,10 +483,14 @@ function SubProcCheck:run(callback)
 end
 
 
-function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
+function SubProcCheck:_findLibrary(lexact, paths, osexts)
   local ffi = require('ffi')
   local clib = nil
-  local i,exact
+  local libsoext = {
+    'so',
+    'dylib',
+    'dll'
+  }
 
   local function loadsharedobj(name)
     local err, lib = pcall(ffi.load, name, true)
@@ -493,11 +499,28 @@ function SubProcCheck:_findLibrary(mysqlexact, patterns, paths)
     end
   end
 
-  for i,exact in ipairs(mysqlexact) do
-    loadsharedobj(exact)
-    if clib ~= nil then
-      break
+  us.each(lexact, function(exact)
+    if clib then
+      return
     end
+    loadsharedobj(exact)
+  end)
+
+  if clib == nil then
+    osexts = osexts or {''}
+    us.each(paths, function(p)
+      us.each(lexact, function(exact)
+        us.each(libsoext, function(ext)
+          us.each(osexts, function(osext)
+            if clib then
+              return
+            end
+            local fp = path.join(p, exact .. "." .. ext .. osext)
+            loadsharedobj(fp)
+          end)
+        end)
+      end)
+    end)
   end
 
   local mocker = env.get('VIRGO_SUBPROC_MOCK')
