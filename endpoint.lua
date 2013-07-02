@@ -18,6 +18,7 @@ local fmt = require('string').format
 local misc = require('./util/misc')
 local async = require('async')
 local dns = require('dns')
+local math = require('math')
 local logging = require('logging')
 
 local Endpoint = Object:extend()
@@ -53,9 +54,9 @@ function Endpoint:getHostInfo(callback)
             callback(err)
             return
           end
-          -- TODO, pick random results[1]
-          host = results[1].name
-          port = results[1].port
+          local r = results[ math.random(#results) ]
+          host = r.name
+          port = r.port
           logging.debugf('SRV:%s -> %s:%d', self.srv_query, host, port)
           callback()
         end)
