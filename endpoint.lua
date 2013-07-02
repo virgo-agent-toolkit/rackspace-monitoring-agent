@@ -16,11 +16,14 @@ limitations under the License.
 local Object = require('core').Object
 local fmt = require('string').format
 local misc = require('./util/misc')
+local async = require('async')
+local dns = require('dns')
+local logging = require('logging')
 
 local Endpoint = Object:extend()
 
-function Endpoint:initialize(host, port)
-  if not port then
+function Endpoint:initialize(host, port, srv_query)
+  if not port and host then
     ip_and_port = misc.splitAddress(host)
     host = ip_and_port[1]
     port = ip_and_port[2]
@@ -28,10 +31,65 @@ function Endpoint:initialize(host, port)
   
   self.host = host
   self.port = port
+  self.srv_query = srv_query
+end
+
+
+--[[
+Determine the Hostname, IP and Port to use for this endpoint.
+
+For static endpoints we just return our host and port, but for SRV
+endpoints we query DNS.
+--]]
+function Endpoint:getHostInfo(callback)
+  local ip, host, port
+
+  async.series({
+    function (callback)
+      if self.srv_query then
+        dns.resolve(self.srv_query, 'SRV', function(err, results)
+          if err then
+            logging.errorf('Could not lookup SRV record for %s', self.srv_query)
+            callback(err)
+            return
+          end
+          -- TODO, pick random results[1]
+          host = results[1].name
+          port = results[1].port
+          logging.debugf('SRV:%s -> %s:%d', self.srv_query, host, port)
+          callback()
+        end)
+      else
+        host = self.host
+        port = self.port
+        callback()
+      end
+    end,
+    function (callback)
+      dns.lookup(host, function(err, ipa)
+        if err then
+          return callback(err)
+        end
+        ip = ipa
+        callback()
+      end)
+    end
+  },
+  function(err)
+    if (err) then
+      return callback(err)
+    end
+    callback(nil, host, ip, port)
+  end)
+
 end
 
 function Endpoint.meta.__tostring(table)
-  return fmt("%s:%s", table.host, table.port)
+  if table.srv_query then
+    return fmt("SRV:%s", table.srv_query)
+  else
+    return fmt("%s:%s", table.host, table.port)
+  end
 end
 
 return {Endpoint=Endpoint}

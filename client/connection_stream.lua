@@ -132,8 +132,7 @@ function ConnectionStream:createConnections(endpoints, callback)
   local iter = function(endpoint, callback)
     local baseOptions = misc.merge({}, self._options)
     local options = misc.merge(baseOptions, {
-      host = endpoint.host,
-      port = endpoint.port,
+      endpoint = endpoint,
       id = self._id,
       datacenter = tostring(endpoint),
       token = self._token,
@@ -175,6 +174,7 @@ function ConnectionStream:_createConnection(options)
     err.port = options.port
     err.datacenter = options.datacenter
     err.message = errorMessage
+    client:log(logging.DEBUG, 'client error: %s', misc.toString(err))
 
     client:destroy()
   end)
@@ -240,24 +240,23 @@ end
 --[[
 Retry a connection to the endpoint.
 
-options - datacenter, host, port
+options - datacenter, endpoint
   datacenter - Datacenter name / host alias.
-  host - Hostname.
-  port - Port.
+  endpoint - Endpoint Structure containing SRV query or hostname/port.
 callback - Callback called with (err)
 ]]--
 function ConnectionStream:reconnect(options)
   local datacenter = options.datacenter
   local delay = self:_setDelay(datacenter)
 
-  logging.infof('%s %s:%d -> Retrying connection in %dms',
-                datacenter, options.host, options.port, delay)
+  logging.infof('%s -> Retrying connection in %dms',
+                datacenter, delay)
   self:emit('reconnect', options)
   timer.setTimeout(delay, function()
     self:createConnection(options, function(err)
       if err then
-        logging.errorf('%s %s:%d -> Error reconnecting (%s)',
-          datacenter, options.host, options.port, tostring(err))
+        logging.errorf('%s -> Error reconnecting (%s)',
+          datacenter, tostring(err))
       end
     end)
   end)
@@ -365,13 +364,19 @@ function ConnectionStream:createConnection(options, callback)
     guid = self._guid,
     timeout = consts.CONNECT_TIMEOUT
   }, options)
-  local host_or_ip = opts.ip or opts.host
 
-  dns.lookup(host_or_ip, function(err, ip)
+  options.endpoint:getHostInfo(function(err, host, ip, port)
     if err then
-      return callback(err)
+      logging.errorf('%s -> Error resolving (%s)',
+        options.datacenter, tostring(err))
+      self:reconnect(options, callback)
+      return
     end
+
     opts.ip = ip
+    opts.host = host
+    opts.port = port
+
     local client = self:_createConnection(opts)
     client:connect()
     callback()
