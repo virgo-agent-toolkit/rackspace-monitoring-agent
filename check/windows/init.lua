@@ -19,7 +19,7 @@ local MSSQLServer = require('./sqlserver')
 
 local exports = {}
 
-exports.create = function(checkType, obj)
+exports.create = function(self, checkType, obj)
   if checkType == 'agent.windows_perfos' then
     return WindowsPerfOSCheck:new(obj)
   elseif checkType == 'agent.mssql_version' then
