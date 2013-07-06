@@ -30,7 +30,7 @@ local fmt = require('string').format
 
 local ApacheCheck = BaseCheck:extend()
 function ApacheCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.apache', params)
+  BaseCheck.initialize(self, params)
 
   self._params = params
   self._url = params.details.url and params.details.url or 'http://127.0.0.1/server-status?auto'
@@ -48,6 +48,10 @@ function ApacheCheck:initialize(params)
 
   self._parsed = parsed
   self._parsed.path = '/server-status?auto'
+end
+
+function ApacheCheck:getType()
+  return 'agent.apache'
 end
 
 -- "_" Waiting for Connection, "S" Starting up, "R" Reading Request,

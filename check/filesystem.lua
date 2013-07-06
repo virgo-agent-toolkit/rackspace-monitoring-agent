@@ -40,13 +40,17 @@ local UNITS = {
 }
 
 function FileSystemCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.filesystem', params)
+  BaseCheck.initialize(self, params)
 
   if params.details == nil then
     params.details = {}
   end
 
   self.mount_point = params.details.target and params.details.target or nil
+end
+
+function FileSystemCheck:getType()
+  return 'agent.filesystem'
 end
 
 function FileSystemCheck:getTargets(callback)

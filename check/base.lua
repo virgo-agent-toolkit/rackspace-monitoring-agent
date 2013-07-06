@@ -36,6 +36,7 @@ local tableContains = require('../util/misc').tableContains
 local toString = require('../util/misc').toString
 local lastIndexOf = require('../util/misc').lastIndexOf
 local split = require('../util/misc').split
+local asserts = require('bourbon').asserts
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
@@ -51,13 +52,13 @@ local DEFAULT_STATUS = 'success'
 local DEFAULT_STATE = 'available'
 
 
-function BaseCheck:initialize(checkType, params)
+function BaseCheck:initialize(params)
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
   self._firstRun = true
   self._timer = nil
-  self._type = checkType
-  self._log = loggingUtil.makeLogger(fmt('Check (%s)', checkType))
+  asserts.ok(self.getType, "no getType() function defined")
+  self._log = loggingUtil.makeLogger(fmt('Check (%s)', self.getType()))
 
   self._lastResult = nil
 end
@@ -67,10 +68,6 @@ function BaseCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   self._lastResult = checkResult
   callback(checkResult)
-end
-
-function BaseCheck:getType()
-  return self._type
 end
 
 --[[
@@ -102,11 +99,11 @@ function BaseCheck:getSummary(obj)
       str = str .. fmt(', %s=%s', k, v)
     end
   end
-  return fmt('(id=%s, type=%s%s)', self.id, self._type, str)
+  return fmt('(id=%s, type=%s%s)', self.id, self.getType(), str)
 end
 
 function BaseCheck:toString()
-  return fmt('%s (id=%s, period=%ss)', self._type, self.id, self.period)
+  return fmt('%s (id=%s, period=%ss)', self.getType(), self.id, self.period)
 end
 
 function BaseCheck:_runCheck()
@@ -192,8 +189,8 @@ end
 
 local ChildCheck = BaseCheck:extend()
 
-function ChildCheck:initialize(checkType, params)
-  BaseCheck.initialize(self, checkType, params)
+function ChildCheck:initialize(params)
+  BaseCheck.initialize(self, params)
   self._log = nil
   if params.details == nil then
     params.details = {}
@@ -446,7 +443,7 @@ function ChildCheck:_childEnv()
 
   cenv[ENV_PREFIX .. 'CHECK_ID'] = self.id
   cenv[ENV_PREFIX .. 'CHECK_PERIOD'] = tostring(self.period)
-  cenv[ENV_PREFIX .. 'CHECK_TYPE'] = self._type
+  cenv[ENV_PREFIX .. 'CHECK_TYPE'] = self.getType()
 
   for k,v in pairs(self._params.details) do
     cenv[ENV_PREFIX .. 'DETAILS_' .. k:upper()] = tostring(v)

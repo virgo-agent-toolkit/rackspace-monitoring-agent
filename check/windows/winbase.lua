@@ -35,7 +35,7 @@ end
 
 local WindowsPowershellCmdletCheck = BaseCheck:extend()
 
-function WindowsPowershellCmdletCheck:initialize(checkType, powershell_cmd, params)
+function WindowsPowershellCmdletCheck:initialize(powershell_cmd, params)
   self._powershell_cmd = powershell_cmd
   if params.details and #params.details then
     self._powershell_csv_fixture = params.details.powershell_csv_fixture
@@ -45,7 +45,7 @@ function WindowsPowershellCmdletCheck:initialize(checkType, powershell_cmd, para
   self.screen_settings = 'if( $Host -and $Host.UI -and $Host.UI.RawUI ) { $rawUI = $Host.UI.RawUI; $oldSize = $rawUI.BufferSize; $typeName = $oldSize.GetType( ).FullName; $newSize = New-Object $typeName (' .. self.width_needed .. ', $oldSize.Height); $rawUI.BufferSize = $newSize ;} ;'
   -- Dump the error when the core command fails
   self.error_output = ' ; if ($virgo_err[0]) { $virgo_err[0] | Select @{name="Name";expression={"__VIRGO_ERROR"}}, @{name="Value";expression={$_.Exception}}, @{name="Type";expression={"string"}} | ConvertTo-CSV }'
-  BaseCheck.initialize(self, checkType, params)
+  BaseCheck.initialize(self, params)
 end
 
 function WindowsPowershellCmdletCheck:getPowershellCmd()

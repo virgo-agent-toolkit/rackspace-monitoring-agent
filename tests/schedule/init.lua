@@ -32,7 +32,11 @@ local function make_check(...)
   local check_path = path.join(TEST_DIR, string.format("%s.chk", args.check_path or args.id))
   local period = args.period or 1
   local state = args.state or 'OK'
-  return BaseCheck:new('test', {["id"]=id, ["state"]=state, ["period"]=period, ["path"]=check_path})
+  local test_check = BaseCheck:extend()
+  function test_check:getType()
+    return "test"
+  end
+  return test_check:new({["id"]=id, ["state"]=state, ["period"]=period, ["path"]=check_path})
 end
 
 exports['test_scheduler_scans'] = function(test, asserts)

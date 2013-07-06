@@ -34,8 +34,35 @@ local Error = require('core').Error
 
 local merge = require('/util/misc').merge
 local fmt = require('string').format
+local asserts = require('bourbon').asserts
+
+local check_classes = {
+  CpuCheck = CpuCheck,
+  DiskCheck = DiskCheck,
+  FileSystemCheck = FileSystemCheck,
+  MemoryCheck = MemoryCheck,
+  NetworkCheck = NetworkCheck,
+  MySQLCheck = MySQLCheck,
+  PluginCheck = PluginCheck,
+  RedisCheck = RedisCheck,
+  LoadAverageCheck = LoadAverageCheck,
+  ApacheCheck = ApacheCheck,
+  NullCheck = NullCheck}
+check_classes = merge(check_classes, Windows.checks)
+
+local function create_map()
+  local map = {}
+  for x, check_class in pairs(check_classes) do
+    asserts.ok(check_class.getType and check_class.getType(), "Check getType() undefined or returning nil: " .. tostring(x))
+    map[check_class.getType()] = check_class
+  end
+  return map
+end
+
+local check_type_map = create_map()
 
 function create(checkData)
+  local check = nil
   local checkType = checkData.type
   local obj = {
     id = checkData.id,
@@ -43,33 +70,11 @@ function create(checkData)
     details = checkData.details
   }
 
-  if checkType == 'agent.memory' then
-    return MemoryCheck:new(obj)
-  elseif checkType == 'agent.disk' then
-    return DiskCheck:new(obj)
-  elseif checkType == 'agent.filesystem' then
-    return FileSystemCheck:new(obj)
-  elseif checkType == 'agent.memory' then
-    return MemoryCheck:new(obj)
-  elseif checkType == 'agent.network' then
-    return NetworkCheck:new(obj)
-  elseif checkType == 'agent.cpu' then
-    return CpuCheck:new(obj)
-  elseif checkType == 'agent.plugin' then
-    return PluginCheck:new(obj)
-  elseif checkType == 'agent.apache' then
-    return ApacheCheck:new(obj)
-  elseif checkType == 'agent.mysql' then
-    return MySQLCheck:new(obj)
-  elseif checkType == 'agent.load_average' then
-    return LoadAverageCheck:new(obj)
-  elseif checkType == 'agent.redis' then
-    return RedisCheck:new(obj)
-  elseif checkType == 'agent.null' then
-    return NullCheck:new(obj)
-  else
-    return Windows:create(checkType, obj)
+  if check_type_map[checkType] then
+    check = check_type_map[checkType]:new(obj)
   end
+
+  return check
 end
 
 -- Test Check
@@ -112,18 +117,7 @@ local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
 
-exports.CpuCheck = CpuCheck
-exports.DiskCheck = DiskCheck
-exports.FileSystemCheck = FileSystemCheck
-exports.MemoryCheck = MemoryCheck
-exports.NetworkCheck = NetworkCheck
-exports.MySQLCheck = MySQLCheck
-exports.PluginCheck = PluginCheck
-exports.RedisCheck = RedisCheck
-exports.LoadAverageCheck = LoadAverageCheck
-exports.ApacheCheck = ApacheCheck
-exports.NullCheck = NullCheck
-exports = merge(exports, Windows.checks)
+exports = merge(exports, check_classes)
 
 exports.create = create
 exports.test = test

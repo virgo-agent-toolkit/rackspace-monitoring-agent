@@ -6,7 +6,11 @@ local logging = require('logging')
 local LoadAverageCheck = BaseCheck:extend()
 
 function LoadAverageCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.load_average', params)
+  BaseCheck.initialize(self, params)
+end
+
+function LoadAverageCheck:getType()
+  return 'agent.load_average'
 end
 
 function LoadAverageCheck:run(callback)

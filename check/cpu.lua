@@ -50,9 +50,13 @@ for _, v in pairs(SIGAR_METRICS) do
 end
 
 function CpuCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.cpu', params)
+  BaseCheck.initialize(self, params)
   -- store the previous cpuinfo so we can aggregate percent differences
   self._previousCpuinfo = nil
+end
+
+function CpuCheck:getType()
+  return 'agent.cpu'
 end
 
 function CpuCheck:_getCpuInfo()
