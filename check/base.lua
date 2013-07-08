@@ -455,10 +455,10 @@ end
 
 local SubProcCheck = ChildCheck:extend()
 
-function SubProcCheck:initialize(checkType, params)
-  ChildCheck.initialize(self, checkType, params)
+function SubProcCheck:initialize(params)
+  ChildCheck.initialize(self, params)
   self._timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
-  self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', checkType))
+  self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', self.getType()))
 end
 
 function SubProcCheck:run(callback)
