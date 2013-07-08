@@ -31,7 +31,7 @@ function MSSQLServerInvokeSQLCmdCheck:_invokesql_notfound(callback)
   return
 end
 
-function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, params)
+function MSSQLServerInvokeSQLCmdCheck:initialize(query, params)
   if params.details == nil then
     params.details = {}
   end
@@ -55,7 +55,7 @@ function MSSQLServerInvokeSQLCmdCheck:initialize(checkType, query, params)
   end
 
   local cmd = "add-pssnapin -errorAction SilentlyContinue sqlservercmdletsnapin100 ; if (Get-Command -ErrorVariable virgo_err Invoke-Sqlcmd) { Invoke-Sqlcmd -ErrorVariable virgo_err " .. hostname_option .. serverinstance_option .. username_option .. password_option .. " -Query \"" .. query .. "\" -QueryTimeout 30 | ConvertTo-Csv } "
-  WindowsPowershellCmdletCheck.initialize(self, checkType, cmd, params)
+  WindowsPowershellCmdletCheck.initialize(self, cmd, params)
   self.handle_entry = entry_handlers.simple
 end
 
@@ -66,7 +66,11 @@ local MSSQLServerVersionCheck = MSSQLServerInvokeSQLCmdCheck:extend()
 function MSSQLServerVersionCheck:initialize(params)
   local query = "select 'ProductVersion' as Name, SERVERPROPERTY('productversion') as Value, 'string' as Type; select 'ProductLevel' as Name, SERVERPROPERTY('productlevel') as Value, 'string' as Type; select 'Edition' as Name, SERVERPROPERTY('edition') as Value, 'string' as Type;"
 
-  MSSQLServerInvokeSQLCmdCheck.initialize(self, 'agent.mssql_version', query, params)
+  MSSQLServerInvokeSQLCmdCheck.initialize(self, query, params)
+end
+
+function MSSQLServerVersionCheck:getType()
+  return 'agent.mssql_version'
 end
 
 -- Get Some Individual DB State
@@ -99,13 +103,17 @@ function MSSQLServerDatabaseCheck:initialize(params)
     query = q1 .. q2 .. q3
   end
 
-  MSSQLServerInvokeSQLCmdCheck.initialize(self, 'agent.mssql_database', query, params)
+  MSSQLServerInvokeSQLCmdCheck.initialize(self, query, params)
+end
+
+function MSSQLServerDatabaseCheck:getType()
+  return 'agent.mssql_database'
 end
 
 -- Get Counter Metrics
 local WindowsGetCounterCheck = WindowsPowershellCmdletCheck:extend()
 
-function WindowsGetCounterCheck:initialize(check_type, counter_path, params, powershell_name_replacement)
+function WindowsGetCounterCheck:initialize(counter_path, params, powershell_name_replacement)
   if params.details == nil then
     params.details = {}
   end
@@ -127,7 +135,7 @@ function WindowsGetCounterCheck:initialize(check_type, counter_path, params, pow
 
   local cmd = '(get-counter -ErrorVariable virgo_err -counter "' .. serverinstance_option .. ':' .. counter_path .. '" ' .. computer_option .. ' ).CounterSamples | Select @{name="Name";expression={' .. name_replacement_option ..'}}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int"}} | ConvertTo-CSV'
   
-  WindowsPowershellCmdletCheck.initialize(self, check_type, cmd, params)
+  WindowsPowershellCmdletCheck.initialize(self, cmd, params)
   self.handle_entry = entry_handlers.simple
 end
 
@@ -135,14 +143,22 @@ end
 local MSSQLServerBufferManagerCheck = WindowsGetCounterCheck:extend()
 
 function MSSQLServerBufferManagerCheck:initialize(params)
-  WindowsGetCounterCheck.initialize(self, 'agent.mssql_buffer_manager', "Buffer Manager\\*", params)
+  WindowsGetCounterCheck.initialize(self, "Buffer Manager\\*", params)
+end
+
+function MSSQLServerBufferManagerCheck:getType()
+  return 'agent.mssql_buffer_manager'
 end
 
 -- Get Server SQL Statistics Data
 local MSSQLServerSQLStatisticsCheck = WindowsGetCounterCheck:extend()
 
 function MSSQLServerSQLStatisticsCheck:initialize(params)
-  WindowsGetCounterCheck.initialize(self, 'agent.mssql_sql_statistics', "SQL Statistics\\*", params)
+  WindowsGetCounterCheck.initialize(self, "SQL Statistics\\*", params)
+end
+
+function MSSQLServerSQLStatisticsCheck:getType()
+  return 'agent.mssql_sql_statistics'
 end
 
 -- Get Server Memory Manager Data
@@ -179,18 +195,24 @@ function mem_handle_entry(self, entry)
 end
 
 function MSSQLServerMemoryManagerCheck:initialize(params)
-  WindowsGetCounterCheck.initialize(self, 'agent.mssql_memory_manager', "Memory Manager\\*", params)
+  WindowsGetCounterCheck.initialize(self, "Memory Manager\\*", params)
   self.handle_entry = mem_handle_entry
 end
 
+function MSSQLServerMemoryManagerCheck:getType()
+  return 'agent.mssql_memory_manager'
+end
 
 -- Get Server Plan Cache Data
 local MSSQLServerPlanCacheCheck = WindowsGetCounterCheck:extend()
 
 function MSSQLServerPlanCacheCheck:initialize(params)
-  WindowsGetCounterCheck.initialize(self, 'agent.mssql_plan_cache', "Plan Cache(*)\\*", params, '($_.Path -replace ".*\\(","").Replace("/", " per ").Replace(")\\","_").Replace(" ","_").Replace("-","_").Replace("_total_cache_","total_cache_")')
+  WindowsGetCounterCheck.initialize(self, "Plan Cache(*)\\*", params, '($_.Path -replace ".*\\(","").Replace("/", " per ").Replace(")\\","_").Replace(" ","_").Replace("-","_").Replace("_total_cache_","total_cache_")')
 end
 
+function MSSQLServerPlanCacheCheck:getType()
+  return 'agent.mssql_plan_cache'
+end
 
 local exports = {}
 exports.MSSQLServerVersionCheck = MSSQLServerVersionCheck

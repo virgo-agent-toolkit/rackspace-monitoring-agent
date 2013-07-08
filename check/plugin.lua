@@ -72,7 +72,7 @@ params.details - Table with the following keys:
 - timeout (number) - Plugin execution timeout in milliseconds.
 --]]
 function PluginCheck:initialize(params)
-  ChildCheck.initialize(self, 'agent.plugin', params)
+  ChildCheck.initialize(self, params)
 
   local file = path.basename(params.details.file)
   local args = params.details.args and params.details.args or {}
@@ -83,6 +83,10 @@ function PluginCheck:initialize(params)
   self._timeout = timeout
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', file))
 
+end
+
+function PluginCheck:getType()
+  return 'agent.plugin'
 end
 
 function PluginCheck:run(callback)
