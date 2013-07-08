@@ -24,7 +24,7 @@ local CheckResult = require('./base').CheckResult
 
 
 function MySQLCheck:initialize(params)
-  SubProcCheck.initialize(self, 'agent.mysql', params)
+  SubProcCheck.initialize(self, params)
 
   if params.details == nil then
     params.details = {}
@@ -35,6 +35,10 @@ function MySQLCheck:initialize(params)
   self.mysql_host = params.details.host and params.details.host or '127.0.0.1'
   self.mysql_port = params.details.port and tonumber(params.details.port) or 3306
 
+end
+
+function MySQLCheck:getType()
+  return 'agent.mysql'
 end
 
 local loadedCDEF = false

@@ -22,7 +22,11 @@ local WindowsPerfOSCheck = WindowsPowershellCmdletCheck:extend()
 function WindowsPerfOSCheck:initialize(params)
   local cmd = "(get-wmiobject -ErrorVariable virgo_err Win32_PerfFormattedData_PerfOS_System).Properties | Select Name, Value, Type | ConvertTo-Csv"
 
-  WindowsPowershellCmdletCheck.initialize(self, 'agent.windows_perfos', cmd, params)
+  WindowsPowershellCmdletCheck.initialize(self, cmd, params)
+end
+
+function WindowsPerfOSCheck:getType()
+  return 'agent.windows_perfos'
 end
 
 function WindowsPerfOSCheck:handle_entry(entry)

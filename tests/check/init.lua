@@ -105,7 +105,14 @@ local plugin_test = function(name, status, state, optional)
 end
 
 exports['test_base_check'] = function(test, asserts)
-  local check = BaseCheck:new('test', {id='foo', period=30})
+  local testcheck = BaseCheck:extend()
+  function testcheck:getType()
+    return "test"
+  end
+  function testcheck:initialize(params)
+    BaseCheck.initialize(self, params)
+  end
+  local check = testcheck:new({id='foo', period=30})
   asserts.ok(check:getSummary() == '(id=foo, type=test)')
   asserts.ok(check:getSummary({foo = 'blah'}) == '(id=foo, type=test, foo=blah)')
   asserts.ok(check._lastResult == nil)

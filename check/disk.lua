@@ -24,13 +24,17 @@ local sigarutil = require('/util/sigar')
 local DiskCheck = BaseCheck:extend()
 
 function DiskCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.disk', params)
+  BaseCheck.initialize(self, params)
 
   if params.details == nil then
     params.details = {}
   end
 
   self.dev_name = params.details.target
+end
+
+function DiskCheck:getType()
+  return 'agent.disk'
 end
 
 function DiskCheck:getTargets(callback)

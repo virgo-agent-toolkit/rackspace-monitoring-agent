@@ -168,7 +168,7 @@ function MetricsRequest:serialize(msgId)
   self.params.metrics = self.checkResult:serialize()
   self.params.timestamp = self.checkResult:getTimestamp()
   self.params.check_id = self.check.id
-  self.params.check_type = self.check._type
+  self.params.check_type = self.check.getType()
   return Request.serialize(self, msgId)
 end
 

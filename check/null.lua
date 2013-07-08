@@ -20,7 +20,11 @@ local CheckResult = require('./base').CheckResult
 local NullCheck = BaseCheck:extend()
 
 function NullCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.null', params)
+  BaseCheck.initialize(self, params)
+end
+
+function NullCheck:getType()
+  return "agent.null"
 end
 
 function NullCheck:run(callback)

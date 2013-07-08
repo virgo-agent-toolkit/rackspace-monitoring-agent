@@ -36,8 +36,12 @@ local units = {
 local NetworkCheck = BaseCheck:extend()
 
 function NetworkCheck:initialize(params)
-  BaseCheck.initialize(self, 'agent.network', params)
+  BaseCheck.initialize(self, params)
   self.interface_name = params.details and params.details.target
+end
+
+function NetworkCheck:getType()
+  return 'agent.network'
 end
 
 function NetworkCheck:getTargets(callback)

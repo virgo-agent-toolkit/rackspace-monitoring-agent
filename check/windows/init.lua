@@ -19,26 +19,6 @@ local MSSQLServer = require('./sqlserver')
 
 local exports = {}
 
-exports.create = function(self, checkType, obj)
-  if checkType == 'agent.windows_perfos' then
-    return WindowsPerfOSCheck:new(obj)
-  elseif checkType == 'agent.mssql_version' then
-    return MSSQLServer.MSSQLServerVersionCheck:new(obj)
-  elseif checkType == 'agent.mssql_database' then
-    return MSSQLServer.MSSQLServerDatabaseCheck:new(obj)
-  elseif checkType == 'agent.mssql_buffer_manager' then
-    return MSSQLServer.MSSQLServerBufferManagerCheck:new(obj)
-  elseif checkType == 'agent.mssql_sql_statistics' then
-    return MSSQLServer.MSSQLServerSQLStatisticsCheck:new(obj)
-  elseif checkType == 'agent.mssql_memory_manager' then
-    return MSSQLServer.MSSQLServerMemoryManagerCheck:new(obj)
-  elseif checkType == 'agent.mssql_plan_cache' then
-    return MSSQLServer.MSSQLServerPlanCacheCheck:new(obj)
-  else
-    return nil
-  end
-end
-
 exports.checks = {
   WindowsPerfOSCheck = WindowsPerfOSCheck,
   MSSQLServerVersionCheck = MSSQLServer.MSSQLServerVersionCheck,
