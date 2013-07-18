@@ -6,7 +6,7 @@ before_install:
   - make -C out
 
 script:
-  - python tools/build.py test
+  - python base/tools/build.py test
 
 notifications:
   email:
