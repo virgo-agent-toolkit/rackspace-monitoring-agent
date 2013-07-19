@@ -38,6 +38,8 @@ local function remove_tmp(callback)
   fs.readdir(TEST_DIR, function(err, files)
     if (files ~= nil) then
       for i, v in ipairs(files) do
+        -- Ensure the file is writable before deleting it
+        fs.chmodSync(path.join(TEST_DIR, v), "600")
         fs.unlinkSync(path.join(TEST_DIR, v))
       end
     end
