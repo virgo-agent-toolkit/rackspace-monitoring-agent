@@ -36,6 +36,7 @@ local tableContains = require('../util/misc').tableContains
 local toString = require('../util/misc').toString
 local lastIndexOf = require('../util/misc').lastIndexOf
 local split = require('../util/misc').split
+local randstr = require('../util/misc').randstr
 local asserts = require('bourbon').asserts
 
 local BaseCheck = Emitter:extend()
@@ -56,7 +57,9 @@ function BaseCheck:initialize(params)
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
   self._firstRun = true
+  self._iid = 'id' .. randstr(8) -- internal id
   self._timer = nil
+  self._cleared = false
   asserts.ok(self.getType, "no getType() function defined")
   self._log = loggingUtil.makeLogger(fmt('Check (%s)', self.getType()))
 
@@ -117,15 +120,20 @@ function BaseCheck:_runCheck()
     if fired then
       return
     end
-
-    self._log(logging.DEBUG, fmt('re-schedueling check %s', self:getSummary()))
-
     fired = true
+
+    self._log(logging.DEBUG, fmt('check completed %s', self:getSummary()))
+
     timer.clearTimer(timeoutTimer)
-    self:schedule()
     process.nextTick(function()
       self:emit('completed', self, checkResult)
     end)
+
+    -- If this check has been not been cleared then reschedule
+    if self._cleared == false then
+      self._log(logging.DEBUG, fmt('reschedule check %s', self:getSummary()))
+      self:schedule()
+    end
   end
 
   timeoutTimer = timer.setTimeout((self.period * 1000), function()
@@ -139,7 +147,6 @@ function BaseCheck:_runCheck()
 
   local status, err = pcall(function()
     self:run(function(checkResult)
-      self._log(logging.INFO, fmt('check completed %s', self:getSummary()))
       emitCompleted(checkResult)
     end)
   end)
@@ -161,6 +168,11 @@ function BaseCheck:schedule()
   if self._timer then
     return
   end
+
+  if self._cleared then
+    return
+  end
+
   if self._firstRun then
     self._firstRun = false
     process.nextTick(function()
@@ -168,11 +180,13 @@ function BaseCheck:schedule()
     end)
     return
   end
+
   self._log(logging.INFO, fmt('%s scheduled for %ss', self:toString(), self.period))
   self._timer = timer.setTimeout(self.period * 1000, utils.bind(BaseCheck._runCheck, self))
 end
 
 function BaseCheck:clearSchedule()
+  self._cleared = true
   if not self._timer then
     return
   end
