@@ -30,6 +30,10 @@ function Scheduler:initialize(checks)
   self:rebuild(checks)
 end
 
+function Scheduler:getCheckMap()
+  return self._checkMap
+end
+
 function Scheduler:stop()
   if #self._checks == 0 then
     return
