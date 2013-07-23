@@ -118,6 +118,20 @@ function calcJitterMultiplier(n, multiplier)
   return math.floor(n + (jitter * math.random()))
 end
 
+function randstr(length)
+  local chars, r, x
+
+  chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  r = {}
+
+  for x=1, length, 1 do
+    local ch = string.char(string.byte(chars, math.random(1, #chars)))
+    table.insert(r, ch)
+  end
+
+  return table.concat(r, '')
+end
+
 -- merge tables
 function merge(...)
   local args = {...}
@@ -355,4 +369,5 @@ exports.compareVersions = compareVersions
 exports.propagateEvents = propagateEvents
 exports.parseCSVLine = parseCSVLine
 exports.isStaging = isStaging
+exports.randstr = randstr
 return exports
