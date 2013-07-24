@@ -35,6 +35,7 @@ function MySQLCheck:initialize(params)
   self.mysql_host = params.details.host and params.details.host or '127.0.0.1'
   self.mysql_port = params.details.port and tonumber(params.details.port) or 3306
   self.mysql_socket = params.details.socket and params.details.socket or nil
+  self.mysql_mycnf = params.details.mycnf and params.details.mycnf or nil
 end
 
 function MySQLCheck:getType()
@@ -176,6 +177,19 @@ function MySQLCheck:_runCheckInChild(callback)
     cr:setError('mysql_init failed')
     callback(cr)
     return
+  end
+
+  -- read mycnf
+  if self.mysql_mycnf then
+    rv = clib.mysql_options(conn, ffi.C.MYSQL_READ_DEFAULT_GROUP, 'client')
+    if rv ~= 0 then
+      cr:setError(fmt('mysql_options(MYSQL_READ_DEFAULT_GROUP, \'client\') failed: (%d) %s',
+      clib.mysql_errno(conn),
+      ffi.string(clib.mysql_error(conn))))
+      clib.mysql_close(conn)
+      callback(cr)
+      return
+    end
   end
 
   -- http://dev.mysql.com/doc/refman/5.0/en/mysql-real-connect.html
