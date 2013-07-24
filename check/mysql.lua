@@ -34,7 +34,7 @@ function MySQLCheck:initialize(params)
   self.mysql_username = params.details.username and params.details.username or nil
   self.mysql_host = params.details.host and params.details.host or '127.0.0.1'
   self.mysql_port = params.details.port and tonumber(params.details.port) or 3306
-
+  self.mysql_socket = params.details.socket and params.details.socket or nil
 end
 
 function MySQLCheck:getType()
@@ -179,14 +179,26 @@ function MySQLCheck:_runCheckInChild(callback)
   end
 
   -- http://dev.mysql.com/doc/refman/5.0/en/mysql-real-connect.html
-  local rv = clib.mysql_real_connect(conn,
-                                     self.mysql_host,
-                                     self.mysql_username,
-                                     self.mysql_password,
-                                     nil,
-                                     self.mysql_port,
-                                     nil,
-                                     0)
+  local rv
+  if self.mysql_socket then
+    rv = clib.mysql_real_connect(conn,
+                                 nil,
+                                 self.mysql_username,
+                                 self.mysql_password,
+                                 nil,
+                                 nil,
+                                 self.mysql_socket,
+                                 0)
+  else
+    rv = clib.mysql_real_connect(conn,
+                                 self.mysql_host,
+                                 self.mysql_username,
+                                 self.mysql_password,
+                                 nil,
+                                 self.mysql_port,
+                                 nil,
+                                 0)
+  end
 
   if rv == nil then
     local host = self.mysql_host and self.mysql_host or '(null)'
