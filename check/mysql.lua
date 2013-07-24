@@ -186,7 +186,7 @@ function MySQLCheck:_runCheckInChild(callback)
                                  self.mysql_username,
                                  self.mysql_password,
                                  nil,
-                                 nil,
+                                 0,
                                  self.mysql_socket,
                                  0)
   else
