@@ -1,4 +1,4 @@
-local msg = require('./messages')
+local msg = require('./virgo_messages')
 
 local AgentProtocolConnection = require('./connection')
 

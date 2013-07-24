@@ -80,6 +80,7 @@
 ./protocol/request.lua
 ./protocol/server.lua
 ./protocol/virgo_connection.lua
+./protocol/virgo_messages.lua
 ./schedule/init.lua
 ./schedule/scheduler.lua
 ./setup.lua
