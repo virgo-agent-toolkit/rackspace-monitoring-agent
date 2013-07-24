@@ -26,7 +26,7 @@ local check = require('../check')
 local logging = require('logging')
 local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
-local AgentProtocolConnection = require('../protocol/connection')
+local VirgoProtocolConnection = require('/protocol/virgo_connection')
 local table = require('table')
 local caCerts = require('../certs').caCerts
 local vutils = require('virgo_utils')
@@ -141,7 +141,7 @@ function AgentClient:connect()
     self:emit('connect')
 
     -- setup protocol
-    self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, self._guid, cleartext)
+    self.protocol = VirgoProtocolConnection:new(self._log, self._id, self._token, self._guid, cleartext)
     self.protocol:on('error', function(err)
       -- set self.rateLimitReached so reconnect logic stops
       -- if close event is emitted before this message event
