@@ -117,10 +117,4 @@ exports.Heartbeat = Heartbeat
 exports.Manifest = Manifest
 exports.BinaryUpgradeRequest = BinaryUpgrade
 exports.BundleUpgradeRequest = BundleUpgrade
-exports.MetricsRequest = MetricsRequest
-exports.SystemInfoResponse = SystemInfoResponse
-exports.ScheduleChangeAck = ScheduleChangeAck
-exports.HostInfoResponse = HostInfoResponse
-exports.CheckTestResponse = CheckTestResponse
-exports.CheckTargetsResponse = CheckTargetsResponse
 return exports

@@ -36,7 +36,7 @@ local utils = require('utils')
 local request = require('/protocol/request')
 
 local ConnectionStream = Emitter:extend()
-function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options)
+function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options, types)
   self._id = id
   self._token = token
   self._guid = guid
@@ -47,6 +47,7 @@ function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options)
   self._activeTimeSyncClient = nil
   self._upgradeEnabled = upgradeEnabled
   self._options = options or {}
+  self._types = types or {}
   self._scheduler = Scheduler:new()
   self._scheduler:on('check.completed', function(check, checkResult)
     self:_sendMetrics(check, checkResult)
@@ -166,7 +167,7 @@ port - Port.
 callback - Callback called with (err)
 ]]--
 function ConnectionStream:_createConnection(options)
-  local client = AgentClient:new(options, self._scheduler, self)
+  local client = AgentClient:new(options, self._scheduler, self, self._types)
   client:on('error', function(errorMessage)
     local err = {}
     err.ip = options.ip

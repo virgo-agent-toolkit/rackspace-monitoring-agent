@@ -39,7 +39,7 @@ local ConnectionStream = require('/client/connection_stream').ConnectionStream
 local CrashReporter = require('/crashreport').CrashReporter
 local MonitoringAgent = Emitter:extend()
 
-function MonitoringAgent:initialize(options)
+function MonitoringAgent:initialize(options, types)
   if not options.stateDirectory then
     options.stateDirectory = constants.DEFAULT_STATE_PATH
   end
@@ -48,6 +48,7 @@ function MonitoringAgent:initialize(options)
   self._config = virgo.config
   self._options = options
   self._upgradesEnabled = true
+  self._types = types or {}
 end
 
 function MonitoringAgent:start(options)
@@ -117,7 +118,8 @@ function MonitoringAgent:connect(callback)
                                        self._config['monitoring_token'],
                                        self._config['monitoring_guid'],
                                        self._upgradesEnabled,
-                                       self._options)
+                                       self._options,
+                                       self._types)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)

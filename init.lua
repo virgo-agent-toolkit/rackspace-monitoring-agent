@@ -21,6 +21,7 @@ local fmt = require('string').format
 local MonitoringAgent = require('./monitoring_agent').MonitoringAgent
 local Setup = require('./setup').Setup
 local constants = require('./util/constants')
+local protocolConnection = require('/protocol/virgo_connection.lua')
 
 local argv = require("options")
   .usage('Usage: ')
@@ -80,7 +81,9 @@ function Entry.run()
     return mod.run(argv.args)
   end
 
-  local agent = MonitoringAgent:new(options)
+  local types = {}
+  types.ProtocolConnection = protocolConnection
+  local agent = MonitoringAgent:new(options, types)
 
   if not argv.args.u then
     return agent:start(options)

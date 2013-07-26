@@ -26,7 +26,7 @@ local check = require('../check')
 local logging = require('logging')
 local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
-local VirgoProtocolConnection = require('/protocol/virgo_connection')
+local ProtocolConnection = require('/protocol/connection')
 local table = require('table')
 local caCerts = require('../certs').caCerts
 local vutils = require('virgo_utils')
@@ -41,10 +41,11 @@ local HEARTBEAT_INTERVAL = 5 * 60 * 1000 -- ms
 
 local DATACENTER_COUNT = {}
 
-function AgentClient:initialize(options, scheduler, connectionStream)
+function AgentClient:initialize(options, scheduler, connectionStream, types)
 
   self.protocol = nil
   self._connectionStream = connectionStream
+  self._types = types or {}
   self._destroyed = false
   self._datacenter = options.datacenter
   self._id = options.id
@@ -141,7 +142,8 @@ function AgentClient:connect()
     self:emit('connect')
 
     -- setup protocol
-    self.protocol = VirgoProtocolConnection:new(self._log, self._id, self._token, self._guid, cleartext)
+    local protocolType = self._types.ProtocolConnection or ProtocolConnection
+    self.protocol = protocolType:new(self._log, self._id, self._token, self._guid, cleartext)
     self.protocol:on('error', function(err)
       -- set self.rateLimitReached so reconnect logic stops
       -- if close event is emitted before this message event
