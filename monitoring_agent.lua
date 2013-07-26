@@ -114,7 +114,8 @@ function MonitoringAgent:connect(callback)
 
   logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
 
-  self._streams = ConnectionStream:new(self._config['monitoring_id'],
+  local connectionStreamType = self._types.ConnectionStream or ConnectionStream
+  self._streams = connectionStreamType:new(self._config['monitoring_id'],
                                        self._config['monitoring_token'],
                                        self._config['monitoring_guid'],
                                        self._upgradesEnabled,

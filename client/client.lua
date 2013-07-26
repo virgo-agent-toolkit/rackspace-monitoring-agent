@@ -22,7 +22,6 @@ local timer = require('timer')
 local Error = require('core').Error
 local Object = require('core').Object
 local Emitter = require('core').Emitter
-local check = require('../check')
 local logging = require('logging')
 local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
@@ -41,7 +40,7 @@ local HEARTBEAT_INTERVAL = 5 * 60 * 1000 -- ms
 
 local DATACENTER_COUNT = {}
 
-function AgentClient:initialize(options, scheduler, connectionStream, types)
+function AgentClient:initialize(options, connectionStream, types)
 
   self.protocol = nil
   self._connectionStream = connectionStream
@@ -71,7 +70,6 @@ function AgentClient:initialize(options, scheduler, connectionStream, types)
     ca = caCerts
   }
 
-  self._scheduler = scheduler
   self._heartbeat_interval = nil
   self._sent_heartbeat_count = 0
   self._got_pong_count = 0
@@ -102,27 +100,6 @@ end
 
 function AgentClient:getMachine()
   return self._machine
-end
-
-function AgentClient:scheduleManifest(manifest)
-  local checks = self:_createChecks(manifest)
-  self._scheduler:rebuild(checks, function()
-    self._log(logging.DEBUG, 'Reloaded manifest')
-  end)
-end
-
-function AgentClient:_createChecks(manifest)
-  local checks = {}
-
-  for i, _ in ipairs(manifest.checks) do
-    local check = check.create(manifest.checks[i])
-    if check then
-      self._log(logging.INFO, 'Created Check: ' .. check:toString())
-      table.insert(checks, check)
-    end
-  end
-
-  return checks
 end
 
 function AgentClient:log(priority, ...)

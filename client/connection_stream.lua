@@ -25,7 +25,6 @@ local dns = require('dns')
 local ConnectionMessages = require('./connection_messages').ConnectionMessages
 local UpgradePollEmitter = require('./upgrade').UpgradePollEmitter
 
-local Scheduler = require('/schedule').Scheduler
 local AgentClient = require('./client').AgentClient
 local logging = require('logging')
 local consts = require('/util/constants')
@@ -48,10 +47,6 @@ function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options, t
   self._upgradeEnabled = upgradeEnabled
   self._options = options or {}
   self._types = types or {}
-  self._scheduler = Scheduler:new()
-  self._scheduler:on('check.completed', function(check, checkResult)
-    self:_sendMetrics(check, checkResult)
-  end)
 
   self._messages = ConnectionMessages:new(self)
   self._upgrade = UpgradePollEmitter:new()
@@ -167,7 +162,8 @@ port - Port.
 callback - Callback called with (err)
 ]]--
 function ConnectionStream:_createConnection(options)
-  local client = AgentClient:new(options, self._scheduler, self, self._types)
+  local clientType = self._types.AgentClient or AgentClient
+  local client = clientType:new(options, self, self._types)
   client:on('error', function(errorMessage)
     local err = {}
     err.ip = options.ip
@@ -215,13 +211,6 @@ function ConnectionStream:_createConnection(options)
   self._unauthedClients[client:getDatacenter()] = client
 
   return client
-end
-
-function ConnectionStream:_sendMetrics(check, checkResult)
-  local client = self:getClient()
-  if client then
-    client.protocol:request('check_metrics.post', check, checkResult)
-  end
 end
 
 function ConnectionStream:_setDelay(datacenter)
