@@ -66,7 +66,7 @@ function Agent:start(options)
     end,
     function(callback)
       local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
-      local endpoints = self._config['monitoring_endpoints']
+      local endpoints = self._config['endpoints']
       local reporter = CrashReporter:new(virgo.virgo_version, virgo.bundle_version, virgo.platform, dump_dir, endpoints)
       reporter:submit(function(err, res)
         callback()
@@ -92,8 +92,8 @@ function Agent:start(options)
 end
 
 function Agent:connect(callback)
-  local endpoints = self._config['monitoring_endpoints']
-  local upgradeStr = self._config['monitoring_upgrade']
+  local endpoints = self._config['endpoints']
+  local upgradeStr = self._config['upgrade']
   if upgradeStr then
     upgradeStr = upgradeStr:lower()
     if upgradeStr == 'false' or upgradeStr == 'disabled' then
@@ -115,9 +115,9 @@ function Agent:connect(callback)
   logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
 
   local connectionStreamType = self._types.ConnectionStream or ConnectionStream
-  self._streams = connectionStreamType:new(self._config['monitoring_id'],
-                                       self._config['monitoring_token'],
-                                       self._config['monitoring_guid'],
+  self._streams = connectionStreamType:new(self._config['id'],
+                                       self._config['token'],
+                                       self._config['guid'],
                                        self._upgradesEnabled,
                                        self._options,
                                        self._types)
@@ -187,33 +187,33 @@ function Agent:setConfig(config)
 end
 
 function Agent:_preConfig(callback)
-  if self._config['monitoring_token'] == nil then
-    logging.error("'monitoring_token' is missing from 'config'")
+  if self._config['token'] == nil then
+    logging.error("'token' is missing from 'config'")
     process.exit(1)
   end
 
   -- Regen GUID
-  self._config['monitoring_guid'] = self:_getSystemId()
+  self._config['guid'] = self:_getSystemId()
 
   async.series({
     -- retrieve persistent variables
     function(callback)
-      if self._config['monitoring_id'] ~= nil then
+      if self._config['id'] ~= nil then
         callback()
         return
       end
 
-      self:_getPersistentVariable('monitoring_id', function(err, monitoring_id)
+      self:_getPersistentVariable('id', function(err, id)
         local getSystemId
         getSystemId = function(callback)
-          monitoring_id = self:_getSystemId()
-          if not monitoring_id then
+          id = self:_getSystemId()
+          if not id then
             logging.error("could not retrieve system id... retrying")
             timer.setTimeout(5000, getSystemId)
             return
           end
-          self._config['monitoring_id'] = monitoring_id
-          self:_savePersistentVariable('monitoring_id', monitoring_id, callback)
+          self._config['id'] = id
+          self:_savePersistentVariable('id', id, callback)
         end
 
         if err and err.code ~= 'ENOENT' then
@@ -222,7 +222,7 @@ function Agent:_preConfig(callback)
         elseif err and err.code == 'ENOENT' then
           getSystemId(callback)
         else
-          self._config['monitoring_id'] = monitoring_id
+          self._config['id'] = id
           callback()
         end
       end)
@@ -230,8 +230,8 @@ function Agent:_preConfig(callback)
     -- log
     function(callback)
       logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
-                      self._config['monitoring_id'],
-                      self._config['monitoring_guid'],
+                      self._config['id'],
+                      self._config['guid'],
                       virgo.virgo_version,
                       virgo.bundle_version)
       callback()
@@ -242,9 +242,9 @@ end
 
 function Agent:loadEndpoints(callback)
   local config = self._config
-  local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
-  local snetregion = config['monitoring_snet_region']
-  local endpoints = config['monitoring_endpoints']
+  local queries = config['query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
+  local snetregion = config['snet_region']
+  local endpoints = config['endpoints']
 
   local function _callback(err, endpoints)
     if err then return callback(err) end
@@ -257,12 +257,12 @@ function Agent:loadEndpoints(callback)
         end
       end
     end
-    config['monitoring_endpoints'] = endpoints
+    config['endpoints'] = endpoints
     callback(nil, endpoints)
   end
 
   if snetregion and endpoints then
-    logging.errorf("Invalid configuration: monitoring_snet_region and monitoring_endpoints cannot be set at the same time.")
+    logging.errorf("Invalid configuration: snet_region and endpoints cannot be set at the same time.")
     process.exit(1)
   end
 
@@ -274,7 +274,7 @@ function Agent:loadEndpoints(callback)
     end
 
     if not misc.tableContains(matcher, constants.VALID_SNET_REGION_NAMES) then
-      logging.errorf("Invalid configuration: monitoring_snet_region '%s' is not supported.", snetregion)
+      logging.errorf("Invalid configuration: snet_region '%s' is not supported.", snetregion)
       process.exit(1)
     end
 

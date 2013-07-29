@@ -75,7 +75,7 @@
 ./lua_modules/traceroute/lib/utils.lua
 ./lua_modules/traceroute/package.lua
 ./lua_modules/traceroute/tests/test-traceroute.lua
-./monitoring_agent.lua
+./agent.lua
 ./protocol/connection.lua
 ./protocol/errors.lua
 ./protocol/messages.lua

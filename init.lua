@@ -88,6 +88,15 @@ function Entry.run()
   types.AgentClient = agentClient
   types.ConnectionStream = connectionStream
 
+  -- hacks to make monitoring specific config files compatible with a generic agent.lua
+  virgo.config['endpoints'] = virgo.config['monitoring_endpoints']
+  virgo.config['upgrade'] = virgo.config['monitoring_upgrade']
+  virgo.config['id'] = virgo.config['monitoring_id']
+  virgo.config['token'] = virgo.config['monitoring_token']
+  virgo.config['guid'] = virgo.config['monitoring_guid']
+  virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
+  virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
+  
   local agent = MonitoringAgent:new(options, types)
 
   if not argv.args.u then
