@@ -8,7 +8,8 @@ The monitoring agent is the first agent to use the infrastructure provided by
 Installing The Client
 =====================
 
-make sure you have the required packages to build things on your system. EG. build-essential
+Make sure you have the required packages to build things on your system. EG. `build-essential`. Please note, if you don't want to compile things and or don't have too, you can install using the normal "Package" method as outlined [here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent). Otherwise, continue reading this section.
+
 
 First get the source 
 
@@ -34,7 +35,7 @@ Now simply install the virgo client by running this last and final command.
 
     make install
 
-Post installation you will have a new Binary on your system, `rackspace-monitoring-agent`.  To get the client running on your system please follow the setup procedure as found [here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent)
+Post installation you will have a new Binary on your system, `rackspace-monitoring-agent`.  To get the client running on your system please follow the setup procedure as found [here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup)
 
 
 License
