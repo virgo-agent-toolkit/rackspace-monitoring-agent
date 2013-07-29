@@ -4,6 +4,39 @@ Rackspace Monitoring Agent
 The monitoring agent is the first agent to use the infrastructure provided by
 [virgo](https://github.com/racker/virgo)
 
+
+Installing The Client
+=====================
+
+make sure you have the required packages to build things on your system. EG. build-essential
+
+First get the source 
+
+    git clone https://github.com/racker/virgo virgo-0.1.8
+
+
+Go into the directory that you just created 
+
+    cd virgo-0.1.8
+
+
+Then get the submodules that you need
+
+    git submodule update --init --recursive
+
+
+Now configure and make all the things
+
+    ./configure && make 
+
+
+Now simply install the virgo client by running this last and final command.
+
+    make install
+
+Post installation you will have a new Binary on your system, `rackspace-monitoring-agent`.  To get the client running on your system please follow the setup procedure as found [here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent)
+
+
 License
 =======
 
