@@ -37,9 +37,9 @@ local logging = require('logging')
 local Endpoint = require('/endpoint').Endpoint
 local ConnectionStream = require('/client/connection_stream').ConnectionStream
 local CrashReporter = require('/crashreport').CrashReporter
-local MonitoringAgent = Emitter:extend()
+local Agent = Emitter:extend()
 
-function MonitoringAgent:initialize(options, types)
+function Agent:initialize(options, types)
   if not options.stateDirectory then
     options.stateDirectory = constants.DEFAULT_STATE_PATH
   end
@@ -51,7 +51,7 @@ function MonitoringAgent:initialize(options, types)
   self._types = types or {}
 end
 
-function MonitoringAgent:start(options)
+function Agent:start(options)
   if self:getConfig() == nil then
     logging.error("config missing or invalid")
     process.exit(1)
@@ -91,7 +91,7 @@ function MonitoringAgent:start(options)
   end)
 end
 
-function MonitoringAgent:connect(callback)
+function Agent:connect(callback)
   local endpoints = self._config['monitoring_endpoints']
   local upgradeStr = self._config['monitoring_upgrade']
   if upgradeStr then
@@ -131,7 +131,7 @@ function MonitoringAgent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
-function MonitoringAgent:_shutdown(msg, timeout, exit_code, shutdownType)
+function Agent:_shutdown(msg, timeout, exit_code, shutdownType)
   if shutdownType == constants.SHUTDOWN_RESTART then
     virgo.perform_restart_on_upgrade()
   else
@@ -145,7 +145,7 @@ function MonitoringAgent:_shutdown(msg, timeout, exit_code, shutdownType)
   end
 end
 
-function MonitoringAgent:_onShutdown(shutdownType)
+function Agent:_onShutdown(shutdownType)
   local sleep = 0
   local timeout = 0
   local exit_code = 0
@@ -170,23 +170,23 @@ function MonitoringAgent:_onShutdown(shutdownType)
   self:_shutdown(msg, timeout, exit_code, shutdownType)
 end
 
-function MonitoringAgent:getStreams()
+function Agent:getStreams()
   return self._streams
 end
 
-function MonitoringAgent:disableUpgrades()
+function Agent:disableUpgrades()
   self._upgradesEnabled = false
 end
 
-function MonitoringAgent:getConfig()
+function Agent:getConfig()
   return self._config
 end
 
-function MonitoringAgent:setConfig(config)
+function Agent:setConfig(config)
   self._config = config
 end
 
-function MonitoringAgent:_preConfig(callback)
+function Agent:_preConfig(callback)
   if self._config['monitoring_token'] == nil then
     logging.error("'monitoring_token' is missing from 'config'")
     process.exit(1)
@@ -240,7 +240,7 @@ function MonitoringAgent:_preConfig(callback)
 end
 
 
-function MonitoringAgent:loadEndpoints(callback)
+function Agent:loadEndpoints(callback)
   local config = self._config
   local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
   local snetregion = config['monitoring_snet_region']
@@ -308,7 +308,7 @@ function MonitoringAgent:loadEndpoints(callback)
   return _callback(nil, new_endpoints)
 end
 
-function MonitoringAgent:_queryForEndpoints(domains, callback)
+function Agent:_queryForEndpoints(domains, callback)
   local endpoint, _
   local endpoints = {}
   for _, endpoint in pairs(domains) do
@@ -318,7 +318,7 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
   callback(nil, endpoints)
 end
 
-function MonitoringAgent:_getSystemId()
+function Agent:_getSystemId()
   local netifs = sigarCtx:netifs()
   for i=1, #netifs do
     local eth = netifs[i]:info()
@@ -329,11 +329,11 @@ function MonitoringAgent:_getSystemId()
   return nil
 end
 
-function MonitoringAgent:_getPersistentFilename(variable)
+function Agent:_getPersistentFilename(variable)
   return path.join(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, variable .. '.txt')
 end
 
-function MonitoringAgent:_savePersistentVariable(variable, data, callback)
+function Agent:_savePersistentVariable(variable, data, callback)
   local filename = self:_getPersistentFilename(variable)
   fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0755", function(err)
     if err and err.code ~= 'EEXIST' then
@@ -346,7 +346,7 @@ function MonitoringAgent:_savePersistentVariable(variable, data, callback)
   end)
 end
 
-function MonitoringAgent:_getPersistentVariable(variable, callback)
+function Agent:_getPersistentVariable(variable, callback)
   local filename = self:_getPersistentFilename(variable)
   fs.readFile(filename, function(err, data)
     if err then
@@ -357,4 +357,4 @@ function MonitoringAgent:_getPersistentVariable(variable, callback)
   end)
 end
 
-return { MonitoringAgent = MonitoringAgent }
+return { Agent = Agent }
