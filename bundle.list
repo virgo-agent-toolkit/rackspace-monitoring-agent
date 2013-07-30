@@ -32,6 +32,8 @@
 ./client/connection_stream.lua
 ./client/init.lua
 ./client/upgrade.lua
+./client/virgo_client.lua
+./client/virgo_connection_stream.lua
 ./code_cert.prod.lua
 ./crashreport.lua
 ./endpoint.lua
@@ -73,12 +75,14 @@
 ./lua_modules/traceroute/lib/utils.lua
 ./lua_modules/traceroute/package.lua
 ./lua_modules/traceroute/tests/test-traceroute.lua
-./monitoring_agent.lua
+./agent.lua
 ./protocol/connection.lua
 ./protocol/errors.lua
 ./protocol/messages.lua
 ./protocol/request.lua
 ./protocol/server.lua
+./protocol/virgo_connection.lua
+./protocol/virgo_messages.lua
 ./schedule/init.lua
 ./schedule/scheduler.lua
 ./setup.lua
