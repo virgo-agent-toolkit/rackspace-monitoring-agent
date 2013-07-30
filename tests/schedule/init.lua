@@ -22,8 +22,12 @@ local string = require('string')
 
 local Scheduler = require('/schedule').Scheduler
 local BaseCheck = require('/check/base').BaseCheck
+local ChildCheck = require('/check/base').ChildCheck
 local NullCheck = require('/check/null').NullCheck
+local Check = require('/check')
 local misc = require('/util/misc')
+
+local PluginCheck = Check.PluginCheck
 
 local exports = {}
 
@@ -116,7 +120,42 @@ exports['test_scheduler_timeout'] = function(test, asserts)
   checks[1]:on('timeout', done)
   scheduler = Scheduler:new(checks)
   scheduler:start()
+end
 
+exports['test_scheduler_custom_check_reload'] = function(test, asserts)
+  local scheduler, checks, updated_checks
+
+  checks = {
+    PluginCheck:new({id='ch0001', state='OK', period=3, details={file='plugin_1.sh'}})
+  }
+
+  updated_checks = {
+    PluginCheck:new({id='ch0001', state='OK', period=3, details={file='plugin_1.sh', args={'arg1'}}})
+  }
+
+  scheduler = Scheduler:new(checks)
+
+  async.series({
+    function(callback)
+      scheduler:start()
+      process.nextTick(callback)
+    end,
+    function(callback)
+      callback = misc.fireOnce(callback)
+      scheduler:on('check.completed', function()
+        callback()
+      end)
+      scheduler:rebuild(updated_checks)
+    end,
+    function(callback)
+      local checkMap = scheduler:getCheckMap()
+      asserts.ok(checkMap['ch0001']:toString():find('arg1') ~= nil)
+      callback()
+    end
+  }, function(err)
+    scheduler:stop()
+    test.done()
+  end)
 end
 
 return exports

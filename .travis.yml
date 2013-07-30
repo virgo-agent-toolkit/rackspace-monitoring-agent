@@ -6,8 +6,8 @@ before_install:
   - make -C out
 
 script:
-  - python tools/build.py test
+  - make test
 
 notifications:
   email:
-    - tomaz+travisci@tomaz.me
+    - ryan.phillips@rackspace.com

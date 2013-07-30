@@ -59,6 +59,8 @@ local lastIndexOf = require('../util/misc').lastIndexOf
 local constants = require('../util/constants')
 local loggingUtil = require('../util/logging')
 
+local toString = require('../util/misc').toString
+
 local PluginCheck = ChildCheck:extend()
 
 --[[
@@ -82,7 +84,14 @@ function PluginCheck:initialize(params)
   self._pluginArgs = args
   self._timeout = timeout
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', file))
+end
 
+function ChildCheck:toString()
+  local argString = table.concat(self._pluginArgs, ',')
+  if argString == '' then
+    argString = '(none)'
+  end
+  return fmt('%s (id=%s, iid=%s, period=%ss, args=%s)', self.getType(), self.id, self._iid, self.period, argString)
 end
 
 function PluginCheck:getType()
