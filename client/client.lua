@@ -22,11 +22,10 @@ local timer = require('timer')
 local Error = require('core').Error
 local Object = require('core').Object
 local Emitter = require('core').Emitter
-local check = require('../check')
 local logging = require('logging')
 local misc = require('../util/misc')
 local loggingUtil = require ('../util/logging')
-local AgentProtocolConnection = require('../protocol/connection')
+local ProtocolConnection = require('/protocol/connection')
 local table = require('table')
 local caCerts = require('../certs').caCerts
 local vutils = require('virgo_utils')
@@ -41,10 +40,11 @@ local HEARTBEAT_INTERVAL = 5 * 60 * 1000 -- ms
 
 local DATACENTER_COUNT = {}
 
-function AgentClient:initialize(options, scheduler, connectionStream)
+function AgentClient:initialize(options, connectionStream, types)
 
   self.protocol = nil
   self._connectionStream = connectionStream
+  self._types = types or {}
   self._destroyed = false
   self._datacenter = options.datacenter
   self._id = options.id
@@ -70,7 +70,6 @@ function AgentClient:initialize(options, scheduler, connectionStream)
     ca = caCerts
   }
 
-  self._scheduler = scheduler
   self._heartbeat_interval = nil
   self._sent_heartbeat_count = 0
   self._got_pong_count = 0
@@ -103,27 +102,6 @@ function AgentClient:getMachine()
   return self._machine
 end
 
-function AgentClient:scheduleManifest(manifest)
-  local checks = self:_createChecks(manifest)
-  self._scheduler:rebuild(checks, function()
-    self._log(logging.DEBUG, 'Reloaded manifest')
-  end)
-end
-
-function AgentClient:_createChecks(manifest)
-  local checks = {}
-
-  for i, _ in ipairs(manifest.checks) do
-    local check = check.create(manifest.checks[i])
-    if check then
-      self._log(logging.INFO, 'Created Check: ' .. check:toString())
-      table.insert(checks, check)
-    end
-  end
-
-  return checks
-end
-
 function AgentClient:log(priority, ...)
   self._log(priority, unpack({...}))
 end
@@ -141,7 +119,8 @@ function AgentClient:connect()
     self:emit('connect')
 
     -- setup protocol
-    self.protocol = AgentProtocolConnection:new(self._log, self._id, self._token, self._guid, cleartext)
+    local protocolType = self._types.ProtocolConnection or ProtocolConnection
+    self.protocol = protocolType:new(self._log, self._id, self._token, self._guid, cleartext)
     self.protocol:on('error', function(err)
       -- set self.rateLimitReached so reconnect logic stops
       -- if close event is emitted before this message event
