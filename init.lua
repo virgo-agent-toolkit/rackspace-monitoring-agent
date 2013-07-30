@@ -18,9 +18,12 @@ local logging = require('logging')
 local debugm = require('debug')
 local fmt = require('string').format
 
-local MonitoringAgent = require('./monitoring_agent').MonitoringAgent
+local MonitoringAgent = require('./agent').Agent
 local Setup = require('./setup').Setup
 local constants = require('./util/constants')
+local protocolConnection = require('/protocol/virgo_connection')
+local agentClient = require('/client/virgo_client')
+local connectionStream = require('/client/virgo_connection_stream')
 
 local argv = require("options")
   .usage('Usage: ')
@@ -80,7 +83,21 @@ function Entry.run()
     return mod.run(argv.args)
   end
 
-  local agent = MonitoringAgent:new(options)
+  local types = {}
+  types.ProtocolConnection = protocolConnection
+  types.AgentClient = agentClient
+  types.ConnectionStream = connectionStream
+
+  -- hacks to make monitoring specific config files compatible with a generic agent.lua
+  virgo.config['endpoints'] = virgo.config['monitoring_endpoints']
+  virgo.config['upgrade'] = virgo.config['monitoring_upgrade']
+  virgo.config['id'] = virgo.config['monitoring_id']
+  virgo.config['token'] = virgo.config['monitoring_token']
+  virgo.config['guid'] = virgo.config['monitoring_guid']
+  virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
+  virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
+  
+  local agent = MonitoringAgent:new(options, types)
 
   if not argv.args.u then
     return agent:start(options)

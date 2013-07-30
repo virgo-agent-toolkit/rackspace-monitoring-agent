@@ -26,6 +26,7 @@ local Metric = require('/check/base').Metric
 local constants = require('/util/constants')
 local merge = require('/util/misc').merge
 local msg = require ('/protocol/messages')
+local virgoMsg = require('/protocol/virgo_messages')
 
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
@@ -516,7 +517,7 @@ exports['test_check_metrics_post_serialization'] = function(test, asserts)
   local check = MemoryCheck:new({id='foo', period=30})
   asserts.ok(check._lastResult == nil)
   check:run(function(result)
-    local check_metrics_post = msg.MetricsRequest:new(check, result)
+    local check_metrics_post = virgoMsg.MetricsRequest:new(check, result)
     local serialized = check_metrics_post:serialize()
     asserts.ok(serialized.params.timestamp > 1343400000)
     asserts.equals(serialized.params.check_type, 'agent.memory')

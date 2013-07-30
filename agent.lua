@@ -37,9 +37,9 @@ local logging = require('logging')
 local Endpoint = require('/endpoint').Endpoint
 local ConnectionStream = require('/client/connection_stream').ConnectionStream
 local CrashReporter = require('/crashreport').CrashReporter
-local MonitoringAgent = Emitter:extend()
+local Agent = Emitter:extend()
 
-function MonitoringAgent:initialize(options)
+function Agent:initialize(options, types)
   if not options.stateDirectory then
     options.stateDirectory = constants.DEFAULT_STATE_PATH
   end
@@ -48,9 +48,10 @@ function MonitoringAgent:initialize(options)
   self._config = virgo.config
   self._options = options
   self._upgradesEnabled = true
+  self._types = types or {}
 end
 
-function MonitoringAgent:start(options)
+function Agent:start(options)
   if self:getConfig() == nil then
     logging.error("config missing or invalid")
     process.exit(1)
@@ -65,7 +66,7 @@ function MonitoringAgent:start(options)
     end,
     function(callback)
       local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
-      local endpoints = self._config['monitoring_endpoints']
+      local endpoints = self._config['endpoints']
       local reporter = CrashReporter:new(virgo.virgo_version, virgo.bundle_version, virgo.platform, dump_dir, endpoints)
       reporter:submit(function(err, res)
         callback()
@@ -90,9 +91,9 @@ function MonitoringAgent:start(options)
   end)
 end
 
-function MonitoringAgent:connect(callback)
-  local endpoints = self._config['monitoring_endpoints']
-  local upgradeStr = self._config['monitoring_upgrade']
+function Agent:connect(callback)
+  local endpoints = self._config['endpoints']
+  local upgradeStr = self._config['upgrade']
   if upgradeStr then
     upgradeStr = upgradeStr:lower()
     if upgradeStr == 'false' or upgradeStr == 'disabled' then
@@ -113,11 +114,13 @@ function MonitoringAgent:connect(callback)
 
   logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
 
-  self._streams = ConnectionStream:new(self._config['monitoring_id'],
-                                       self._config['monitoring_token'],
-                                       self._config['monitoring_guid'],
+  local connectionStreamType = self._types.ConnectionStream or ConnectionStream
+  self._streams = connectionStreamType:new(self._config['id'],
+                                       self._config['token'],
+                                       self._config['guid'],
                                        self._upgradesEnabled,
-                                       self._options)
+                                       self._options,
+                                       self._types)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)
@@ -128,7 +131,7 @@ function MonitoringAgent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
-function MonitoringAgent:_shutdown(msg, timeout, exit_code, shutdownType)
+function Agent:_shutdown(msg, timeout, exit_code, shutdownType)
   if shutdownType == constants.SHUTDOWN_RESTART then
     virgo.perform_restart_on_upgrade()
   else
@@ -142,7 +145,7 @@ function MonitoringAgent:_shutdown(msg, timeout, exit_code, shutdownType)
   end
 end
 
-function MonitoringAgent:_onShutdown(shutdownType)
+function Agent:_onShutdown(shutdownType)
   local sleep = 0
   local timeout = 0
   local exit_code = 0
@@ -167,50 +170,50 @@ function MonitoringAgent:_onShutdown(shutdownType)
   self:_shutdown(msg, timeout, exit_code, shutdownType)
 end
 
-function MonitoringAgent:getStreams()
+function Agent:getStreams()
   return self._streams
 end
 
-function MonitoringAgent:disableUpgrades()
+function Agent:disableUpgrades()
   self._upgradesEnabled = false
 end
 
-function MonitoringAgent:getConfig()
+function Agent:getConfig()
   return self._config
 end
 
-function MonitoringAgent:setConfig(config)
+function Agent:setConfig(config)
   self._config = config
 end
 
-function MonitoringAgent:_preConfig(callback)
-  if self._config['monitoring_token'] == nil then
-    logging.error("'monitoring_token' is missing from 'config'")
+function Agent:_preConfig(callback)
+  if self._config['token'] == nil then
+    logging.error("'token' is missing from 'config'")
     process.exit(1)
   end
 
   -- Regen GUID
-  self._config['monitoring_guid'] = self:_getSystemId()
+  self._config['guid'] = self:_getSystemId()
 
   async.series({
     -- retrieve persistent variables
     function(callback)
-      if self._config['monitoring_id'] ~= nil then
+      if self._config['id'] ~= nil then
         callback()
         return
       end
 
-      self:_getPersistentVariable('monitoring_id', function(err, monitoring_id)
+      self:_getPersistentVariable('id', function(err, id)
         local getSystemId
         getSystemId = function(callback)
-          monitoring_id = self:_getSystemId()
-          if not monitoring_id then
+          id = self:_getSystemId()
+          if not id then
             logging.error("could not retrieve system id... retrying")
             timer.setTimeout(5000, getSystemId)
             return
           end
-          self._config['monitoring_id'] = monitoring_id
-          self:_savePersistentVariable('monitoring_id', monitoring_id, callback)
+          self._config['id'] = id
+          self:_savePersistentVariable('id', id, callback)
         end
 
         if err and err.code ~= 'ENOENT' then
@@ -219,7 +222,7 @@ function MonitoringAgent:_preConfig(callback)
         elseif err and err.code == 'ENOENT' then
           getSystemId(callback)
         else
-          self._config['monitoring_id'] = monitoring_id
+          self._config['id'] = id
           callback()
         end
       end)
@@ -227,8 +230,8 @@ function MonitoringAgent:_preConfig(callback)
     -- log
     function(callback)
       logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
-                      self._config['monitoring_id'],
-                      self._config['monitoring_guid'],
+                      self._config['id'],
+                      self._config['guid'],
                       virgo.virgo_version,
                       virgo.bundle_version)
       callback()
@@ -237,11 +240,11 @@ function MonitoringAgent:_preConfig(callback)
 end
 
 
-function MonitoringAgent:loadEndpoints(callback)
+function Agent:loadEndpoints(callback)
   local config = self._config
-  local queries = config['monitoring_query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
-  local snetregion = config['monitoring_snet_region']
-  local endpoints = config['monitoring_endpoints']
+  local queries = config['query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
+  local snetregion = config['snet_region']
+  local endpoints = config['endpoints']
 
   local function _callback(err, endpoints)
     if err then return callback(err) end
@@ -254,12 +257,12 @@ function MonitoringAgent:loadEndpoints(callback)
         end
       end
     end
-    config['monitoring_endpoints'] = endpoints
+    config['endpoints'] = endpoints
     callback(nil, endpoints)
   end
 
   if snetregion and endpoints then
-    logging.errorf("Invalid configuration: monitoring_snet_region and monitoring_endpoints cannot be set at the same time.")
+    logging.errorf("Invalid configuration: snet_region and endpoints cannot be set at the same time.")
     process.exit(1)
   end
 
@@ -271,7 +274,7 @@ function MonitoringAgent:loadEndpoints(callback)
     end
 
     if not misc.tableContains(matcher, constants.VALID_SNET_REGION_NAMES) then
-      logging.errorf("Invalid configuration: monitoring_snet_region '%s' is not supported.", snetregion)
+      logging.errorf("Invalid configuration: snet_region '%s' is not supported.", snetregion)
       process.exit(1)
     end
 
@@ -305,7 +308,7 @@ function MonitoringAgent:loadEndpoints(callback)
   return _callback(nil, new_endpoints)
 end
 
-function MonitoringAgent:_queryForEndpoints(domains, callback)
+function Agent:_queryForEndpoints(domains, callback)
   local endpoint, _
   local endpoints = {}
   for _, endpoint in pairs(domains) do
@@ -315,7 +318,7 @@ function MonitoringAgent:_queryForEndpoints(domains, callback)
   callback(nil, endpoints)
 end
 
-function MonitoringAgent:_getSystemId()
+function Agent:_getSystemId()
   local netifs = sigarCtx:netifs()
   for i=1, #netifs do
     local eth = netifs[i]:info()
@@ -326,11 +329,11 @@ function MonitoringAgent:_getSystemId()
   return nil
 end
 
-function MonitoringAgent:_getPersistentFilename(variable)
+function Agent:_getPersistentFilename(variable)
   return path.join(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, variable .. '.txt')
 end
 
-function MonitoringAgent:_savePersistentVariable(variable, data, callback)
+function Agent:_savePersistentVariable(variable, data, callback)
   local filename = self:_getPersistentFilename(variable)
   fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0755", function(err)
     if err and err.code ~= 'EEXIST' then
@@ -343,7 +346,7 @@ function MonitoringAgent:_savePersistentVariable(variable, data, callback)
   end)
 end
 
-function MonitoringAgent:_getPersistentVariable(variable, callback)
+function Agent:_getPersistentVariable(variable, callback)
   local filename = self:_getPersistentFilename(variable)
   fs.readFile(filename, function(err, data)
     if err then
@@ -354,4 +357,4 @@ function MonitoringAgent:_getPersistentVariable(variable, callback)
   end)
 end
 
-return { MonitoringAgent = MonitoringAgent }
+return { Agent = Agent }
