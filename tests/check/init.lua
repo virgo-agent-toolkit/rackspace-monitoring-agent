@@ -331,13 +331,13 @@ end
 exports['test_custom_plugin_timeout'] = plugin_test('timeout.py',
   'Plugin didn\'t finish in 0.5 seconds', 'unavailable', {details={timeout=500}})
 
-exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
-  if os.type() == 'win32' then
+if os.type() == 'win32' then
+  exports['test_custom_plugin_file_not_executable'] = function(test, asserts)
     return test.skip('Windows does not have an execute bit, just file associations')
-  else
-    return plugin_test('not_executable.sh',
-      'Plugin exited with non-zero status code (code=127)', 'unavailable', {perms='0444'})
   end
+else
+  exports['test_custom_plugin_file_not_executable'] = plugin_test('not_executable.sh',
+    'Plugin exited with non-zero status code (code=127)', 'unavailable', {perms='0444'})
 end
 
 exports['test_custom_plugin_non_zero_exit_code_with_status'] = plugin_test('non_zero_with_status.sh',
