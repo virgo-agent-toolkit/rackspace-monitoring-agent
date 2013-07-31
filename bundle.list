@@ -80,15 +80,12 @@
 ./protocol/errors.lua
 ./protocol/messages.lua
 ./protocol/request.lua
-./protocol/server.lua
 ./protocol/virgo_connection.lua
 ./protocol/virgo_messages.lua
 ./schedule/init.lua
 ./schedule/scheduler.lua
 ./setup.lua
 ./sigar.lua
-./state_file.lua
-./states.lua
 ./static/tests/checks/apache_server_status.txt
 ./static/tests/checks/mssql_buffer_manager.txt
 ./static/tests/checks/mssql_database.txt
