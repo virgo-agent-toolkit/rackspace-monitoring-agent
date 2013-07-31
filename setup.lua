@@ -36,8 +36,8 @@ function Setup:initialize(argv, configFile, agent)
   self._configFile = configFile
   self._agent = agent
   self._receivedPromotion = false
-  self._username = argv.U
-  self._apikey = argv.K
+  self._username = argv.args.U
+  self._apikey = argv.args.K
   self._agent:on('promote', function()
     self._receivedPromotion = true
   end)
