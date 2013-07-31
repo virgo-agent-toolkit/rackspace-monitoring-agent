@@ -23,7 +23,7 @@ local path = require('path')
 
 local Object = require('core').Object
 local async = require('async')
-local misc = require('./util/misc')
+local misc = require('/base/util/misc')
 
 local logging = require('logging')
 local request = require('./protocol/request')

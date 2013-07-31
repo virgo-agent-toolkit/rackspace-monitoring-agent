@@ -53,13 +53,13 @@ local LineEmitter = require('line-emitter').LineEmitter
 local ChildCheck = require('./base').ChildCheck
 local CheckResult = require('./base').CheckResult
 local Metric = require('./base').Metric
-local split = require('../util/misc').split
-local tableContains = require('../util/misc').tableContains
-local lastIndexOf = require('../util/misc').lastIndexOf
-local constants = require('../util/constants')
-local loggingUtil = require('../util/logging')
+local split = require('/base/util/misc').split
+local tableContains = require('/base/util/misc').tableContains
+local lastIndexOf = require('/base/util/misc').lastIndexOf
+local constants = require('/base/util/constants')
+local loggingUtil = require('/base/util/logging')
 
-local toString = require('../util/misc').toString
+local toString = require('/base/util/misc').toString
 
 local PluginCheck = ChildCheck:extend()
 

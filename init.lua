@@ -20,7 +20,7 @@ local fmt = require('string').format
 
 local MonitoringAgent = require('./agent').Agent
 local Setup = require('./setup').Setup
-local constants = require('./util/constants')
+local constants = require('/base/util/constants')
 local protocolConnection = require('/protocol/virgo_connection')
 local agentClient = require('/client/virgo_client')
 local connectionStream = require('/client/virgo_connection_stream')

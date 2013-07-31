@@ -29,10 +29,10 @@ local Emitter = require('core').Emitter
 local async = require('async')
 local sigarCtx = require('/sigar').ctx
 
-local constants = require('/util/constants')
-local misc = require('/util/misc')
-local fsutil = require('/util/fs')
-local UUID = require('/util/uuid')
+local constants = require('/base/util/constants')
+local misc = require('/base/util/misc')
+local fsutil = require('/base/util/fs')
+local UUID = require('/base/util/uuid')
 local logging = require('logging')
 local Endpoint = require('/endpoint').Endpoint
 local ConnectionStream = require('/client/connection_stream').ConnectionStream

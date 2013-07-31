@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 local Timer = require('uv').Timer
-local consts = require('../util/constants')
+local consts = require('/base/util/constants')
 local tls = require('tls')
 local JSON = require('json')
 local timer = require('timer')
@@ -23,8 +23,8 @@ local Error = require('core').Error
 local Object = require('core').Object
 local Emitter = require('core').Emitter
 local logging = require('logging')
-local misc = require('../util/misc')
-local loggingUtil = require ('../util/logging')
+local misc = require('/base/util/misc')
+local loggingUtil = require ('/base/util/logging')
 local ProtocolConnection = require('/protocol/connection')
 local table = require('table')
 local caCerts = require('../certs').caCerts
