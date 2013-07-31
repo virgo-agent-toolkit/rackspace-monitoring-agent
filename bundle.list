@@ -1,3 +1,7 @@
+./base/protocol/connection.lua
+./base/protocol/errors.lua
+./base/protocol/messages.lua
+./base/protocol/request.lua
 ./base/util/constants.lua
 ./base/util/fs.lua
 ./base/util/logging.lua
@@ -85,10 +89,6 @@
 ./lua_modules/traceroute/package.lua
 ./lua_modules/traceroute/tests/test-traceroute.lua
 ./agent.lua
-./protocol/connection.lua
-./protocol/errors.lua
-./protocol/messages.lua
-./protocol/request.lua
 ./protocol/virgo_connection.lua
 ./protocol/virgo_messages.lua
 ./schedule/init.lua

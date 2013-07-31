@@ -1,6 +1,6 @@
 local msg = require('./virgo_messages')
 
-local AgentProtocolConnection = require('./connection')
+local AgentProtocolConnection = require('/base/protocol/connection')
 
 local VirgoProtocolConnection = AgentProtocolConnection:extend()
 function VirgoProtocolConnection:initialize(log, myid, token, guid, conn)

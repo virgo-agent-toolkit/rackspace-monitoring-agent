@@ -26,7 +26,7 @@ local async = require('async')
 local misc = require('/base/util/misc')
 
 local logging = require('logging')
-local request = require('./protocol/request')
+local request = require('/base/protocol/request')
 
 local CrashReporter = Object:extend()
 

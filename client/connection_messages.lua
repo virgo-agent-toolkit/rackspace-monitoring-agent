@@ -20,7 +20,7 @@ local async = require('async')
 local fmt = require('string').format
 local fsutil = require('/base/util/fs')
 local errors = require('../errors')
-local request = require('../protocol/request')
+local request = require('/base/protocol/request')
 
 local code_cert
 if _G.TESTING_CERTS then

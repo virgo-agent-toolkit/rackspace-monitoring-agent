@@ -19,7 +19,7 @@ local JSON = require('json')
 local errors = require('/errors')
 local Emitter = require('core').Emitter
 
-local AgentProtocolConnection = require('/protocol/connection')
+local AgentProtocolConnection = require('/base/protocol/connection')
 local loggingUtil = require ('/base/util/logging')
 local instanceof = require('core').instanceof
 

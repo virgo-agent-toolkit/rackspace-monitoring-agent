@@ -32,7 +32,7 @@ local misc = require('/base/util/misc')
 local vutils = require('virgo_utils')
 local path = require('path')
 local utils = require('utils')
-local request = require('/protocol/request')
+local request = require('/base/protocol/request')
 
 local ConnectionStream = Emitter:extend()
 function ConnectionStream:initialize(id, token, guid, upgradeEnabled, options, types)
