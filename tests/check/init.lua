@@ -92,6 +92,7 @@ local plugin_test = function(name, status, state, optional)
       asserts.ok(check:toString():find('args'))
       check:run(function(result)
         asserts.ok(result ~= nil)
+        p("from dump_check asserts.equals", result:getStatus(), status, name)
         asserts.equals(result:getStatus(), status, name)
         asserts.equals(result:getState(), state)
         if optional.cb then
