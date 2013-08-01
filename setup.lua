@@ -25,7 +25,7 @@ local table = require('table')
 
 local async = require('async')
 local ask = require('/base/util/prompt').ask
-local errors = require('errors')
+local errors = require('/base/errors')
 local constants = require('/base/util/constants')
 local sigarCtx = require('/sigar').ctx
 

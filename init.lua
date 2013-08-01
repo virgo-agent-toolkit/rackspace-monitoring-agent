@@ -18,7 +18,7 @@ local logging = require('logging')
 local debugm = require('debug')
 local fmt = require('string').format
 
-local MonitoringAgent = require('./agent').Agent
+local MonitoringAgent = require('/base/agent').Agent
 local Setup = require('./setup').Setup
 local constants = require('/base/util/constants')
 local protocolConnection = require('/protocol/virgo_connection')

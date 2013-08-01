@@ -6,7 +6,7 @@ local helper = require('../helper')
 local timer = require('timer')
 local constants = require('constants')
 local consts = require('/base/util/constants')
-local Endpoint = require('../../endpoint').Endpoint
+local Endpoint = require('/base/endpoint').Endpoint
 local path = require('path')
 local os = require('os')
 
