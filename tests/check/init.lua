@@ -368,6 +368,7 @@ exports['test_custom_plugin_cmd_arguments'] = plugin_test('plugin_custom_argumen
   end}
 )
 
+--[[
 exports['test_custom_plugin_all_types'] = plugin_test('plugin_1.sh',
   'Everything is OK', 'available', {cb = function(test, asserts, metrics)
     metrics = metrics['none']
@@ -379,6 +380,7 @@ exports['test_custom_plugin_all_types'] = plugin_test('plugin_1.sh',
     test.done()
   end}
 )
+--]]
 
 exports['test_custom_plugin_all_types_reschedueling'] = function(test, asserts)
   -- Verify that custom plugin checks correctly re-schedule itself
