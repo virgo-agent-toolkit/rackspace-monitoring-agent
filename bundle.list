@@ -5,6 +5,7 @@
 ./base/client/connection_stream.lua
 ./base/client/init.lua
 ./base/client/upgrade.lua
+./base/crashreport.lua
 ./base/endpoint.lua
 ./base/errors.lua
 ./base/lua_modules/async/init.lua
@@ -87,7 +88,6 @@
 ./client/virgo_client.lua
 ./client/virgo_connection_stream.lua
 ./code_cert.prod.lua
-./crashreport.lua
 ./host_info.lua
 ./init.lua
 ./protocol/virgo_connection.lua
