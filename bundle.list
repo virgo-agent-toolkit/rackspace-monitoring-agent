@@ -29,6 +29,7 @@
 ./base/lua_modules/options/modules/init.lua
 ./base/lua_modules/options/package.lua
 ./base/lua_modules/options/test.lua
+./base/sigar.lua
 ./rackspace-monitoring/example.lua
 ./rackspace-monitoring/init.lua
 ./rackspace-monitoring/lib/client.lua
@@ -94,7 +95,6 @@
 ./schedule/init.lua
 ./schedule/scheduler.lua
 ./setup.lua
-./sigar.lua
 ./static/tests/checks/apache_server_status.txt
 ./static/tests/checks/mssql_buffer_manager.txt
 ./static/tests/checks/mssql_database.txt

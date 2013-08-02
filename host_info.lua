@@ -23,7 +23,7 @@ local os = require('os')
 local table = require('table')
 local vutils = require('virgo_utils')
 
-local sigarCtx = require('/sigar').ctx
+local sigarCtx = require('/base/sigar').ctx
 local sigarutil = require('/base/util/sigar')
 
 --[[ HostInfo ]]--
