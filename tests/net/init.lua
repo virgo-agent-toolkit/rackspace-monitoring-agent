@@ -1,12 +1,12 @@
 local table = require('table')
 local async = require('async')
-local ConnectionStream = require('/client/connection_stream').ConnectionStream
-local misc = require('/util/misc')
+local ConnectionStream = require('/base/client/connection_stream').ConnectionStream
+local misc = require('/base/util/misc')
 local helper = require('../helper')
 local timer = require('timer')
 local constants = require('constants')
-local consts = require('../../util/constants')
-local Endpoint = require('../../endpoint').Endpoint
+local consts = require('/base/util/constants')
+local Endpoint = require('/base/endpoint').Endpoint
 local path = require('path')
 local os = require('os')
 

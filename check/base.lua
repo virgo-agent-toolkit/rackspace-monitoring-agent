@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local us  = require('../util/underscore')
+local us  = require('/base/util/underscore')
 local Emitter = require('core').Emitter
 local JSON = require('json')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -30,13 +30,13 @@ local vutils = require('virgo_utils')
 local utils = require('utils')
 local path = require('path')
 
-local constants = require('../util/constants')
-local loggingUtil = require('../util/logging')
-local tableContains = require('../util/misc').tableContains
-local toString = require('../util/misc').toString
-local lastIndexOf = require('../util/misc').lastIndexOf
-local split = require('../util/misc').split
-local randstr = require('../util/misc').randstr
+local constants = require('/base/util/constants')
+local loggingUtil = require('/base/util/logging')
+local tableContains = require('/base/util/misc').tableContains
+local toString = require('/base/util/misc').toString
+local lastIndexOf = require('/base/util/misc').lastIndexOf
+local split = require('/base/util/misc').split
+local randstr = require('/base/util/misc').randstr
 local asserts = require('bourbon').asserts
 
 local BaseCheck = Emitter:extend()

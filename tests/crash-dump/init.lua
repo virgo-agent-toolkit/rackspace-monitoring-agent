@@ -9,8 +9,8 @@ local async = require('async')
 
 local helper = require('../helper')
 local fixtures = require('../fixtures')
-local Endpoint = require('/endpoint').Endpoint
-local CrashReporter = require('/crashreport').CrashReporter
+local Endpoint = require('/base/endpoint').Endpoint
+local CrashReporter = require('/base/crashreport').CrashReporter
 
 local exports = {}
 

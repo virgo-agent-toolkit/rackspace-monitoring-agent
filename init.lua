@@ -18,12 +18,19 @@ local logging = require('logging')
 local debugm = require('debug')
 local fmt = require('string').format
 
-local MonitoringAgent = require('./agent').Agent
+local MonitoringAgent = require('/base/agent').Agent
 local Setup = require('./setup').Setup
-local constants = require('./util/constants')
+local constants = require('/base/util/constants')
 local protocolConnection = require('/protocol/virgo_connection')
 local agentClient = require('/client/virgo_client')
 local connectionStream = require('/client/virgo_connection_stream')
+
+local code_cert
+if _G.TESTING_CERTS then
+  code_cert = _G.TESTING_CERTS
+else
+  code_cert = require('/code_cert.prod.lua')
+end
 
 local argv = require("options")
   .usage('Usage: ')
@@ -96,6 +103,8 @@ function Entry.run()
   virgo.config['guid'] = virgo.config['monitoring_guid']
   virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
   virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
+
+  options.codeCert = code_cert.codeCert
   
   local agent = MonitoringAgent:new(options, types)
 

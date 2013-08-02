@@ -23,8 +23,8 @@ local async = require('async')
 
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
-local split = require('../util/misc').split
-local fireOnce = require('../util/misc').fireOnce
+local split = require('/base/util/misc').split
+local fireOnce = require('/base/util/misc').fireOnce
 
 local MAX_BUFFER_LENGTH = 1024 * 1024 * 1 -- 1 MB
 
