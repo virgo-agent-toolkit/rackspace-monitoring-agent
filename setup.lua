@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2012 /ackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ local errors = require('/base/errors')
 local constants = require('/base/util/constants')
 local sigarCtx = require('/sigar').ctx
 
-local maas = require('rackspace-monitoring')
+local maas = require('/rackspace-monitoring')
 
 local Setup = Object:extend()
 function Setup:initialize(argv, configFile, agent)
