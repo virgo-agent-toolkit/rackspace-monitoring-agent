@@ -201,7 +201,7 @@ function Agent:_preConfig(callback)
     function(callback)
       local monitoring_id = self._config['monitoring_id']
       if monitoring_id then
-        logging.infof('Using config monitoring_id (id=%s)', monitoring_id)
+        logging.infof('Using config agent ID (id=%s)', monitoring_id)
         self._config['id'] = monitoring_id
         callback()
       else
