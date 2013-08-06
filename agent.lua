@@ -222,7 +222,7 @@ function Agent:_preConfig(callback)
     -- log
     function(callback)
       if self._config['id'] == nil then
-        logging.error("could not figure out agent id")
+        logging.error("Agent ID not configured, and could not automatically detect an ID")
         process.exit(1)
       end
       logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
