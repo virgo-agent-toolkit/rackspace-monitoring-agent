@@ -29,6 +29,7 @@ local Emitter = require('core').Emitter
 local async = require('async')
 local sigarCtx = require('/sigar').ctx
 
+local MachineIdentity = require('machineidentity').MachineIdentity
 local constants = require('/util/constants')
 local misc = require('/util/misc')
 local fsutil = require('/util/fs')
@@ -196,39 +197,34 @@ function Agent:_preConfig(callback)
   self._config['guid'] = self:_getSystemId()
 
   async.series({
-    -- retrieve persistent variables
+    -- retrieve xen id
     function(callback)
-      if self._config['id'] ~= nil then
+      local monitoring_id = self._config['monitoring_id']
+      if monitoring_id then
+        logging.infof('Using config agent ID (id=%s)', monitoring_id)
+        self._config['id'] = monitoring_id
         callback()
-        return
-      end
-
-      self:_getPersistentVariable('id', function(err, id)
-        local getSystemId
-        getSystemId = function(callback)
-          id = self:_getSystemId()
-          if not id then
-            logging.error("could not retrieve system id... retrying")
-            timer.setTimeout(5000, getSystemId)
-            return
+      else
+        local machid = MachineIdentity:new(self._config)
+        machid:get(function(err, results)
+          if err then
+            return callback(err)
           end
-          self._config['id'] = id
-          self:_savePersistentVariable('id', id, callback)
-        end
-
-        if err and err.code ~= 'ENOENT' then
-          callback(err)
-          return
-        elseif err and err.code == 'ENOENT' then
-          getSystemId(callback)
-        else
-          self._config['id'] = id
+          if results then
+            logging.infof('Using detected agent ID (id=%s)', results.id)
+            self._config['id'] = results.id
+            self._config['monitoring_id'] = results.id
+          end
           callback()
-        end
-      end)
+        end)
+      end
     end,
     -- log
     function(callback)
+      if self._config['id'] == nil then
+        logging.error("Agent ID not configured, and could not automatically detect an ID")
+        process.exit(1)
+      end
       logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
                       self._config['id'],
                       self._config['guid'],
