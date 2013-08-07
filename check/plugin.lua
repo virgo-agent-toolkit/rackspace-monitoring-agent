@@ -87,10 +87,15 @@ function PluginCheck:initialize(params)
 end
 
 function ChildCheck:toString()
+  if not self._pluginArgs then
+    self._pluginArgs = {}
+  end
+
   local argString = table.concat(self._pluginArgs, ',')
   if argString == '' then
     argString = '(none)'
   end
+
   return fmt('%s (id=%s, iid=%s, period=%ss, args=%s)', self.getType(), self.id, self._iid, self.period, argString)
 end
 

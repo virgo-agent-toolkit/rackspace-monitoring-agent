@@ -1,5 +1,7 @@
 local check = require('../check')
 local AgentClient = require('./client').AgentClient
+local logging = require('logging')
+local table = require('table')
 
 local VirgoAgentClient = AgentClient:extend()
 function VirgoAgentClient:initialize(options, connectionStream, types)
