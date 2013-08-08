@@ -447,6 +447,10 @@ exports['test_custom_plugin_cloudkick_agent_plugin_backward_compatibility_2'] = 
 )
 
 exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
+  if os.type() == 'win32' then
+    return test.skip('Unsupported Platform for custom plugins')
+  end
+
   local counter = 0
 
   dump_check('repeated_status_line.sh', "0777", function(err)
