@@ -90,6 +90,7 @@ local plugin_test = function(name, status, state, optional)
       local check = PluginCheck:new({id=name, period=period, details=details})
       asserts.ok(check._lastResult == nil, check._lastResult)
       asserts.ok(check:toString():find('args'))
+      p("check", check)
       check:run(function(result)
         asserts.ok(result ~= nil)
         p("p from dump_check asserts.equals", result:getStatus(), status, name)
@@ -368,7 +369,7 @@ exports['test_custom_plugin_cmd_arguments'] = plugin_test('plugin_custom_argumen
   end}
 )
 
---[[
+
 exports['test_custom_plugin_all_types'] = plugin_test('plugin_1.sh',
   'Everything is OK', 'available', {cb = function(test, asserts, metrics)
     metrics = metrics['none']
@@ -380,7 +381,7 @@ exports['test_custom_plugin_all_types'] = plugin_test('plugin_1.sh',
     test.done()
   end}
 )
---]]
+
 
 exports['test_custom_plugin_all_types_reschedueling'] = function(test, asserts)
   -- Verify that custom plugin checks correctly re-schedule itself
