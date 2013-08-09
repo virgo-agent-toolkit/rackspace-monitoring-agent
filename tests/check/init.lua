@@ -84,10 +84,13 @@ local plugin_test = function(name, status, state, optional)
     local period = optional.period or 30
     local details = optional.details or {}
     details.file = name
+    if details.timeout == nil then
+       details.timeout = 300 * 1000
+    end
 
     dump_check(name, perms, function(err, res)
       asserts.ok(err == nil, err)
-      local check = PluginCheck:new({id=name, period=period, details=details, timeout=300*1000})
+      local check = PluginCheck:new({id=name, period=period, details=details})
       asserts.ok(check._lastResult == nil, check._lastResult)
       asserts.ok(check:toString():find('args'))
       p("check", check)
