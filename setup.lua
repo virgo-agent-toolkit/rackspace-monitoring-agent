@@ -23,6 +23,8 @@ local timer = require('timer')
 local JSON = require('json')
 local table = require('table')
 
+local MachineIdentity = require('machineidentity').MachineIdentity
+
 local async = require('async')
 local ask = require('/util/prompt').ask
 local errors = require('errors')
@@ -71,10 +73,14 @@ function Setup:saveTest(callback)
   end)
 end
 
-function Setup:save(token, hostname, callback)
+function Setup:save(token, agent_id, callback)
   process.stdout:write(fmt('Writing token to %s: ', self._configFile))
+
   local data = fmt('monitoring_token %s\n', token)
-  data = data .. fmt('monitoring_id %s\n', hostname)
+
+  if agent_id then
+    data = data .. fmt('monitoring_id %s\n', agent_id)
+  end
 
   --[[
   1. We are using an environment variable because we thought adding special hidden
@@ -150,15 +156,9 @@ end
 
 function Setup:run(callback)
   local username, token, hostname
-  local agentToken, client
+  local agentToken, client, machineId, agentId, hostname
 
   hostname = os.hostname()
-  self:_out('')
-  self:_out('Setup Settings:')
-  self:_out(fmt('  Agent ID: %s', hostname))
-  self:_out(fmt('  Config File: %s', self._configFile))
-  self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
-  self:_out('')
 
   function createToken(callback)
     client.agent_tokens.create({ ['label'] = hostname }, function(err, token)
@@ -167,11 +167,40 @@ function Setup:run(callback)
         return
       end
       self._agent:setConfig({ ['monitoring_token'] = token })
-      self:save(token, hostname, callback)
+      self:save(token, agentId, callback)
     end)
   end
 
   async.waterfall({
+    function(callback)
+      local machid = MachineIdentity:new({})
+      machid:get(function(err, results)
+        if err then
+          return callback()
+        end
+        if results then
+          machineId = results.id
+          agentId = nil
+        else
+          agentId = os.hostname()
+        end
+        callback()
+      end)
+    end,
+    function(callback)
+      self:_out('')
+      self:_out('Setup Settings:')
+      if agentId then
+        self:_out(fmt('  Agent ID: %s', agentId))
+      end
+      if machineId then
+        self:_out(fmt('  Machine ID: %s', machineId))
+      end
+      self:_out(fmt('  Config File: %s', self._configFile))
+      self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
+      self:_out('')
+      callback()
+    end,
     function(callback)
       self:saveTest(callback)
     end,
@@ -225,7 +254,7 @@ function Setup:run(callback)
         self:_out(fmt('Found existing Agent Token for %s', hostname))
         self:_out('')
         self._agent:setConfig({ ['monitoring_token'] = agentToken })
-        self:save(agentToken, hostname, callback)
+        self:save(agentToken, agentId, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
          createToken(callback)
@@ -252,8 +281,8 @@ function Setup:run(callback)
           self:_out('')
           local validatedIndex = tonumber(index) -- validate response
           if validatedIndex >= 1 and validatedIndex <= #tokens.values then
-            self._agent:setConfig({ ['monitoring_token'] = tokens.values[validatedIndex].id })
-            self:save(tokens.values[validatedIndex].id, hostname, callback)
+            self._agent:setConfig({ ['token'] = tokens.values[validatedIndex].id })
+            self:save(tokens.values[validatedIndex].id, agentId, callback)
           elseif validatedIndex == (#tokens.values + 1) then
             createToken(callback)
           else
