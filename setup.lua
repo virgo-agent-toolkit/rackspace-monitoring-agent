@@ -40,6 +40,7 @@ function Setup:initialize(argv, configFile, agent)
   self._receivedPromotion = false
   self._username = argv.args.U
   self._apikey = argv.args.K
+  self._machineId = nil
   self._agent:on('promote', function()
     self._receivedPromotion = true
   end)
@@ -113,7 +114,7 @@ function Setup:_getOsStartString()
 end
 
 function Setup:_isLocalEntity(entity)
-  if entity.label == os.hostname() then
+  if entity.label == os.hostname() or entity.label == self._machineId then
     return true
   end
 
@@ -156,7 +157,7 @@ end
 
 function Setup:run(callback)
   local username, token, hostname
-  local agentToken, client, machineId, agentId, hostname
+  local agentToken, client, agentId, hostname
 
   hostname = os.hostname()
 
@@ -179,7 +180,7 @@ function Setup:run(callback)
           return callback()
         end
         if results and results.id then
-          machineId = results.id
+          self._machineId = results.id
           agentId = nil
         else
           agentId = os.hostname()
@@ -193,8 +194,8 @@ function Setup:run(callback)
       if agentId then
         self:_out(fmt('  Agent ID: %s', agentId))
       end
-      if machineId then
-        self:_out(fmt('  Machine ID: %s', machineId))
+      if self._machineId then
+        self:_out(fmt('  Machine ID: %s', self._machineId))
       end
       self:_out(fmt('  Config File: %s', self._configFile))
       self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
@@ -240,7 +241,7 @@ function Setup:run(callback)
     -- is there a token for the host
     function(tokens, callback)
       for i, v in ipairs(tokens.values) do
-        if v.label and v.label == hostname then
+        if v.label and v.label == hostname or v.label == self._machineId then
           agentToken = v.token
           break
         end
@@ -253,7 +254,7 @@ function Setup:run(callback)
         self:_out('')
         self:_out(fmt('Found existing Agent Token for %s', hostname))
         self:_out('')
-        self._agent:setConfig({ ['monitoring_token'] = agentToken })
+        self._agent:setConfig({ ['token'] = agentToken })
         self:save(agentToken, agentId, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
@@ -363,7 +364,7 @@ function Setup:run(callback)
           end
 
           for i, entity in ipairs(entities.values) do
-            if (entity.agent_id == hostname) then
+            if (entity.agent_id == hostname) or (entity.agent_id == self._machineId) then
               self:_out(fmt('Agent already associated Entity with id=%s and label=%s', entity.id, entity.label))
               callback(nil)
               return
