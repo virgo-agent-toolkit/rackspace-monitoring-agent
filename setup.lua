@@ -166,7 +166,7 @@ function Setup:run(callback)
         callback(err)
         return
       end
-      self._agent:setConfig({ ['monitoring_token'] = token })
+      self._agent:setConfig({ ['token'] = token, ['id'] = hostname })
       self:save(token, hostname, callback)
     end)
   end
@@ -224,7 +224,7 @@ function Setup:run(callback)
         self:_out('')
         self:_out(fmt('Found existing Agent Token for %s', hostname))
         self:_out('')
-        self._agent:setConfig({ ['monitoring_token'] = agentToken })
+        self._agent:setConfig({ ['token'] = agentToken, ['id'] = hostname })
         self:save(agentToken, hostname, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
@@ -252,7 +252,7 @@ function Setup:run(callback)
           self:_out('')
           local validatedIndex = tonumber(index) -- validate response
           if validatedIndex >= 1 and validatedIndex <= #tokens.values then
-            self._agent:setConfig({ ['monitoring_token'] = tokens.values[validatedIndex].id })
+            self._agent:setConfig({ ['token'] = tokens.values[validatedIndex].id, ['id'] = hostname })
             self:save(tokens.values[validatedIndex].id, hostname, callback)
           elseif validatedIndex == (#tokens.values + 1) then
             createToken(callback)
