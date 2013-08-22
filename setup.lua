@@ -279,14 +279,14 @@ function Setup:run(callback)
             self._agent:setConfig({ ['token'] = tokens.values[validatedIndex].id, ['id'] = agentId })
             self:save(tokens.values[validatedIndex].id, agentId, writeAgentId, callback)
           elseif validatedIndex == (#tokens.values + 1) then
-            createToken(callback)
+            createToken(agentId, callback)
           else
             callback(errors.UserResponseError:new('User input is not valid. Expected integer.'))
           end
         end)
         -- create a token and save it
       else
-        createToken(callback)
+        createToken(agentId, callback)
       end
     end,
     -- test connectivity
