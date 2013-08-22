@@ -235,7 +235,7 @@ function Setup:run(callback)
     -- is there a token for the host
     function(tokens, callback)
       for i, v in ipairs(tokens.values) do
-        if v.label == self._machineId then
+        if v.label == agentId then
           agentToken = v.token
           break
         end
@@ -358,7 +358,7 @@ function Setup:run(callback)
           end
 
           for i, entity in ipairs(entities.values) do
-            if self._machineId and (entity.agent_id == self._machineId) then
+            if (entity.agent_id == agentId) then
               self:_out(fmt('Agent already associated Entity with id=%s and label=%s', entity.id, entity.label))
               callback(nil)
               return
