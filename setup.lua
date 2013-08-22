@@ -166,7 +166,7 @@ function Setup:run(callback)
         return
       end
       self._agent:setConfig({ ['token'] = token, ['id'] = agentId })
-      self:save(token, hostname, writeAgentId, callback)
+      self:save(token, agentId, writeAgentId, callback)
     end)
   end
 
@@ -249,7 +249,7 @@ function Setup:run(callback)
         self:_out(fmt('Found existing Agent Token for %s', agentId))
         self:_out('')
         self._agent:setConfig({ ['token'] = agentToken, ['id'] = agentId })
-        self:save(agentToken, hostname, writeAgentId, callback)
+        self:save(agentToken, agentId, writeAgentId, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
          createToken(agentId, callback)
