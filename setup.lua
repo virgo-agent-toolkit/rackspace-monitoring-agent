@@ -178,7 +178,7 @@ function Setup:run(callback)
         if err then
           return callback()
         end
-        if results then
+        if results and results.id then
           machineId = results.id
           agentId = nil
         else

@@ -210,7 +210,7 @@ function Agent:_preConfig(callback)
           if err then
             return callback(err)
           end
-          if results then
+          if results and results.id then
             logging.infof('Using detected agent ID (id=%s)', results.id)
             self._config['id'] = results.id
             self._config['monitoring_id'] = results.id
