@@ -40,7 +40,6 @@ function Setup:initialize(argv, configFile, agent)
   self._receivedPromotion = false
   self._username = argv.args.U
   self._apikey = argv.args.K
-  self._machineId = nil
   self._agent:on('promote', function()
     self._receivedPromotion = true
   end)
@@ -74,12 +73,12 @@ function Setup:saveTest(callback)
   end)
 end
 
-function Setup:save(token, agent_id, callback)
+function Setup:save(token, agent_id, write_agent_id, callback)
   process.stdout:write(fmt('Writing token to %s: ', self._configFile))
 
   local data = fmt('monitoring_token %s\n', token)
 
-  if agent_id then
+  if write_agent_id then
     data = data .. fmt('monitoring_id %s\n', agent_id)
   end
 
@@ -113,8 +112,8 @@ function Setup:_getOsStartString()
   end
 end
 
-function Setup:_isLocalEntity(entity)
-  if entity.label == self._machineId then
+function Setup:_isLocalEntity(agentId, entity)
+  if entity.label == agentId then
     return true
   end
 
@@ -158,6 +157,7 @@ end
 function Setup:run(callback)
   local username, token
   local agentToken, client, agentId
+  local writeAgentId = false
 
   function createToken(label, callback)
     client.agent_tokens.create({ ['label'] = label }, function(err, token)
@@ -165,8 +165,8 @@ function Setup:run(callback)
         callback(err)
         return
       end
-      self._agent:setConfig({ ['token'] = token })
-      self:save(token, agentId, callback)
+      self._agent:setConfig({ ['token'] = token, ['id'] = agentId })
+      self:save(token, hostname, writeAgentId, callback)
     end)
   end
 
@@ -178,10 +178,11 @@ function Setup:run(callback)
           return callback()
         end
         if results.id then
-          self._machineId = results.id
-          agentId = nil
+          agentId = results.id
+          writeAgentId = false
         else
           agentId = os.hostname()
+          writeAgentId = true
         end
         callback()
       end)
@@ -189,12 +190,7 @@ function Setup:run(callback)
     function(callback)
       self:_out('')
       self:_out('Setup Settings:')
-      if agentId then
-        self:_out(fmt('  Agent ID: %s', agentId))
-      end
-      if self._machineId then
-        self:_out(fmt('  Machine ID: %s', self._machineId))
-      end
+      self:_out(fmt('  Agent ID: %s', agentId))
       self:_out(fmt('  Config File: %s', self._configFile))
       self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
       self:_out('')
@@ -252,8 +248,8 @@ function Setup:run(callback)
         self:_out('')
         self:_out(fmt('Found existing Agent Token for %s', agentId))
         self:_out('')
-        self._agent:setConfig({ ['token'] = agentToken })
-        self:save(agentToken, agentId, callback)
+        self._agent:setConfig({ ['token'] = agentToken, ['id'] = agentId })
+        self:save(agentToken, hostname, writeAgentId, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
          createToken(agentId, callback)
@@ -280,8 +276,8 @@ function Setup:run(callback)
           self:_out('')
           local validatedIndex = tonumber(index) -- validate response
           if validatedIndex >= 1 and validatedIndex <= #tokens.values then
-            self._agent:setConfig({ ['token'] = tokens.values[validatedIndex].id })
-            self:save(tokens.values[validatedIndex].id, agentId, callback)
+            self._agent:setConfig({ ['token'] = tokens.values[validatedIndex].id, ['id'] = agentId })
+            self:save(tokens.values[validatedIndex].id, agentId, writeAgentId, callback)
           elseif validatedIndex == (#tokens.values + 1) then
             createToken(callback)
           else
@@ -367,7 +363,7 @@ function Setup:run(callback)
               callback(nil)
               return
             end
-            if self:_isLocalEntity(entity) then
+            if self:_isLocalEntity(agentId, entity) then
               table.insert(localEntities, entity)
             end
           end
