@@ -167,7 +167,7 @@ function Setup:run(callback)
         callback(err)
         return
       end
-      self._agent:setConfig({ ['monitoring_token'] = token })
+      self._agent:setConfig({ ['token'] = token })
       self:save(token, agentId, callback)
     end)
   end
