@@ -2,7 +2,7 @@ Rackspace Monitoring Agent
 =====
 
 The monitoring agent is the first agent to use the infrastructure provided by
-[virgo](https://github.com/racker/virgo)
+[virgo-base](https://github.com/racker/virgo-base)
 
 
 Installing The Agent
@@ -80,17 +80,4 @@ Running tests
 Virgo supplies infrastructure for running tests.  Calling make test will launch Virgo with command line flags set to feed it the testing bundle and with the -e flag set to tests.
 
     make test
-
-State Machine Diagram
-=====================
-
-![FSM](https://raw.github.com/racker/virgo/master/contrib/fsm.png)
-
-The textual representation of the dot file is generated with Graph-Easy.
-
-https://github.com/ironcamel/Graph-Easy
-
-Command:
-
-    graph-easy --input=contrib/fsm.gv --output=contrib/fsm.txt --as_ascii
 
