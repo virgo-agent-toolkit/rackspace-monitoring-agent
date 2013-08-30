@@ -23,6 +23,8 @@ local timer = require('timer')
 local JSON = require('json')
 local table = require('table')
 
+local MachineIdentity = require('machineidentity').MachineIdentity
+
 local async = require('async')
 local ask = require('/util/prompt').ask
 local errors = require('errors')
@@ -71,10 +73,14 @@ function Setup:saveTest(callback)
   end)
 end
 
-function Setup:save(token, hostname, callback)
+function Setup:save(token, agent_id, write_agent_id, callback)
   process.stdout:write(fmt('Writing token to %s: ', self._configFile))
+
   local data = fmt('monitoring_token %s\n', token)
-  data = data .. fmt('monitoring_id %s\n', hostname)
+
+  if write_agent_id then
+    data = data .. fmt('monitoring_id %s\n', agent_id)
+  end
 
   --[[
   1. We are using an environment variable because we thought adding special hidden
@@ -106,8 +112,8 @@ function Setup:_getOsStartString()
   end
 end
 
-function Setup:_isLocalEntity(entity)
-  if entity.label == os.hostname() then
+function Setup:_isLocalEntity(agentId, entity)
+  if entity.label == agentId then
     return true
   end
 
@@ -149,29 +155,47 @@ function Setup:_buildLocalEntity(agentId)
 end
 
 function Setup:run(callback)
-  local username, token, hostname
-  local agentToken, client
+  local username, token
+  local agentToken, client, agentId
+  local writeAgentId = false
 
-  hostname = os.hostname()
-  self:_out('')
-  self:_out('Setup Settings:')
-  self:_out(fmt('  Agent ID: %s', hostname))
-  self:_out(fmt('  Config File: %s', self._configFile))
-  self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
-  self:_out('')
-
-  function createToken(callback)
-    client.agent_tokens.create({ ['label'] = hostname }, function(err, token)
+  function createToken(label, callback)
+    client.agent_tokens.create({ ['label'] = label }, function(err, token)
       if err then
         callback(err)
         return
       end
-      self._agent:setConfig({ ['token'] = token, ['id'] = hostname })
-      self:save(token, hostname, callback)
+      self._agent:setConfig({ ['token'] = token, ['id'] = agentId })
+      self:save(token, agentId, writeAgentId, callback)
     end)
   end
 
   async.waterfall({
+    function(callback)
+      local machid = MachineIdentity:new({})
+      machid:get(function(err, results)
+        if err then
+          return callback()
+        end
+        if results.id then
+          agentId = results.id
+          writeAgentId = false
+        else
+          agentId = os.hostname()
+          writeAgentId = true
+        end
+        callback()
+      end)
+    end,
+    function(callback)
+      self:_out('')
+      self:_out('Setup Settings:')
+      self:_out(fmt('  Agent ID: %s', agentId))
+      self:_out(fmt('  Config File: %s', self._configFile))
+      self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
+      self:_out('')
+      callback()
+    end,
     function(callback)
       self:saveTest(callback)
     end,
@@ -211,7 +235,7 @@ function Setup:run(callback)
     -- is there a token for the host
     function(tokens, callback)
       for i, v in ipairs(tokens.values) do
-        if v.label and v.label == hostname then
+        if v.label == agentId then
           agentToken = v.token
           break
         end
@@ -222,13 +246,13 @@ function Setup:run(callback)
       -- save the token if we found it
       if agentToken then
         self:_out('')
-        self:_out(fmt('Found existing Agent Token for %s', hostname))
+        self:_out(fmt('Found existing Agent Token for %s', agentId))
         self:_out('')
-        self._agent:setConfig({ ['token'] = agentToken, ['id'] = hostname })
-        self:save(agentToken, hostname, callback)
+        self._agent:setConfig({ ['token'] = agentToken, ['id'] = agentId })
+        self:save(agentToken, agentId, writeAgentId, callback)
         -- display a list of tokens
       elseif self._username and self._apikey then
-         createToken(callback)
+         createToken(agentId, callback)
       elseif #tokens.values > 0 then
         self:_out('')
         self:_out('The Monitoring Agent uses an authentication token to communicate with the Cloud Monitoring Service.')
@@ -252,17 +276,17 @@ function Setup:run(callback)
           self:_out('')
           local validatedIndex = tonumber(index) -- validate response
           if validatedIndex >= 1 and validatedIndex <= #tokens.values then
-            self._agent:setConfig({ ['token'] = tokens.values[validatedIndex].id, ['id'] = hostname })
-            self:save(tokens.values[validatedIndex].id, hostname, callback)
+            self._agent:setConfig({ ['token'] = tokens.values[validatedIndex].id, ['id'] = agentId })
+            self:save(tokens.values[validatedIndex].id, agentId, writeAgentId, callback)
           elseif validatedIndex == (#tokens.values + 1) then
-            createToken(callback)
+            createToken(agentId, callback)
           else
             callback(errors.UserResponseError:new('User input is not valid. Expected integer.'))
           end
         end)
         -- create a token and save it
       else
-        createToken(callback)
+        createToken(agentId, callback)
       end
     end,
     -- test connectivity
@@ -334,12 +358,12 @@ function Setup:run(callback)
           end
 
           for i, entity in ipairs(entities.values) do
-            if (entity.agent_id == hostname) then
+            if (entity.agent_id == agentId) then
               self:_out(fmt('Agent already associated Entity with id=%s and label=%s', entity.id, entity.label))
               callback(nil)
               return
             end
-            if self:_isLocalEntity(entity) then
+            if self:_isLocalEntity(agentId, entity) then
               table.insert(localEntities, entity)
             end
           end
@@ -366,7 +390,7 @@ function Setup:run(callback)
                   if resp:lower() ~= 'y' and resp:lower() ~= 'yes' then
                     return entitySelection()
                   end
-                  client.entities.create(self:_buildLocalEntity(hostname), function(err, entity)
+                  client.entities.create(self:_buildLocalEntity(agentId), function(err, entity)
                     if err then
                       callback(err)
                       return
@@ -379,7 +403,7 @@ function Setup:run(callback)
               elseif validatedIndex == #localEntities + 2 then
                 callback()
               elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
-                client.entities.update(localEntities[validatedIndex].id, { agent_id = hostname }, callback)
+                client.entities.update(localEntities[validatedIndex].id, { agent_id = agentId }, callback)
               else
                 self:_out('')
                 self:_out('Invalid selection')
