@@ -1,3 +1,8 @@
+## rackspace-monitoring-agent-0.1.9-0
+
+- Default MachineIdentity to on
+- --setup fixes for MachineIdentity
+
 ## rackspace-monitoring-agent-0.1.8-86
 
 - Retrieve xenstore ID (Ryan Phillips)
