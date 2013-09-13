@@ -1,21 +1,14 @@
-local CollectorBase = require('./base').CollectorBase
+local Base = require('./base').Base
 
 -------------------------------------------------------------------------------
 
-local StatsdCollector = CollectorBase:extend()
-function StatsdCollector:initialize(options)
-  CollectorBase.initialize(self, 'statsd')
-  self.options = options
-end
-
-function StatsdCollector:start()
-end
-
-function StatsdCollector:stop()
+local Collector = Base:extend()
+function Collector:initialize(options)
+  Base.initialize(self, 'statsd', options)
 end
 
 -------------------------------------------------------------------------------
 
 local exports = {}
-exports.StatsdCollector = StatsdCollector
+exports.Collector = Collector
 return exports

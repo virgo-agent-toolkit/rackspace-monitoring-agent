@@ -34,6 +34,10 @@
 ./client/upgrade.lua
 ./client/virgo_client.lua
 ./client/virgo_connection_stream.lua
+./collector/init.lua
+./collector/base.lua
+./collector/manager.lua
+./collector/statsd.lua
 ./code_cert.prod.lua
 ./crashreport.lua
 ./endpoint.lua
