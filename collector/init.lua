@@ -1,6 +1,6 @@
 local base = require('./base')
 local manager = require('./manager')
-local statsd = require('./statsd')
+local statsd = require('./sources/statsd')
 
 local exports = {}
 exports.base = base

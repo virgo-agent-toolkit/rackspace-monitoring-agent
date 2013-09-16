@@ -34,6 +34,7 @@ local Manager = Emitter:extend()
 function Manager:initialize(options)
   self.collectors = {}
   self.metrics = {}
+  self.sinks = {}
 
   self.options = options or {}
   self.options.interval = self.options.interval or DEFAULT_INTERVAL
@@ -74,6 +75,10 @@ function Manager:addCollector(collector)
   self._log(logging.DEBUG, fmt('Adding Collector %s', collector:getName()))
   table.insert(self.collectors, collector)
   collector:on('metrics', utils.bind(Manager._addMetrics, self))
+end
+
+function Manager:addSink(sink)
+  table.insert(self.sinks, sink)
 end
 
 function Manager:pause()

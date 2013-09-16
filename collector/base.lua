@@ -32,12 +32,25 @@ function Base:getName()
   return self.name
 end
 
-function Base:push(metrics)
+function Base.meta.__tostring(self)
+  return self.name
+end
+-------------------------------------------------------------------------------
+
+local SourceBase = Base:extend()
+function SourceBase:initialize(name, options)
+  Base.initialize(self, name, options)
+end
+
+function SourceBase:push(metrics)
   self:emit('metrics', metrics, self)
 end
 
-function Base.meta.__tostring(self)
-  return self.name
+-------------------------------------------------------------------------------
+
+local SinkBase = Base:extend()
+function SinkBase:initialize(name, options)
+  Base.initialize(self, name, options)
 end
 
 -------------------------------------------------------------------------------
@@ -61,5 +74,7 @@ end
 
 local exports = {}
 exports.Base = Base
+exports.SourceBase = SourceBase
+exports.SinkBase = SinkBase
 exports.Metrics = Metrics
 return exports
