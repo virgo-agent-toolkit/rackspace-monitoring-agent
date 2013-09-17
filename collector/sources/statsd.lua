@@ -13,21 +13,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local Base = require('../base').Base
-local statsd = require('/lua_modules/statsd')
+local SourceBase = require('../base').SourceBase
+
+local fmt = require('string').format
+
 local logging = require('logging')
 local loggingUtil = require('/util/logging')
-local fmt = require('string').format
+local statsd = require('/lua_modules/statsd')
+local utils = require('utils')
 
 -------------------------------------------------------------------------------
 
-local Collector = Base:extend()
+local Collector = SourceBase:extend()
 function Collector:initialize(options)
-  Base.initialize(self, 'statsd', options)
+  SourceBase.initialize(self, 'statsd', options)
   self._log = loggingUtil.makeLogger('collector.statsd')
   self._log(logging.INFO, fmt('StatsD Collector'))
   self._log(logging.INFO, fmt('Version: %s', statsd.version()))
-  self._statsd = statsd.Statsd:new()
+  self._statsd = statsd.Statsd:new(options)
+	self._statsd:bind()
+	self._statsd:on('metrics', function(metrics)
+		self:emit('metrics', metrics, self)
+	end)
+	self._log(logging.INFO, fmt('Port: %s', self._statsd:getOptions().port))
 end
 
 -------------------------------------------------------------------------------

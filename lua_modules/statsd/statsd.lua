@@ -91,7 +91,11 @@ function Statsd:initialize(options)
   end
 end
 
-function Statsd:bind(port)
+function Statsd:getOptions()
+	return self._options
+end
+
+function Statsd:bind()
   if self._bound then
     return
   end
