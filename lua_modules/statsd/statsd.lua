@@ -316,7 +316,7 @@ function Statsd:run()
 end
 
 function version()
-  return '0.1.0-dev'
+  return '0.1.0'
 end
 
 local exports = {}
