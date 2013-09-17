@@ -1,0 +1,7 @@
+language: erlang
+
+script:
+  - make test
+
+notifications:
+  email: tomaz+travisci@tomaz.me

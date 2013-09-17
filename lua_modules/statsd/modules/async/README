@@ -1,0 +1,6 @@
+
+Lua Async
+  A port of Coalan McMahon's async library (https://github.com/caolan/async)
+
+Status:
+  A couple TODOs are left

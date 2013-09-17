@@ -67,6 +67,8 @@
 ./lua_modules/options/modules/init.lua
 ./lua_modules/options/package.lua
 ./lua_modules/options/test.lua
+./lua_modules/statsd/misc.lua
+./lua_modules/statsd/statsd.lua
 ./lua_modules/rackspace-monitoring/example.lua
 ./lua_modules/rackspace-monitoring/init.lua
 ./lua_modules/rackspace-monitoring/lib/client.lua
