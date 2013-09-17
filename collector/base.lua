@@ -53,6 +53,9 @@ function SinkBase:initialize(name, options)
   Base.initialize(self, name, options)
 end
 
+function SinkBase:push(metrics)
+end
+
 -------------------------------------------------------------------------------
 
 local Metrics = Object:extend()
