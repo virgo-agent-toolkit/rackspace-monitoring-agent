@@ -38,7 +38,9 @@
 ./collector/base.lua
 ./collector/manager.lua
 ./collector/sources/statsd.lua
+./collector/sources/init.lua
 ./collector/sinks/rackspace_monitoring.lua
+./collector/sinks/init.lua
 ./code_cert.prod.lua
 ./crashreport.lua
 ./endpoint.lua

@@ -13,18 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local SinkBase = require('../base').SinkBase
-local logging = require('logging')
-
-local RackspaceMonitoringSink = SinkBase:extend()
-function RackspaceMonitoringSink:initialize(stream, options)
-  SinkBase.initialize(self, 'rackspace_monitoring', stream, options)
-  self._log(logging.INFO, 'created')
-end
-
-function RackspaceMonitoringSink:push(metrics)
-end
-
 local exports = {}
-exports.Sink = RackspaceMonitoringSink
+exports.rackspace_monitoring = require('./rackspace_monitoring')
 return exports

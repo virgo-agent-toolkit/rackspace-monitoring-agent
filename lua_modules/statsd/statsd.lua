@@ -92,7 +92,7 @@ function Statsd:initialize(options)
 end
 
 function Statsd:getOptions()
-	return self._options
+  return self._options
 end
 
 function Statsd:bind()

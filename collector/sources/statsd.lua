@@ -24,22 +24,24 @@ local utils = require('utils')
 
 -------------------------------------------------------------------------------
 
-local Collector = SourceBase:extend()
-function Collector:initialize(options)
+local StatsdSource = SourceBase:extend()
+function StatsdSource:initialize(options)
   SourceBase.initialize(self, 'statsd', options)
-  self._log = loggingUtil.makeLogger('collector.statsd')
-  self._log(logging.INFO, fmt('StatsD Collector'))
+
+  self._log(logging.INFO, fmt('StatsD Source'))
   self._log(logging.INFO, fmt('Version: %s', statsd.version()))
+
   self._statsd = statsd.Statsd:new(options)
 	self._statsd:bind()
 	self._statsd:on('metrics', function(metrics)
 		self:emit('metrics', metrics, self)
 	end)
+
 	self._log(logging.INFO, fmt('Port: %s', self._statsd:getOptions().port))
 end
 
 -------------------------------------------------------------------------------
 
 local exports = {}
-exports.Collector = Collector
+exports.Source = StatsdSource
 return exports

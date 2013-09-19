@@ -26,22 +26,20 @@ local vutils = require('virgo_utils')
 
 local Metrics = require('./base').Metrics
 
-local DEFAULT_INTERVAL = 1000
+local DEFAULT_INTERVAL = 10 * 1000
 
 -------------------------------------------------------------------------------
 
 local Manager = Emitter:extend()
 function Manager:initialize(options)
-  self.collectors = {}
-  self.metrics = {}
+  self.sources = {}
   self.sinks = {}
+  self.metrics = {}
 
   self.options = options or {}
   self.options.interval = self.options.interval or DEFAULT_INTERVAL
 
-  self._log = loggingUtil.makeLogger('collector')
-
-  self:_startIntervalTimer()
+  self._log = loggingUtil.makeLogger('Collector.manager')
 end
 
 function Manager:_startIntervalTimer()
@@ -66,28 +64,29 @@ function Manager:_flush()
   self.metrics = {}
 end
 
-function Manager:_addMetrics(metrics, collector)
+function Manager:_addMetrics(metrics, source)
   table.insert(self.metrics,
-               Metrics:new(collector, vutils.gmtNow(), metrics))
+               Metrics:new(source, vutils.gmtNow(), metrics))
 end
 
-function Manager:addCollector(collector)
-  self._log(logging.DEBUG, fmt('Adding Collector %s', collector:getName()))
-  table.insert(self.collectors, collector)
-  collector:on('metrics', utils.bind(Manager._addMetrics, self))
+function Manager:addSource(source)
+  self._log(logging.INFO, fmt('adding source %s', source:getName()))
+  table.insert(self.sources, source)
+  source:on('metrics', utils.bind(Manager._addMetrics, self))
 end
 
 function Manager:addSink(sink)
+  self._log(logging.INFO, fmt('adding sink %s', sink:getName()))
   table.insert(self.sinks, sink)
 end
 
 function Manager:pause()
-  self._log(logging.DEBUG, 'paused')
+  self._log(logging.INFO, 'paused')
   self:_stopIntervalTimer()
 end
 
 function Manager:resume()
-  self._log(logging.DEBUG, 'resumed')
+  self._log(logging.INFO, 'resumed')
   self:_startIntervalTimer()
 end
 

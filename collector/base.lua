@@ -16,6 +16,9 @@ limitations under the License.
 local Emitter = require('core').Emitter
 local Object = require('core').Object
 
+local logging = require('logging')
+local loggingUtil = require('/util/logging')
+
 local JSON = require('json')
 
 local fmt = require('string').format
@@ -23,8 +26,9 @@ local fmt = require('string').format
 -------------------------------------------------------------------------------
 
 local Base = Emitter:extend()
-function Base:initialize(name, options)
+function Base:initialize(name, stream, options)
   self.name = name or '<UNDEFINED>'
+  self.stream = stream
   self.options = options or {}
 end
 
@@ -40,6 +44,8 @@ end
 local SourceBase = Base:extend()
 function SourceBase:initialize(name, options)
   Base.initialize(self, name, options)
+  self._log = loggingUtil.makeLogger('Source.' .. name)
+  self._log(logging.INFO, 'initialized')
 end
 
 function SourceBase:push(metrics)
@@ -49,8 +55,10 @@ end
 -------------------------------------------------------------------------------
 
 local SinkBase = Base:extend()
-function SinkBase:initialize(name, options)
-  Base.initialize(self, name, options)
+function SinkBase:initialize(name, stream, options)
+  Base.initialize(self, name, stream, options)
+  self._log = loggingUtil.makeLogger('Sink.' .. name)
+  self._log(logging.INFO, 'initialized')
 end
 
 function SinkBase:push(metrics)
