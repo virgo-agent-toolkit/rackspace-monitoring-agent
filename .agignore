@@ -1,0 +1,11 @@
+base/tools/gyp/
+base/deps/luvit/tools/gyp/
+base/deps/luvit/deps/openssl/
+base/deps/sigar/bindings/java/
+base/deps/sigar/bindings/python/
+base/deps/sigar/bindings/perl/
+base/deps/sigar/bindings/ruby/
+base/deps/sigar/bindings/erl/
+base/deps/sigar/bindings/dotnet/
+base/deps/luvit/deps/
+base/deps/breakpad/
