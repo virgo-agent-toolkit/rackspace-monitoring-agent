@@ -39,6 +39,12 @@ end
 function Base.meta.__tostring(self)
   return self.name
 end
+
+function Base:resume()
+end
+
+function Base:pause()
+end
 -------------------------------------------------------------------------------
 
 local SourceBase = Base:extend()

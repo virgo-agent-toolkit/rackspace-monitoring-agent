@@ -65,6 +65,7 @@ function Manager:_flush()
 end
 
 function Manager:_addMetrics(metrics, source)
+  self._log(logging.DEBUG, fmt('got metric from %s', source:getName()))
   table.insert(self.metrics,
                Metrics:new(source, vutils.gmtNow(), metrics))
 end
@@ -73,6 +74,7 @@ function Manager:addSource(source)
   self._log(logging.INFO, fmt('adding source %s', source:getName()))
   table.insert(self.sources, source)
   source:on('metrics', utils.bind(Manager._addMetrics, self))
+  source:resume()
 end
 
 function Manager:addSink(sink)
