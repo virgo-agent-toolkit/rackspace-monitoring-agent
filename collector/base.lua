@@ -42,8 +42,8 @@ end
 -------------------------------------------------------------------------------
 
 local SourceBase = Base:extend()
-function SourceBase:initialize(name, options)
-  Base.initialize(self, name, options)
+function SourceBase:initialize(name, stream, options)
+  Base.initialize(self, name, stream, options)
   self._log = loggingUtil.makeLogger('Source.' .. name)
   self._log(logging.INFO, 'initialized')
 end

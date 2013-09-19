@@ -27,6 +27,7 @@ local misc = require('./misc')
 ----------------------------
 
 local PREFIX_STATS = 'statsd.'
+local DEFAULT_HOST = '127.0.0.1'
 local DEFAULT_PORT = 8125
 local DEFAULT_INTERVAL = 10000
 local DEFAULT_THRESHOLD = 90
@@ -83,6 +84,9 @@ function Statsd:initialize(options)
   if not self._options.port then
     self._options.port = DEFAULT_PORT
   end
+  if not self._options.host then
+    self._options.host = DEFAULT_HOST
+  end
   if not self._options.metrics_interval then
     self._options.metrics_interval = DEFAULT_INTERVAL
   end
@@ -100,7 +104,7 @@ function Statsd:bind()
     return
   end
   self._bound = true
-  self._sock:bind(self._options.port)
+  self._sock:bind(self._options.port, self._options.host)
 end
 
 function Statsd:close()

@@ -25,19 +25,29 @@ local utils = require('utils')
 -------------------------------------------------------------------------------
 
 local StatsdSource = SourceBase:extend()
-function StatsdSource:initialize(options)
-  SourceBase.initialize(self, 'statsd', options)
-
-  self._log(logging.INFO, fmt('StatsD Source'))
+function StatsdSource:initialize(stream, options)
+  SourceBase.initialize(self, 'statsd', stream, options)
+  
+  self._log(logging.INFO, fmt('StatsD Collector'))
   self._log(logging.INFO, fmt('Version: %s', statsd.version()))
 
-  self._statsd = statsd.Statsd:new(options)
-	self._statsd:bind()
-	self._statsd:on('metrics', function(metrics)
-		self:emit('metrics', metrics, self)
-	end)
+  local statsd_options = {
+    host = options['monitoring_collectors_statsd_host'],
+    port = options['monitoring_collectors_statsd_port']
+  }
 
-	self._log(logging.INFO, fmt('Port: %s', self._statsd:getOptions().port))
+  local function onMetrics(metrics)
+    self:emit('metrics', metrics, self)
+  end
+
+  self.statsd = statsd.Statsd:new(statsd_options)
+  self.statsd:on('metrics', onMetrics)
+  self.statsd:bind()
+
+  self._log(logging.INFO, fmt('Listening on: %s:%s',
+            self.statsd:getOptions().host,
+            self.statsd:getOptions().port))
+  
 end
 
 -------------------------------------------------------------------------------

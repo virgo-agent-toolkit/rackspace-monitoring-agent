@@ -24,12 +24,12 @@ local misc = require('/util/misc')
 
 local collector = require('/collector')
 
-local DEFAULT_COLLECTOR_SINKS = 'rackspace_monitoring' 
+local DEFAULT_COLLECTOR_SINKS = 'rackspace_monitoring'
 
 local VirgoConnectionStream = ConnectionStream:extend()
 function VirgoConnectionStream:initialize(id, token, guid, upgradeEnabled, options, types)
   ConnectionStream.initialize(self, id, token, guid, upgradeEnabled, options, types)
-  self._options = options
+  self._options = misc.merge(options, virgo.config)
   self._log = loggingUtil.makeLogger('Stream.virgo')
   self._collector_manager = collector.manager.Manager:new(self._options)
   self:_createCollectors()
@@ -59,22 +59,29 @@ function VirgoConnectionStream:_createConnection(options)
 end
 
 function VirgoConnectionStream:_createCollectors()
+  -- parse collectors
   local collectors_enabled = virgo.config['collectors_enabled']
   if not collectors_enabled then
     return
   end
+
+  -- parse sinks
   local collectors_sinks = virgo.config['collectors_sinks']
   if not collectors_sinks then
     collectors_sinks = DEFAULT_COLLECTOR_SINKS
   end
+
   self._log(logging.INFO, fmt('collectors enabled: %s', collectors_enabled))
   self._log(logging.INFO, fmt('sinks enabled: %s', collectors_sinks))
+
+  -- Create sinks
   local sinks = misc.split(collectors_sinks)
   for _, name in pairs(sinks) do
     local sink = collector.createSink(self, name, self._options)
     self._collector_manager:addSink(sink)
   end
 
+  -- Create sources
   local collectors = misc.split(collectors_enabled)
   for _, name in pairs(collectors) do
     local source = collector.createSource(self, name, self._options)
