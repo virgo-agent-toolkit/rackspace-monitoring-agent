@@ -87,6 +87,8 @@ function VirgoConnectionStream:_createCollectors()
     local source = collector.createSource(self, name, self._options)
     self._collector_manager:addSource(source)
   end
+
+  self._collector_manager:resume()
 end
 
 function VirgoConnectionStream:_sendMetrics(check, checkResult)

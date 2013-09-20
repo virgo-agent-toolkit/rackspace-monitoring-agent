@@ -68,6 +68,7 @@ function SinkBase:initialize(name, stream, options)
 end
 
 function SinkBase:push(metrics)
+  -- noop
 end
 
 -------------------------------------------------------------------------------
@@ -79,12 +80,20 @@ function Metrics:initialize(collector, ts, metrics)
   self.metrics = metrics
 end
 
+function Metrics:getMetricCount()
+  return #self.metrics
+end
+
 function Metrics.meta.__tostring(self)
   local t = {}
   t.collector = self.collector:getName()
   t.timestamp = tostring(self.timestamp)
   t.metrics = JSON.stringify(self.metrics)
   return JSON.stringify(t)
+end
+
+function Metrics:serialize()
+  return tostring(self)
 end
 
 -------------------------------------------------------------------------------

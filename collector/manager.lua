@@ -27,6 +27,7 @@ local vutils = require('virgo_utils')
 local Metrics = require('./base').Metrics
 
 local DEFAULT_INTERVAL = 10 * 1000
+local MAX_LENGTH = 1022 * 1024 * 1024
 
 -------------------------------------------------------------------------------
 
@@ -57,17 +58,35 @@ function Manager:_stopIntervalTimer()
 end
 
 function Manager:_flush()
-  self._log(logging.DEBUG, fmt('(metrics_count=%i)', #self.metrics))
-  for _, v in ipairs(self.metrics) do
-    self._log(logging.DEBUG, tostring(v))
+  if #self.metrics == 0 then
+    return
   end
-  self.metrics = {}
+
+  -- iterate backwards so we can remove the metrics safely
+  local to_flush = {}
+  local size = 0
+  for i = table.getn(self.metrics), 1, -1 do
+    local serialized_len = #self.metrics[i]:serialize()
+    if serialized_len >= MAX_LENGTH then
+      self._log(logging.DEBUG, fmt('Ignoring metric due to invalid size'))
+      table.remove(self.metrics, i)
+    else
+      size = size + serialized_len
+      if size < MAX_LENGTH then
+        table.insert(to_flush, self.metrics[i])
+        table.remove(self.metrics, i)
+      end
+    end
+  end
+
+  for i = 1, #self.sinks do
+    self.sinks[i]:push(to_flush)
+  end
 end
 
 function Manager:_addMetrics(metrics, source)
-  self._log(logging.DEBUG, fmt('got metric from %s', source:getName()))
-  table.insert(self.metrics,
-               Metrics:new(source, vutils.gmtNow(), metrics))
+  self._log(logging.DEBUG, fmt('_addMetrics from %s', source:getName()))
+  table.insert(self.metrics, Metrics:new(source, vutils.gmtNow(), metrics))
 end
 
 function Manager:addSource(source)
