@@ -31,14 +31,13 @@ function StatsdSource:initialize(stream, options)
   self._log(logging.INFO, fmt('StatsD Source'))
   self._log(logging.INFO, fmt('Version: %s', statsd.version()))
 
-  local statsd_options = {
-    host = options['monitoring_collectors_statsd_host'],
-    port = options['monitoring_collectors_statsd_port']
-  }
-
   local function onMetrics(metrics)
     self:emit('metrics', metrics, self)
   end
+
+  local statsd_options = {}
+  statsd_options.host = options['monitoring_collectors_statsd_host']
+  statsd_options.port = options['monitoring_collectors_statsd_port']
 
   self.statsd = statsd.Statsd:new(statsd_options)
   self.statsd:on('metrics', onMetrics)
@@ -55,6 +54,11 @@ function StatsdSource:resume()
 end
 
 function StatsdSource:pause()
+end
+
+function StatsdSource:translateMetrics(metrics, callback)
+  self._log(logging.DEBUG, fmt('translating metrics'))
+  callback(nil, metrics)
 end
 
 -------------------------------------------------------------------------------

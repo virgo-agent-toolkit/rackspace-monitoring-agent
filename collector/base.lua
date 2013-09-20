@@ -58,6 +58,10 @@ function SourceBase:push(metrics)
   self:emit('metrics', metrics, self)
 end
 
+function SourceBase:translateMetrics(metrics, callback)
+  callback(nil, metrics) -- default
+end
+
 -------------------------------------------------------------------------------
 
 local SinkBase = Base:extend()

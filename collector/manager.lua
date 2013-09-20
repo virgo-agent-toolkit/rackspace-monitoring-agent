@@ -85,8 +85,14 @@ function Manager:_flush()
 end
 
 function Manager:_addMetrics(metrics, source)
-  self._log(logging.DEBUG, fmt('_addMetrics from %s', source:getName()))
-  table.insert(self.metrics, Metrics:new(source, vutils.gmtNow(), metrics))
+  self._log(logging.DEBUG, fmt('adding metrics from %s', source:getName()))
+  source:translateMetrics(metrics, function(err, metrics)
+    if err then
+      self._log(logging.ERROR, fmt('error is metric translation: %s', tostring(err)))
+      return
+    end
+    table.insert(self.metrics, Metrics:new(source, vutils.gmtNow(), metrics))
+  end)
 end
 
 function Manager:addSource(source)
