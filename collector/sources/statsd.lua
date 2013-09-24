@@ -17,10 +17,14 @@ local SourceBase = require('../base').SourceBase
 
 local fmt = require('string').format
 
+local JSON = require('json')
+
 local logging = require('logging')
 local loggingUtil = require('/util/logging')
 local statsd = require('/lua_modules/statsd')
 local utils = require('utils')
+
+local CheckResult = require('/check/base').CheckResult
 
 -------------------------------------------------------------------------------
 
@@ -57,8 +61,44 @@ function StatsdSource:pause()
 end
 
 function StatsdSource:translateMetrics(metrics, callback)
-  self._log(logging.DEBUG, fmt('translating metrics'))
-  callback(nil, metrics)
+  local PREFIX = 'rackspace.monitoring.global.statsd.'
+  local cr = CheckResult:new()
+  if metrics.counter_rates then
+    for k, v in pairs(metrics.counter_rates) do
+      cr:addMetric(PREFIX .. 'counter_rates.' .. k, nil, 'double', v)
+    end
+  end
+  if metrics.counters then
+    for k, v in pairs(metrics.counters) do
+      cr:addMetric(PREFIX .. 'counters.' .. k, nil, 'int64', JSON.stringify(v))
+    end
+  end
+  if metrics.guages then
+    for k, v in pairs(metrics.guages) do
+      cr:addMetric(PREFIX .. 'guages.' .. k, nil, 'gauge', v)
+    end
+  end
+  if metrics.timer_counters then
+    for k, v in pairs(metrics.timer_counters) do
+      cr:addMetric(PREFIX .. 'timer_counters.' .. k, nil, 'int64', v)
+    end
+  end
+  if metrics.timer_data then
+    for k, v in pairs(metrics.timer_data) do
+      cr:addMetric(PREFIX .. 'timer_data.' .. k, nil, 'int64', v)
+    end
+  end
+  if metrics.timers then
+    for k, v in pairs(metrics.timers) do
+      cr:addMetric(PREFIX .. 'timers.' .. k, nil, 'int64', v)
+    end
+  end
+  if metrics.sets then
+    for k, v in pairs(metrics.sets) do
+      cr:addMetric(PREFIX .. 'sets.' .. k, nil, 'int64', JSON.stringify(v))
+    end
+  end
+  callback(nil, cr)
 end
 
 -------------------------------------------------------------------------------
