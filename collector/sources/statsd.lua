@@ -61,8 +61,13 @@ function StatsdSource:pause()
 end
 
 function StatsdSource:translateMetrics(metrics, callback)
-  local PREFIX = 'rackspace.monitoring.global.statsd.'
   local cr = CheckResult:new()
+  local client = self.stream:getClient()
+  local entity_id = 'unknown'
+  if client then
+    entity_id = client:getEntityId()
+  end
+  local PREFIX = fmt('rackspace.monitoring.entities.%s.%s.', entity_id, self.name)
   if metrics.counter_rates then
     for k, v in pairs(metrics.counter_rates) do
       cr:addMetric(PREFIX .. 'counter_rates.' .. k, nil, 'double', v)
@@ -98,6 +103,7 @@ function StatsdSource:translateMetrics(metrics, callback)
       cr:addMetric(PREFIX .. 'sets.' .. k, nil, 'int64', JSON.stringify(v))
     end
   end
+  p(JSON.stringify(cr:serialize()))
   callback(nil, cr)
 end
 

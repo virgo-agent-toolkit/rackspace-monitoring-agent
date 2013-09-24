@@ -159,6 +159,10 @@ function AgentClient:connect()
   end)
 end
 
+function AgentClient:getEntityId()
+  return self._entity_id
+end
+
 function AgentClient:getLatency()
   return self._latency
 end
