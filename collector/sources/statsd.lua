@@ -103,7 +103,6 @@ function StatsdSource:translateMetrics(metrics, callback)
       cr:addMetric(PREFIX .. 'sets.' .. k, nil, 'int64', JSON.stringify(v))
     end
   end
-  p(JSON.stringify(cr:serialize()))
   callback(nil, cr)
 end
 
