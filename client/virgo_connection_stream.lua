@@ -99,4 +99,15 @@ function VirgoConnectionStream:_sendMetrics(check, checkResult)
   end
 end
 
+function VirgoConnectionStream:_sendRawMetrics(rawMetrics)
+  local client = self:getClient()
+  if client then
+    for _, v in pairs(rawMetrics) do
+      self._log(logging.DEBUG, fmt('sending raw metrics: %s', tostring(v)))
+    end
+    -- TODO Uncomment this line for pushing of raw metrics
+    -- client.protocol:request('metrics.post', rawMetrics)
+  end
+end
+
 return VirgoConnectionStream

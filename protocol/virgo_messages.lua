@@ -64,6 +64,18 @@ function MetricsRequest:serialize(msgId)
   return msg.Request.serialize(self, msgId)
 end
 
+--[[ Raw Metrics Request ]]--
+local RawMetricsRequest = msg.Request:extend()
+function RawMetricsRequest:initialize(metrics)
+  msg.Request.initialize(self)
+  self.metrics = metrics
+  self.method = 'metrics.post'
+end
+
+function RawMetricsRequest:serialize(msgId)
+  return msg.Request.serialize(self, msgId)
+end
+
 --[[ ScheduleChangeAck ]]--
 local ScheduleChangeAck = msg.Response:extend()
 function ScheduleChangeAck:initialize(replyTo)
@@ -114,6 +126,7 @@ exports.Manifest = Manifest
 exports.BinaryUpgradeRequest = BinaryUpgrade
 exports.BundleUpgradeRequest = BundleUpgrade
 exports.MetricsRequest = MetricsRequest
+exports.RawMetricsRequest = RawMetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse
 exports.ScheduleChangeAck = ScheduleChangeAck
 exports.HostInfoResponse = HostInfoResponse

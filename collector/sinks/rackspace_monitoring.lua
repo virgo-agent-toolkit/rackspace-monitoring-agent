@@ -23,10 +23,7 @@ function RackspaceMonitoringSink:initialize(stream, options)
 end
 
 function RackspaceMonitoringSink:push(metrics)
-  for _, v in pairs(metrics) do
-    self._log(logging.DEBUG, tostring(v))
-  end
-  -- self.stream:_sendRawMetrics()
+  self.stream:_sendRawMetrics(metrics)
 end
 
 local exports = {}
