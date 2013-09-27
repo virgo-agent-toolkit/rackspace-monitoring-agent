@@ -23,6 +23,11 @@ local splitAddress = require('/util/misc').splitAddress
 local writePid = require('/util/misc').writePid
 local lastIndexOf = require('/util/misc').lastIndexOf
 local compareVersions = require('/util/misc').compareVersions
+local os = require('os')
+local logging = require('logging')
+local native = require('uv_native')
+local constants = require('constants')
+local timer = require('timer')
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
@@ -88,6 +93,29 @@ exports['test_versions'] = function(test, asserts)
   asserts.equals(compareVersions('9.0.0-2', '9.0.0-1'), 1)
   asserts.equals(compareVersions('0.1.7-164', '0.1.7-53'), 1)
   test.done()
+end
+
+exports['test_virgo_signals'] = function(test, asserts)
+  if os.type() == "win32" then
+    test.skip("Signal Not Supported on Win32")
+  else
+    local orig_level = logging.get_level()
+    logging.set_level(logging.INFO)
+    native.kill(native.getpid(), constants.SIGUSR2)
+
+    local i = 0
+    timer.setInterval(1, function()
+      i = i + 1
+      if i == 5 then
+        local new_level = logging.get_level()
+        logging.set_level(orig_level)
+
+        asserts.equal(new_level, logging.EVERYTHING, "Logging should be set to EVERYTHING")
+      end
+    end)
+
+    test.done()
+  end
 end
 
 return exports

@@ -337,7 +337,7 @@ if os.type() == 'win32' then
   end
 else
   exports['test_custom_plugin_file_not_executable'] = plugin_test('not_executable.sh',
-    'Plugin exited with non-zero status code (code=127)', 'unavailable', {perms='0444'})
+    'Plugin exited with non-zero status code (code=-1)', 'unavailable', {perms='0444'})
 end
 
 exports['test_custom_plugin_non_zero_exit_code_with_status'] = plugin_test('non_zero_with_status.sh',
@@ -349,7 +349,12 @@ exports['test_custom_plugin_file_doesnt_exist'] = function(test, asserts)
   asserts.ok(check._lastResult == nil)
   check:run(function(result)
     asserts.ok(result ~= nil)
-    asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=127)')
+    -- This may be a libuv bug!
+    if os.type() == "win32" then
+      asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=127)')
+    else
+      asserts.equals(result:getStatus(), 'Plugin exited with non-zero status code (code=-1)')
+    end
     asserts.equals(result:getState(), 'unavailable')
     test.done()
   end)
