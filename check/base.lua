@@ -36,6 +36,7 @@ local tableContains = require('../util/misc').tableContains
 local toString = require('../util/misc').toString
 local lastIndexOf = require('../util/misc').lastIndexOf
 local split = require('../util/misc').split
+local trim = require('../util/misc').trim
 local randstr = require('../util/misc').randstr
 local asserts = require('bourbon').asserts
 
@@ -210,6 +211,9 @@ function ChildCheck:initialize(params)
     params.details = {}
   end
   self._params = params
+  self._lines = {}
+  self._lines.stdout = {}
+  self._lines.stderr = {}
 end
 
 --[[
@@ -247,6 +251,14 @@ function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension,
     self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s, unit=%s)',
                tostring(metricDimension), metricName, metricType, metricValue, tostring(metricUnit)))
   end
+end
+
+function ChildCheck:_addStdoutLine(line)
+  table.insert(self._lines.stdout, line)
+end
+
+function ChildCheck:_addStderrLine(line)
+  table.insert(self._lines.stderr, line)
 end
 
 --[[
@@ -367,11 +379,13 @@ end
 
 function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local checkResult = CheckResult:new(self, {})
-  local stderrBuffer = ''
   local killed = false
-  local lineEmitter = LineEmitter:new()
+  local stdoutLineEmitter = LineEmitter:new()
+  local stderrLineEmitter = LineEmitter:new()
   -- Context for _handleLine to store stuff between output lines
   local runCtx = {}
+
+  self._log(logging.DEBUG, fmt("%s: starting process", exePath))
 
   local child = childprocess.spawn(exePath,
                                    exeArgs,
@@ -380,7 +394,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local pluginTimeout = timer.setTimeout(self._timeout, function()
     local timeoutSeconds = (self._timeout / 1000)
 
-    self._log(logging.DEBUG, fmt("Plugin didn't finish in %s seconds, killing it...", timeoutSeconds))
+    self._log(logging.DEBUG, fmt("%s: Plugin didn't finish in %s seconds, killing it...", exePath, timeoutSeconds))
     child:kill(9)
     killed = true
 
@@ -389,16 +403,21 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     callback(checkResult)
   end)
 
-  lineEmitter:on('data', function(line)
+  stdoutLineEmitter:on('data', function(line)
+    self:_addStdoutLine(line)
     self:_handleLine(runCtx, checkResult, line)
   end)
 
+  stderrLineEmitter:on('data', function(line)
+    self:_addStderrLine(line)
+  end)
+
   child.stdout:on('data', function(chunk)
-    lineEmitter:write(chunk)
+    stdoutLineEmitter:write(chunk)
   end)
 
   child.stderr:on('data', function(chunk)
-    stderrBuffer = stderrBuffer .. chunk
+    stderrLineEmitter:write(chunk)
   end)
 
   child:on('exit', function(code)
@@ -414,9 +433,22 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
       -- happen before calling a callback.
       local checkStatus
 
+      self._log(logging.DEBUG, fmt("%s: done (code=%s)", exePath, code))
+
+
       if code ~= 0 then
         -- If a status is provided use it instead of using the default one
         checkStatus = checkResult:getStatus()
+
+        for _, v in ipairs(self._lines.stdout) do
+          v = trim(v)
+          self._log(logging.DEBUG, fmt("stdout: %s", v))
+        end
+
+        for _, v in ipairs(self._lines.stderr) do
+          v = trim(v)
+          self._log(logging.DEBUG, fmt("stderr: %s", v))
+        end
 
         if not checkStatus or checkStatus == DEFAULT_STATUS then
           checkStatus = fmt('Plugin exited with non-zero status code (code=%s)', (code))
