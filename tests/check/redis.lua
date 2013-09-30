@@ -231,4 +231,41 @@ exports['test_redis_max_line_limit'] = function(test, asserts)
     test.done()
   end)
 end
+
+exports['test_redis_line_endings'] = function(test, asserts)
+  local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8587}})
+  local commandMap = {}
+  local server = nil
+
+  commandMap['INFO\r'] = function()
+    return 'redis_version:2.5.7\r\n'
+  end
+
+  async.series({
+    function(callback)
+      testUtil.runTestTCPServer(8587, '127.0.0.1', commandMap, function(err, _server)
+        server = _server
+        callback(err)
+      end)
+    end,
+
+    function(callback)
+      check:run(function(result)
+        local metrics = result:getMetrics()['none']
+        asserts.equal(metrics.version.v, '2.5.7')
+        callback()
+      end)
+    end
+  },
+
+  function(err)
+    if server then
+      server:close()
+    end
+
+    asserts.equals(err, nil)
+    test.done()
+  end)
+end
+
 return exports

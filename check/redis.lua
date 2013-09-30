@@ -24,6 +24,7 @@ local async = require('async')
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local split = require('../util/misc').split
+local trim = require('../util/misc').trim
 local fireOnce = require('../util/misc').fireOnce
 
 local MAX_BUFFER_LENGTH = 1024 * 1024 * 1 -- 1 MB
@@ -91,8 +92,8 @@ function RedisCheck:_parseLine(line)
   end
 
 
-  result['key'] = parts[1]
-  result['value'] = parts[2]
+  result['key'] = trim(parts[1])
+  result['value'] = trim(parts[2])
 
   return result
 end
@@ -100,6 +101,7 @@ end
 function RedisCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   local client
+  local connected = false
 
   async.series({
     function(callback)
@@ -121,6 +123,8 @@ function RedisCheck:run(callback)
         callback()
         return
       end
+
+      connected = true
 
       client:on('data', function(data)
         buffer = buffer .. data
@@ -176,13 +180,16 @@ function RedisCheck:run(callback)
 
       client:write('INFO\r\n')
       client:write('QUIT\r\n')
-      client:shutdown()
     end
   },
 
   function(err)
     if err then
       checkResult:setError(err.message)
+    end
+
+    if connected then
+      client:shutdown()
     end
 
     callback(checkResult)
