@@ -22,12 +22,11 @@ local Scheduler = Emitter:extend()
 -- checks: a table of BaseCheck
 -- callback: function called after the state file is written
 function Scheduler:initialize(checks)
-  checks = checks or {}
   self._log = loggingUtil.makeLogger('scheduler')
   self._checkMap = {}
-  self._checks = checks
+  self._checks = {}
   self._runCount = 0
-  self:rebuild(checks)
+  self:rebuild(checks or {})
 end
 
 function Scheduler:getCheckMap()
@@ -60,6 +59,7 @@ end
 
 function Scheduler:runCheck()
   self._runCount = self._runCount + 1
+  return self._runCount
 end
 
 function Scheduler:completedCheck(check, checkResult)
@@ -67,19 +67,27 @@ function Scheduler:completedCheck(check, checkResult)
 end
 
 function Scheduler:_register(check)
-  self._log(logging.INFO, fmt('Registering Check %s', check:toString()))
   check:on('run', utils.bind(Scheduler.runCheck, self))
   check:on('completed', utils.bind(Scheduler.completedCheck, self))
   check:schedule()
   table.insert(self._checks, check)
 end
 
-function Scheduler:_deregister(check, index)
-  self._log(logging.INFO, fmt('Removing Check %s', check:toString()))
+function Scheduler:_deregister(check)
   check:removeListener('run')
   check:removeListener('completed')
   check:clearSchedule()
-  table.remove(self._checks, index)
+
+  for i = #self._checks, 1, -1 do
+    if self._checks[i].id == check.id then
+      table.remove(self._checks, i)
+      return
+    end
+  end
+end
+
+function Scheduler:getCheck(id)
+  return self._checkMap[id]
 end
 
 -- We can rebuid it.  We have the technology.  Better.. faster.. stronger..
@@ -88,28 +96,31 @@ end
 function Scheduler:rebuild(checks)
   local newCheckMap = {}
 
-  -- todo: the check:run closer captures the checks param. thay may end up being
-  -- a memory liability for cases where there are many checks.
-  for index, check in ipairs(checks) do
+  for _, check in ipairs(checks) do
+    local oldCheck = self:getCheck(check.id)
+
     newCheckMap[check.id] = check
-    local vis = self._checkMap[check.id] == nil
-    if vis or self._checkMap[check.id]:toString() ~= check:toString() then
-      self._checkMap[check.id] = check
-      if not vis then
-        -- modified check
-        self:_deregister(self._checks[index], index)
-        self:_register(newCheckMap[check.id])
-      else
-        -- new check
-        self:_register(check)
-      end
-   end
+
+    if oldCheck == nil then
+      -- new check
+      self._log(logging.DEBUG, fmt('Registering New Check %s', check:toString()))
+      self:_register(check)
+      self:emit('check.created', check)
+    elseif oldCheck:toString() ~= check:toString() then
+      -- modified check
+      self._log(logging.DEBUG, fmt('Registering Modified Check %s', check:toString()))
+      self:_deregister(oldCheck)
+      self:_register(check)
+      self:emit('check.modified', check)
+    end
   end
 
   -- check all the existing checks for a removal
-  for index, check in ipairs(self._checks) do
+  for _, check in ipairs(self._checks) do
     if newCheckMap[check.id] == nil then
-      self:_deregister(check, index)
+      self._log(logging.DEBUG, fmt('Removing Check %s', check:toString()))
+      self:_deregister(check)
+      self:emit('check.deleted', check)
     end
   end
 

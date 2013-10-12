@@ -25,7 +25,6 @@ function VirgoAgentClient:_createChecks(manifest)
   for i, _ in ipairs(manifest.checks) do
     local check = check.create(manifest.checks[i])
     if check then
-      self._log(logging.INFO, 'Created Check: ' .. check:toString())
       table.insert(checks, check)
     end
   end
