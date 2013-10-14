@@ -371,9 +371,8 @@ exports['test_custom_plugin_cmd_arguments'] = plugin_test('plugin_custom_argumen
   end}
 )
 
--- On some Windows platforms this check requires longer to complete
 exports['test_custom_plugin_all_types'] = plugin_test('plugin_1.sh',
-  'Everything is OK', 'available', {details = {timeout = 60*1000}, cb = function(test, asserts, metrics)
+  'Everything is OK', 'available', {cb = function(test, asserts, metrics)
     metrics = metrics['none']
     asserts.dequals(metrics['logged_users'], {t = 'int64', v = '7'})
     asserts.dequals(metrics['active_processes'], {t = 'int64', v = '200'})
