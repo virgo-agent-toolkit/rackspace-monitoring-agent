@@ -74,6 +74,10 @@ function BaseCheck:run(callback)
   callback(checkResult)
 end
 
+function BaseCheck:getInternalId()
+  return self._iid
+end
+
 --[[
   Get targets for a specific check.
 

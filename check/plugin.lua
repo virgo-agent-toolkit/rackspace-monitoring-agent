@@ -84,13 +84,14 @@ function PluginCheck:initialize(params)
   local args = params.details.args and params.details.args or {}
   local timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
 
+  self._file = file
   self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH, file)
   self._pluginArgs = args
   self._timeout = timeout
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', file))
 end
 
-function ChildCheck:toString()
+function PluginCheck:toString()
   if not self._pluginArgs then
     self._pluginArgs = {}
   end
@@ -100,7 +101,7 @@ function ChildCheck:toString()
     argString = '(none)'
   end
 
-  return fmt('%s (id=%s, iid=%s, period=%ss, args=%s)', self.getType(), self.id, self._iid, self.period, argString)
+  return fmt('%s (id=%s, period=%ss, file=%s, args=%s)', self.getType(), self.id, self.period, self._file, argString)
 end
 
 function PluginCheck:getType()
