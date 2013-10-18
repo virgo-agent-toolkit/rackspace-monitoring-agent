@@ -14,10 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local fmt = require('string').format
+local upper = require('string').upper
 
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local table = require('table')
+local os = require('os')
 
 local FileSystemCheck = BaseCheck:extend()
 
@@ -66,6 +68,19 @@ function FileSystemCheck:getTargets(callback)
   callback(nil, targets)
 end
 
+function FileSystemCheck:flattenTargetsToString()
+  local s = ""
+  self:getTargets(function (err, targets)
+    for i=1, #targets do
+      if i ~= 1 then
+        s = s .. ","
+      end
+      s = s .. targets[i]
+    end
+  end)
+  return s
+end
+
 -- Dimension key is the mount point name, e.g. /, /home
 function FileSystemCheck:run(callback)
   -- Perform Check
@@ -76,7 +91,7 @@ function FileSystemCheck:run(callback)
   local found = false
 
   if self.mount_point == nil then
-    checkResult:setError('Missing target parameter')
+    checkResult:setError('Missing target parameter, available: %s', self:flattenTargetsToString())
     callback(checkResult)
     return
   end
@@ -87,8 +102,17 @@ function FileSystemCheck:run(callback)
 
     -- Search for the mount point we want. TODO: modify sigar bindings to
     -- let us do a lookup from this.
-    if info['dir_name'] == self.mount_point then
-      found = true
+    if os.type() == "win32" then
+      if upper(info['dir_name']) == upper(self.mount_point) then
+        found = true
+      end
+    else
+      if info['dir_name'] == self.mount_point then
+        found = true
+      end
+    end
+
+    if found then
       usage = fs:usage()
 
       if usage then
@@ -106,7 +130,7 @@ function FileSystemCheck:run(callback)
     end
   end
 
-  checkResult:setError(fmt('No filesystem mounted at %s', self.mount_point))
+  checkResult:setError(fmt('No filesystem mounted at %s, available: %s', self.mount_point, self:flattenTargetsToString()))
   callback(checkResult)
 end
 
