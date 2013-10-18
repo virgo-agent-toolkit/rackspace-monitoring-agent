@@ -52,7 +52,8 @@ exports['test_filesystem_check_nonexistent_mount_point'] = function(test, assert
   local check = FileSystemCheck:new({id='foo', period=30, details={target='does-not-exist'}})
   check:run(function(result)
     asserts.equal(result:getState(), 'unavailable')
-    asserts.equal(result:getStatus(), 'No filesystem mounted at does-not-exist')
+    local expected_status = 'No filesystem mounted at does-not-exist'
+    asserts.equal(result:getStatus():sub(1, expected_status:len()), expected_status)
     test.done()
   end)
 end
@@ -61,7 +62,8 @@ exports['test_filesystem_check_no_mount_point'] = function(test, asserts)
   local check = FileSystemCheck:new({id='foo', period=30})
   check:run(function(result)
     asserts.equal(result:getState(), 'unavailable')
-    asserts.equal(result:getStatus(), 'Missing target parameter')
+    local expected_status = 'Missing target parameter'
+    asserts.equal(result:getStatus():sub(1, expected_status:len()), expected_status)
     test.done()
   end)
 end
