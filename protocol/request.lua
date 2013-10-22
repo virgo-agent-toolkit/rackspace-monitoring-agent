@@ -23,6 +23,8 @@ local errors = require('../errors')
 local Error = require('core').Error
 local misc = require('../util/misc')
 
+local dns = require('dns')
+
 local fmt = require('string').format
 local Object = require('core').Object
 
@@ -64,6 +66,7 @@ function Request:initialize(options, callback)
   else
     self.endpoints = {{host=options.host, port=options.port}}
   end
+
   self.attempts = options.attempts or #self.endpoints
   self.download = options.download
   self.upload = options.upload
@@ -81,33 +84,47 @@ function Request:initialize(options, callback)
 end
 
 function Request:request()
-  logging.debugf('sending request to %s:%s%s', self.options.host, self.options.port, self.options.path)
+  local function run(opts)
+    logging.debugf('sending request to %s:%s%s', opts.host, opts.port, self.options.path)
 
-  local options = misc.merge({}, self.options)
+    local options = misc.merge(opts, self.options)
+    options = misc.merge(options, opts)
 
-  local req = https.request(options, function(res)
-    self:_handle_response(res)
-  end)
+    local req = https.request(options, function(res)
+      self:_handle_response(res)
+    end)
 
-  req:on('error', function(err)
-    self:_ensure_retries(err)
-  end)
+    req:on('error', function(err)
+      self:_ensure_retries(err)
+    end)
 
-  if not self.upload then
-    return req:done()
+    if not self.upload then
+      return req:done()
+    end
+
+    local data = fs.createReadStream(self.upload)
+    data:on('data', function(chunk)
+      req:write(chunk)
+    end)
+    data:on('end', function(d)
+      req:done(d)
+    end)
+    data:on('error', function(err)
+      req:done()
+      self._ensure_retries(err)
+    end)
   end
 
-  local data = fs.createReadStream(self.upload)
-  data:on('data', function(chunk)
-    req:write(chunk)
-  end)
-  data:on('end', function(d)
-    req:done(d)
-  end)
-  data:on('error', function(err)
-    req:done()
-    self._ensure_retries(err)
-  end)
+  if self.endpoint.srv_query then
+    dns.resolve(self.endpoint.srv_query, 'SRV', function(err, record)
+      if err then
+        return self.callback(err)
+      end
+      run({ host = record[1].name, port = record[1].port })
+    end)
+  else
+    run({ host = self.endpoint.host, port = self.endpoint.port })
+  end
 end
 
 function Request:_cycle_endpoint()
@@ -115,13 +132,9 @@ function Request:_cycle_endpoint()
 
   while self.attempts > 0 do
     position = #self.endpoints % self.attempts
-    endpoint = self.endpoints[position+1]
+    self.endpoint = self.endpoints[position+1]
     self.attempts = self.attempts - 1
-    if endpoint and endpoint.host and endpoint.port then
-      self.options.host = endpoint.host
-      self.options.port = endpoint.port
-      return true
-    end
+    return true
   end
   return false
 end

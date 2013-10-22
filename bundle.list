@@ -4,9 +4,9 @@
 ./agents/monitoring/collector/http/router.lua
 ./agents/monitoring/collector/http/utils.lua
 ./agents/monitoring/collector/init.lua
-./agents/monitoring/crash/init.lua
 ./agents/monitoring/init.lua
 ./certs.lua
+./crash.lua
 ./check/apache.lua
 ./check/base.lua
 ./check/cpu.lua
