@@ -128,7 +128,7 @@ function Client:tenantIdAndToken(callback)
     end
     for i, _ in ipairs(self._serviceCatalog) do
       local item = self._serviceCatalog[i]
-      if item.name == 'cloudServers' or item.name == 'cloudServersLegacy' then
+      if item.name == 'cloudMonitoring' then
         if #item.endpoints == 0 then
           error('Endpoints should be > 0')
         end
