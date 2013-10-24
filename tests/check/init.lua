@@ -386,7 +386,7 @@ exports['test_custom_plugin_all_types'] = plugin_test('plugin_1.sh',
 exports['test_custom_plugin_all_types_reschedueling'] = function(test, asserts)
   -- Verify that custom plugin checks correctly re-schedule itself
 
-  local check = PluginCheck:new({id='foo', period=2,
+  local check = PluginCheck:new({id='foo', period=30,
                                 details={file='plugin_1.sh'}})
   local counter = 0
   asserts.ok(check._lastResult == nil)
@@ -454,7 +454,7 @@ exports['test_custom_plugin_repeated_status_line'] = function(test, asserts)
   local counter = 0
 
   dump_check('repeated_status_line.sh', "0777", function(err)
-    local check = PluginCheck:new({id='foo', period=2, details={file='repeated_status_line.sh'}})
+    local check = PluginCheck:new({id='foo', period=30, details={file='repeated_status_line.sh'}})
     asserts.ok(check._lastResult == nil)
 
     check:schedule()
