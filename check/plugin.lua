@@ -88,7 +88,7 @@ function PluginCheck:initialize(params)
   self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH, file)
   self._pluginArgs = args
   self._timeout = timeout
-  self._log = loggingUtil.makeLogger(fmt('(plugin=%s)', file))
+  self._log = loggingUtil.makeLogger(fmt('(plugin=%s, id=%s, iid=%s)', file, self.id, self._iid))
 end
 
 function PluginCheck:toString()
