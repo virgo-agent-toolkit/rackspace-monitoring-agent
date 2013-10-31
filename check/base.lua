@@ -30,6 +30,8 @@ local vutils = require('virgo_utils')
 local utils = require('utils')
 local path = require('path')
 
+local async = require('async')
+
 local constants = require('../util/constants')
 local loggingUtil = require('../util/logging')
 local tableContains = require('../util/misc').tableContains
@@ -388,6 +390,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local stderrLineEmitter = LineEmitter:new()
   -- Context for _handleLine to store stuff between output lines
   local runCtx = {}
+  local childStdoutEnded = false
 
   self._log(logging.DEBUG, fmt("%s: starting process", exePath))
 
@@ -420,6 +423,10 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     stdoutLineEmitter:write(chunk)
   end)
 
+  child.stdout:on('end', function()
+    childStdoutEnded = true
+  end)
+
   child.stderr:on('data', function(chunk)
     stderrLineEmitter:write(chunk)
   end)
@@ -438,7 +445,6 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
       local checkStatus
 
       self._log(logging.DEBUG, fmt("%s: done (code=%s)", exePath, code))
-
 
       if code ~= 0 then
         -- If a status is provided use it instead of using the default one
@@ -460,8 +466,19 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
 
         checkResult:setError(checkStatus)
       end
-      self._lastResult = checkResult
-      callback(checkResult)
+
+      async.whilst(
+        function()
+          return childStdoutEnded == false
+        end,
+        function(callback)
+          timer.setTimeout(50, callback)
+        end,
+        function()
+          self._lastResult = checkResult
+          callback(checkResult)
+        end
+      )
     end)
   end)
 
