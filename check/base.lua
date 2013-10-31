@@ -38,6 +38,7 @@ local tableContains = require('../util/misc').tableContains
 local toString = require('../util/misc').toString
 local lastIndexOf = require('../util/misc').lastIndexOf
 local split = require('../util/misc').split
+local fireOnce = require('../util/misc').fireOnce
 local trim = require('../util/misc').trim
 local randstr = require('../util/misc').randstr
 local asserts = require('bourbon').asserts
@@ -390,7 +391,6 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local stderrLineEmitter = LineEmitter:new()
   -- Context for _handleLine to store stuff between output lines
   local runCtx = {}
-  local childStdoutEnded = false
 
   self._log(logging.DEBUG, fmt("%s: starting process", exePath))
 
@@ -423,15 +423,26 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     stdoutLineEmitter:write(chunk)
   end)
 
-  child.stdout:on('end', function()
-    childStdoutEnded = true
-  end)
-
   child.stderr:on('data', function(chunk)
     stderrLineEmitter:write(chunk)
   end)
 
-  child:on('exit', function(code)
+  function waitForIO(callback)
+    callback = fireOnce(callback)
+    child.stdout:on('end', callback)
+  end
+
+  local code = 0
+
+  function waitForExit(callback)
+    callback = fireOnce(callback)
+    child:on('exit', function(_code)
+      code = _code
+      callback()
+    end)
+  end
+
+  async.parallel({ waitForIO, waitForExit }, function()
     timer.clearTimer(pluginTimeout)
 
     if killed then
@@ -467,18 +478,8 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
         checkResult:setError(checkStatus)
       end
 
-      async.whilst(
-        function()
-          return childStdoutEnded == false
-        end,
-        function(callback)
-          timer.setTimeout(50, callback)
-        end,
-        function()
-          self._lastResult = checkResult
-          callback(checkResult)
-        end
-      )
+      self._lastResult = checkResult
+      callback(checkResult)
     end)
   end)
 
