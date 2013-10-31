@@ -427,14 +427,14 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     stderrLineEmitter:write(chunk)
   end)
 
-  function waitForIO(callback)
+  local function waitForIO(callback)
     callback = fireOnce(callback)
     child.stdout:on('end', callback)
   end
 
   local code = 0
 
-  function waitForExit(callback)
+  local function waitForExit(callback)
     callback = fireOnce(callback)
     child:on('exit', function(_code)
       code = _code
