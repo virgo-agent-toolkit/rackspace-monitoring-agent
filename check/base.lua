@@ -30,12 +30,15 @@ local vutils = require('virgo_utils')
 local utils = require('utils')
 local path = require('path')
 
+local async = require('async')
+
 local constants = require('../util/constants')
 local loggingUtil = require('../util/logging')
 local tableContains = require('../util/misc').tableContains
 local toString = require('../util/misc').toString
 local lastIndexOf = require('../util/misc').lastIndexOf
 local split = require('../util/misc').split
+local fireOnce = require('../util/misc').fireOnce
 local trim = require('../util/misc').trim
 local randstr = require('../util/misc').randstr
 local asserts = require('bourbon').asserts
@@ -424,7 +427,22 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     stderrLineEmitter:write(chunk)
   end)
 
-  child:on('exit', function(code)
+  local function waitForIO(callback)
+    callback = fireOnce(callback)
+    child.stdout:on('end', callback)
+  end
+
+  local code = 0
+
+  local function waitForExit(callback)
+    callback = fireOnce(callback)
+    child:on('exit', function(_code)
+      code = _code
+      callback()
+    end)
+  end
+
+  async.parallel({ waitForIO, waitForExit }, function()
     timer.clearTimer(pluginTimeout)
 
     if killed then
@@ -438,7 +456,6 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
       local checkStatus
 
       self._log(logging.DEBUG, fmt("%s: done (code=%s)", exePath, code))
-
 
       if code ~= 0 then
         -- If a status is provided use it instead of using the default one
@@ -460,6 +477,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
 
         checkResult:setError(checkStatus)
       end
+
       self._lastResult = checkResult
       callback(checkResult)
     end)
