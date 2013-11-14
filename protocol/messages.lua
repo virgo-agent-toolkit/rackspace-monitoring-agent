@@ -108,8 +108,28 @@ function Heartbeat:serialize(msgId)
   return Request.serialize(self, msgId)
 end
 
+--[[ db ]]--
+
+local db = {}
+
+--[[ db.checks ]]--
+db.checks = {}
+
+--[[ db.checks.create ]]--
+db.checks.create = Request:extend()
+function db.checks.create:initialize(params)
+  Request.initialize(self)
+  self.method = 'db.checks.create'
+  self.params = params
+end
+
+function db.checks.create:serialize(msgId)
+  return Request.serialize(self, msgId)
+end
+
 --[[ Exports ]]--
 local exports = {}
+exports.db = db
 exports.Request = Request
 exports.Response = Response
 exports.HandshakeHello = HandshakeHello

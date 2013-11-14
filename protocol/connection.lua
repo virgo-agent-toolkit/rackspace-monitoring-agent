@@ -65,6 +65,11 @@ requests['bundle_upgrade.get_version'] = function(self, callback)
   self:_send(m, callback)
 end
 
+requests['db.checks.create'] = function(self, params, callback)
+  local m = msg.db.checks.create:new(params)
+  self:_send(m, callback)
+end
+
 --[[ Reponse Functions ]]--
 local responses = {}
 
@@ -285,14 +290,17 @@ function AgentProtocolConnection:startHandshake(callback)
   self:request('handshake.hello', self._myid, self._token, function(err, msg)
     if err then
       self._log(logging.ERR, fmt('handshake failed (message=%s)', err.message))
-      callback(err, msg)
-      return
+      return callback(err, msg)
     end
 
     self:setState(STATES.RUNNING)
     self._log(logging.DEBUG, fmt('handshake successful (heartbeat_interval=%dms)', msg.result.heartbeat_interval))
     callback(nil, msg)
   end)
+end
+
+function AgentProtocolConnection:dbCreateChecks(params, callback)
+  self:request('db.checks.create', params, callback)
 end
 
 return AgentProtocolConnection
