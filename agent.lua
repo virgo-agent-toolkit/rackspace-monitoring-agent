@@ -69,9 +69,14 @@ function Agent:start(options)
       local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
       local endpoints = self._config['endpoints']
       local reporter = CrashReporter:new(virgo.virgo_version, virgo.bundle_version, virgo.platform, dump_dir, endpoints)
-      reporter:submit(function(err, res)
-        callback()
+      reporter:submit(function(err)
+        if err then
+          logging.info(fmt('CrashReporter done with errors: %s', tostring(err)))
+        else
+          logging.info('CrashReporter done without errors')
+        end
       end)
+      callback()
     end,
     function(callback)
       if os.type() ~= 'win32' then
