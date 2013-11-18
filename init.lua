@@ -37,6 +37,7 @@ local argv = require("options")
   .describe("o", "skip automatic upgrade")
   .describe("d", "enable debug logging")
   .alias({['o'] = 'no-upgrade'})
+  .alias({['p'] = 'pidfile'})
   .alias({['d'] = 'debug'})
   .describe("u", "setup")
   .alias({['u'] = 'setup'})
@@ -68,7 +69,7 @@ function Entry.run()
   options.configFile = argv.args.c or constants.DEFAULT_CONFIG_PATH
 
   if argv.args.p then
-    options.pidFile = argv.p
+    options.pidFile = argv.args.p
   end
 
   if argv.args.i then
