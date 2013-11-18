@@ -70,6 +70,11 @@ requests['db.checks.create'] = function(self, params, callback)
   self:_send(m, callback)
 end
 
+requests['db.checks.get_all'] = function(self, params, callback)
+  local m = msg.db.checks.get_all:new(params)
+  self:_send(m, callback)
+end
+
 --[[ Reponse Functions ]]--
 local responses = {}
 
@@ -301,6 +306,10 @@ end
 
 function AgentProtocolConnection:dbCreateChecks(params, callback)
   self:request('db.checks.create', params, callback)
+end
+
+function AgentProtocolConnection:dbGetAllChecks(params, callback)
+  self:request('db.checks.get_all', params, callback)
 end
 
 return AgentProtocolConnection
