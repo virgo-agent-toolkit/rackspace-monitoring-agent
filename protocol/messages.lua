@@ -112,8 +112,8 @@ end
 
 local db = {}
 
---[[ db.checks ]]--
 db.checks = {}
+db.alarms = {}
 
 --[[ db.checks.create ]]--
 db.checks.create = Request:extend()
@@ -121,10 +121,6 @@ function db.checks.create:initialize(params)
   Request.initialize(self)
   self.method = 'db.checks.create'
   self.params = params
-end
-
-function db.checks.create:serialize(msgId)
-  return Request.serialize(self, msgId)
 end
 
 --[[ db.checks.get_all ]]--
@@ -135,10 +131,6 @@ function db.checks.get_all:initialize(params)
   self.params = params
 end
 
-function db.checks.get_all:serialize(msgId)
-  return Request.serialize(self, msgId)
-end
-
 --[[ db.checks.get_all ]]--
 db.checks.get = Request:extend()
 function db.checks.get:initialize(entityId, checkId)
@@ -147,8 +139,28 @@ function db.checks.get:initialize(entityId, checkId)
   self.params = {entity_id = entityId, check_id = checkId}
 end
 
-function db.checks.get_all:serialize(msgId)
-  return Request.serialize(self, msgId)
+--[[ db.alarms.create ]]--
+db.alarms.create = Request:extend()
+function db.alarms.create:initialize(entityId, checkId, criteria, npId)
+  Request.initialize(self)
+  self.method = 'db.alarms.create'
+  self.params = {
+    entity_id = entityId,
+    check_id = checkId,
+    criteria = criteria,
+    notificaton_plan_id = npId
+  }
+end
+
+--[[ db.alarms.get ]]--
+db.alarms.get = Request:extend()
+function db.alarms.get:initialize(entityId, alarmId)
+  Request.initialize(self)
+  self.method = 'db.alarms.get'
+  self.params = {
+    entity_id = entityId,
+    alarm_id = alarmId
+  }
 end
 
 --[[ Exports ]]--
