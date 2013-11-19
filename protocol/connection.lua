@@ -80,6 +80,16 @@ requests['db.checks.get'] = function(self, checkId, entityId, callback)
   self:_send(m, callback)
 end
 
+requests['db.alarms.get'] = function(self, entityId, alarmId, callback)
+  local m = msg.db.alarms.get:new(entityId, alarmId)
+  self:_send(m, callback)
+end
+
+requests['db.alarms.create'] = function(self, entityId, checkId, criteria, npId, callback)
+  local m = msg.db.alarms.create:new(entityId, checkId, criteria, npId)
+  self:_send(m, callback)
+end
+
 --[[ Reponse Functions ]]--
 local responses = {}
 
@@ -319,6 +329,14 @@ end
 
 function AgentProtocolConnection:dbGetChecks(entityId, checkId, callback)
   self:request('db.checks.get', entityId, checkId, callback)
+end
+
+function AgentProtocolConnection:dbGetAlarms(entityId, alarmId, callback)
+  self:request('db.alarms.get', entityId, alarmId, callback)
+end
+
+function AgentProtocolConnection:dbCreateAlarms(entityId, checkId, criteria, npId, callback)
+  self:request('db.alarms.create', entityId, checkId, criteria, npId, callback)
 end
 
 return AgentProtocolConnection
