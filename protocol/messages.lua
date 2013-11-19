@@ -139,6 +139,18 @@ function db.checks.get_all:serialize(msgId)
   return Request.serialize(self, msgId)
 end
 
+--[[ db.checks.get_all ]]--
+db.checks.get = Request:extend()
+function db.checks.get:initialize(entityId, checkId)
+  Request.initialize(self)
+  self.method = 'db.checks.get'
+  self.params = {entity_id = entityId, check_id = checkId}
+end
+
+function db.checks.get_all:serialize(msgId)
+  return Request.serialize(self, msgId)
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.db = db

@@ -75,6 +75,11 @@ requests['db.checks.get_all'] = function(self, params, callback)
   self:_send(m, callback)
 end
 
+requests['db.checks.get'] = function(self, checkId, entityId, callback)
+  local m = msg.db.checks.get:new(entityId, checkId)
+  self:_send(m, callback)
+end
+
 --[[ Reponse Functions ]]--
 local responses = {}
 
@@ -310,6 +315,10 @@ end
 
 function AgentProtocolConnection:dbGetAllChecks(params, callback)
   self:request('db.checks.get_all', params, callback)
+end
+
+function AgentProtocolConnection:dbGetChecks(entityId, checkId, callback)
+  self:request('db.checks.get', entityId, checkId, callback)
 end
 
 return AgentProtocolConnection
