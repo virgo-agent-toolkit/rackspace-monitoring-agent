@@ -319,6 +319,8 @@ function AgentProtocolConnection:startHandshake(callback)
   end)
 end
 
+--[[ db.Checks ]]
+
 function AgentProtocolConnection:dbCreateChecks(params, callback)
   self:request('db.checks.create', params, callback)
 end
@@ -330,6 +332,8 @@ end
 function AgentProtocolConnection:dbGetChecks(entityId, checkId, callback)
   self:request('db.checks.get', entityId, checkId, callback)
 end
+
+--[[ db.Alarms ]]
 
 function AgentProtocolConnection:dbGetAlarms(entityId, alarmId, callback)
   self:request('db.alarms.get', entityId, alarmId, callback)

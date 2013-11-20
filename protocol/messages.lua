@@ -148,7 +148,7 @@ function db.alarms.create:initialize(entityId, checkId, criteria, npId)
     entity_id = entityId,
     check_id = checkId,
     criteria = criteria,
-    notificaton_plan_id = npId
+    notification_plan_id = npId
   }
 end
 
