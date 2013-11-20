@@ -163,6 +163,17 @@ function db.alarms.get:initialize(entityId, alarmId)
   }
 end
 
+--[[ db.alarms.remove ]]--
+db.alarms.remove = Request:extend()
+function db.alarms.remove:initialize(entityId, alarmId)
+  Request.initialize(self)
+  self.method = 'db.alarms.remove'
+  self.params = {
+    entity_id = entityId,
+    alarm_id = alarmId
+  }
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.db = db
