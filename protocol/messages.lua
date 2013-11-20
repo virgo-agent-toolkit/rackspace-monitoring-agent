@@ -111,9 +111,9 @@ end
 --[[ db ]]--
 
 local db = {}
-
 db.checks = {}
 db.alarms = {}
+db.notifications = {}
 
 --[[ db.checks.create ]]--
 db.checks.create = Request:extend()
@@ -180,6 +180,38 @@ function db.alarms.remove:initialize(entityId, alarmId)
     entity_id = entityId,
     alarm_id = alarmId
   }
+end
+
+--[[ db.notifications.remove ]]--
+db.notifications.remove = Request:extend()
+function db.notifications.remove:initialize(notificationId)
+  Request.initialize(self)
+  self.method = 'db.notifications.remove'
+  self.params = { notification_id = notification_id }
+end
+
+--[[ db.notifications.get ]]--
+db.notifications.get = Request:extend()
+function db.notifications.get:initialize(notificationId)
+  Request.initialize(self)
+  self.method = 'db.notifications.get'
+  self.params = { notification_id = notificationId }
+end
+
+--[[ db.notifications.list ]]--
+db.notifications.list = Request:extend()
+function db.notifications.list:initialize()
+  Request.initialize(self)
+  self.method = 'db.notifications.list'
+  self.params = { nop = '1' }
+end
+
+--[[ db.notifications.create ]]--
+db.notifications.create = Request:extend()
+function db.notifications.create:initialize(params)
+  Request.initialize(self)
+  self.method = 'db.notifications.create'
+  self.params = params
 end
 
 --[[ Exports ]]--
