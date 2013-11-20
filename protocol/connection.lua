@@ -90,6 +90,11 @@ requests['db.alarms.create'] = function(self, entityId, checkId, criteria, npId,
   self:_send(m, callback)
 end
 
+requests['db.alarms.remove'] = function(self, entityId, alarmId, callback)
+  local m = msg.db.alarms.remove:new(entityId, alarmId)
+  self:_send(m, callback)
+end
+
 --[[ Reponse Functions ]]--
 local responses = {}
 
@@ -341,6 +346,10 @@ end
 
 function AgentProtocolConnection:dbCreateAlarms(entityId, checkId, criteria, npId, callback)
   self:request('db.alarms.create', entityId, checkId, criteria, npId, callback)
+end
+
+function AgentProtocolConnection:dbRemoveAlarms(entityId, alarmId, callback)
+  self:request('db.alarms.remove', entityId, alarmId, callback)
 end
 
 return AgentProtocolConnection
