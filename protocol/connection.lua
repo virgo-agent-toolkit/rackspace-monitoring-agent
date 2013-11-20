@@ -100,6 +100,21 @@ requests['db.alarms.remove'] = function(self, entityId, alarmId, callback)
   self:_send(m, callback)
 end
 
+requests['db.notifications.get'] = function(self, notificationId, callback)
+  local m = msg.db.notifications.get:new(notificationId)
+  self:_send(m, callback)
+end
+
+requests['db.notifications.create'] = function(self, params, callback)
+  local m = msg.db.notifications.create:new(params)
+  self:_send(m, callback)
+end
+
+requests['db.notifications.remove'] = function(self, notificationId, callback)
+  local m = msg.db.notifications.remove:new(notificationId, alarmId)
+  self:_send(m, callback)
+end
+
 --[[ Reponse Functions ]]--
 local responses = {}
 
@@ -335,8 +350,8 @@ function AgentProtocolConnection:dbCreateChecks(params, callback)
   self:request('db.checks.create', params, callback)
 end
 
-function AgentProtocolConnection:dbGetAllChecks(params, callback)
-  self:request('db.checks.get_all', params, callback)
+function AgentProtocolConnection:dbListChecks(params, callback)
+  self:request('db.checks.list', params, callback)
 end
 
 function AgentProtocolConnection:dbGetChecks(entityId, checkId, callback)
@@ -360,5 +375,19 @@ end
 function AgentProtocolConnection:dbRemoveAlarms(entityId, alarmId, callback)
   self:request('db.alarms.remove', entityId, alarmId, callback)
 end
+
+--[[ db.Notifications --]]
+function AgentProtocolConnection:dbGetNotifications(notificationId, callback)
+  self:request('db.notifications.get', notificationId, callback)
+end
+
+function AgentProtocolConnection:dbCreateNotifications(params, callback)
+  self:request('db.notifications.create', params, callback)
+end
+
+function AgentProtocolConnection:dbRemoveNotifications(notificationId, callback)
+  self:request('db.notifications.remove', notificationId, callback)
+end
+
 
 return AgentProtocolConnection
