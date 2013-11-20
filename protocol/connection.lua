@@ -105,6 +105,11 @@ requests['db.notifications.get'] = function(self, notificationId, callback)
   self:_send(m, callback)
 end
 
+requests['db.notifications.list'] = function(self, callback)
+  local m = msg.db.notifications.list:new(notificationId)
+  self:_send(m, callback)
+end
+
 requests['db.notifications.create'] = function(self, params, callback)
   local m = msg.db.notifications.create:new(params)
   self:_send(m, callback)
@@ -377,6 +382,7 @@ function AgentProtocolConnection:dbRemoveAlarms(entityId, alarmId, callback)
 end
 
 --[[ db.Notifications --]]
+
 function AgentProtocolConnection:dbGetNotifications(notificationId, callback)
   self:request('db.notifications.get', notificationId, callback)
 end
@@ -385,9 +391,12 @@ function AgentProtocolConnection:dbCreateNotifications(params, callback)
   self:request('db.notifications.create', params, callback)
 end
 
+function AgentProtocolConnection:dbListNotifications(callback)
+  self:request('db.notifications.list', callback)
+end
+
 function AgentProtocolConnection:dbRemoveNotifications(notificationId, callback)
   self:request('db.notifications.remove', notificationId, callback)
 end
-
 
 return AgentProtocolConnection
