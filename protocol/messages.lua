@@ -131,11 +131,19 @@ function db.checks.get_all:initialize(params)
   self.params = params
 end
 
---[[ db.checks.get_all ]]--
+--[[ db.checks.get ]]--
 db.checks.get = Request:extend()
 function db.checks.get:initialize(entityId, checkId)
   Request.initialize(self)
   self.method = 'db.checks.get'
+  self.params = {entity_id = entityId, check_id = checkId}
+end
+
+--[[ db.checks.remove ]]--
+db.checks.remove = Request:extend()
+function db.checks.remove:initialize(entityId, checkId)
+  Request.initialize(self)
+  self.method = 'db.checks.remove'
   self.params = {entity_id = entityId, check_id = checkId}
 end
 
