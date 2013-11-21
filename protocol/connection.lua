@@ -100,23 +100,43 @@ requests['db.alarms.remove'] = function(self, entityId, alarmId, callback)
   self:_send(m, callback)
 end
 
-requests['db.notifications.get'] = function(self, notificationId, callback)
-  local m = msg.db.notifications.get:new(notificationId)
+requests['db.notification.get'] = function(self, notificationId, callback)
+  local m = msg.db.notification.get:new(notificationId)
   self:_send(m, callback)
 end
 
-requests['db.notifications.list'] = function(self, callback)
-  local m = msg.db.notifications.list:new(notificationId)
+requests['db.notification.list'] = function(self, callback)
+  local m = msg.db.notification.list:new(notificationId)
   self:_send(m, callback)
 end
 
-requests['db.notifications.create'] = function(self, params, callback)
-  local m = msg.db.notifications.create:new(params)
+requests['db.notification.create'] = function(self, params, callback)
+  local m = msg.db.notification.create:new(params)
   self:_send(m, callback)
 end
 
-requests['db.notifications.remove'] = function(self, notificationId, callback)
-  local m = msg.db.notifications.remove:new(notificationId, alarmId)
+requests['db.notification.remove'] = function(self, notificationId, callback)
+  local m = msg.db.notification.remove:new(notificationId, alarmId)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.get'] = function(self, notificationId, callback)
+  local m = msg.db.notification_plan.get:new(notificationId)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.list'] = function(self, callback)
+  local m = msg.db.notification_plan.list:new(notificationId)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.create'] = function(self, params, callback)
+  local m = msg.db.notification_plan.create:new(params)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.remove'] = function(self, notificationId, callback)
+  local m = msg.db.notification_plan.remove:new(notificationId, alarmId)
   self:_send(m, callback)
 end
 
@@ -381,22 +401,39 @@ function AgentProtocolConnection:dbRemoveAlarms(entityId, alarmId, callback)
   self:request('db.alarms.remove', entityId, alarmId, callback)
 end
 
---[[ db.Notifications --]]
+--[[ db.Notification --]]
 
-function AgentProtocolConnection:dbGetNotifications(notificationId, callback)
-  self:request('db.notifications.get', notificationId, callback)
+function AgentProtocolConnection:dbGetNotification(notificationId, callback)
+  self:request('db.notification.get', notificationId, callback)
 end
 
-function AgentProtocolConnection:dbCreateNotifications(params, callback)
-  self:request('db.notifications.create', params, callback)
+function AgentProtocolConnection:dbCreateNotification(params, callback)
+  self:request('db.notification.create', params, callback)
 end
 
-function AgentProtocolConnection:dbListNotifications(callback)
-  self:request('db.notifications.list', callback)
+function AgentProtocolConnection:dbListNotification(callback)
+  self:request('db.notification.list', callback)
 end
 
-function AgentProtocolConnection:dbRemoveNotifications(notificationId, callback)
-  self:request('db.notifications.remove', notificationId, callback)
+function AgentProtocolConnection:dbRemoveNotification(notificationId, callback)
+  self:request('db.notification.remove', notificationId, callback)
+end
+
+--[[ db.NotificationPlan --]] 
+function AgentProtocolConnection:dbGetNotificationPlan(notificationId, callback)
+  self:request('db.notification_lan.get', notificationId, callback)
+end
+
+function AgentProtocolConnection:dbCreateNotificationPlan(params, callback)
+  self:request('db.notification_plan.create', params, callback)
+end
+
+function AgentProtocolConnection:dbListNotificationPlan(callback)
+  self:request('db.notification_plan.list', callback)
+end
+
+function AgentProtocolConnection:dbRemoveNotificationPlan(notificationId, callback)
+  self:request('db.notification_plan.remove', notificationId, callback)
 end
 
 return AgentProtocolConnection

@@ -113,7 +113,8 @@ end
 local db = {}
 db.checks = {}
 db.alarms = {}
-db.notifications = {}
+db.notification = {}
+db.notification_plan = {}
 
 --[[ db.checks.create ]]--
 db.checks.create = Request:extend()
@@ -182,35 +183,67 @@ function db.alarms.remove:initialize(entityId, alarmId)
   }
 end
 
---[[ db.notifications.remove ]]--
-db.notifications.remove = Request:extend()
-function db.notifications.remove:initialize(notificationId)
+--[[ db.notification.remove ]]--
+db.notification.remove = Request:extend()
+function db.notification.remove:initialize(notificationId)
   Request.initialize(self)
-  self.method = 'db.notifications.remove'
+  self.method = 'db.notification.remove'
   self.params = { notification_id = notification_id }
 end
 
---[[ db.notifications.get ]]--
-db.notifications.get = Request:extend()
-function db.notifications.get:initialize(notificationId)
+--[[ db.notification.get ]]--
+db.notification.get = Request:extend()
+function db.notification.get:initialize(notificationId)
   Request.initialize(self)
-  self.method = 'db.notifications.get'
+  self.method = 'db.notification.get'
   self.params = { notification_id = notificationId }
 end
 
---[[ db.notifications.list ]]--
-db.notifications.list = Request:extend()
-function db.notifications.list:initialize()
+--[[ db.notification.list ]]--
+db.notification.list = Request:extend()
+function db.notification.list:initialize()
   Request.initialize(self)
-  self.method = 'db.notifications.list'
+  self.method = 'db.notification.list'
+  self.params = { nop = '1' }
+end
+
+--[[ db.notification.create ]]--
+db.notification.create = Request:extend()
+function db.notification.create:initialize(params)
+  Request.initialize(self)
+  self.method = 'db.notification.create'
+  self.params = params
+end
+
+--[[ db.notification_plan.remove ]]--
+db.notification_plan.remove = Request:extend()
+function db.notification_plan.remove:initialize(notificationId)
+  Request.initialize(self)
+  self.method = 'db.notification_plan.remove'
+  self.params = { notification_id = notification_id }
+end
+
+--[[ db.notification_plan.get ]]--
+db.notification_plan.get = Request:extend()
+function db.notification_plan.get:initialize(notificationId)
+  Request.initialize(self)
+  self.method = 'db.notification_plan.get'
+  self.params = { notification_id = notificationId }
+end
+
+--[[ db.notification_plan.list ]]--
+db.notification_plan.list = Request:extend()
+function db.notification_plan.list:initialize()
+  Request.initialize(self)
+  self.method = 'db.notification_plan.list'
   self.params = { nop = '1' }
 end
 
 --[[ db.notifications.create ]]--
-db.notifications.create = Request:extend()
-function db.notifications.create:initialize(params)
+db.notification_plan.create = Request:extend()
+function db.notification_plan.create:initialize(params)
   Request.initialize(self)
-  self.method = 'db.notifications.create'
+  self.method = 'db.notification_plan.create'
   self.params = params
 end
 
