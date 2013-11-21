@@ -6,6 +6,7 @@
 ./agents/monitoring/collector/init.lua
 ./agents/monitoring/init.lua
 ./certs.lua
+./confd.lua
 ./crash.lua
 ./check/apache.lua
 ./check/base.lua
