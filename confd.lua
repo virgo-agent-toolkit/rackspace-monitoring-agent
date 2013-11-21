@@ -22,6 +22,7 @@ local logging = require('logging')
 local loggingUtil = require('../util/logging')
 local fmt = require('string').format
 local crypto = require('_crypto')
+local async = require('async')
 
 local Confd = Object:extend()
 
@@ -30,8 +31,28 @@ function Confd:initialize()
   self.files = {}
   self.hashes = {}
   self.logger = loggingUtil.makeLogger('Confd')
-  self:readFiles()
-  p("self", self)
+  async.waterfall(
+    {
+      function(callback)
+        self:_readFiles(callback)
+        callback()
+      end,
+      function(callback)
+        self:_writeHashes(callback)
+      end
+    },
+    function(err)
+      if err then
+        if err.logtype == nil then
+          err.logtype = logging.ERROR
+        end
+        if err.message == nil or err.message == '' then
+          err.message = 'unknown error'
+        end
+        self.logger(err.logtype, err.message)
+      end
+    end
+  )
 end
 
 
@@ -40,7 +61,7 @@ function Confd:getFiles()
 end
 
 
-function Confd:readFiles()
+function Confd:_readFiles(callback)
   local dir = virgo_paths.get(virgo_paths.VIRGO_PATH_CONFD_DIR)
   self.logger(logging.INFO, fmt('reading files in %s', dir))
   fs.readdir(dir, function(err, files)
@@ -72,6 +93,14 @@ function Confd:readFiles()
         end)
       end
     end
+  end)
+end
+
+function Confd:_writeHashes(cb)
+  local dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
+  self.logger(logging.INFO, fmt('writing hashes in %s', dir))
+  fs.writeFile(path.join(dir, "confd_hashes.json"), JSON.stringify(self.hashes), function(err)
+    cb(err)
   end)
 end
 
