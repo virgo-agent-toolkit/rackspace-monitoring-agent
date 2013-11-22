@@ -23,22 +23,38 @@ local loggingUtil = require('../util/logging')
 local fmt = require('string').format
 local crypto = require('_crypto')
 local async = require('async')
+local table = require('table')
 
 local Confd = Object:extend()
 
 
 function Confd:initialize()
+  self.dir = virgo_paths.get(virgo_paths.VIRGO_PATH_CONFD_DIR)
+  self.hash_file = path.join(virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR), "confd_hashes.json")
   self.files = {}
-  self.hashes = {}
+  self.last_hashes = {}
   self.logger = loggingUtil.makeLogger('Confd')
+  self:run()
+end
+
+
+function Confd:run()
   async.waterfall(
     {
       function(callback)
-        self:_readFiles(callback)
-        callback()
+        self:_getFileList(callback)
       end,
       function(callback)
-        self:_writeHashes(callback)
+        self:_readFiles(callback)
+      end,
+      function(callback)
+        self:_readLastFileHashes(callback)
+      end,
+      function(callback)
+        self:_handleChangedFiles(callback)
+      end,
+      function(callback)
+        self:writeHashes(callback)
       end
     },
     function(err)
@@ -61,46 +77,84 @@ function Confd:getFiles()
 end
 
 
-function Confd:_readFiles(callback)
-  local dir = virgo_paths.get(virgo_paths.VIRGO_PATH_CONFD_DIR)
-  self.logger(logging.INFO, fmt('reading files in %s', dir))
-  fs.readdir(dir, function(err, files)
+function Confd:_getFileList(callback)
+  self.logger(logging.INFO, fmt('reading files in %s', self.dir))
+  fs.readdir(self.dir, function(err, files)
     local _, fil
+    local count = 0
     for _, fil in ipairs(files) do
       --only feed .json files to the parser
       if fil:match('.json$') then
-	--Read file to the parser
-        local fn = path.join(dir,fil)
-        fs.readFile(fn, function(err, data) 
-          if err then
-            --log error
-            self.logger(logging.WARNING, fmt('error reading %s, %s', fn, err.message))
-            return
-          end
-
-          local status, result = pcall(JSON.parse, data)
-          if not status or type(result) == 'string' and result:find('parse error: ') then
-            -- parse fail
-            self.logger(logging.WARNING, fmt('error parsing status:%s, result:%s', status, result))
-          else
-            self.files[fil] = result
-            local d = crypto.digest.new("sha256")
-            d:update(data)
-            local hash = d:final()
-            self.hashes[fil] = hash
-            self.logger(logging.INFO, fmt('successfully read: %s, hashed: %s', fn, hash))
-          end
-        end)
+        self.files[fil] = {}
+        count = count + 1
       end
+    end
+    self.file_count = count
+    callback(err)
+  end)
+end
+
+
+function Confd:_readFiles(callback)
+  local _, fil
+  local count = 0
+  for fil, _ in pairs(self.files) do
+    --Read file to the parser
+    local fn = path.join(self.dir,fil)
+    fs.readFile(fn, function(err, data) 
+      if err then
+        --log error
+        self.logger(logging.WARNING, fmt('error reading %s, %s', fn, err.message))
+      else
+        local status, result = pcall(JSON.parse, data)
+        if not status or type(result) == 'string' and result:find('parse error: ') then
+          -- parse fail
+          self.logger(logging.WARNING, fmt('error parsing status:%s, result:%s', status, result))
+        else
+          self.files[fil].data = result
+          local d = crypto.digest.new("sha256")
+          d:update(data)
+          local hash = d:final()
+          self.files[fil].hash = hash
+          self.logger(logging.INFO, fmt('successfully read: %s, hashed: %s', fn, hash))
+        end
+      end
+      count = count + 1
+      if count == self.file_count then
+        callback()
+      end
+    end)
+  end
+end
+
+
+function Confd:_readLastFileHashes(callback)
+  self.logger(logging.INFO, fmt('reading hashes from %s', self.hash_file))
+  fs.readFile(self.hash_file, function(err, data)
+    local status, result = pcall(JSON.parse, data)
+    if not status or type(result) == 'string' and result:find('parse error: ') then
+      callback({type=logging.WARNING, message=fmt('error parsing hashes:%s, result:%s', status, result)})
+    else
+      self.last_hashes = result
+      callback()
     end
   end)
 end
 
-function Confd:_writeHashes(cb)
-  local dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
-  self.logger(logging.INFO, fmt('writing hashes in %s', dir))
-  fs.writeFile(path.join(dir, "confd_hashes.json"), JSON.stringify(self.hashes), function(err)
-    cb(err)
+
+function Confd:_handleChangedFiles(callback)
+  callback()
+end
+
+function Confd:writeHashes(callback)
+  self.logger(logging.INFO, fmt('writing hashes into %s', self.hash_file))
+  local hashes = {}
+  local _, fil
+  for fil, _ in pairs(self.files) do
+    hashes[fil] = self.files[fil].hash
+  end
+  fs.writeFile(self.hash_file, JSON.stringify(hashes), function(err)
+    callback(err)
   end)
 end
 
