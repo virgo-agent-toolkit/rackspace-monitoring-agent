@@ -34,7 +34,6 @@ function Confd:initialize()
   self.files = {}
   self.last_hashes = {}
   self.logger = loggingUtil.makeLogger('Confd')
-  self:run()
 end
 
 
