@@ -85,6 +85,9 @@ function Agent:start(options)
     end,
     function(callback)
       self:connect(callback)
+    end,
+    function(callback)
+      self._confd:run()
     end
   },
   function(err)
