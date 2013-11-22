@@ -92,7 +92,7 @@ function Agent:start(options)
       self:connect(callback)
     end,
     function(callback)
-      self._confd:run()
+      self._confd:run(callback)
     end
   },
   function(err)

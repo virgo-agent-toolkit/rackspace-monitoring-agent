@@ -38,7 +38,7 @@ function Confd:initialize()
 end
 
 
-function Confd:run()
+function Confd:run(callback)
   async.waterfall(
     {
       function(callback)
@@ -69,6 +69,7 @@ function Confd:run()
       end
     end
   )
+  callback()
 end
 
 
@@ -134,12 +135,16 @@ end
 function Confd:_readLastFileHashes(callback)
   self.logger(logging.INFO, fmt('reading hashes from %s', self.hash_file))
   fs.readFile(self.hash_file, function(err, data)
-    local status, result = pcall(JSON.parse, data)
-    if not status or type(result) == 'string' and result:find('parse error: ') then
-      callback({type=logging.WARNING, message=fmt('error parsing hashes:%s, result:%s', status, result)})
+    if err then
+      callback(err)
     else
-      self.last_hashes = result
-      callback()
+      local status, result = pcall(JSON.parse, data)
+      if not status or type(result) == 'string' and result:find('parse error: ') then
+        callback({type=logging.WARNING, message=fmt('error parsing hashes:%s, result:%s', status, result)})
+      else
+        self.last_hashes = result
+        callback()
+      end
     end
   end)
 end
@@ -170,9 +175,7 @@ function Confd:writeHashes(callback)
   for fil, _ in pairs(self.files) do
     hashes[fil] = self.files[fil].hash
   end
-  fs.writeFile(self.hash_file, JSON.stringify(hashes), function(err)
-    callback(err)
-  end)
+  fs.writeFile(self.hash_file, JSON.stringify(hashes), callback)
 end
 
 
