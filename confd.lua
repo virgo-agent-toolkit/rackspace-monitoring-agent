@@ -34,6 +34,7 @@ function Confd:initialize()
   self.files = {}
   self.last_hashes = {}
   self.logger = loggingUtil.makeLogger('Confd')
+  self.constants = {ERROR='ERROR', UNCHANGED='Unchanged', NEW='New', CHANGED='Changed', DELETED='Deleted'}
 end
 
 
@@ -50,7 +51,7 @@ function Confd:run()
         self:_readLastFileHashes(callback)
       end,
       function(callback)
-        self:_handleChangedFiles(callback)
+        self:_markChangedFiles(callback)
       end,
       function(callback)
         self:writeHashes(callback)
@@ -103,11 +104,13 @@ function Confd:_readFiles(callback)
     fs.readFile(fn, function(err, data) 
       if err then
         --log error
+        self.files[fil].status = self.constants.ERROR
         self.logger(logging.WARNING, fmt('error reading %s, %s', fn, err.message))
       else
         local status, result = pcall(JSON.parse, data)
         if not status or type(result) == 'string' and result:find('parse error: ') then
           -- parse fail
+          self.files[fil].status = self.constants.ERROR
           self.logger(logging.WARNING, fmt('error parsing status:%s, result:%s', status, result))
         else
           self.files[fil].data = result
@@ -115,7 +118,8 @@ function Confd:_readFiles(callback)
           d:update(data)
           local hash = d:final()
           self.files[fil].hash = hash
-          self.logger(logging.INFO, fmt('successfully read: %s, hashed: %s', fn, hash))
+          self.files[fil].status = self.constants.NEW
+        self.logger(logging.INFO, fmt('successfully read: %s, hashed: %s', fn, hash))
         end
       end
       count = count + 1
@@ -141,7 +145,21 @@ function Confd:_readLastFileHashes(callback)
 end
 
 
-function Confd:_handleChangedFiles(callback)
+function Confd:_markChangedFiles(callback)
+  local fil, _
+  for fil, _ in pairs(self.last_hashes) do
+    if not self.files[fil] then
+      self.files[fil].status = self.constants.DELETED
+    end
+    if self.last_hashes[fil] ~= self.files[fil].hash then
+      if self.files[fil].status ~= self.constants.ERROR then
+        self.files[fil].status = self.constants.CHANGED
+      end
+    else
+      self.files[fil].status = self.constants.UNCHANGED
+    end
+    self.logger(logging.INFO, fmt('%s is marked as %s', fil, self.files[fil].status))
+  end
   callback()
 end
 
