@@ -65,7 +65,7 @@ function Confd:run(callback)
         if err.message == nil or err.message == '' then
           err.message = 'unknown error'
         end
-        self.logger(err.logtype, err.message)
+        self.logger(err.logtype, fmt("FATAL %s", err.message))
       end
     end
   )
@@ -83,15 +83,19 @@ function Confd:_getFileList(callback)
   fs.readdir(self.dir, function(err, files)
     local _, fil
     local count = 0
-    for _, fil in ipairs(files) do
-      --only feed .json files to the parser
-      if fil:match('.json$') then
-        self.files[fil] = {}
-        count = count + 1
+    if err then
+      self.logger(logging.WARNING, fmt('error reading %s, %s', self.dir, err.message))
+    else
+      for _, fil in ipairs(files) do
+        --only feed .json files to the parser
+        if fil:match('.json$') then
+          self.files[fil] = {}
+          count = count + 1
+        end
       end
     end
     self.file_count = count
-    callback(err)
+    callback()
   end)
 end
 
@@ -136,16 +140,16 @@ function Confd:_readLastFileHashes(callback)
   self.logger(logging.INFO, fmt('reading hashes from %s', self.hash_file))
   fs.readFile(self.hash_file, function(err, data)
     if err then
-      callback(err)
+      self.logger(logging.WARNING, fmt('error reading %s, %s', self.hash_file, err.message))
     else
       local status, result = pcall(JSON.parse, data)
       if not status or type(result) == 'string' and result:find('parse error: ') then
-        callback({type=logging.WARNING, message=fmt('error parsing hashes:%s, result:%s', status, result)})
+        self.logger(logging.WARNING, fmt('error parsing hashes:%s, result:%s', status, result))
       else
         self.last_hashes = result
-        callback()
       end
     end
+    callback()
   end)
 end
 
@@ -175,7 +179,12 @@ function Confd:writeHashes(callback)
   for fil, _ in pairs(self.files) do
     hashes[fil] = self.files[fil].hash
   end
-  fs.writeFile(self.hash_file, JSON.stringify(hashes), callback)
+  fs.writeFile(self.hash_file, JSON.stringify(hashes), function(err)
+    if err then
+      self.logger(logging.WARNING, fmt('error writing hashes: %s', err.message))
+    end
+    callback()
+  end)
 end
 
 
