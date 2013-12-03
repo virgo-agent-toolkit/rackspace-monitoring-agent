@@ -114,7 +114,7 @@ function BaseCheck:getSummary(obj)
 end
 
 function BaseCheck:toString()
-  return fmt('%s (id=%s, period=%ss)', self.getType(), self.id, self.period)
+  return fmt('%s (id=%s, period=%ss, timeout=%ss)', self.getType(), self.id, self.period, self._timeout or 0)
 end
 
 function BaseCheck:_runCheck()
