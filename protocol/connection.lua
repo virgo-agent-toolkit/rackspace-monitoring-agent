@@ -30,6 +30,7 @@ local table = require('table')
 local utils = require('utils')
 local hostInfo = require('../host_info')
 local check = require('../check')
+local misc = require('../util/misc')
 local vutils = require('virgo_utils')
 
 -- Response timeouts in ms
@@ -371,8 +372,9 @@ end
 
 --[[ db.Checks ]]
 
-function AgentProtocolConnection:dbCreateChecks(params, callback)
-  self:request('db.checks.create', params, callback)
+function AgentProtocolConnection:dbCreateChecks(entityId, params, callback)
+  local p = misc.merge(params, { entity_id = entityId })
+  self:request('db.checks.create', p, callback)
 end
 
 function AgentProtocolConnection:dbListChecks(params, callback)
