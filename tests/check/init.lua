@@ -329,7 +329,7 @@ exports['test_checkresult_serialization'] = function(test, asserts)
 end
 
 exports['test_custom_plugin_timeout'] = plugin_test('timeout.py',
-  'Plugin didn\'t finish in 0.5 seconds', 'unavailable', {details={timeout=500}})
+  'Plugin didn\'t finish in 5 seconds', 'unavailable', {details={timeout=5}})
 
 if os.type() == 'win32' then
   exports['test_custom_plugin_file_not_executable'] = function(test, asserts)

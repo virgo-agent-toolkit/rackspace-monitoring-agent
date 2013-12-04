@@ -82,12 +82,16 @@ function PluginCheck:initialize(params)
 
   local file = path.basename(params.details.file)
   local args = params.details.args and params.details.args or {}
-  local timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+
+  if params.details.timeout then
+    self._timeout = params.details.timeout * 1000
+  else
+    self._timeout = constants.DEFAULT_PLUGIN_TIMEOUT
+  end
 
   self._file = file
   self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH, file)
   self._pluginArgs = args
-  self._timeout = timeout
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s, id=%s, iid=%s)', file, self.id, self._iid))
 end
 

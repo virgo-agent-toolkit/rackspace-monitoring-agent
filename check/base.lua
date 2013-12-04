@@ -525,7 +525,11 @@ local SubProcCheck = ChildCheck:extend()
 
 function SubProcCheck:initialize(params)
   ChildCheck.initialize(self, params)
-  self._timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+  if params.details.timeout then
+    self._timeout = params.details.timeout * 1000
+  else
+    self._timeout = constants.DEFAULT_PLUGIN_TIMEOUT
+  end
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s, id=%s, iid=%s)', self.getType(), self.id, self._iid))
 end
 
