@@ -194,7 +194,7 @@ end
 
 function Agent:_preConfig(callback)
   if self._config['token'] == nil then
-    logging.error("'token' is missing from 'config'")
+    logging.error("'monitoring_token' is missing from 'config'")
     process.exit(1)
   end
 
