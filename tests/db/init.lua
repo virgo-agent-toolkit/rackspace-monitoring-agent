@@ -24,6 +24,7 @@ local async = require('async')
 
 local function fixtureWriter(sock, name)
   local data = fixtures[name]
+  assert(data ~= nil)
   sock.write = function()
     process.nextTick(function()
       sock:emit('data', data .. "\n")
@@ -48,8 +49,34 @@ exports['test_db_checks_create'] = function(test, asserts)
         label = 'automagic',
         type = 'agent.memory'
       }
-      fixtureWriter(sock, 'db_checks_create.response')
+      fixtureWriter(sock, 'db_checks.create.response')
       conn:dbCreateChecks('enAAAAIPV4', params, callback)
+    end
+  }, function(err)
+    asserts.equals(err, nil)
+    test.done()
+  end)
+end
+
+exports['test_db_checks_get'] = function(test, asserts)
+  local sock = Emitter:new()
+  local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(),
+                                           'MYID', 'TOKEN', 'GUID', sock)
+
+  async.series({
+    function(callback)
+      fixtureWriter(sock, 'handshake.hello.response')
+      conn:startHandshake(callback)
+    end,
+    function(callback)
+      local enId = 'enAAAAIPV4'
+      local chId = 'chAAAA'
+      fixtureWriter(sock, 'db_checks.get.response')
+      conn:dbGetChecks(enId, chId, function(err, msg)
+        asserts.equals(err, nil)
+        asserts.equals(msg.result.id, chId)
+        callback()
+      end)
     end
   }, function(err)
     asserts.equals(err, nil)

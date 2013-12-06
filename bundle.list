@@ -118,8 +118,10 @@
 ./static/tests/custom_plugins/timeout.sh
 ./static/tests/data/sample.state
 ./static/tests/monitoring-agent-localhost.cfg
-./static/tests/protocol/db_checks_create.request.json
-./static/tests/protocol/db_checks_create.response.json
+./static/tests/protocol/db_checks.create.request.json
+./static/tests/protocol/db_checks.create.response.json
+./static/tests/protocol/db_checks.get.request.json
+./static/tests/protocol/db_checks.get.response.json
 ./static/tests/protocol/binary_upgrade.available.request.json
 ./static/tests/protocol/binary_upgrade.available.response.json
 ./static/tests/protocol/binary_upgrade.get_version.request.json
