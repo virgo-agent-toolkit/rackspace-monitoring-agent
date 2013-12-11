@@ -32,8 +32,7 @@ local StatsdSource = SourceBase:extend()
 function StatsdSource:initialize(stream, options)
   SourceBase.initialize(self, 'statsd', stream, options)
 
-  self._log(logging.INFO, fmt('StatsD Source'))
-  self._log(logging.INFO, fmt('Version: %s', statsd.version()))
+  self._log(logging.INFO, fmt('StatsD Source (Version: %s)', statsd.version()))
 
   local function onMetrics(metrics)
     self:emit('metrics', metrics, self)

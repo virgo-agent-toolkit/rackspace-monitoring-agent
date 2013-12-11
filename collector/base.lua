@@ -51,7 +51,6 @@ local SourceBase = Base:extend()
 function SourceBase:initialize(name, stream, options)
   Base.initialize(self, name, stream, options)
   self._log = loggingUtil.makeLogger('Source.' .. name)
-  self._log(logging.INFO, 'initialized')
 end
 
 function SourceBase:push(metrics)
@@ -68,7 +67,6 @@ local SinkBase = Base:extend()
 function SinkBase:initialize(name, stream, options)
   Base.initialize(self, name, stream, options)
   self._log = loggingUtil.makeLogger('Sink.' .. name)
-  self._log(logging.INFO, 'initialized')
 end
 
 function SinkBase:push(metrics)
