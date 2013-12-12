@@ -15,4 +15,5 @@ limitations under the License.
 --]]
 local exports = {}
 exports.rackspace_monitoring = require('./rackspace_monitoring')
+exports.udp = require('./udp')
 return exports

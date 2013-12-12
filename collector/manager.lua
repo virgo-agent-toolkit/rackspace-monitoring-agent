@@ -80,7 +80,7 @@ function Manager:_flush()
     end
   end
 
-  for i = 1, #self.sinks do
+  for i=1, #self.sinks do
     self.sinks[i]:push(to_flush)
   end
 end

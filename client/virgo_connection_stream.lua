@@ -75,15 +75,16 @@ function VirgoConnectionStream:_createCollectors()
   self._log(logging.INFO, fmt('sinks enabled: %s', collectors_sinks))
 
   -- Create sinks
-  local sinks = misc.split(collectors_sinks)
+  local sinks = misc.split(collectors_sinks, "[^,%s]+")
   for _, name in pairs(sinks) do
     local sink = collector.createSink(self, name, self._options)
     self._collector_manager:addSink(sink)
   end
 
   -- Create sources
-  local collectors = misc.split(collectors_enabled)
+  local collectors = misc.split(collectors_enabled, "[^,%s]+")
   for _, name in pairs(collectors) do
+    p(name)
     local source = collector.createSource(self, name, self._options)
     self._collector_manager:addSource(source)
   end
