@@ -41,15 +41,15 @@ function StatsdSource:initialize(stream, options)
   local statsd_options = {}
   statsd_options.host = options['monitoring_collectors_statsd_host']
   statsd_options.port = options['monitoring_collectors_statsd_port']
+  statsd_options.metrics_interval = 30000 -- 30 second interval
 
   self.statsd = statsd.Statsd:new(statsd_options)
   self.statsd:on('metrics', onMetrics)
   self.statsd:bind()
 
-  self._log(logging.INFO, fmt('Listening on: %s:%s',
-            self.statsd:getOptions().host,
+  self._log(logging.INFO, fmt('(interval=%s)', statsd_options.metrics_interval))
+  self._log(logging.INFO, fmt('Listening on: %s:%s', self.statsd:getOptions().host,
             self.statsd:getOptions().port))
-
 end
 
 function StatsdSource:resume()

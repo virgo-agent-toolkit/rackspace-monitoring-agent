@@ -26,7 +26,7 @@ local vutils = require('virgo_utils')
 
 local Metrics = require('./base').Metrics
 
-local DEFAULT_INTERVAL = 10 * 1000
+local DEFAULT_INTERVAL = 37000
 local MAX_LENGTH = 1022 * 1024 * 1024
 
 -------------------------------------------------------------------------------
@@ -41,6 +41,7 @@ function Manager:initialize(options)
   self.options.interval = self.options.interval or DEFAULT_INTERVAL
 
   self._log = loggingUtil.makeLogger('Collector.manager')
+  self._log(logging.INFO, fmt('(interval=%s)', self.options.interval))
 end
 
 function Manager:_startIntervalTimer()
