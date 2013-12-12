@@ -31,8 +31,8 @@ end
 
 function UDPSink:push(metrics)
   for i=1, #metrics do
-    self.sock:send(JSON.stringify(metrics[i].metrics), self.port, self.host, function()
-    end)
+    local data = JSON.stringify(metrics[i].metrics) .. '\n'
+    self.sock:send(data, self.port, self.host)
   end
 end
 
