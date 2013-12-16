@@ -69,6 +69,7 @@ function Confd:run(callback)
       end
     end
   )
+  -- Immediately call the callback to not block the main agent startup
   callback()
 end
 
