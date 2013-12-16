@@ -148,6 +148,16 @@ function db.checks.remove:initialize(entityId, checkId)
   self.params = {entity_id = entityId, check_id = checkId}
 end
 
+--[[ db.checks.update ]]--
+db.checks.update = Request:extend()
+function db.checks.update:initialize(entityId, checkId, params)
+  Request.initialize(self)
+  self.method = 'db.checks.update'
+  params.entity_id = entityId
+  params.check_id = checkId
+  self.params = params
+end
+
 --[[ db.alarms.create ]]--
 db.alarms.create = Request:extend()
 function db.alarms.create:initialize(entityId, checkId, criteria, npId)
@@ -183,6 +193,16 @@ function db.alarms.remove:initialize(entityId, alarmId)
   }
 end
 
+--[[ db.alarms.update ]]--
+db.alarms.update = Request:extend()
+function db.alarms.update:initialize(entityId, alarmId, params)
+  Request.initialize(self)
+  self.method = 'db.alarms.update'
+  params.entity_id = entityId
+  params.alarm_id = alarmId
+  self.params = params
+end
+
 --[[ db.notification.remove ]]--
 db.notification.remove = Request:extend()
 function db.notification.remove:initialize(notificationId)
@@ -207,6 +227,15 @@ function db.notification.list:initialize()
   self.params = { nop = '1' }
 end
 
+--[[ db.notification.update ]]--
+db.notification.update = Request:extend()
+function db.notification.update:initialize(notificationId, params)
+  Request.initialize(self)
+  self.method = 'db.notification.update'
+  params.notification_id = notificationId
+  self.params = params
+end
+
 --[[ db.notification.create ]]--
 db.notification.create = Request:extend()
 function db.notification.create:initialize(params)
@@ -225,10 +254,10 @@ end
 
 --[[ db.notification_plan.get ]]--
 db.notification_plan.get = Request:extend()
-function db.notification_plan.get:initialize(notificationId)
+function db.notification_plan.get:initialize(notificationPlanId)
   Request.initialize(self)
   self.method = 'db.notification_plan.get'
-  self.params = { notification_id = notificationId }
+  self.params = { notification_plan_id = notificationPlanId }
 end
 
 --[[ db.notification_plan.list ]]--
@@ -239,11 +268,20 @@ function db.notification_plan.list:initialize()
   self.params = { nop = '1' }
 end
 
---[[ db.notifications.create ]]--
+--[[ db.notification_plan.create ]]--
 db.notification_plan.create = Request:extend()
 function db.notification_plan.create:initialize(params)
   Request.initialize(self)
   self.method = 'db.notification_plan.create'
+  self.params = params
+end
+
+--[[ db.notification_plan.update ]]--
+db.notification_plan.update = Request:extend()
+function db.notification_plan.create:initialize(notificationPlanId, params)
+  Request.initialize(self)
+  self.method = 'db.notification_plan.update'
+  params.notification_plan_id = notificationPlanId
   self.params = params
 end
 
