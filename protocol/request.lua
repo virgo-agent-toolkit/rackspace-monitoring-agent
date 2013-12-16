@@ -21,7 +21,7 @@ local fs = require('fs')
 local logging = require('logging')
 local errors = require('../errors')
 local Error = require('core').Error
-local misc = require('../util/misc')
+local misc = require('/base/util/misc')
 
 local dns = require('dns')
 

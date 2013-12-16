@@ -23,8 +23,8 @@ local async = require('async')
 local fixtures = require('/tests/fixtures')
 local Check = require('/check')
 local Metric = require('/check/base').Metric
-local constants = require('/util/constants')
-local merge = require('/util/misc').merge
+local constants = require('/base/util/constants')
+local merge = require('/base/util/misc').merge
 local msg = require ('/protocol/messages')
 local virgoMsg = require('/protocol/virgo_messages')
 

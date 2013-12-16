@@ -15,8 +15,8 @@ limitations under the License.
 --]]
 local Emitter = require('core').Emitter
 local timer = require('timer')
-local consts = require('../util/constants')
-local misc = require('../util/misc')
+local consts = require('/base/util/constants')
+local misc = require('/base/util/misc')
 local logging = require('logging')
 
 local UpgradePollEmitter = Emitter:extend()

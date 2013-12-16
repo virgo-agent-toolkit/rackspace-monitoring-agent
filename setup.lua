@@ -26,9 +26,9 @@ local table = require('table')
 local MachineIdentity = require('machineidentity').MachineIdentity
 
 local async = require('async')
-local ask = require('/util/prompt').ask
+local ask = require('/base/util/prompt').ask
 local errors = require('errors')
-local constants = require('/util/constants')
+local constants = require('/base/util/constants')
 local sigarCtx = require('/sigar').ctx
 
 local maas = require('rackspace-monitoring')

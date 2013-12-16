@@ -17,8 +17,8 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local Metric = require('./base').Metric
 
-local misc = require('/util/misc')
-local constants = require('/util/constants')
+local misc = require('/base/util/misc')
+local constants = require('/base/util/constants')
 local logging = require('logging')
 local async = require('async')
 local url = require('url')
