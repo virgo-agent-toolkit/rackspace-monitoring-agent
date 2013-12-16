@@ -106,8 +106,8 @@ requests['db.alarms.remove'] = function(self, entityId, alarmId, callback)
   self:_send(m, callback)
 end
 
-requests['db.alarms.update'] = function(self, entityId, alarmId, params, callback)
-  local m = msg.db.alarms.update:new(entityId, alarmId, params)
+requests['db.alarms.update'] = function(self, params, callback)
+  local m = msg.db.alarms.update:new(params)
   self:_send(m, callback)
 end
 
@@ -427,8 +427,8 @@ function AgentProtocolConnection:dbRemoveAlarms(entityId, alarmId, callback)
   self:request('db.alarms.remove', entityId, alarmId, callback)
 end
 
-function AgentProtocolConnection:dbUpdateAlarms(entityId, alarmId, params, callback)
-  self:request('db.alarms.update', entityId, alarmId, params, callback)
+function AgentProtocolConnection:dbUpdateAlarms(params, callback)
+  self:request('db.alarms.update', params, callback)
 end
 
 --[[ db.Notification --]]
