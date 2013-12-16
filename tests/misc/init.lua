@@ -18,11 +18,11 @@ exports = {}
 no = {}
 
 local fs = require('fs')
-local Uuid = require('/util/uuid')
-local splitAddress = require('/util/misc').splitAddress
-local writePid = require('/util/misc').writePid
-local lastIndexOf = require('/util/misc').lastIndexOf
-local compareVersions = require('/util/misc').compareVersions
+local Uuid = require('/base/util/uuid')
+local splitAddress = require('/base/util/misc').splitAddress
+local writePid = require('/base/util/misc').writePid
+local lastIndexOf = require('/base/util/misc').lastIndexOf
+local compareVersions = require('/base/util/misc').compareVersions
 local os = require('os')
 local logging = require('logging')
 local native = require('uv_native')

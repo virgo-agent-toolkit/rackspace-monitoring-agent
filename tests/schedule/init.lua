@@ -26,7 +26,7 @@ local BaseCheck = require('/check/base').BaseCheck
 local ChildCheck = require('/check/base').ChildCheck
 local NullCheck = require('/check/null').NullCheck
 local Check = require('/check')
-local misc = require('/util/misc')
+local misc = require('/base/util/misc')
 
 local PluginCheck = Check.PluginCheck
 

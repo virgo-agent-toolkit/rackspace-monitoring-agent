@@ -1,5 +1,5 @@
 local async = require('async')
-local testUtil = require('/util/test')
+local testUtil = require('/base/util/test')
 local fmt = require('string').format
 
 local ApacheCheck = require('/check').ApacheCheck

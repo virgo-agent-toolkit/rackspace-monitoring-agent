@@ -12,7 +12,7 @@ local math = require('math')
 local JSON = require('json')
 
 local logging = require('logging')
-local loggingUtil = require('../util/logging')
+local loggingUtil = require('/base/util/logging')
 
 local fmt = require('string').format
 
