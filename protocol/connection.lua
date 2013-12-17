@@ -157,7 +157,7 @@ requests['db.notification_plan.remove'] = function(self, notificationId, callbac
 end
 
 requests['db.notification_plan.update'] = function(self, notificationId, params, callback)
-  local m = msg.db.notification_plan.update:new(notificationId, alarmId, params)
+  local m = msg.db.notification_plan.update:new(notificationId, params)
   self:_send(m, callback)
 end
 
