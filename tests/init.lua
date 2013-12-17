@@ -24,7 +24,7 @@ local table = require('table')
 
 local helper = require('./helper')
 local constants = require('constants')
-local split = require('/util/misc').split
+local split = require('/base/util/misc').split
 
 local exports = {}
 

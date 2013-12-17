@@ -12,13 +12,13 @@ local instanceof = require('core').instanceof
 local string = require('string')
 local sigar = require('sigar')
 
-local misc = require('../util/misc')
+local misc = require('/base/util/misc')
 local logging = require('logging')
-local loggingUtil = require ('../util/logging')
-local consts = require('../util/constants')
+local loggingUtil = require ('/base/util/logging')
+local consts = require('/base/util/constants')
 local async = require('async')
 local fmt = require('string').format
-local fsutil = require('../util/fs')
+local fsutil = require('/base/util/fs')
 local errors = require('../errors')
 local request = require('../protocol/request')
 

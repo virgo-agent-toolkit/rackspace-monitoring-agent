@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 local Object = require('core').Object
 local fmt = require('string').format
-local misc = require('./util/misc')
+local misc = require('/base/util/misc')
 local async = require('async')
 local dns = require('dns')
 local math = require('math')
