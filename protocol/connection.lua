@@ -132,7 +132,7 @@ requests['db.notification.remove'] = function(self, notificationId, callback)
 end
 
 requests['db.notification.update'] = function(self, notificationId, params, callback)
-  local m = msg.db.notification.update:new(notificationId, alarmId, params)
+  local m = msg.db.notification.update:new(notificationId, params)
   self:_send(m, callback)
 end
 
