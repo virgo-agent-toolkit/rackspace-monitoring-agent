@@ -84,9 +84,12 @@ function VirgoConnectionStream:_createCollectors()
   -- Create sources
   local collectors = misc.split(collectors_enabled, "[^,%s]+")
   for _, name in pairs(collectors) do
-    p(name)
     local source = collector.createSource(self, name, self._options)
-    self._collector_manager:addSource(source)
+    if source then
+      self._collector_manager:addSource(source)
+    else
+      self._log(logging.ERROR, fmt('%s source not found', name))
+    end
   end
 
   self._collector_manager:resume()

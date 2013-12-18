@@ -15,4 +15,5 @@ limitations under the License.
 --]]
 local exports = {}
 exports.statsd = require('./statsd')
+exports.graphite = require('./graphite')
 return exports

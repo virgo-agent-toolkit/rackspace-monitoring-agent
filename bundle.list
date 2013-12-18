@@ -37,6 +37,7 @@
 ./collector/init.lua
 ./collector/base.lua
 ./collector/manager.lua
+./collector/sources/graphite.lua
 ./collector/sources/statsd.lua
 ./collector/sources/init.lua
 ./collector/sinks/udp.lua
