@@ -1,6 +1,9 @@
 Rackspace Monitoring Agent
 =====
 
+[![Build
+Status](https://travis-ci.org/racker/virgo.png?branch=master)](https://travis-ci.org/racker/virgo)
+
 The monitoring agent is the first agent to use the infrastructure provided by
 [virgo-base](https://github.com/racker/virgo-base)
 
