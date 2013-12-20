@@ -20,7 +20,7 @@ local fmt = require('string').format
 
 local MonitoringAgent = require('./agent').Agent
 local Setup = require('./setup').Setup
-local constants = require('/base/util/constants')
+local constants = require('/constants')
 local protocolConnection = require('/protocol/virgo_connection')
 local agentClient = require('/client/virgo_client')
 local connectionStream = require('/client/virgo_connection_stream')
@@ -66,7 +66,7 @@ function Entry.run()
     options.stateDirectory = argv.args.s
   end
 
-  options.configFile = argv.args.c or constants.DEFAULT_CONFIG_PATH
+  options.configFile = argv.args.c or constants:Get('DEFAULT_CONFIG_PATH')
 
   if argv.args.p then
     options.pidFile = argv.args.p

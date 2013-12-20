@@ -15,6 +15,7 @@
 ./base/util/underscore.lua
 ./base/util/uuid.lua
 ./certs.lua
+./constants.lua
 ./crash.lua
 ./check/apache.lua
 ./check/base.lua

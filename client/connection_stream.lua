@@ -27,7 +27,7 @@ local UpgradePollEmitter = require('./upgrade').UpgradePollEmitter
 
 local AgentClient = require('./client').AgentClient
 local logging = require('logging')
-local consts = require('/base/util/constants')
+local consts = require('/base/util/constants').Constants:new()
 local misc = require('/base/util/misc')
 local vutils = require('virgo_utils')
 local path = require('path')
@@ -61,7 +61,7 @@ function ConnectionStream:getUpgrade()
 end
 
 function ConnectionStream:setChannel(channel)
-  self._channel = channel or consts.DEFAULT_CHANNEL
+  self._channel = channel or consts:Get('DEFAULT_CHANNEL')
 end
 
 function ConnectionStream:_onUpgrade()
@@ -133,7 +133,7 @@ function ConnectionStream:createConnections(endpoints, callback)
       datacenter = tostring(endpoint),
       token = self._token,
       guid = self._guid,
-      timeout = consts.CONNECT_TIMEOUT
+      timeout = consts:Get('CONNECT_TIMEOUT')
     })
 
     self:createConnection(options, callback)
@@ -217,12 +217,12 @@ function ConnectionStream:_setDelay(datacenter)
   local previousDelay = self._delays[datacenter]
 
   if previousDelay == nil then
-    previousDelay = misc.calcJitter(consts.DATACENTER_FIRST_RECONNECT_DELAY,
-                                    consts.DATACENTER_FIRST_RECONNECT_DELAY_JITTER)
+    previousDelay = misc.calcJitter(consts:Get('DATACENTER_FIRST_RECONNECT_DELAY'),
+                                    consts:Get('DATACENTER_FIRST_RECONNECT_DELAY_JITTER'))
   end
 
-  local delay = math.min(previousDelay, consts.DATACENTER_RECONNECT_DELAY)
-  delay = misc.calcJitter(delay, consts.DATACENTER_RECONNECT_DELAY_JITTER)
+  local delay = math.min(previousDelay, consts:Get('DATACENTER_RECONNECT_DELAY'))
+  delay = misc.calcJitter(delay, consts:Get('DATACENTER_RECONNECT_DELAY_JITTER'))
   self._delays[datacenter] = delay
   return delay
 end
@@ -263,7 +263,7 @@ function ConnectionStream:_restart(client, options, callback)
   -- The error we hit was rateLimit related.
   -- Shut down the agent.
   if client.rateLimitReached then
-    self:emit('shutdown', consts.SHUTDOWN_RATE_LIMIT)
+    self:emit('shutdown', consts:Get('SHUTDOWN_RATE_LIMIT'))
     return
   end
   self:reconnect(options, callback)
@@ -352,7 +352,7 @@ function ConnectionStream:createConnection(options, callback)
     id = self._id,
     token = self._token,
     guid = self._guid,
-    timeout = consts.CONNECT_TIMEOUT
+    timeout = consts:Get('CONNECT_TIMEOUT')
   }, options)
 
   options.endpoint:getHostInfo(function(err, host, ip, port)

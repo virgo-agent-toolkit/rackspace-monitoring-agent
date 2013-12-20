@@ -23,7 +23,7 @@ local async = require('async')
 local fixtures = require('/tests/fixtures')
 local Check = require('/check')
 local Metric = require('/check/base').Metric
-local constants = require('/base/util/constants')
+local constants = require('/base/util/constants').Constants:new()
 local merge = require('/base/util/misc').merge
 local msg = require ('/protocol/messages')
 local virgoMsg = require('/protocol/virgo_messages')
@@ -52,7 +52,7 @@ exports = merge(exports, LoadTests)
 exports = merge(exports, RedisTests)
 exports = merge(exports, WindowsTests)
 
-constants.DEFAULT_CUSTOM_PLUGINS_PATH = TEST_DIR
+constants:SetGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', TEST_DIR)
 
 local dump_check = function(name, perms, cb)
   local check = fixtures['custom_plugins'][name]

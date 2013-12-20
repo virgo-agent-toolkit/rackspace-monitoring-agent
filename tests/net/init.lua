@@ -4,8 +4,7 @@ local ConnectionStream = require('/client/connection_stream').ConnectionStream
 local misc = require('/base/util/misc')
 local helper = require('../helper')
 local timer = require('timer')
-local constants = require('constants')
-local consts = require('/base/util/constants')
+local consts = require('/base/util/constants').Constants:new()
 local Endpoint = require('../../endpoint').Endpoint
 local path = require('path')
 local os = require('os')
@@ -84,7 +83,7 @@ exports['test_upgrades'] = function(test, asserts)
   end
 
   -- Override the default download path
-  consts.DEFAULT_DOWNLOAD_PATH = path.join('.', 'tmp')
+  consts:SetGlobal('DEFAULT_DOWNLOAD_PATH', path.join('.', 'tmp'))
 
   options = {
     datacenter = 'test',

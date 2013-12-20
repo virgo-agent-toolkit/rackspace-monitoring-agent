@@ -56,7 +56,7 @@ local Metric = require('./base').Metric
 local split = require('/base/util/misc').split
 local tableContains = require('/base/util/misc').tableContains
 local lastIndexOf = require('/base/util/misc').lastIndexOf
-local constants = require('/base/util/constants')
+local constants = require('/constants')
 local loggingUtil = require('/base/util/logging')
 
 local toString = require('/base/util/misc').toString
@@ -82,10 +82,10 @@ function PluginCheck:initialize(params)
 
   local file = path.basename(params.details.file)
   local args = params.details.args and params.details.args or {}
-  local timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+  local timeout = params.details.timeout and params.details.timeout or constants:Get('DEFAULT_PLUGIN_TIMEOUT')
 
   self._file = file
-  self._pluginPath = path.join(constants.DEFAULT_CUSTOM_PLUGINS_PATH, file)
+  self._pluginPath = path.join(constants:Get('DEFAULT_CUSTOM_PLUGINS_PATH'), file)
   self._pluginArgs = args
   self._timeout = timeout
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s, id=%s, iid=%s)', file, self.id, self._iid))

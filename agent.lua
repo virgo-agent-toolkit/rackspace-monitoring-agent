@@ -30,7 +30,7 @@ local async = require('async')
 local sigarCtx = require('/sigar').ctx
 
 local MachineIdentity = require('machineidentity').MachineIdentity
-local constants = require('/base/util/constants')
+local constants = require('/base/util/constants').Constants:new()
 local misc = require('/base/util/misc')
 local fsutil = require('/base/util/fs')
 local UUID = require('/base/util/uuid')
@@ -42,7 +42,7 @@ local Agent = Emitter:extend()
 
 function Agent:initialize(options, types)
   if not options.stateDirectory then
-    options.stateDirectory = constants.DEFAULT_STATE_PATH
+    options.stateDirectory = constants:Get('DEFAULT_STATE_PATH')
   end
   logging.debug('Using state directory ' .. options.stateDirectory)
   self._stateDirectory = options.stateDirectory
@@ -81,7 +81,7 @@ function Agent:start(options)
     function(callback)
       if os.type() ~= 'win32' then
         if not options.pidFile then
-          options.pidFile = constants.DEFAULT_PID_FILE_PATH
+          options.pidFile = constants:Get('DEFAULT_PID_FILE_PATH')
         end
       end
       misc.writePid(options.pidFile, callback)
@@ -109,7 +109,7 @@ function Agent:connect(callback)
 
   if #endpoints <= 0 then
     logging.error('no endpoints')
-    timer.setTimeout(misc.calcJitter(constants.SRV_RECORD_FAILURE_DELAY, constants.SRV_RECORD_FAILURE_DELAY_JITTER), function()
+    timer.setTimeout(misc.calcJitter(constants:Get('SRV_RECORD_FAILURE_DELAY'), constants:Get('SRV_RECORD_FAILURE_DELAY_JITTER')), function()
       process.exit(1)
     end)
     return
@@ -138,7 +138,7 @@ function Agent:connect(callback)
 end
 
 function Agent:_shutdown(msg, timeout, exit_code, shutdownType)
-  if shutdownType == constants.SHUTDOWN_RESTART then
+  if shutdownType == constants:Get('SHUTDOWN_RESTART') then
     virgo.perform_restart_on_upgrade()
   else
     -- Sleep to keep from busy restarting on upstart/systemd/etc
@@ -160,14 +160,14 @@ function Agent:_onShutdown(shutdownType)
   -- Destroy Socket Streams
   self._streams:shutdown()
 
-  if shutdownType == constants.SHUTDOWN_UPGRADE then
+  if shutdownType == constants:Get('SHUTDOWN_UPGRADE') then
     msg = 'Shutting down agent due to upgrade'
-  elseif shutdownType == constants.SHUTDOWN_RATE_LIMIT then
+  elseif shutdownType == constants:Get('SHUTDOWN_RATE_LIMIT') then
     msg = 'Shutting down. The rate limit was exceeded for the ' ..
     'agent API endpoint. Contact support if you need an increased rate limit.'
-    exit_code = constants.RATE_LIMIT_RETURN_CODE
-    timeout = constants.RATE_LIMIT_SLEEP
-  elseif shutdownType == constants.SHUTDOWN_RESTART then
+    exit_code = constants:Get('RATE_LIMIT_RETURN_CODE')
+    timeout = constants:Get('RATE_LIMIT_SLEEP')
+  elseif shutdownType == constants:Get('SHUTDOWN_RESTART') then
     msg = 'Attempting to restart agent'
   else
     msg = fmt('Shutdown called for unknown type %s', shutdownType)
@@ -244,7 +244,7 @@ end
 
 function Agent:loadEndpoints(callback)
   local config = self._config
-  local queries = config['query_endpoints'] or table.concat(constants.DEFAULT_MONITORING_SRV_QUERIES, ',')
+  local queries = config['query_endpoints'] or table.concat(constants:Get('DEFAULT_MONITORING_SRV_QUERIES'), ',')
   local snetregion = config['snet_region']
   local endpoints = config['endpoints']
 
@@ -275,14 +275,14 @@ function Agent:loadEndpoints(callback)
       return v == snetregion
     end
 
-    if not misc.tableContains(matcher, constants.VALID_SNET_REGION_NAMES) then
+    if not misc.tableContains(matcher, constants:Get('VALID_SNET_REGION_NAMES')) then
       logging.errorf("Invalid configuration: snet_region '%s' is not supported.", snetregion)
       process.exit(1)
     end
 
     logging.info(fmt('Using ServiceNet endpoints in %s region', snetregion))
 
-    for _, address in ipairs(constants.SNET_MONITORING_TEMPLATE_SRV_QUERIES) do
+    for _, address in ipairs(constants:Get('SNET_MONITORING_TEMPLATE_SRV_QUERIES')) do
       address = address:gsub('${region}', snetregion)
       logging.debug(fmt('Endpoint SRV %s', address))
       table.insert(domains, address)
@@ -332,12 +332,12 @@ function Agent:_getSystemId()
 end
 
 function Agent:_getPersistentFilename(variable)
-  return path.join(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, variable .. '.txt')
+  return path.join(constants:Get('DEFAULT_PERSISTENT_VARIABLE_PATH'), variable .. '.txt')
 end
 
 function Agent:_savePersistentVariable(variable, data, callback)
   local filename = self:_getPersistentFilename(variable)
-  fsutil.mkdirp(constants.DEFAULT_PERSISTENT_VARIABLE_PATH, "0755", function(err)
+  fsutil.mkdirp(constants:Get('DEFAULT_PERSISTENT_VARIABLE_PATH'), "0755", function(err)
     if err and err.code ~= 'EEXIST' then
       callback(err)
       return

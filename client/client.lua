@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 local Timer = require('uv').Timer
-local consts = require('/base/util/constants')
+local consts = require('/base/util/constants').Constants:new()
 local tls = require('tls')
 local JSON = require('json')
 local timer = require('timer')
@@ -107,7 +107,7 @@ function AgentClient:log(priority, ...)
 end
 
 function AgentClient:_socketTimeout()
-  return misc.calcJitter(HEARTBEAT_INTERVAL, consts.SOCKET_TIMEOUT)
+  return misc.calcJitter(HEARTBEAT_INTERVAL, consts:Get('SOCKET_TIMEOUT'))
 end
 
 function AgentClient:connect()
@@ -173,7 +173,7 @@ end
 
 function AgentClient:startHeartbeatInterval()
   function startInterval(this)
-    local timeout = misc.calcJitterMultiplier(this._heartbeat_interval, consts.HEARTBEAT_INTERVAL_JITTER_MULTIPLIER)
+    local timeout = misc.calcJitterMultiplier(this._heartbeat_interval, consts:Get('HEARTBEAT_INTERVAL_JITTER_MULTIPLIER'))
 
     if this:isDestroyed() then
       return

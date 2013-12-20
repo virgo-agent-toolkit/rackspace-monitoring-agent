@@ -28,7 +28,7 @@ local MachineIdentity = require('machineidentity').MachineIdentity
 local async = require('async')
 local ask = require('/base/util/prompt').ask
 local errors = require('errors')
-local constants = require('/base/util/constants')
+local constants = require('/constants')
 local sigarCtx = require('/sigar').ctx
 
 local maas = require('rackspace-monitoring')
@@ -310,7 +310,7 @@ function Setup:run(callback)
             callback(errors.AuthTimeoutError:new('Authentication timed out.'))
           end
 
-          local authTimer = timer.setTimeout(constants.SETUP_AUTH_TIMEOUT, timeout)
+          local authTimer = timer.setTimeout(constants:Get('SETUP_AUTH_TIMEOUT'), timeout)
 
           function testAuth()
             timer.clearTimer(authTimer)
@@ -319,12 +319,12 @@ function Setup:run(callback)
               self:_out('Agent successfuly connected!')
               callback()
             else
-              authTimer = timer.setTimeout(constants.SETUP_AUTH_TIMEOUT, timeout)
-              timer.setTimeout(constants.SETUP_AUTH_CHECK_INTERVAL, testAuth)
+              authTimer = timer.setTimeout(constants:Get('SETUP_AUTH_TIMEOUT'), timeout)
+              timer.setTimeout(constants:Get('SETUP_AUTH_CHECK_INTERVAL'), testAuth)
             end
           end
 
-          timer.setTimeout(constants.SETUP_AUTH_CHECK_INTERVAL, testAuth)
+          timer.setTimeout(constants:Get('SETUP_AUTH_CHECK_INTERVAL'), testAuth)
         end
       }, callback)
     end,

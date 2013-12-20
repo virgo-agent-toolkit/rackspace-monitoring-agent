@@ -32,7 +32,7 @@ local path = require('path')
 
 local async = require('async')
 
-local constants = require('/base/util/constants')
+local constants = require('/constants')
 local loggingUtil = require('/base/util/logging')
 local tableContains = require('/base/util/misc').tableContains
 local toString = require('/base/util/misc').toString
@@ -236,7 +236,7 @@ function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension,
   if tableContains(matcher, VALID_METRIC_TYPES) then
     internalMetricType = metricType
   else
-    internalMetricType = constants.PLUGIN_TYPE_MAP[metricType]
+    internalMetricType = constants:Get('PLUGIN_TYPE_MAP')[metricType]
   end
 
   if not internalMetricType then
@@ -525,7 +525,7 @@ local SubProcCheck = ChildCheck:extend()
 
 function SubProcCheck:initialize(params)
   ChildCheck.initialize(self, params)
-  self._timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+  self._timeout = params.details.timeout and params.details.timeout or constants:Get('DEFAULT_PLUGIN_TIMEOUT')
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s, id=%s, iid=%s)', self.getType(), self.id, self._iid))
 end
 

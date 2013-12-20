@@ -15,7 +15,7 @@ local sigar = require('sigar')
 local misc = require('/base/util/misc')
 local logging = require('logging')
 local loggingUtil = require ('/base/util/logging')
-local consts = require('/base/util/constants')
+local consts = require('/base/util/constants').Constants:new()
 local async = require('async')
 local fmt = require('string').format
 local fsutil = require('/base/util/fs')
@@ -123,10 +123,10 @@ end
 
 function ConnectionMessages:getUpgrade(version, client, callback)
   local channel = self._connectionStream:getChannel()
-  local unverified_dir = consts.DEFAULT_UNVERIFIED_BUNDLE_PATH
-  local verified_dir = consts.DEFAULT_VERIFIED_BUNDLE_PATH
-  local unverified_binary_dir = consts.DEFAULT_UNVERIFIED_EXE_PATH
-  local verified_binary_dir = consts.DEFAULT_VERIFIED_EXE_PATH
+  local unverified_dir = consts:Get('DEFAULT_UNVERIFIED_BUNDLE_PATH')
+  local verified_dir = consts:Get('DEFAULT_VERIFIED_BUNDLE_PATH')
+  local unverified_binary_dir = consts:Get('DEFAULT_UNVERIFIED_EXE_PATH')
+  local verified_binary_dir = consts:Get('DEFAULT_VERIFIED_EXE_PATH')
 
   local function download_iter(item, callback)
     local options = {
