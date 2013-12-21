@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 local Timer = require('uv').Timer
-local consts = require('/base/util/constants').Constants:new()
+local consts = require('/base/util/constants')
 local tls = require('tls')
 local JSON = require('json')
 local timer = require('timer')

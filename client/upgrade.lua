@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 local Emitter = require('core').Emitter
 local timer = require('timer')
-local consts = require('/base/util/constants').Constants:new()
+local consts = require('/base/util/constants')
 local misc = require('/base/util/misc')
 local logging = require('logging')
 

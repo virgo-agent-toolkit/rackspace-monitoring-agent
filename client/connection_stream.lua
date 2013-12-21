@@ -27,7 +27,7 @@ local UpgradePollEmitter = require('./upgrade').UpgradePollEmitter
 
 local AgentClient = require('./client').AgentClient
 local logging = require('logging')
-local consts = require('/base/util/constants').Constants:new()
+local consts = require('/base/util/constants')
 local misc = require('/base/util/misc')
 local vutils = require('virgo_utils')
 local path = require('path')

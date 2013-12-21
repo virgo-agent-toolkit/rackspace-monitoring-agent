@@ -6,6 +6,7 @@
 ./agents/monitoring/collector/init.lua
 ./agents/monitoring/init.lua
 ./base/util/constants.lua
+./base/util/constants_class.lua
 ./base/util/fs.lua
 ./base/util/logging.lua
 ./base/util/misc.lua

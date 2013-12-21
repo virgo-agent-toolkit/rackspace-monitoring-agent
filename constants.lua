@@ -1,4 +1,4 @@
-local baseConstants = require('/base/util/constants').Constants
+local baseConstants = require('/base/util/constants_class').Constants
 
 local constants = baseConstants:new()
 

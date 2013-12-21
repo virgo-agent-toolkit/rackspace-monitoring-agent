@@ -30,7 +30,7 @@ local async = require('async')
 local sigarCtx = require('/sigar').ctx
 
 local MachineIdentity = require('machineidentity').MachineIdentity
-local constants = require('/base/util/constants').Constants:new()
+local constants = require('/base/util/constants')
 local misc = require('/base/util/misc')
 local fsutil = require('/base/util/fs')
 local UUID = require('/base/util/uuid')
