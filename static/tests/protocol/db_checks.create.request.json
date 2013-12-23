@@ -1,0 +1,12 @@
+{
+  "method": "db.checks.create",
+  "v": "1",
+  "params": {
+    "type": "agent.memory",
+    "label": "automagic",
+    "entity_id": "enAAAAIPV4"
+  },
+  "id": "1",
+  "source": "785620-1568-4af9-ca5d-4c8d79ef1dce",
+  "target": "endpoint"
+}

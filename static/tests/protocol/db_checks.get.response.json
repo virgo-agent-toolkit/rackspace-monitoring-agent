@@ -1,0 +1,31 @@
+{
+    "error": null,
+    "id": "1",
+    "result": {
+        "created_at": 1386348635298,
+        "details": {
+            "follow_redirects": true,
+            "include_body": false,
+            "method": "GET",
+            "metod": "GET",
+            "url": "http://www.yourmom.com"
+        },
+        "disabled": false,
+        "id": "chAAAA",
+        "label": "test check",
+        "metadata": null,
+        "monitoring_zones_poll": [
+            "mzA"
+        ],
+        "period": 150,
+        "target_alias": "default",
+        "target_hostname": null,
+        "target_resolver": null,
+        "timeout": 60,
+        "type": "remote.http",
+        "updated_at": 1386348635298
+    },
+    "source": "endpoint",
+    "target": "553f809d-a1d9-4749-c75b-10ddb1b7d7f0",
+    "v": "1"
+}

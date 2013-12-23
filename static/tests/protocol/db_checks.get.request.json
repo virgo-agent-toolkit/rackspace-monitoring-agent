@@ -1,0 +1,11 @@
+{
+    "id": "1",
+    "method": "db.checks.get",
+    "params": {
+        "check_id": "chAAAA",
+        "entity_id": "enAAAAIPV4"
+    },
+    "source": "agentA",
+    "target": "endpoint",
+    "v": "1"
+}

@@ -188,7 +188,7 @@ function Request:_ensure_retries(err, res, buf)
   local status = res and res.status_code or "?"
 
   local msg = fmt('%s to %s:%s failed for %s with status: %s and error: %s.', (self.options.method or "?"),
-              self.options.host, self.options.port, (self.download or self.upload or "?"), status, tostring(err))
+              self.endpoint.host, self.endpoint.port, (self.download or self.upload or "?"), status, tostring(err))
 
   logging.warn(msg)
 

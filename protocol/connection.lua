@@ -30,6 +30,7 @@ local table = require('table')
 local utils = require('utils')
 local hostInfo = require('../host_info')
 local check = require('../check')
+local misc = require('../util/misc')
 local vutils = require('virgo_utils')
 
 -- Response timeouts in ms
@@ -62,6 +63,101 @@ end
 
 requests['bundle_upgrade.get_version'] = function(self, callback)
   local m = msg.BundleUpgradeRequest:new()
+  self:_send(m, callback)
+end
+
+requests['db.checks.create'] = function(self, params, callback)
+  local m = msg.db.checks.create:new(params)
+  self:_send(m, callback)
+end
+
+requests['db.checks.get_all'] = function(self, params, callback)
+  local m = msg.db.checks.get_all:new(params)
+  self:_send(m, callback)
+end
+
+requests['db.checks.get'] = function(self, entityId, checkId, callback)
+  local m = msg.db.checks.get:new(entityId, checkId)
+  self:_send(m, callback)
+end
+
+requests['db.checks.remove'] = function(self, entityId, checkId, callback)
+  local m = msg.db.checks.remove:new(entityId, checkId)
+  self:_send(m, callback)
+end
+
+requests['db.checks.update'] = function(self, entityId, checkId, params, callback)
+  local m = msg.db.checks.update:new(entityId, checkId, params)
+  self:_send(m, callback)
+end
+
+requests['db.alarms.get'] = function(self, entityId, alarmId, callback)
+  local m = msg.db.alarms.get:new(entityId, alarmId)
+  self:_send(m, callback)
+end
+
+requests['db.alarms.create'] = function(self, entityId, checkId, criteria, npId, callback)
+  local m = msg.db.alarms.create:new(entityId, checkId, criteria, npId)
+  self:_send(m, callback)
+end
+
+requests['db.alarms.remove'] = function(self, entityId, alarmId, callback)
+  local m = msg.db.alarms.remove:new(entityId, alarmId)
+  self:_send(m, callback)
+end
+
+requests['db.alarms.update'] = function(self, params, callback)
+  local m = msg.db.alarms.update:new(params)
+  self:_send(m, callback)
+end
+
+requests['db.notification.get'] = function(self, notificationId, callback)
+  local m = msg.db.notification.get:new(notificationId)
+  self:_send(m, callback)
+end
+
+requests['db.notification.list'] = function(self, callback)
+  local m = msg.db.notification.list:new(notificationId)
+  self:_send(m, callback)
+end
+
+requests['db.notification.create'] = function(self, params, callback)
+  local m = msg.db.notification.create:new(params)
+  self:_send(m, callback)
+end
+
+requests['db.notification.remove'] = function(self, notificationId, callback)
+  local m = msg.db.notification.remove:new(notificationId, alarmId)
+  self:_send(m, callback)
+end
+
+requests['db.notification.update'] = function(self, notificationId, params, callback)
+  local m = msg.db.notification.update:new(notificationId, params)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.get'] = function(self, notificationId, callback)
+  local m = msg.db.notification_plan.get:new(notificationId)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.list'] = function(self, callback)
+  local m = msg.db.notification_plan.list:new(notificationId)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.create'] = function(self, params, callback)
+  local m = msg.db.notification_plan.create:new(params)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.remove'] = function(self, notificationId, callback)
+  local m = msg.db.notification_plan.remove:new(notificationId, alarmId)
+  self:_send(m, callback)
+end
+
+requests['db.notification_plan.update'] = function(self, notificationId, params, callback)
+  local m = msg.db.notification_plan.update:new(notificationId, params)
   self:_send(m, callback)
 end
 
@@ -285,14 +381,97 @@ function AgentProtocolConnection:startHandshake(callback)
   self:request('handshake.hello', self._myid, self._token, function(err, msg)
     if err then
       self._log(logging.ERR, fmt('handshake failed (message=%s)', err.message))
-      callback(err, msg)
-      return
+      return callback(err, msg)
     end
 
     self:setState(STATES.RUNNING)
     self._log(logging.DEBUG, fmt('handshake successful (heartbeat_interval=%dms)', msg.result.heartbeat_interval))
     callback(nil, msg)
   end)
+end
+
+--[[ db.Checks ]]
+
+function AgentProtocolConnection:dbCreateChecks(entityId, params, callback)
+  local p = misc.merge(params, { entity_id = entityId })
+  self:request('db.checks.create', p, callback)
+end
+
+function AgentProtocolConnection:dbListChecks(params, callback)
+  self:request('db.checks.list', params, callback)
+end
+
+function AgentProtocolConnection:dbGetChecks(entityId, checkId, callback)
+  self:request('db.checks.get', entityId, checkId, callback)
+end
+
+function AgentProtocolConnection:dbRemoveChecks(entityId, checkId, callback)
+  self:request('db.checks.remove', entityId, checkId, callback)
+end
+
+function AgentProtocolConnection:dbUpdateChecks(entityId, checkId, params, callback)
+  self:request('db.checks.update', entityId, checkId, params, callback)
+end
+
+--[[ db.Alarms ]]
+
+function AgentProtocolConnection:dbGetAlarms(entityId, alarmId, callback)
+  self:request('db.alarms.get', entityId, alarmId, callback)
+end
+
+function AgentProtocolConnection:dbCreateAlarms(entityId, checkId, criteria, npId, callback)
+  self:request('db.alarms.create', entityId, checkId, criteria, npId, callback)
+end
+
+function AgentProtocolConnection:dbRemoveAlarms(entityId, alarmId, callback)
+  self:request('db.alarms.remove', entityId, alarmId, callback)
+end
+
+function AgentProtocolConnection:dbUpdateAlarms(params, callback)
+  self:request('db.alarms.update', params, callback)
+end
+
+--[[ db.Notification --]]
+
+function AgentProtocolConnection:dbGetNotification(notificationId, callback)
+  self:request('db.notification.get', notificationId, callback)
+end
+
+function AgentProtocolConnection:dbCreateNotification(params, callback)
+  self:request('db.notification.create', params, callback)
+end
+
+function AgentProtocolConnection:dbListNotification(callback)
+  self:request('db.notification.list', callback)
+end
+
+function AgentProtocolConnection:dbRemoveNotification(notificationId, callback)
+  self:request('db.notification.remove', notificationId, callback)
+end
+
+function AgentProtocolConnection:dbUpdateNotification(notificationId, params, callback)
+  self:request('db.notification.update', notificationId, params, callback)
+end
+
+--[[ db.NotificationPlan --]] 
+function AgentProtocolConnection:dbGetNotificationPlan(notificationId, callback)
+  self:request('db.notification_plan.get', notificationId, callback)
+end
+
+function AgentProtocolConnection:dbCreateNotificationPlan(params, callback)
+  self:request('db.notification_plan.create', params, callback)
+end
+
+function AgentProtocolConnection:dbListNotificationPlan(callback)
+  self:request('db.notification_plan.list', callback)
+end
+
+function AgentProtocolConnection:dbRemoveNotificationPlan(notificationId, callback)
+  self:request('db.notification_plan.remove', notificationId, callback)
+end
+
+function AgentProtocolConnection:dbUpdateNotificationPlan(notificationId, params, callback)
+  self:request('db.notification_plan.update', notificationId, params, callback)
 end
 
 return AgentProtocolConnection

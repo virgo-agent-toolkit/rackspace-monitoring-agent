@@ -6,6 +6,7 @@
 ./agents/monitoring/collector/init.lua
 ./agents/monitoring/init.lua
 ./certs.lua
+./confd.lua
 ./crash.lua
 ./check/apache.lua
 ./check/base.lua
@@ -117,6 +118,10 @@
 ./static/tests/custom_plugins/timeout.sh
 ./static/tests/data/sample.state
 ./static/tests/monitoring-agent-localhost.cfg
+./static/tests/protocol/db_checks.create.request.json
+./static/tests/protocol/db_checks.create.response.json
+./static/tests/protocol/db_checks.get.request.json
+./static/tests/protocol/db_checks.get.response.json
 ./static/tests/protocol/binary_upgrade.available.request.json
 ./static/tests/protocol/binary_upgrade.available.response.json
 ./static/tests/protocol/binary_upgrade.get_version.request.json
@@ -142,6 +147,7 @@
 ./static/tests/protocol/static_files/upgrades/bundle/1.0.2.19
 ./static/tests/system_info.network_interfaces.request.json
 ./tests/agent-protocol/init.lua
+./tests/db/init.lua
 ./tests/check/apache.lua
 ./tests/check/filesystem.lua
 ./tests/check/init.lua

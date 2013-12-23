@@ -39,6 +39,7 @@ local Endpoint = require('/endpoint').Endpoint
 local ConnectionStream = require('/client/connection_stream').ConnectionStream
 local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
+local Confd = require('confd')
 
 function Agent:initialize(options, types)
   if not options.stateDirectory then
@@ -50,6 +51,7 @@ function Agent:initialize(options, types)
   self._options = options
   self._upgradesEnabled = true
   self._types = types or {}
+  self._confd = Confd:new()
 end
 
 function Agent:start(options)
@@ -88,6 +90,9 @@ function Agent:start(options)
     end,
     function(callback)
       self:connect(callback)
+    end,
+    function(callback)
+      self._confd:run(callback)
     end
   },
   function(err)

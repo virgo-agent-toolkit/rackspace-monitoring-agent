@@ -55,6 +55,7 @@ local TESTS_TO_RUN = {
   './misc',
   './check',
   './fs',
+  './db',
   './schedule',
   './upgrade',
   './net'
