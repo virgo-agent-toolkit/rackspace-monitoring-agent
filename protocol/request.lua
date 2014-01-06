@@ -77,6 +77,7 @@ function Request:initialize(options, callback)
   options.upload = nil
 
   self.options = options
+  self.active_req_options = nil
 
   if not self:_cycle_endpoint() then
     return self.callback(Error:new('call with options.port and options.host or options.endpoints'))
@@ -85,10 +86,15 @@ end
 
 function Request:request()
   local function run(opts)
-    logging.debugf('sending request to %s:%s%s', opts.host, opts.port, self.options.path)
+    local options = misc.merge({}, self.options, opts)
 
-    local options = misc.merge(opts, self.options)
-    options = misc.merge(options, opts)
+    -- Save currently active options so we can log it inside _ensure_retries.
+    -- Sadly the way the code is currently structured, there is no nicer way to
+    -- do it if we want to accurately log the options which were used for the
+    -- active request.
+    self.active_req_options = options
+
+    logging.debugf('sending request to %s:%s%s', options.host, options.port, options.path)
 
     local req = https.request(options, function(res)
       self:_handle_response(res)
@@ -186,9 +192,18 @@ function Request:_ensure_retries(err, res, buf)
   end
 
   local status = res and res.status_code or "?"
+  local options = self.active_req_options
 
-  local msg = fmt('%s to %s:%s failed for %s with status: %s and error: %s.', (self.options.method or "?"),
-              self.options.host, self.options.port, (self.download or self.upload or "?"), status, tostring(err))
+  if self.download then
+      action = 'download'
+  elseif self.upload then
+      action = 'upload'
+  else
+      action = 'request'
+  end
+
+  local msg = fmt('%s to %s:%s failed for %s with status: %s and error: %s.', (options.method or "?"),
+                  options.host, options.port, (self.download or self.upload or "?"), status, tostring(err))
 
   logging.warn(msg)
 
@@ -196,7 +211,7 @@ function Request:_ensure_retries(err, res, buf)
     return self.callback(err)
   end
 
-  logging.debugf('retrying download %d more times.', self.attempts)
+  logging.debugf('retrying %s %d more times.', action, self.attempts)
 
   self:request()
 end
