@@ -213,12 +213,13 @@ function Agent:_preConfig(callback)
         local machid = MachineIdentity:new(self._config)
         machid:get(function(err, results)
           if err then
-            return callback(err)
+            logging.infof('Machine ID unobtainable, %s', err.message)
           end
-          if results and results.id then
+          if not err and results and results.id then
             logging.infof('Using detected agent ID (id=%s)', results.id)
             self._config['id'] = results.id
           else
+            logging.infof('Using hostname as agent ID (id=%s)', os.hostname())
             self._config['id'] = os.hostname()
           end
           callback()
