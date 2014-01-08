@@ -97,6 +97,8 @@ function Entry.run()
   virgo.config['guid'] = virgo.config['monitoring_guid']
   virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
   virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
+  virgo.config['collectors_enabled'] = virgo.config['monitoring_collectors_enabled']
+  virgo.config['collectors_sinks'] = virgo.config['monitoring_collectors_sinks']
   
   local agent = MonitoringAgent:new(options, types)
 

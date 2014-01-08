@@ -41,11 +41,6 @@ local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
 
 function Agent:initialize(options, types)
-  if not options.stateDirectory then
-    options.stateDirectory = constants.DEFAULT_STATE_PATH
-  end
-  logging.debug('Using state directory ' .. options.stateDirectory)
-  self._stateDirectory = options.stateDirectory
   self._config = virgo.config
   self._options = options
   self._upgradesEnabled = true

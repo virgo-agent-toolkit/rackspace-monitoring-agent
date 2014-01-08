@@ -23,6 +23,11 @@ function VirgoProtocolConnection:_bindHandlers()
     self:_send(m, callback)
   end
 
+  self._requests['metrics.post'] = function(self, rawMetrics, callback)
+    local m = msg.RawMetricsRequest:new(rawMetrics)
+    self:_send(m, callback)
+  end
+
   self._responses['check_schedule.changed'] = function(self, replyTo, callback)
     local m = msg.ScheduleChangeAck:new(replyTo)
     self:_send(m, callback)

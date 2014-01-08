@@ -248,7 +248,7 @@ function ConnectionMessages:onMessage(client, msg)
 
   local callback = function(err, msg)
     if (err) then
-      client:log(logging.INFO, fmt('error handling %s %s', method, err))
+      client:log(logging.INFO, fmt('error handling %s (error: %s)', method, err))
       return
     end
 

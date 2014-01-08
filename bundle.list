@@ -34,6 +34,15 @@
 ./client/upgrade.lua
 ./client/virgo_client.lua
 ./client/virgo_connection_stream.lua
+./collector/init.lua
+./collector/base.lua
+./collector/manager.lua
+./collector/sources/graphite.lua
+./collector/sources/statsd.lua
+./collector/sources/init.lua
+./collector/sinks/udp.lua
+./collector/sinks/rackspace_monitoring.lua
+./collector/sinks/init.lua
 ./code_cert.prod.lua
 ./crashreport.lua
 ./endpoint.lua
@@ -62,6 +71,9 @@
 ./lua_modules/options/modules/init.lua
 ./lua_modules/options/package.lua
 ./lua_modules/options/test.lua
+./lua_modules/statsd/misc.lua
+./lua_modules/statsd/init.lua
+./lua_modules/statsd/statsd.lua
 ./lua_modules/rackspace-monitoring/example.lua
 ./lua_modules/rackspace-monitoring/init.lua
 ./lua_modules/rackspace-monitoring/lib/client.lua
