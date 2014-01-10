@@ -15,8 +15,8 @@ limitations under the License.
 --]]
 local Emitter = require('core').Emitter
 local timer = require('timer')
-local consts = require('../util/constants')
-local misc = require('../util/misc')
+local consts = require('/base/util/constants')
+local misc = require('/base/util/misc')
 local logging = require('logging')
 
 local UpgradePollEmitter = Emitter:extend()
@@ -29,7 +29,7 @@ function UpgradePollEmitter:initialize()
 end
 
 function UpgradePollEmitter:calcTimeout()
-  return misc.calcJitter(consts.UPGRADE_INTERVAL, consts.UPGRADE_INTERVAL_JITTER)
+  return misc.calcJitter(consts:get('UPGRADE_INTERVAL'), consts:get('UPGRADE_INTERVAL_JITTER'))
 end
 
 function UpgradePollEmitter:_emit()
@@ -81,9 +81,9 @@ end
 function UpgradePollEmitter:onSuccess()
   local reason
   if self._options.exit_on_upgrade then
-    reason = consts.SHUTDOWN_UPGRADE
+    reason = consts:get('SHUTDOWN_UPGRADE')
   elseif self._options.restart_on_upgrade then
-    reason = consts.SHUTDOWN_RESTART
+    reason = consts:get('SHUTDOWN_RESTART')
   end
   self:emit('shutdown', reason)
 end

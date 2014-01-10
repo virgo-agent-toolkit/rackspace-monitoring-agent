@@ -17,7 +17,7 @@ local string = require('string')
 local async = require('async')
 
 local RedisCheck = require('/check').RedisCheck
-local testUtil = require('/util/test')
+local testUtil = require('/base/util/test')
 local fixtures = require('/tests/fixtures').checks
 
 local exports = {}

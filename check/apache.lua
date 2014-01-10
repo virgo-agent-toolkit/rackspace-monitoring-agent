@@ -17,8 +17,8 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local Metric = require('./base').Metric
 
-local misc = require('/util/misc')
-local constants = require('/util/constants')
+local misc = require('/base/util/misc')
+local constants = require('/constants')
 local logging = require('logging')
 local async = require('async')
 local url = require('url')
@@ -34,7 +34,7 @@ function ApacheCheck:initialize(params)
 
   self._params = params
   self._url = params.details.url and params.details.url or 'http://127.0.0.1/server-status?auto'
-  self._timeout = params.details.timeout and params.details.timeout or constants.DEFAULT_PLUGIN_TIMEOUT
+  self._timeout = params.details.timeout and params.details.timeout or constants:get('DEFAULT_PLUGIN_TIMEOUT')
 
   -- setup default port
   local parsed = url.parse(self._url)

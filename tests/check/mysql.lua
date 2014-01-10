@@ -21,7 +21,6 @@ local env = require('env')
 
 local Check = require('/check')
 local Metric = require('/check/base').Metric
-local constants = require('/util/constants')
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
 

@@ -2,7 +2,7 @@ local Scheduler = require('/schedule').Scheduler
 local ConnectionStream = require("./connection_stream").ConnectionStream
 
 local logging = require('logging')
-local loggingUtil = require('../util/logging')
+local loggingUtil = require('/base/util/logging')
 local fmt = require('string').format
 
 local VirgoConnectionStream = ConnectionStream:extend()
