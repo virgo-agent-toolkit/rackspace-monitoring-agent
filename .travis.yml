@@ -1,7 +1,7 @@
 language: erlang
 
 before_install:
-  - git submodule update --init
+  - git submodule update --init --recursive
   - ./configure
   - make -C out
 
