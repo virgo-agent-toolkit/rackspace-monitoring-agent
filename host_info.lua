@@ -355,7 +355,7 @@ end
 
 
 --[[ Factory ]]--
-function create(infoType)
+local function create(infoType)
   if infoType == 'CPU' then
     return CPUInfo:new()
   elseif infoType == 'MEMORY' then
@@ -378,7 +378,7 @@ function create(infoType)
 end
 
 -- Dump all the info objects to a file
-function debugInfo(fileName, callback)
+local function debugInfo(fileName, callback)
   local data = ''
   for k, v in pairs({'SYSTEM', 'CPU', 'MEMORY', 'NETWORK', 'DISK', 'PROCS', 'FILESYSTEM', 'WHO'}) do
     local info = create(v)

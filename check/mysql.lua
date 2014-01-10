@@ -180,6 +180,7 @@ function MySQLCheck:_runCheckInChild(callback)
   end
 
   -- read mycnf
+  local rv
   if self.mysql_mycnf then
     rv = clib.mysql_options(conn, ffi.C.MYSQL_READ_DEFAULT_GROUP, 'client')
     if rv ~= 0 then
@@ -193,7 +194,6 @@ function MySQLCheck:_runCheckInChild(callback)
   end
 
   -- http://dev.mysql.com/doc/refman/5.0/en/mysql-real-connect.html
-  local rv
   if self.mysql_socket then
     rv = clib.mysql_real_connect(conn,
                                  nil,
@@ -261,7 +261,7 @@ function MySQLCheck:_runCheckInChild(callback)
   end
 
   while true do
-    r = clib.mysql_fetch_row(result)
+    local r = clib.mysql_fetch_row(result)
     if r == nil then
       break
     end

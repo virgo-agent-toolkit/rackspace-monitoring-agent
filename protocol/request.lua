@@ -167,7 +167,7 @@ function Request:_write_stream(res)
     if stream.code and stream.code == "ENOENT" then
       return self.callback(stream)
     end
-    return self:_ensure_retries(err, res)
+    return self:_ensure_retries(stream, res)
   end
 
   stream:on('end', function()
@@ -193,6 +193,7 @@ function Request:_ensure_retries(err, res, buf)
 
   local status = res and res.status_code or "?"
   local options = self.active_req_options
+  local action
 
   if self.download then
       action = 'download'

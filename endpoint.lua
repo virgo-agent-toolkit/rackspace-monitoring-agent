@@ -25,11 +25,11 @@ local Endpoint = Object:extend()
 
 function Endpoint:initialize(host, port, srv_query)
   if not port and host then
-    ip_and_port = misc.splitAddress(host)
+    local ip_and_port = misc.splitAddress(host)
     host = ip_and_port[1]
     port = ip_and_port[2]
   end
-  
+
   self.host = host
   self.port = port
   self.srv_query = srv_query

@@ -164,7 +164,7 @@ end
 -- Get Server Memory Manager Data
 local MSSQLServerMemoryManagerCheck = WindowsGetCounterCheck:extend()
 
-function mem_handle_entry(self, entry)
+local function mem_handle_entry(self, entry)
   local metric = nil
   if entry.Name then
     local type_map = {

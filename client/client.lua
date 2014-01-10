@@ -172,7 +172,7 @@ function AgentClient:isDestroyed()
 end
 
 function AgentClient:startHeartbeatInterval()
-  function startInterval(this)
+  local function startInterval(this)
     local timeout = misc.calcJitterMultiplier(this._heartbeat_interval, consts:get('HEARTBEAT_INTERVAL_JITTER_MULTIPLIER'))
 
     if this:isDestroyed() then
@@ -181,7 +181,7 @@ function AgentClient:startHeartbeatInterval()
 
     this._log(logging.DEBUG, fmt('Starting heartbeat interval, interval=%dms', this._heartbeat_interval))
 
-    function timerCb()
+    local function timerCb()
       local timestamp = Timer.now()
       local send_timestamp = vutils.gmtRaw()
 

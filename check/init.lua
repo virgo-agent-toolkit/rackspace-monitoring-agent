@@ -61,7 +61,7 @@ end
 
 local check_type_map = create_map()
 
-function create(checkData)
+local function create(checkData)
   local check = nil
   local checkType = checkData.type
   local obj = {
@@ -78,7 +78,7 @@ function create(checkData)
 end
 
 -- Test Check
-function test(checkParams, callback)
+local function test(checkParams, callback)
   if type(checkParams) ~= 'table' then
     callback(Error:new('checkParams is not a table'))
     return
@@ -94,7 +94,7 @@ function test(checkParams, callback)
 end
 
 -- Fetch Targets
-function targets(checkType, callback)
+local function targets(checkType, callback)
   if type(checkType) ~= 'string' then
     callback(Error:new('checkParams is not a string'))
     return

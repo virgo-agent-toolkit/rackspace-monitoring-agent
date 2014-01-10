@@ -111,8 +111,6 @@ end
 
 local exports = {}
 exports.Manifest = Manifest
-exports.BinaryUpgradeRequest = BinaryUpgrade
-exports.BundleUpgradeRequest = BundleUpgrade
 exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse
 exports.ScheduleChangeAck = ScheduleChangeAck

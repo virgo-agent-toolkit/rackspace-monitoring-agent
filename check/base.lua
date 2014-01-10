@@ -56,6 +56,25 @@ local DEFAULT_STATUS = 'success'
 -- Default check state
 local DEFAULT_STATE = 'available'
 
+-- Determinate the metric type based on the value type.
+local function getMetricType(value)
+  local valueType = type(value)
+
+  if valueType == 'string' then
+    -- TODO gauge
+    return 'string'
+  elseif valueType == 'boolean' then
+    return 'bool'
+  elseif valueType == 'number' then
+    if not tostring(value):find('%.') then
+      -- TODO int32, uint32, uint64
+      return 'int64'
+    else
+      return 'double'
+    end
+  end
+end
+
 
 function BaseCheck:initialize(params)
   self.id = tostring(params.id)
@@ -275,7 +294,8 @@ or add a metric).
 function ChildCheck:_handleLine(runCtx, checkResult, line)
   local stateEndIndex, statusEndIndex, metricEndIndex, splitString, value, state
   local metricName, metricType, metricValue, metricUnit, dotIndex, internalMetricType
-  local msg, partsCount
+  local msg, partsCount, _
+  local status, metricDimension
 
   if runCtx.hasError then
     -- If a CheckResult already has an error set, all the lines which come after
@@ -725,25 +745,6 @@ function Metric:initialize(name, dimension, type, value, unit)
   end
 end
 
-
--- Determinate the metric type based on the value type.
-function getMetricType(value)
-  local valueType = type(value)
-
-  if valueType == 'string' then
-    -- TODO gauge
-    return 'string'
-  elseif valueType == 'boolean' then
-    return 'bool'
-  elseif valueType == 'number' then
-    if not tostring(value):find('%.') then
-      -- TODO int32, uint32, uint64
-      return 'int64'
-    else
-      return 'double'
-    end
-  end
-end
 
 local exports = {}
 exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES

@@ -114,7 +114,6 @@ exports.Request = Request
 exports.Response = Response
 exports.HandshakeHello = HandshakeHello
 exports.Heartbeat = Heartbeat
-exports.Manifest = Manifest
 exports.BinaryUpgradeRequest = BinaryUpgrade
 exports.BundleUpgradeRequest = BundleUpgrade
 return exports
