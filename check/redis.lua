@@ -60,7 +60,10 @@ function RedisCheck:getType()
 end
 
 function RedisCheck:_parseResponse(data)
-  local result = {}, item, mapItem, name
+  local result = {}
+  local item
+  local mapItem
+  local name
 
   lines = data:gmatch('([^\n]*)\n')
   for line in lines do

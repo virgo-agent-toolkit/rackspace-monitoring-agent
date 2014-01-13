@@ -159,7 +159,7 @@ function Setup:run(callback)
   local agentToken, client, agentId
   local writeAgentId = false
 
-  function createToken(label, callback)
+  local function createToken(label, callback)
     client.agent_tokens.create({ ['label'] = label }, function(err, token)
       if err then
         callback(err)
@@ -306,13 +306,13 @@ function Setup:run(callback)
           callback()
         end,
         function(callback)
-          function timeout()
+          local function timeout()
             callback(errors.AuthTimeoutError:new('Authentication timed out.'))
           end
 
           local authTimer = timer.setTimeout(constants:get('SETUP_AUTH_TIMEOUT'), timeout)
 
-          function testAuth()
+          local function testAuth()
             timer.clearTimer(authTimer)
             if self._receivedPromotion then
               self:_out('')
@@ -342,7 +342,7 @@ function Setup:run(callback)
           local addresses = {}
           local localEntities = {}
 
-          function displayEntities()
+          local function displayEntities()
             for i, entity in ipairs(localEntities) do
               if entity.label then
                 self:_out(fmt('  %i. %s - %s', i, entity.label, entity.id))
@@ -368,7 +368,7 @@ function Setup:run(callback)
             end
           end
 
-          function entitySelection()
+          local function entitySelection()
             self:_out('Please select the Entity that corresponds to this server:')
             displayEntities()
             self:_out(fmt('  %i. Create a new Entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))

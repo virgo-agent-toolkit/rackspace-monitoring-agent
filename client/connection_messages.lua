@@ -59,7 +59,7 @@ function ConnectionMessages:onHandshake(client, data)
 end
 
 function ConnectionMessages:fetchManifest(client)
-  function run()
+  local function run()
     if client then
       client:log(logging.DEBUG, 'Retrieving check manifest...')
 

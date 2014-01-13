@@ -77,7 +77,7 @@ function WindowsPowershellCmdletCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   local block_data = ''
 
-  function handle_data(exit_code)
+  local function handle_data(exit_code)
     -- Build Dataset from Block Data
     local data_lines = lines(block_data)
     local count = 0

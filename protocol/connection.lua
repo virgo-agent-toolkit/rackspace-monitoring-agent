@@ -165,7 +165,7 @@ function AgentProtocolConnection:_processMessage(msg)
     local callback = self._completions[key]
     if callback then
       self._completions[key] = nil
-      callback(null, msg)
+      callback(nil, msg)
     else
       self._log(logging.ERROR, fmt('Ignoring unexpected response object %s', key))
     end
