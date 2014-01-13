@@ -15,9 +15,20 @@ limitations under the License.
 --]]
 local Error = require('core').Error
 
+local UserResponseError = Error:extend()
+
+function UserResponseError:initialize(msg, retnum)
+  Error.initialize(self, msg)
+  self._retnum = retnum
+end
+
+function UserResponseError:get_retnum()
+  return self._retnum
+end
+
 return {
 	Error = Error,
-	UserResponseError = Error:extend(),
+	UserResponseError = UserResponseError,
 	AuthTimeoutError = Error:extend(),
 	ResponseTimeoutError = Error:extend(),
 	InvalidSignatureError = Error:extend()

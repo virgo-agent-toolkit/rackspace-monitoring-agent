@@ -33,6 +33,7 @@ local argv = require("options")
   .describe("x", "check to run")
   .describe("s", "state directory path")
   .describe("c", "config file path")
+  .alias({['c'] = 'config'})
   .describe("p", "pid file path")
   .describe("o", "skip automatic upgrade")
   .describe("d", "enable debug logging")
@@ -45,7 +46,9 @@ local argv = require("options")
   .alias({['U'] = 'username'})
   .describe("K", "apikey")
   .alias({['K'] = 'apikey'})
-  .argv("idonhU:K:e:x:p:c:s:n:k:u")
+  .describe("K", "apikey")
+  .alias({['K'] = 'apikey'})
+  .argv("tidonhU:K:e:x:p:c:s:n:k:u")
 
 local Entry = {}
 

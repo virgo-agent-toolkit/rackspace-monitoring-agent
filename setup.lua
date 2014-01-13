@@ -40,6 +40,7 @@ function Setup:initialize(argv, configFile, agent)
   self._receivedPromotion = false
   self._username = argv.args.U
   self._apikey = argv.args.K
+  self._setup_test = argv.args.t
   self._agent:on('promote', function()
     self._receivedPromotion = true
   end)
@@ -204,6 +205,11 @@ function Setup:run(callback)
       self:saveTest(callback)
     end,
     function(callback)
+      if self._setup_test and (self._apikey == nil or self._username == nil) then
+        callback(errors.UserResponseError:new('Username and password/apikey must be provided together for testing.', 129))
+      else
+        callback()
+      end
       if (self._username == nil and self._apikey ~= nil)
          or (self._username ~= nil and self._apikey == nil) then
         callback(errors.UserResponseError:new('Username and password/apikey must be provided together.'))
@@ -416,7 +422,11 @@ function Setup:run(callback)
             end)
           end
 
-          entitySelection()
+          if self._setup_test then
+            callback(errors.UserResponseError:new('No entity and not creating one.', 130))
+          else
+            entitySelection()
+          end
         end
       }, callback)
     end
@@ -434,6 +444,11 @@ function Setup:run(callback)
         msg = JSON.stringify(err)
       end
       process.stdout:write(fmt('Error: %s\n', msg))
+      if err.get_retnum and err:get_retnum() then
+        process.exit(err:get_retnum())
+      else
+        process.exit(255)
+      end
     else
       -- TODO: detect Platform, iniit.d system, etc
       self:_out('')
