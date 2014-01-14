@@ -180,12 +180,16 @@ function Setup:run(callback)
         if results.id then
           agentId = results.id
           writeAgentId = false
-        else
-          agentId = os.hostname()
-          writeAgentId = true
         end
         callback()
       end)
+    end,
+    function(callback)
+      if agentId == nil then
+        agentId = os.hostname()
+        writeAgentId = true
+      end
+      callback()
     end,
     function(callback)
       self:_out('')
