@@ -95,3 +95,4 @@ Virgo with command line flags set to feed it the testing bundle and with the -e
 flag set to tests.
 
     make test
+
