@@ -412,6 +412,8 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   -- Context for _handleLine to store stuff between output lines
   local runCtx = {}
 
+  callback = fireOnce(callback)
+
   self._log(logging.DEBUG, fmt("%s: starting process", exePath))
 
   local child = childprocess.spawn(exePath,
