@@ -91,6 +91,11 @@ requests['db.checks.update'] = function(self, entityId, checkId, params, callbac
   self:_send(m, callback)
 end
 
+requests['db.alarms.list'] = function(self, entityId, callback)
+  local m = msg.db.alarms.list:new(entityId)
+  self:_send(m, callback)
+end
+
 requests['db.alarms.get'] = function(self, entityId, alarmId, callback)
   local m = msg.db.alarms.get:new(entityId, alarmId)
   self:_send(m, callback)

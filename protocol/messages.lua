@@ -201,6 +201,14 @@ function db.alarms.update:initialize(params)
   self.params = params
 end
 
+--[[ db.alarms.list ]]--
+db.alarms.list = Request:extend()
+function db.alarms.list:initialize(entity_id)
+  Request.initialize(self)
+  self.method = 'db.alarms.list'
+  self.params = { entity_id = entity_id }
+end
+
 --[[ db.notification.remove ]]--
 db.notification.remove = Request:extend()
 function db.notification.remove:initialize(notificationId)
