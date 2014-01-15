@@ -338,7 +338,7 @@ function ConnectionStream:promoteClient(client)
   client:log(logging.INFO, fmt('Connection has been authenticated to %s', datacenter))
   self._clients[datacenter] = client
   self._unauthedClients[datacenter] = nil
-  self:emit('promote')
+  self:emit('promote', self)
 end
 
 --[[
@@ -373,6 +373,10 @@ function ConnectionStream:createConnection(options, callback)
     client:connect()
     callback()
   end)
+end
+
+function ConnectionStream:getEntityId()
+  return self:getClient()._entity_id
 end
 
 local exports = {}

@@ -1,10 +1,13 @@
 {
-    "label": "Check for Main Disk",
-    "type": "agent.filesystem",
-    "details": {
-	"target": "C:\\"
-    },
-    "disabled": false,
-    "period": 60,
-    "timeout": 30
+    "type": "check",
+    "params":  {
+        "label": "Check for Main Disk",
+        "type": "agent.filesystem",
+        "details": {
+            "target": "C:\\"
+        },
+        "disabled": false,
+        "period": 60,
+        "timeout": 30
+    }
 }

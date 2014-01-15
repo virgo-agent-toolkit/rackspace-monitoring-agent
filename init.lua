@@ -33,11 +33,13 @@ local argv = require("options")
   .describe("x", "check to run")
   .describe("s", "state directory path")
   .describe("c", "config file path")
+  .describe("j", "object conf.d path")
   .describe("p", "pid file path")
   .describe("o", "skip automatic upgrade")
   .describe("d", "enable debug logging")
   .alias({['o'] = 'no-upgrade'})
   .alias({['p'] = 'pidfile'})
+  .alias({['j'] = 'confd'})
   .alias({['d'] = 'debug'})
   .describe("u", "setup")
   .alias({['u'] = 'setup'})
@@ -45,7 +47,7 @@ local argv = require("options")
   .alias({['U'] = 'username'})
   .describe("K", "apikey")
   .alias({['K'] = 'apikey'})
-  .argv("idonhU:K:e:x:p:c:s:n:k:u")
+  .argv("idonhU:K:e:x:p:c:j:s:n:k:u")
 
 local Entry = {}
 
@@ -64,6 +66,10 @@ function Entry.run()
 
   if argv.args.s then
     options.stateDirectory = argv.args.s
+  end
+
+  if argv.args.j then
+    options.confdDir = argv.args.j
   end
 
   options.configFile = argv.args.c or constants.DEFAULT_CONFIG_PATH
@@ -97,7 +103,7 @@ function Entry.run()
   virgo.config['guid'] = virgo.config['monitoring_guid']
   virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
   virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
-  
+
   local agent = MonitoringAgent:new(options, types)
 
   if not argv.args.u then

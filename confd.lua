@@ -19,18 +19,19 @@ local JSON = require('json')
 local fs = require('fs')
 local path = require('path')
 local logging = require('logging')
-local loggingUtil = require('../util/logging')
+local loggingUtil = require('/util/logging')
 local fmt = require('string').format
 local crypto = require('_crypto')
 local async = require('async')
 local table = require('table')
+local misc = require('/util/misc')
 
 local Confd = Object:extend()
 
 
-function Confd:initialize()
-  self.dir = virgo_paths.get(virgo_paths.VIRGO_PATH_CONFD_DIR)
-  self.hash_file = path.join(virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR), "confd_hashes.json")
+function Confd:initialize(confd_dir, state_dir)
+  self.dir = confd_dir or virgo_paths.get(virgo_paths.VIRGO_PATH_CONFD_DIR)
+  self.hash_file = path.join(state_dir, "confd_hashes.json")
   self.files = {}
   self.last_hashes = {}
   self.logger = loggingUtil.makeLogger('Confd')
@@ -107,7 +108,7 @@ function Confd:_readFiles(callback)
   for fil, _ in pairs(self.files) do
     --Read file to the parser
     local fn = path.join(self.dir,fil)
-    fs.readFile(fn, function(err, data) 
+    fs.readFile(fn, function(err, data)
       if err then
         --log error
         self.files[fil].status = self.constants.ERROR
@@ -159,6 +160,7 @@ function Confd:_markChangedFiles(callback)
   local fil, _
   for fil, _ in pairs(self.last_hashes) do
     if not self.files[fil] then
+      self.files[fil] = {}
       self.files[fil].status = self.constants.DELETED
     end
     if self.last_hashes[fil] ~= self.files[fil].hash then
@@ -172,6 +174,7 @@ function Confd:_markChangedFiles(callback)
   end
   callback()
 end
+
 
 function Confd:writeHashes(callback)
   self.logger(logging.INFO, fmt('writing hashes into %s', self.hash_file))
@@ -188,5 +191,55 @@ function Confd:writeHashes(callback)
   end)
 end
 
+
+function Confd:syncObjects(conn, entity, callback)
+  local db_map = {
+    check = 'syncCheck',
+    alarm = 'syncAlarm',
+    notification = 'syncNotification',
+    notification_plan = 'syncNotificationPlan'
+  }
+
+  local db_sync_order = { 'check', 'notification_plan', 'alarm', 'notification' }
+
+  function local_callback(err)
+    if (err) then
+      self.logger(logging.WARNING, fmt('error syncing object: %s', err.message))
+    end
+  end
+
+  local _, now_obj_type
+  for _, now_obj_type in ipairs(db_sync_order) do
+    self.logger(logging.INFO, fmt('syncing objects marked as: %s', now_obj_type))
+    local fil, obj
+    for fil, obj in pairs(self.files) do
+      if obj.data and now_obj_type == obj.data.type then
+        xpcall( function()
+          p(obj, obj.data.type, db_map[obj.data.type], self[db_map[obj.data.type]])
+          local f = self[db_map[obj.data.type]]
+          f(self, conn, entity, obj.data.params, local_callback)
+          obj.handled = true
+        end, function(err)
+          self.logger(logging.ERROR, fmt('syncing object error: %s', err))
+        end)
+      end
+    end
+  end
+
+  for fil, obj in pairs(self.files) do
+    if not obj.handled then
+      self.logger(logging.ERROR, fmt('object unhandled: %s', fil))
+    end
+  end
+
+  callback()
+end
+
+function Confd:syncCheck(conn, entity, params, callback)
+  conn:dbCreateChecks(entity, params, callback)
+end
+
+
+Confd.syncObjectsOnce = misc.fireOnce(Confd.syncObjects)
 
 return Confd

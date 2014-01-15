@@ -51,7 +51,7 @@ function Agent:initialize(options, types)
   self._options = options
   self._upgradesEnabled = true
   self._types = types or {}
-  self._confd = Confd:new()
+  self._confd = Confd:new(options.confdDir, options.stateDirectory)
 end
 
 function Agent:start(options)
@@ -135,8 +135,12 @@ function Agent:connect(callback)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)
-  self._streams:on('promote', function()
-    self:emit('promote')
+  self._streams:on('promote', function(stream)
+    local conn = stream:getClient().protocol
+    local entity = stream:getEntityId()
+    self._confd:syncObjectsOnce(conn, entity, function()
+      self:emit('promote')
+    end)
   end)
 
   self._streams:createConnections(endpoints, callback)
