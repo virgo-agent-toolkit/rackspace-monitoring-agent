@@ -202,6 +202,13 @@ function Confd:syncObjects(conn, entity, callback)
 
   local db_sync_order = { 'check', 'notification_plan', 'alarm', 'notification' }
 
+  local db_listers = {
+    check = 'listChecks',
+    alarm = 'listAlarms',
+    notification = 'listNotification',
+    notification_plan = 'listNotificationPlan'
+  }
+
   function local_callback(err)
     if (err) then
       self.logger(logging.WARNING, fmt('error syncing object: %s', err.message))
@@ -210,6 +217,16 @@ function Confd:syncObjects(conn, entity, callback)
 
   local _, now_obj_type
   for _, now_obj_type in ipairs(db_sync_order) do
+    self.logger(logging.INFO, fmt('retrieving objects marked as: %s', now_obj_type))
+    xpcall( function()
+      local f = self[db_listers[now_obj_type]]
+      f(self, conn, entity, function(err, data)
+        p(db_listers[now_obj_type], data)
+      end)
+    end, function(err)
+      self.logger(logging.ERROR, fmt('retrieving objects error: %s', err))
+    end)
+
     self.logger(logging.INFO, fmt('syncing objects marked as: %s', now_obj_type))
     local fil, obj
     for fil, obj in pairs(self.files) do
@@ -217,7 +234,7 @@ function Confd:syncObjects(conn, entity, callback)
         xpcall( function()
           p(obj, obj.data.type, db_map[obj.data.type], self[db_map[obj.data.type]])
           local f = self[db_map[obj.data.type]]
-          f(self, conn, entity, obj.data.params, local_callback)
+          f(self, conn, entity, obj, local_callback)
           obj.handled = true
         end, function(err)
           self.logger(logging.ERROR, fmt('syncing object error: %s', err))
@@ -235,11 +252,37 @@ function Confd:syncObjects(conn, entity, callback)
   callback()
 end
 
-function Confd:syncCheck(conn, entity, params, callback)
-  conn:dbCreateChecks(entity, params, callback)
+function Confd:listChecks(conn, entity, callback)
+  conn:dbListChecks({entity_id=entity}, function (err, data)
+    p("list", data, data.result.values, data.result.metadata)
+  end)
+end
+
+function Confd:syncCheck(conn, entity, obj, callback)
+  local action = {
+    [self.constants.NEW] = function()
+      conn:dbCreateChecks(entity, obj.data.params, callback)
+    end,
+    [self.constants.CHANGED] = function()
+      callback()
+    end
+  }
+
+  if action[obj.status] then
+    action[obj.status]()
+  else
+    callback()
+  end
 end
 
 
-Confd.syncObjectsOnce = misc.fireOnce(Confd.syncObjects)
+function Confd:syncObjectsOnce(conn, entity, callback)
+  if not called then
+    called = true
+    self:syncObjects(conn, entity, callback)
+  else
+    callback()
+  end
+end
 
 return Confd

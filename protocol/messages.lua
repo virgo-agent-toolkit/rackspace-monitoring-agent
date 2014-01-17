@@ -124,11 +124,11 @@ function db.checks.create:initialize(params)
   self.params = params
 end
 
---[[ db.checks.get_all ]]--
-db.checks.get_all = Request:extend()
-function db.checks.get_all:initialize(params)
+--[[ db.checks.list ]]--
+db.checks.list = Request:extend()
+function db.checks.list:initialize(params)
   Request.initialize(self)
-  self.method = 'db.checks.get_all'
+  self.method = 'db.checks.list'
   self.params = params
 end
 

@@ -71,8 +71,8 @@ requests['db.checks.create'] = function(self, params, callback)
   self:_send(m, callback)
 end
 
-requests['db.checks.get_all'] = function(self, params, callback)
-  local m = msg.db.checks.get_all:new(params)
+requests['db.checks.list'] = function(self, params, callback)
+  local m = msg.db.checks.list:new(params)
   self:_send(m, callback)
 end
 
@@ -419,6 +419,10 @@ function AgentProtocolConnection:dbUpdateChecks(entityId, checkId, params, callb
 end
 
 --[[ db.Alarms ]]
+
+function AgentProtocolConnection:dbListAlarms(params, callback)
+  self:request('db.alarms.list', params, callback)
+end
 
 function AgentProtocolConnection:dbGetAlarms(entityId, alarmId, callback)
   self:request('db.alarms.get', entityId, alarmId, callback)
