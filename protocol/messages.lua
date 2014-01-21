@@ -108,6 +108,38 @@ function Heartbeat:serialize(msgId)
   return Request.serialize(self, msgId)
 end
 
+--[[ PaginationRequest ]]--
+local PaginationRequest = Request:extend()
+function PaginationRequest:initialize(params, paginationParams)
+  Request.initialize(self)
+  self.params = params or {}
+  if paginationParams then
+    if paginationParams.marker then
+      self:setMarker(paginationParams.marker)
+    end
+    if paginationParams.limit then
+      self:setLimit(paginationParams.limit)
+    end
+  end
+end
+
+function PaginationRequest:setLimit(limit)
+  self._limit = limit
+end
+
+function PaginationRequest:setMarker(marker)
+  self._marker = marker
+end
+
+function PaginationRequest:serialize(msgId)
+  if self._limit and self._marker then
+    self.params.metadata = {}
+    self.params.metadata.limit = self._limit
+    self.params.metadata.marker = self._marker
+  end
+  return Request.serialize(self, msgId)
+end
+
 --[[ db ]]--
 
 local db = {}
@@ -125,11 +157,10 @@ function db.checks.create:initialize(params)
 end
 
 --[[ db.checks.list ]]--
-db.checks.list = Request:extend()
-function db.checks.list:initialize(params)
-  Request.initialize(self)
+db.checks.list = PaginationRequest:extend()
+function db.checks.list:initialize(params, paginationParams)
+  PaginationRequest.initialize(self, params, paginationParams)
   self.method = 'db.checks.list'
-  self.params = params
 end
 
 --[[ db.checks.get ]]--
@@ -202,11 +233,10 @@ function db.alarms.update:initialize(params)
 end
 
 --[[ db.alarms.list ]]--
-db.alarms.list = Request:extend()
-function db.alarms.list:initialize(entity_id)
-  Request.initialize(self)
+db.alarms.list = PaginationRequest:extend()
+function db.alarms.list:initialize(entity_id, paginationParams)
+  PaginationRequest.initialize(self, { entity_id = entity_id }, paginationParams)
   self.method = 'db.alarms.list'
-  self.params = { entity_id = entity_id }
 end
 
 --[[ db.notification.remove ]]--
@@ -226,11 +256,10 @@ function db.notification.get:initialize(notificationId)
 end
 
 --[[ db.notification.list ]]--
-db.notification.list = Request:extend()
-function db.notification.list:initialize()
-  Request.initialize(self)
+db.notification.list = PaginationRequest:extend()
+function db.notification.list:initialize(paginationParams)
+  PaginationRequest.initialize(self, { nop = '1' }, paginationParams)
   self.method = 'db.notification.list'
-  self.params = { nop = '1' }
 end
 
 --[[ db.notification.update ]]--
@@ -267,11 +296,10 @@ function db.notification_plan.get:initialize(notificationPlanId)
 end
 
 --[[ db.notification_plan.list ]]--
-db.notification_plan.list = Request:extend()
-function db.notification_plan.list:initialize()
-  Request.initialize(self)
+db.notification_plan.list = PaginationRequest:extend()
+function db.notification_plan.list:initialize(paginationParams)
+  PaginationRequest.initialize(self, { nop = '1' }, paginationParams)
   self.method = 'db.notification_plan.list'
-  self.params = { nop = '1' }
 end
 
 --[[ db.notification_plan.create ]]--
