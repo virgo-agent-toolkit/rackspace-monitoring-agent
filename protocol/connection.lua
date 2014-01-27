@@ -71,8 +71,8 @@ requests['db.checks.create'] = function(self, params, callback)
   self:_send(m, callback)
 end
 
-requests['db.checks.list'] = function(self, params, callback)
-  local m = msg.db.checks.list:new(params)
+requests['db.checks.list'] = function(self, params, paginationParams, callback)
+  local m = msg.db.checks.list:new(params, paginationParams)
   self:_send(m, callback)
 end
 
@@ -91,8 +91,8 @@ requests['db.checks.update'] = function(self, entityId, checkId, params, callbac
   self:_send(m, callback)
 end
 
-requests['db.alarms.list'] = function(self, entityId, callback)
-  local m = msg.db.alarms.list:new(entityId)
+requests['db.alarms.list'] = function(self, entityId, paginationParams, callback)
+  local m = msg.db.alarms.list:new(entityId, paginationParams)
   self:_send(m, callback)
 end
 
@@ -121,8 +121,8 @@ requests['db.notification.get'] = function(self, notificationId, callback)
   self:_send(m, callback)
 end
 
-requests['db.notification.list'] = function(self, callback)
-  local m = msg.db.notification.list:new(notificationId)
+requests['db.notification.list'] = function(self, paginationParams, callback)
+  local m = msg.db.notification.list:new(paginationParams)
   self:_send(m, callback)
 end
 
@@ -146,8 +146,8 @@ requests['db.notification_plan.get'] = function(self, notificationId, callback)
   self:_send(m, callback)
 end
 
-requests['db.notification_plan.list'] = function(self, callback)
-  local m = msg.db.notification_plan.list:new(notificationId)
+requests['db.notification_plan.list'] = function(self, paginationParams, callback)
+  local m = msg.db.notification_plan.list:new(paginationParams)
   self:_send(m, callback)
 end
 
@@ -402,8 +402,8 @@ function AgentProtocolConnection:dbCreateChecks(entityId, params, callback)
   self:request('db.checks.create', p, callback)
 end
 
-function AgentProtocolConnection:dbListChecks(params, callback)
-  self:request('db.checks.list', params, callback)
+function AgentProtocolConnection:dbListChecks(params, paginationParams, callback)
+  self:request('db.checks.list', params, paginationParams, callback)
 end
 
 function AgentProtocolConnection:dbGetChecks(entityId, checkId, callback)
@@ -420,8 +420,8 @@ end
 
 --[[ db.Alarms ]]
 
-function AgentProtocolConnection:dbListAlarms(params, callback)
-  self:request('db.alarms.list', params, callback)
+function AgentProtocolConnection:dbListAlarms(entityId, paginationParams, callback)
+  self:request('db.alarms.list', entityId, paginationParams, callback)
 end
 
 function AgentProtocolConnection:dbGetAlarms(entityId, alarmId, callback)
@@ -450,8 +450,8 @@ function AgentProtocolConnection:dbCreateNotification(params, callback)
   self:request('db.notification.create', params, callback)
 end
 
-function AgentProtocolConnection:dbListNotification(callback)
-  self:request('db.notification.list', callback)
+function AgentProtocolConnection:dbListNotification(paginationParams, callback)
+  self:request('db.notification.list', paginationParams, callback)
 end
 
 function AgentProtocolConnection:dbRemoveNotification(notificationId, callback)
@@ -471,8 +471,8 @@ function AgentProtocolConnection:dbCreateNotificationPlan(params, callback)
   self:request('db.notification_plan.create', params, callback)
 end
 
-function AgentProtocolConnection:dbListNotificationPlan(callback)
-  self:request('db.notification_plan.list', callback)
+function AgentProtocolConnection:dbListNotificationPlan(paginationParams, callback)
+  self:request('db.notification_plan.list', paginationParams, callback)
 end
 
 function AgentProtocolConnection:dbRemoveNotificationPlan(notificationId, callback)

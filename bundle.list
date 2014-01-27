@@ -175,6 +175,7 @@
 ./tests/virgo/init.lua
 ./util/constants.lua
 ./util/fs.lua
+./util/filler.lua
 ./util/logging.lua
 ./util/misc.lua
 ./util/prompt.lua
