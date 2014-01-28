@@ -132,7 +132,7 @@ function PaginationRequest:setMarker(marker)
 end
 
 function PaginationRequest:serialize(msgId)
-  if self._limit and self._marker then
+  if self._limit or self._marker then
     self.params.metadata = {}
     self.params.metadata.limit = self._limit
     self.params.metadata.marker = self._marker
