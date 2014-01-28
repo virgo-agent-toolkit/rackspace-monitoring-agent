@@ -11,3 +11,5 @@ script:
 notifications:
   email:
     - ryan.phillips@rackspace.com
+  irc:
+    - chat.freenode.net#virgo-dev
