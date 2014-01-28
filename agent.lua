@@ -92,7 +92,7 @@ function Agent:start(options)
       self:connect(callback)
     end,
     function(callback)
-      self._confd:run(callback)
+      self._confd:setup(callback)
     end
   },
   function(err)
@@ -138,7 +138,7 @@ function Agent:connect(callback)
   self._streams:on('promote', function(stream)
     local conn = stream:getClient().protocol
     local entity = stream:getEntityId()
-    self._confd:syncObjectsOnce(conn, entity, function()
+    self._confd:runOnce(conn, entity, function()
       self:emit('promote')
     end)
   end)

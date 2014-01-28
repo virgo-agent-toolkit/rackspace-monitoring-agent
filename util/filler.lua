@@ -37,6 +37,10 @@ function Filler:getRetrievedData()
   return self._data
 end
 
+function Filler:getDbListOrder()
+  return self.db_list_order
+end
+
 function Filler:start()
   local db_listers = {
     check = function(self, marker, callback)

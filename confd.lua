@@ -25,6 +25,7 @@ local crypto = require('_crypto')
 local async = require('async')
 local table = require('table')
 local misc = require('/util/misc')
+local Filler = require('/util/filler')
 
 local Confd = Object:extend()
 
@@ -33,13 +34,24 @@ function Confd:initialize(confd_dir, state_dir)
   self.dir = confd_dir or virgo_paths.get(virgo_paths.VIRGO_PATH_CONFD_DIR)
   self.hash_file = path.join(state_dir, "confd_hashes.json")
   self.files = {}
-  self.last_hashes = {}
   self.logger = loggingUtil.makeLogger('Confd')
   self.constants = {ERROR='ERROR', UNCHANGED='Unchanged', NEW='New', CHANGED='Changed', DELETED='Deleted'}
 end
 
 
-function Confd:run(callback)
+function Confd:_logging_callback(err)
+  if err then
+    if err.logtype == nil then
+      err.logtype = logging.ERROR
+    end
+    if err.message == nil or err.message == '' then
+      err.message = 'unknown error'
+    end
+    self.logger(err.logtype, fmt("FATAL %s", err.message))
+  end
+end
+
+function Confd:setup(callback)
   async.waterfall(
     {
       function(callback)
@@ -48,27 +60,8 @@ function Confd:run(callback)
       function(callback)
         self:_readFiles(callback)
       end,
-      function(callback)
-        self:_readLastFileHashes(callback)
-      end,
-      function(callback)
-        self:_markChangedFiles(callback)
-      end,
-      function(callback)
-        self:writeHashes(callback)
-      end
     },
-    function(err)
-      if err then
-        if err.logtype == nil then
-          err.logtype = logging.ERROR
-        end
-        if err.message == nil or err.message == '' then
-          err.message = 'unknown error'
-        end
-        self.logger(err.logtype, fmt("FATAL %s", err.message))
-      end
-    end
+    self._logging_callback
   )
   -- Immediately call the callback to not block the main agent startup
   callback()
@@ -125,6 +118,15 @@ function Confd:_readFiles(callback)
           d:update(data)
           local hash = d:final()
           self.files[fil].hash = hash
+
+          -- setup meta data with hash and file name
+          if not self.files[fil].data.params.metadata then
+            self.files[fil].data.params.metadata = {}
+          end
+          self.files[fil].data.params.metadata.confd_hash = hash
+          self.files[fil].data.params.metadata.confd_name = fil
+
+          p(self.files[fil].data)
           self.files[fil].status = self.constants.NEW
         self.logger(logging.INFO, fmt('successfully read: %s, hashed: %s', fn, hash))
         end
@@ -138,75 +140,74 @@ function Confd:_readFiles(callback)
 end
 
 
-function Confd:_readLastFileHashes(callback)
-  self.logger(logging.INFO, fmt('reading hashes from %s', self.hash_file))
-  fs.readFile(self.hash_file, function(err, data)
-    if err then
-      self.logger(logging.WARNING, fmt('error reading %s, %s', self.hash_file, err.message))
-    else
-      local status, result = pcall(JSON.parse, data)
-      if not status or type(result) == 'string' and result:find('parse error: ') then
-        self.logger(logging.WARNING, fmt('error parsing hashes:%s, result:%s', status, result))
-      else
-        self.last_hashes = result
-      end
-    end
-    callback()
-  end)
-end
-
-
 function Confd:_markChangedFiles(callback)
-  local fil, _
-  for fil, _ in pairs(self.last_hashes) do
-    if not self.files[fil] then
-      self.files[fil] = {}
-      self.files[fil].status = self.constants.DELETED
-    end
-    if self.last_hashes[fil] ~= self.files[fil].hash then
-      if self.files[fil].status ~= self.constants.ERROR then
-        self.files[fil].status = self.constants.CHANGED
+  local type, objs
+  for type, objs in pairs(self.filler:getRetrievedData()) do
+    local _, obj
+    for _, obj in ipairs(objs) do
+      p(type, _, obj)
+      if obj.metadata and obj.metadata.confd_hash and obj.metadata.confd_name then
+        -- object confd created
+        local fil = obj.metadata.confd_name
+        local hash = obj.metadata.confd_hash
+
+        if not self.files[fil] then
+          self.files[fil] = {
+            status = self.constants.DELETED,
+            data = { type = type }
+          }
+        else
+          if hash ~= self.files[fil].hash then
+            if self.files[fil].status ~= self.constants.ERROR then
+              self.files[fil].status = self.constants.CHANGED
+            end
+          else
+            self.files[fil].status = self.constants.UNCHANGED
+          end
+        end
+
+        -- store the server obj with the file
+        self.files[fil].server_obj = obj
+
+        self.logger(logging.INFO, fmt('%s is marked as %s', fil, self.files[fil].status))
+      else
+        --object not confd created
       end
-    else
-      self.files[fil].status = self.constants.UNCHANGED
     end
-    self.logger(logging.INFO, fmt('%s is marked as %s', fil, self.files[fil].status))
   end
+
   callback()
 end
 
 
-function Confd:writeHashes(callback)
-  self.logger(logging.INFO, fmt('writing hashes into %s', self.hash_file))
-  local hashes = {}
-  local _, fil
-  for fil, _ in pairs(self.files) do
-    hashes[fil] = self.files[fil].hash
-  end
-  fs.writeFile(self.hash_file, JSON.stringify(hashes), function(err)
-    if err then
-      self.logger(logging.WARNING, fmt('error writing hashes: %s', err.message))
-    end
-    callback()
+function Confd:run(conn, entity, callback)
+  self.filler = Filler:new(conn, entity, 1)
+  self.filler:on("end", function()
+    async.waterfall(
+      {
+        function(callback)
+          self:_markChangedFiles(callback)
+        end,
+        function(callback)
+          self:_syncObjects(conn, entity, callback)
+        end
+      },
+      self._logging_callback
+    )
   end)
+
+  self.filler:start()
+
+  callback()
 end
 
 
-function Confd:syncObjects(conn, entity, callback)
+function Confd:_syncObjects(conn, entity, callback)
   local db_map = {
     check = 'syncCheck',
     alarm = 'syncAlarm',
     notification = 'syncNotification',
     notification_plan = 'syncNotificationPlan'
-  }
-
-  local db_sync_order = { 'check', 'notification_plan', 'alarm', 'notification' }
-
-  local db_listers = {
-    check = 'listChecks',
-    alarm = 'listAlarms',
-    notification = 'listNotification',
-    notification_plan = 'listNotificationPlan'
   }
 
   function local_callback(err)
@@ -216,24 +217,13 @@ function Confd:syncObjects(conn, entity, callback)
   end
 
   local _, now_obj_type
-  for _, now_obj_type in ipairs(db_sync_order) do
-    self.logger(logging.INFO, fmt('retrieving objects marked as: %s', now_obj_type))
-    xpcall( function()
-      local f = self[db_listers[now_obj_type]]
-      f(self, conn, entity, function(err, data)
-        p(db_listers[now_obj_type], data)
-      end)
-    end, function(err)
-      self.logger(logging.ERROR, fmt('retrieving objects error: %s', err))
-    end)
-
+  for _, now_obj_type in ipairs(self.filler:getDbListOrder()) do
     self.logger(logging.INFO, fmt('syncing objects marked as: %s', now_obj_type))
     local fil, obj
     for fil, obj in pairs(self.files) do
       if obj.data and now_obj_type == obj.data.type then
         xpcall( function()
-          p(obj, obj.data.type, db_map[obj.data.type], self[db_map[obj.data.type]])
-          local f = self[db_map[obj.data.type]]
+          local f = self[db_map[now_obj_type]]
           f(self, conn, entity, obj, local_callback)
           obj.handled = true
         end, function(err)
@@ -252,19 +242,16 @@ function Confd:syncObjects(conn, entity, callback)
   callback()
 end
 
-function Confd:listChecks(conn, entity, callback)
-  conn:dbListChecks({entity_id=entity}, function (err, data)
-    p("list", data, data.result.values, data.result.metadata)
-  end)
-end
-
 function Confd:syncCheck(conn, entity, obj, callback)
   local action = {
     [self.constants.NEW] = function()
       conn:dbCreateChecks(entity, obj.data.params, callback)
     end,
+    [self.constants.DELETED] = function()
+      conn:dbRemoveChecks(entity, obj.server_obj.id, callback)
+    end,
     [self.constants.CHANGED] = function()
-      callback()
+      conn:dbUpdateChecks(entity, obj.server_obj.id, obj.data.params, callback)
     end
   }
 
@@ -276,10 +263,10 @@ function Confd:syncCheck(conn, entity, obj, callback)
 end
 
 
-function Confd:syncObjectsOnce(conn, entity, callback)
+function Confd:runOnce(conn, entity, callback)
   if not called then
     called = true
-    self:syncObjects(conn, entity, callback)
+    self:run(conn, entity, callback)
   else
     callback()
   end
