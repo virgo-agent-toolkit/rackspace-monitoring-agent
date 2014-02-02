@@ -126,7 +126,9 @@ function Request:request()
       if err then
         return self.callback(err)
       end
-      run({ host = record[1].name, port = record[1].port })
+      if record and #record >= 0 then
+        run({ host = record[1].name, port = record[1].port })
+      end
     end)
   else
     run({ host = self.endpoint.host, port = self.endpoint.port })
