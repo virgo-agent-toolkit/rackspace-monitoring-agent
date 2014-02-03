@@ -1,0 +1,9 @@
+{
+    "type": "alarm",
+    "params":  {
+        "label": "Check Alarm for Main Disk",
+        "criteria": "\nif (percentage(metric['used'], metric['total']) > 90) {\n  return new AlarmStatus(CRITICAL, 'Disk usage is above 90%');\n}\nif (percentage(metric['used'], metric['total']) > 80) {\n  return new AlarmStatus(WARNING, 'Disk usage is above 80%');\n}\nreturn new AlarmStatus(OK, 'Disk usage is below 80%');\n",
+        "check_id_confd_name": "my_fs_check.json",
+        "notification_plan_id": "npTechnicalContactsEmail"
+    }
+}
