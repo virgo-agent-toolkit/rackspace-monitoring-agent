@@ -221,9 +221,11 @@ end
 
 --[[ db.alarms.update ]]--
 db.alarms.update = Request:extend()
-function db.alarms.update:initialize(params)
+function db.alarms.update:initialize(entityId, alarmId, params)
   Request.initialize(self)
   self.method = 'db.alarms.update'
+  params.entity_id = entityId
+  params.alarm_id = alarmId
   self.params = params
 end
 
