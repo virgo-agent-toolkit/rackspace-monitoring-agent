@@ -254,8 +254,8 @@ function Confd:_syncObjectsOfType(conn, entity, now_obj_type, callback)
   async.forEachTable(
     self.files,
     function(fil, obj, callback)
-      self.logger(logging.INFO, fmt('starting object sync: %s, %s', now_obj_type, fil))
       if obj.data and now_obj_type == obj.data.type then
+        self.logger(logging.INFO, fmt('starting object sync: %s, %s', now_obj_type, fil))
         xpcall( function()
           local mappedFunc = self[db_map[now_obj_type]]
           mappedFunc(self, conn, entity, obj,
@@ -264,12 +264,11 @@ function Confd:_syncObjectsOfType(conn, entity, now_obj_type, callback)
                 self.logger(logging.ERROR,
                   fmt('error syncing objects (mappedFunc) of type: %s, %s with %s', now_obj_type, fil, err))
               else
-                self.logger(logging.INFO, fmt('complete handling for object sync: %s, %s', now_obj_type, fil))
+                obj.handled = true
+                self.logger(logging.INFO, fmt('marked as handled for object sync: %s, %s as %s', now_obj_type, fil, obj.status))
               end
               callback()
             end) -- mappedFunc
-          obj.handled = true
-          self.logger(logging.INFO, fmt('marked as handled for object sync: %s, %s as %s', now_obj_type, fil, obj.status))
         end,
         function(err)
           if (err) then
