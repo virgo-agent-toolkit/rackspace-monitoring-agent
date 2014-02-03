@@ -251,7 +251,7 @@ function Confd:_syncObjectsOfType(conn, entity, now_obj_type, callback)
     notification_plan = 'syncNotificationPlan'
   }
 
-    async.forEachTable(
+  async.forEachTable(
     self.files,
     function(fil, obj, callback)
       self.logger(logging.INFO, fmt('starting object sync: %s, %s', now_obj_type, fil))
