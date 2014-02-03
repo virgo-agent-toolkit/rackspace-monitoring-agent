@@ -23,22 +23,18 @@ local table = require('table')
 
 local Filler = Emitter:extend()
 
-function Filler:initialize(conn, entity, limit)
+function Filler:initialize(conn, entity, list_objs, limit)
   self._conn = conn
   self._entity = entity
   self._limit = limit or 100
   self.logger = loggingUtil.makeLogger('Filler')
-  self.db_list_order = { 'check', 'notification_plan', 'alarm', 'notification' }
+  self.db_list_objs = list_objs
   self._data = {}
   self.db_list_done = {}
 end
 
 function Filler:getRetrievedData()
   return self._data
-end
-
-function Filler:getDbListOrder()
-  return self.db_list_order
 end
 
 function Filler:start()
@@ -58,7 +54,7 @@ function Filler:start()
   }
 
   local _, now_obj_type
-  for _, now_obj_type in ipairs(self.db_list_order) do
+  for _, now_obj_type in ipairs(self.db_list_objs) do
     self.logger(logging.INFO, fmt('retrieving objects marked as: %s', now_obj_type))
     self._data[now_obj_type] = {}
     xpcall( function()
@@ -72,7 +68,7 @@ end
 function Filler:_amidone(obj_type)
   self.db_list_done[obj_type] = true
   local _, now_obj_type
-  for _, now_obj_type in ipairs(self.db_list_order) do
+  for _, now_obj_type in ipairs(self.db_list_objs) do
     if not self.db_list_done[now_obj_type] then
       return
     end
