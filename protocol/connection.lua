@@ -101,8 +101,8 @@ requests['db.alarms.get'] = function(self, entityId, alarmId, callback)
   self:_send(m, callback)
 end
 
-requests['db.alarms.create'] = function(self, entityId, checkId, criteria, npId, callback)
-  local m = msg.db.alarms.create:new(entityId, checkId, criteria, npId)
+requests['db.alarms.create'] = function(self, entityId, params, callback)
+  local m = msg.db.alarms.create:new(entityId, params)
   self:_send(m, callback)
 end
 
@@ -111,8 +111,8 @@ requests['db.alarms.remove'] = function(self, entityId, alarmId, callback)
   self:_send(m, callback)
 end
 
-requests['db.alarms.update'] = function(self, params, callback)
-  local m = msg.db.alarms.update:new(params)
+requests['db.alarms.update'] = function(self, entityId, alarmId, params, callback)
+  local m = msg.db.alarms.update:new(entityId, alarmId, params)
   self:_send(m, callback)
 end
 
@@ -429,16 +429,17 @@ function AgentProtocolConnection:dbGetAlarms(entityId, alarmId, callback)
   self:request('db.alarms.get', entityId, alarmId, callback)
 end
 
-function AgentProtocolConnection:dbCreateAlarms(entityId, checkId, criteria, npId, callback)
-  self:request('db.alarms.create', entityId, checkId, criteria, npId, callback)
+function AgentProtocolConnection:dbCreateAlarms(entityId, params, callback)
+  local p = misc.merge(params, { entity_id = entityId })
+  self:request('db.alarms.create', p, callback)
 end
 
 function AgentProtocolConnection:dbRemoveAlarms(entityId, alarmId, callback)
   self:request('db.alarms.remove', entityId, alarmId, callback)
 end
 
-function AgentProtocolConnection:dbUpdateAlarms(params, callback)
-  self:request('db.alarms.update', params, callback)
+function AgentProtocolConnection:dbUpdateAlarms(entityId, alarmId, params, callback)
+  self:request('db.alarms.update', entityId, alarmId, params, callback)
 end
 
 --[[ db.Notification --]]

@@ -191,15 +191,10 @@ end
 
 --[[ db.alarms.create ]]--
 db.alarms.create = Request:extend()
-function db.alarms.create:initialize(entityId, checkId, criteria, npId)
+function db.alarms.create:initialize(params)
   Request.initialize(self)
   self.method = 'db.alarms.create'
-  self.params = {
-    entity_id = entityId,
-    check_id = checkId,
-    criteria = criteria,
-    notification_plan_id = npId
-  }
+  self.params = params
 end
 
 --[[ db.alarms.get ]]--
