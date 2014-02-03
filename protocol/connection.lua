@@ -203,7 +203,8 @@ function AgentProtocolConnection:initialize(log, myid, token, guid, conn)
 end
 
 function AgentProtocolConnection:request(name, ...)
-  return self._requests[name](self, unpack({...}))
+  local t = {...}
+  return self._requests[name](self, unpack(t,1,table.maxn(t)))
 end
 
 function AgentProtocolConnection:respond(name, ...)
