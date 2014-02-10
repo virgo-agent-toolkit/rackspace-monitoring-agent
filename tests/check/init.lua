@@ -25,7 +25,7 @@ local Check = require('/check')
 local Metric = require('/check/base').Metric
 local constants = require('/constants')
 local merge = require('/base/util/misc').merge
-local msg = require ('/protocol/messages')
+local msg = require ('/base/protocol/messages')
 local virgoMsg = require('/protocol/virgo_messages')
 
 local BaseCheck = Check.BaseCheck

@@ -5,6 +5,11 @@
 ./agents/monitoring/collector/http/utils.lua
 ./agents/monitoring/collector/init.lua
 ./agents/monitoring/init.lua
+./base/errors.lua
+./base/protocol/connection.lua
+./base/protocol/errors.lua
+./base/protocol/messages.lua
+./base/protocol/request.lua
 ./base/util/constants.lua
 ./base/util/constants_ctx.lua
 ./base/util/fs.lua
@@ -48,7 +53,6 @@
 ./code_cert.prod.lua
 ./crashreport.lua
 ./endpoint.lua
-./errors.lua
 ./host_info.lua
 ./init.lua
 ./lua_modules/async/init.lua
@@ -87,10 +91,6 @@
 ./lua_modules/traceroute/package.lua
 ./lua_modules/traceroute/tests/test-traceroute.lua
 ./agent.lua
-./protocol/connection.lua
-./protocol/errors.lua
-./protocol/messages.lua
-./protocol/request.lua
 ./protocol/virgo_connection.lua
 ./protocol/virgo_messages.lua
 ./schedule/init.lua
