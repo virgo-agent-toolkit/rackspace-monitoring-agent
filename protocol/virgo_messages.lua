@@ -1,4 +1,4 @@
-local msg = require('./messages')
+local msg = require('/base/protocol/messages')
 
 --[[ Manifest.get ]]--
 local Manifest = msg.Request:extend()
