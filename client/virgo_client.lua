@@ -1,5 +1,5 @@
 local check = require('../check')
-local AgentClient = require('./client').AgentClient
+local AgentClient = require('/base/client/client').AgentClient
 local logging = require('logging')
 local table = require('table')
 

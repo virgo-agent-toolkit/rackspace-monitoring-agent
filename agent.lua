@@ -36,7 +36,7 @@ local fsutil = require('/base/util/fs')
 local UUID = require('/base/util/uuid')
 local logging = require('logging')
 local Endpoint = require('/endpoint').Endpoint
-local ConnectionStream = require('/client/connection_stream').ConnectionStream
+local ConnectionStream = require('/base/client/connection_stream').ConnectionStream
 local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
 

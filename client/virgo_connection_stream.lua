@@ -1,5 +1,5 @@
 local Scheduler = require('/schedule').Scheduler
-local ConnectionStream = require("./connection_stream").ConnectionStream
+local ConnectionStream = require("/base/client/connection_stream").ConnectionStream
 
 local logging = require('logging')
 local loggingUtil = require('/base/util/logging')
