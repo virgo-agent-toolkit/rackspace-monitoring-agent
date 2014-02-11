@@ -1,6 +1,6 @@
 local table = require('table')
 local async = require('async')
-local ConnectionStream = require('/client/connection_stream').ConnectionStream
+local ConnectionStream = require('/base/client/connection_stream').ConnectionStream
 local misc = require('/base/util/misc')
 local helper = require('../helper')
 local timer = require('timer')

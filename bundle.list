@@ -5,6 +5,12 @@
 ./agents/monitoring/collector/http/utils.lua
 ./agents/monitoring/collector/init.lua
 ./agents/monitoring/init.lua
+./base/client/client.lua
+./base/client/connection_messages.lua
+./base/client/connection_statemachine.lua
+./base/client/connection_stream.lua
+./base/client/init.lua
+./base/client/upgrade.lua
 ./base/errors.lua
 ./base/protocol/connection.lua
 ./base/protocol/errors.lua
@@ -42,12 +48,6 @@
 ./check/windows/sqlserver.lua
 ./check/windows/winbase.lua
 ./check_runner.lua
-./client/client.lua
-./client/connection_messages.lua
-./client/connection_statemachine.lua
-./client/connection_stream.lua
-./client/init.lua
-./client/upgrade.lua
 ./client/virgo_client.lua
 ./client/virgo_connection_stream.lua
 ./code_cert.prod.lua
