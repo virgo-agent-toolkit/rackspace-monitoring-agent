@@ -17,6 +17,7 @@ local JSON = require('json')
 local Object = require('core').Object
 local Error = require('core').Error
 local https = require('https')
+local http = require('http')
 local table = require('table')
 local fmt = require('string').format
 local url = require('url')
@@ -43,6 +44,7 @@ function Client:_updateToken(callback)
   local headers
   local client
   local body
+  local proto
 
   headers = {}
   headers['Accept'] = 'application/json'
@@ -73,6 +75,12 @@ function Client:_updateToken(callback)
   body = JSON.stringify(body)
   headers['Content-Length'] = #body
 
+  if parsed.protocol == 'http' then
+    proto = http
+  else
+    proto = https
+  end
+
   options = {
     host = parsed.hostname,
     port = tonumber(parsed.port),
@@ -81,7 +89,7 @@ function Client:_updateToken(callback)
     method = 'POST'
   }
 
-  client = https.request(options, function(res)
+  client = proto.request(options, function(res)
     local data = ''
     res:on('data', function(chunk)
       data = data .. chunk

@@ -295,6 +295,9 @@ function Setup:run(callback)
     end,
     -- test connectivity
     function(callback)
+      if process.env.DEV then
+        return callback()
+      end
       self:_out('')
       self:_out('Testing Agent connectivity to Cloud Monitoring Service...')
       self:_out('')
@@ -330,11 +333,13 @@ function Setup:run(callback)
 
           timer.setTimeout(constants:get('SETUP_AUTH_CHECK_INTERVAL'), testAuth)
         end
-      }, callback)
+      }, function(err)
+        callback(err)
+      end)
     end,
 
     -- Bind to an entity
-    function(connections, callback)
+    function(callback)
       self:_out('')
       self:_out('In order to execute checks, the agent must be associated with a Cloud Monitoring Entity.')
       self:_out('')
@@ -364,7 +369,7 @@ function Setup:run(callback)
           for i, entity in ipairs(entities.values) do
             if (entity.agent_id == agentId) then
               self:_out(fmt('Agent already associated Entity with id=%s and label=%s', entity.id, entity.label))
-              callback(nil)
+              callback()
               return
             end
             if self:_isLocalEntity(agentId, entity) then
