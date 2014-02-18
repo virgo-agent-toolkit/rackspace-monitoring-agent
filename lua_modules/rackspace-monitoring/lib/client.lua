@@ -40,10 +40,10 @@ if process.env.STAGING then
   MAAS_CLIENT_UK_KEYSTONE_URL = 'https://lon.staging.identity.api.rackspacecloud.com/v2.0'
   MAAS_CLIENT_DEFAULT_HOST = 'staging.monitoring.api.rackspacecloud.com'
   MAAS_CLIENT_DEFAULT_VERSION = 'v1.0'
-elseif process.env.DEV then
-  MAAS_CLIENT_US_KEYSTONE_URL = 'http://192.168.95.128:23542/v2.0'
-  MAAS_CLIENT_UK_KEYSTONE_URL = 'http://192.168.95.128:23542/v2.0'
-  MAAS_CLIENT_DEFAULT_HOST = '192.168.95.128'
+elseif process.env.VIRGO_DEV then
+  MAAS_CLIENT_US_KEYSTONE_URL = fmt('http://%s:23542/v2.0', process.env.VIRGO_DEV)
+  MAAS_CLIENT_UK_KEYSTONE_URL = fmt('http://%s:23542/v2.0', process.env.VIRGO_DEV)
+  MAAS_CLIENT_DEFAULT_HOST = process.env.VIRGO_DEV
   MAAS_CLIENT_DEFAULT_VERSION = 'v1.0'
 else
   MAAS_CLIENT_US_KEYSTONE_URL = 'https://identity.api.rackspacecloud.com/v2.0'
@@ -65,7 +65,7 @@ function ClientBase:initialize(host, port, version, options)
   self.tenantId = nil
   self.proto = https
 
-  if process.env.DEV then
+  if process.env.VIRGO_DEV then
     self.proto = http
     self.port = 50000
   end
