@@ -295,7 +295,7 @@ function Setup:run(callback)
     end,
     -- test connectivity
     function(callback)
-      if process.env.DEV then
+      if process.env.VIRGO_DEV then
         return callback()
       end
       self:_out('')
