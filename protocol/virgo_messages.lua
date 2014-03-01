@@ -109,6 +109,24 @@ function CheckTargetsResponse:serialize(msgId)
   return msg.Response.serialize(self, msgId)
 end
 
+--[[ Config File Post ]]--
+local ConfigFilePost = msg.Request:extend()
+function ConfigFilePost:initialize(files)
+  msg.Request.initialize(self)
+  self.files = files
+  self.method = 'config_file.post'
+end
+
+function ConfigFilePost:serialize(msgId)
+  if next(self.files) ~= nil then
+    self.params.config_data = self.files
+  else
+    -- this forces the params to be treated as a hash
+    self.params.dummy = 1
+  end
+  return msg.Request.serialize(self, msgId)
+end
+
 local exports = {}
 exports.Manifest = Manifest
 exports.MetricsRequest = MetricsRequest
@@ -117,4 +135,5 @@ exports.ScheduleChangeAck = ScheduleChangeAck
 exports.HostInfoResponse = HostInfoResponse
 exports.CheckTestResponse = CheckTestResponse
 exports.CheckTargetsResponse = CheckTargetsResponse
+exports.ConfigFilePost = ConfigFilePost
 return exports

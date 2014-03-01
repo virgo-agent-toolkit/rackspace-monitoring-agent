@@ -39,6 +39,7 @@ local Endpoint = require('/endpoint').Endpoint
 local ConnectionStream = require('/base/client/connection_stream').ConnectionStream
 local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
+local Confd = require('confd')
 
 function Agent:initialize(options, types)
   if not options.stateDirectory then
@@ -50,6 +51,7 @@ function Agent:initialize(options, types)
   self._options = options
   self._upgradesEnabled = true
   self._types = types or {}
+  self._confd = Confd:new(options.confdDir, options.stateDirectory)
 end
 
 function Agent:start(options)
@@ -88,6 +90,9 @@ function Agent:start(options)
     end,
     function(callback)
       self:connect(callback)
+    end,
+    function(callback)
+      self._confd:setup(callback)
     end
   },
   function(err)
@@ -130,8 +135,12 @@ function Agent:connect(callback)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)
-  self._streams:on('promote', function()
-    self:emit('promote')
+  self._streams:on('promote', function(stream)
+    local conn = stream:getClient().protocol
+    local entity = stream:getEntityId()
+    self._confd:runOnce(conn, entity, function()
+      self:emit('promote')
+    end)
   end)
 
   self._streams:createConnections(endpoints, callback)

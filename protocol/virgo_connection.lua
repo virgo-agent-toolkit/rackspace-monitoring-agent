@@ -23,6 +23,11 @@ function VirgoProtocolConnection:_bindHandlers()
     self:_send(m, callback)
   end
 
+  self._requests['config_file.post'] = function(self, files, callback)
+    local m = msg.ConfigFilePost:new(files)
+    self:_send(m, callback)
+  end
+
   self._responses['check_schedule.changed'] = function(self, replyTo, callback)
     local m = msg.ScheduleChangeAck:new(replyTo)
     self:_send(m, callback)
@@ -64,5 +69,11 @@ function VirgoProtocolConnection:_bindHandlers()
   end
 
 end
+
+
+function VirgoProtocolConnection:postConfigFiles(files, callback)
+  self:request('config_file.post', files, callback)
+end
+
 
 return VirgoProtocolConnection

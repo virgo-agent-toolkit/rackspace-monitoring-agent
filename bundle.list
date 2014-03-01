@@ -28,6 +28,7 @@
 ./base/util/uuid.lua
 ./certs.lua
 ./constants.lua
+./confd.lua
 ./crash.lua
 ./check/apache.lua
 ./check/base.lua
