@@ -38,7 +38,8 @@ local UNITS = {
   used = 'kilobytes',
   avail = 'kilobytes',
   files = 'files',
-  free_files = 'free_files'
+  free_files = 'free_files',
+  options = 'options'
 }
 
 function FileSystemCheck:initialize(params)
@@ -123,6 +124,8 @@ function FileSystemCheck:run(callback)
           end
         end
       end
+
+      checkResult:addMetric('options', nil, nil, info['options'], UNITS['options'])
 
       -- Return Result
       callback(checkResult)
