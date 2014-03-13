@@ -27,34 +27,6 @@ local misc = require('/base/util/misc')
 local Confd = Object:extend()
 
 
---A version of forEach that passes key and value to an iterator
-async.forEachTable = function(tab, iterator, callback)
-  local key, value, count, completed
-  count = 0
-  completed = 0
-  -- yuck
-  for key, value in pairs(tab) do
-    count = count + 1
-  end
-  if count == 0 then
-    return callback()
-  end
-  for key, value in pairs(tab) do
-    iterator(key, value, function(err)
-      if err then
-        local cb = callback
-        callback = function() end
-        return cb(err)
-      end
-      completed = completed + 1
-      if completed == count then
-        return callback()
-      end
-    end)
-  end
-end
-
-
 -- Confd Object Init
 function Confd:initialize(confd_dir, state_dir)
   self.dir = confd_dir or virgo_paths.get(virgo_paths.VIRGO_PATH_CONFD_DIR)
