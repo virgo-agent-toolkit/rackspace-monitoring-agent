@@ -117,6 +117,7 @@ function Client:_updateToken(callback)
       callback(nil, self._token)
     end)
   end)
+  client:on('error', callback)
   client:done(body)
 end
 

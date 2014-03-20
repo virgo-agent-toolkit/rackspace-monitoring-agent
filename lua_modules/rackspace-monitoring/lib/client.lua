@@ -152,6 +152,7 @@ function ClientBase:request(method, path, payload, expectedStatusCode, callback)
   if payload then
     req:write(payload)
   end
+  req:on('error', callback)
   req:done()
 end
 
