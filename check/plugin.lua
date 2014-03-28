@@ -84,6 +84,7 @@ function PluginCheck:initialize(params)
   local args = params.details.args and params.details.args or {}
   local timeout = params.details.timeout and params.details.timeout or constants:get('DEFAULT_PLUGIN_TIMEOUT')
 
+  self._full_path = params.details.file or ''
   self._file = file
   self._pluginPath = path.join(constants:get('DEFAULT_CUSTOM_PLUGINS_PATH'), file)
   self._pluginArgs = args
@@ -106,7 +107,7 @@ function PluginCheck:toString()
     self.id,
     self.period,
     self._timeout,
-    self._file,
+    self._full_path,
     argString)
 end
 
