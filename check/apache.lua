@@ -32,7 +32,6 @@ local ApacheCheck = BaseCheck:extend()
 function ApacheCheck:initialize(params)
   BaseCheck.initialize(self, params)
 
-  self._params = params
   self._url = params.details.url and params.details.url or 'http://127.0.0.1/server-status?auto'
   self._timeout = params.details.timeout and params.details.timeout or constants:get('DEFAULT_PLUGIN_TIMEOUT')
 

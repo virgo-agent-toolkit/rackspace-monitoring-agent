@@ -40,6 +40,8 @@ local lastIndexOf = require('/base/util/misc').lastIndexOf
 local split = require('/base/util/misc').split
 local fireOnce = require('/base/util/misc').fireOnce
 local trim = require('/base/util/misc').trim
+local deepCopyTable = require('/base/util/misc').deepCopyTable
+local tableToString = require('/base/util/misc').tableToString
 local randstr = require('/base/util/misc').randstr
 local asserts = require('bourbon').asserts
 
@@ -79,6 +81,7 @@ end
 function BaseCheck:initialize(params)
   self.id = tostring(params.id)
   self.period = tonumber(params.period)
+  self._params = params
   self._firstRun = true
   self._iid = 'id' .. randstr(8) -- internal id
   self._timer = nil
@@ -132,8 +135,17 @@ function BaseCheck:getSummary(obj)
   return fmt('(id=%s, type=%s%s)', self.id, self.getType(), str)
 end
 
+function BaseCheck:toStringParams()
+  local params = deepCopyTable(self._params)
+
+  params['id'] = self.id
+  params['period'] = self.period
+
+  return tableToString(params)
+end
+
 function BaseCheck:toString()
-  return fmt('%s (id=%s, period=%ss)', self.getType(), self.id, self.period)
+  return fmt('%s (%s)', self.getType(), self:toStringParams())
 end
 
 function BaseCheck:_runCheck()

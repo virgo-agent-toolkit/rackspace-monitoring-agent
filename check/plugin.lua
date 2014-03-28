@@ -92,25 +92,6 @@ function PluginCheck:initialize(params)
   self._log = loggingUtil.makeLogger(fmt('(plugin=%s, id=%s, iid=%s)', file, self.id, self._iid))
 end
 
-function PluginCheck:toString()
-  if not self._pluginArgs then
-    self._pluginArgs = {}
-  end
-
-  local argString = table.concat(self._pluginArgs, ',')
-  if argString == '' then
-    argString = '(none)'
-  end
-
-  return fmt('%s (id=%s, period=%ss, timeout=%ss, file=%s, args=%s)',
-    self.getType(),
-    self.id,
-    self.period,
-    self._timeout,
-    self._full_path,
-    argString)
-end
-
 function PluginCheck:getType()
   return 'agent.plugin'
 end
