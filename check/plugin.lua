@@ -101,7 +101,13 @@ function PluginCheck:toString()
     argString = '(none)'
   end
 
-  return fmt('%s (id=%s, period=%ss, file=%s, args=%s)', self.getType(), self.id, self.period, self._file, argString)
+  return fmt('%s (id=%s, period=%ss, timeout=%ss, file=%s, args=%s)',
+    self.getType(),
+    self.id,
+    self.period,
+    self._timeout,
+    self._file,
+    argString)
 end
 
 function PluginCheck:getType()
