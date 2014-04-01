@@ -238,6 +238,10 @@ function ChildCheck:initialize(params)
   end
   self._params = params
   self._lines = {}
+  self:_resetLines()
+end
+
+function ChildCheck:_resetLines()
   self._lines.stdout = {}
   self._lines.stderr = {}
 end
@@ -499,6 +503,8 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
 
         checkResult:setError(checkStatus)
       end
+
+      self:_resetLines()
 
       self._lastResult = checkResult
       callback(checkResult)
