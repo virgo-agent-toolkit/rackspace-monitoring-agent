@@ -54,6 +54,7 @@ function ClientBase:initialize(host, port, version, options)
   self.version = version
   self.apiType = apiType
   self.tenantId = nil
+  self._mfaCallback = nil
 
   self.headers = {}
   self.options = misc.merge({}, options)
@@ -209,11 +210,17 @@ function Client:_init()
   end
 end
 
+function Client:setMFACallback(callback)
+  self._mfaCallback = callback
+end
+
 function Client:auth(authUrls, username, keyOrPassword, callback)
   local client = KeystoneClient:new(MAAS_CLIENT_KEYSTONE_URL, { username = username, apikey = keyOrPassword })
+  client:setMFACallback(self._mfaCallback)
   client:tenantIdAndToken(function(err, obj)
     if err then
       client = KeystoneClient:new(MAAS_CLIENT_KEYSTONE_URL, { username = username, password = keyOrPassword })
+      client:setMFACallback(self._mfaCallback)
       client:tenantIdAndToken(callback)
       return
     end
