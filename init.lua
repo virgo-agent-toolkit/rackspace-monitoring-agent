@@ -47,6 +47,10 @@ local argv = require("options")
   .alias({['K'] = 'apikey'})
   .argv("idonhU:K:e:x:p:c:s:n:k:u")
 
+process:on('error', function(err)
+  logging.errorf('Unhandled Error: ', tostring(err))
+end);
+
 local Entry = {}
 
 function Entry.run()
