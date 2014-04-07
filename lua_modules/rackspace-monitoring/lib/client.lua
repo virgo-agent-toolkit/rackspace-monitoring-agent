@@ -18,6 +18,7 @@ local Object = require('core').Object
 local string = require('string')
 local fmt = require('string').format
 local https = require('https')
+local http = require('http')
 local url = require('url')
 local table = require('table')
 local Error = require('core').Error
@@ -37,6 +38,11 @@ if process.env.STAGING then
   MAAS_CLIENT_KEYSTONE_URL = 'https://staging.identity.api.rackspacecloud.com/v2.0'
   MAAS_CLIENT_DEFAULT_HOST = 'staging.monitoring.api.rackspacecloud.com'
   MAAS_CLIENT_DEFAULT_VERSION = 'v1.0'
+elseif process.env.VIRGO_DEV then
+  MAAS_CLIENT_US_KEYSTONE_URL = fmt('http://%s:23542/v2.0', process.env.VIRGO_DEV)
+  MAAS_CLIENT_UK_KEYSTONE_URL = fmt('http://%s:23542/v2.0', process.env.VIRGO_DEV)
+  MAAS_CLIENT_DEFAULT_HOST = process.env.VIRGO_DEV
+  MAAS_CLIENT_DEFAULT_VERSION = 'v1.0'
 else
   MAAS_CLIENT_KEYSTONE_URL = 'https://identity.api.rackspacecloud.com/v2.0'
   MAAS_CLIENT_DEFAULT_HOST = 'monitoring.api.rackspacecloud.com'
@@ -54,6 +60,12 @@ function ClientBase:initialize(host, port, version, options)
   self.version = version
   self.apiType = apiType
   self.tenantId = nil
+  self.proto = https
+
+  if process.env.VIRGO_DEV then
+    self.proto = http
+    self.port = 50000
+  end
 
   self.headers = {}
   self.options = misc.merge({}, options)
@@ -125,7 +137,7 @@ function ClientBase:request(method, path, payload, expectedStatusCode, callback)
     method = method
   }
 
-  local req = https.request(options, function(res)
+  local req = self.proto.request(options, function(res)
     local data = ''
     res:on('data', function(chunk)
       data = data .. chunk
