@@ -234,6 +234,9 @@ function Setup:run(callback)
       local options = {}
       options.user_agent = fmt('rackspace-monitoring-agent/%s:%s; %s', virgo.virgo_version, virgo.bundle_version, username)
       client = maas.Client:new(username, token, options)
+      client:setMFACallback(function(callback)
+        ask('MFA Token:', callback)
+      end)
       client.agent_tokens.get(callback)
     end,
     -- is there a token for the host
