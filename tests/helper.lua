@@ -6,7 +6,6 @@ local path = require('path')
 local io = require('io')
 local json = require('json')
 
-local misc = require('/base/util/misc')
 local constants = require('constants')
 local vutils = require('virgo_utils')
 
@@ -39,7 +38,6 @@ local child
 
 local function start_server(callback)
   local data = ''
-  callback = misc.fireOnce(callback)
 
   local pprint = function(d)
     print('[* AEP *]: ' .. d)
