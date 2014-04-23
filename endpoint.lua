@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local Object = require('core').Object
-local fmt = require('string').format
-local misc = require('/base/util/misc')
 local async = require('async')
+local constants = require('/constants')
 local dns = require('dns')
-local math = require('math')
+local fmt = require('string').format
 local logging = require('logging')
+local math = require('math')
+local misc = require('/base/util/misc')
+local staging = require('/staging')
 
 local Endpoint = Object:extend()
 
@@ -93,4 +95,22 @@ function Endpoint.meta.__tostring(table)
   end
 end
 
-return {Endpoint=Endpoint}
+function getEndpointSRV()
+  if staging.isStaging() then
+    return constants:get('DEFAULT_MONITORING_SRV_QUERIES_STAGING')
+  end
+  return constants:get('DEFAULT_MONITORING_SRV_QUERIES')
+end
+
+function getServiceNetSRV()
+  if staging.isStaging() then
+    return constants:get('SNET_MONITORING_TEMPLATE_SRV_QUERIES_STAGING')
+  end
+  return constants:get('SNET_MONITORING_TEMPLATE_SRV_QUERIES')
+end
+
+local exports = {}
+exports.Endpoint = Endpoint
+exports.getEndpointSRV = getEndpointSRV
+exports.getServiceNetSRV = getServiceNetSRV
+return exports

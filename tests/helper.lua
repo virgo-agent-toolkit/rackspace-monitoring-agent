@@ -6,7 +6,7 @@ local path = require('path')
 local io = require('io')
 local json = require('json')
 
-local constants = require('constants')
+local constants = require('/constants')
 local vutils = require('virgo_utils')
 
 local agent

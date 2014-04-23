@@ -98,6 +98,7 @@
 ./schedule/scheduler.lua
 ./setup.lua
 ./sigar.lua
+./staging.lua
 ./static/tests/checks/apache_server_status.txt
 ./static/tests/checks/mssql_buffer_manager.txt
 ./static/tests/checks/mssql_database.txt
