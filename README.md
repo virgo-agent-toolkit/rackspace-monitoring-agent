@@ -64,6 +64,17 @@ undertands.  Virgo makes this process easy by taking a flag to configure,
 --bundle, which should be set to the directory this repo lives in.  See Virgo
 for more information on bundles.
 
+Building for Rackspace Cloud Monitoring
+=======================================
+
+Rackspace customers: Virgo is the open source project for the Rackspace
+Cloud Monitoring agent. Feel free to build your own copy from this
+source.
+
+But! Please don't contact Rackspace Support about issues you encounter
+with your custom build. We can't support every change people may make
+and master might not be fully tested.
+
 Versioning
 ==========
 
