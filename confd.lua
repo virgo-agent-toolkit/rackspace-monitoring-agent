@@ -22,6 +22,7 @@ local loggingUtil = require('/base/util/logging')
 local fmt = require('string').format
 local async = require('async')
 local table = require('table')
+local JSON = require('json')
 local misc = require('/base/util/misc')
 
 local Confd = Object:extend()
@@ -135,7 +136,7 @@ function Confd:_sendFiles(conn, entity, callback)
       for _, indivres in ipairs(response.result.values) do
         if indivres.success then
           self.logger(logging.INFO,
-                      fmt('config_file post operation result: %s for %s handle: %s at %s',
+                      fmt('config_file post operation result: %s for %s, handle: %s at %s',
                           (indivres.success and "success" or "failure"),
                           indivres.type,
                           indivres.handle,
@@ -147,7 +148,7 @@ function Confd:_sendFiles(conn, entity, callback)
                           indivres.type,
                           indivres.handle,
                           indivres.location,
-                          indivres.err))
+                          JSON.stringify(indivres.err)))
         end
       end
     else
