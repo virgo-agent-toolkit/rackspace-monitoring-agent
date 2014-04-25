@@ -24,6 +24,8 @@ local constants = require('/constants')
 local protocolConnection = require('/protocol/virgo_connection')
 local agentClient = require('/client/virgo_client')
 local connectionStream = require('/client/virgo_connection_stream')
+local vutils = require('virgo_utils')
+local debugger = require('virgo_debugger')
 
 local argv = require("options")
   .usage('Usage: ')
@@ -52,6 +54,8 @@ local argv = require("options")
 local Entry = {}
 
 function Entry.run()
+  virgo_crash.init(vutils.getCrashPath())
+
   if argv.args.d then
     logging.set_level(logging.EVERYTHING)
   else
