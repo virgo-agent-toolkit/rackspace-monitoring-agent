@@ -4,6 +4,7 @@ local timer = require('timer')
 local string = require('string')
 local path = require('path')
 local os = require('os')
+local spawn = require('childprocess').spawn
 
 local async = require('async')
 
@@ -29,13 +30,48 @@ exports['test_makes_dump'] = function(test, asserts)
 
   async.series({
     function(callback)
-      fs.writeFile(dump_path, "harro\n", callback)
+      local options = {
+        env = { VIRGO_PATH_CRASH = TEST_DIR }
+      }
+      local child = spawn(process.execPath, {"-o", "-e", "crash", "--production"}, options)
+      child:on('exit', function()
+        callback()
+      end)
+    end,
+    function(callback)
+      local found = false
+
+      -- validate lua stack within dump
+      fs.readdir(TEST_DIR, function(err, files)
+        if err then
+          return callback(err)
+        end
+        local productName = virgo.default_name:gsub('%-', '%%%-')
+        function iter(file, callback)
+          -- files we are not looking for
+          if string.find(file, productName .. "%-crash%-report-.+.dmp") == nil then
+            return callback()
+          end
+          fs.readFile(path.join(TEST_DIR, file), function(err, data)
+            if err then
+              return callback(err)
+            end
+            -- check for lua stack
+            found = data:find('__5FY97Y1WBU7GPXCSIRS3T2EEHTSNJ6W183N8FUBFOD5LDWW06ZRBQB8AA8LA8BJD__\n{"stack"') ~= -1
+            callback()
+          end)
+        end
+        async.forEach(files, iter, function(err)
+          asserts.ok(found == true)
+          callback(err)
+        end)
+      end)
     end,
     function(callback)
       AEP = helper.start_server(callback)
     end,
     function(callback)
-      local endpoints = {Endpoint:new(options.host, options.port)}
+      local endpoints = { Endpoint:new(options.host, options.port) }
       local reporter = CrashReporter:new("1.0", "1.0", "test", TEST_DIR, endpoints)
       reporter:submit(callback)
     end,

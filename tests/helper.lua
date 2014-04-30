@@ -57,7 +57,6 @@ local function start_server(callback)
   end)
   local fired = false
   child.stdout:on('data', function(chunk)
-    pprint(chunk)
     if not fired then
       data = data .. chunk
       if data:find('TLS fixture server listening on port 50061') then
