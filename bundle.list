@@ -33,6 +33,7 @@
 ./check/apache.lua
 ./check/base.lua
 ./check/cpu.lua
+./check/dbaas.lua
 ./check/disk.lua
 ./check/filesystem.lua
 ./check/init.lua
@@ -169,6 +170,7 @@
 ./static/tests/system_info.network_interfaces.request.json
 ./tests/agent-protocol/init.lua
 ./tests/check/apache.lua
+./tests/check/dbaas.lua
 ./tests/check/filesystem.lua
 ./tests/check/init.lua
 ./tests/check/load_average.lua

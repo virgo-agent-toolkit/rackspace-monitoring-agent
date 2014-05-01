@@ -21,10 +21,11 @@ local env = require('env')
 
 local Check = require('/check')
 local Metric = require('/check/base').Metric
-local BaseCheck = Check.BaseCheck
-local CheckResult = Check.CheckResult
 
 local helper = require('../helper')
+
+local BaseCheck = Check.BaseCheck
+local CheckResult = Check.CheckResult
 local MySQLCheck = Check.MySQLCheck
 
 local exports = {}
