@@ -6,7 +6,7 @@ timeout     : 30
 details     :
     target  : /
 alarms      :
-    alarm1  :
+    techs   :
         label                 : disk used alarm
         notification_plan_id  : npTechnicalContactsEmail
         criteria              : |
@@ -15,4 +15,14 @@ alarms      :
             }
             if (percentage(metric['used'], metric['total']) > 80) {
                 return new AlarmStatus(WARNING, 'Less than 20% free space left.');
+            }
+    its     :
+        label                 : disk used alarm
+        notification_plan_id  : npInformationTechEmail
+        criteria              : |
+            if (percentage(metric['used'], metric['total']) > 95) {
+                return new AlarmStatus(CRITICAL, 'Less than 5% free space left.');
+            }
+            if (percentage(metric['used'], metric['total']) > 90) {
+                return new AlarmStatus(WARNING, 'Less than 10% free space left.');
             }

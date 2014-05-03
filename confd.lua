@@ -74,7 +74,11 @@ function Confd:_getFileList(callback)
     local _, fil
     local count = 0
     if err then
-      self.logger(logging.ERROR, fmt('error reading dir %s, %s', self.dir, err.message))
+      if err.code == 'ENOENT' then
+        self.logger(logging.ERROR, fmt('Agent-based config dir %s does not exist', self.dir))
+      else
+        self.logger(logging.ERROR, fmt('error reading dir %s, %s', self.dir, err.message))
+      end
     else
       for _, fil in ipairs(files) do
         --only read .yaml files for sending to the AEP
