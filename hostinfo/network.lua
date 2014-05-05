@@ -21,9 +21,9 @@ local sigarutil = require('/base/util/sigar')
 local table = require('table')
 
 
---[[ NetworkInfo ]]--
-local NetworkInfo = HostInfo:extend()
-function NetworkInfo:initialize()
+--[[ Info ]]--
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
   local netifs = sigarCtx:netifs()
   for i=1,#netifs do
@@ -73,8 +73,8 @@ function NetworkInfo:initialize()
   end
 end
 
-function NetworkInfo:getType()
+function Info:getType()
   return 'NETWORK'
 end
 
-return NetworkInfo
+return Info

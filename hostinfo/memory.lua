@@ -20,9 +20,9 @@ local sigarutil = require('/base/util/sigar')
 
 local table = require('table')
 
---[[ MemoryInfo ]]--
-local MemoryInfo = HostInfo:extend()
-function MemoryInfo:initialize()
+--[[ Info ]]--
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
   local swapinfo = sigarCtx:swap()
   local data = sigarCtx:mem()
@@ -55,8 +55,8 @@ function MemoryInfo:initialize()
   end
 end
 
-function MemoryInfo:getType()
+function Info:getType()
   return 'MEMORY'
 end
 
-return MemoryInfo
+return Info

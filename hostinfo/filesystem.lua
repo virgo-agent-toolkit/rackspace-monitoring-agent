@@ -21,8 +21,8 @@ local sigarutil = require('/base/util/sigar')
 local table = require('table')
 
 --[[ Filesystem Info ]]--
-local FilesystemInfo = HostInfo:extend()
-function FilesystemInfo:initialize()
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
   local fses = sigarCtx:filesystems()
   for i=1, #fses do
@@ -60,8 +60,8 @@ function FilesystemInfo:initialize()
   end
 end
 
-function FilesystemInfo:getType()
+function Info:getType()
   return 'FILESYSTEM'
 end
 
-return FilesystemInfo
+return Info

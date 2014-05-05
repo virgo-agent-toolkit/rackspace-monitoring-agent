@@ -20,9 +20,9 @@ local sigarutil = require('/base/util/sigar')
 
 local table = require('table')
 
---[[ DiskInfo ]]--
-local DiskInfo = HostInfo:extend()
-function DiskInfo:initialize()
+--[[ Info ]]--
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
   local disks = sigarutil.diskTargets(sigarCtx)
   local usage_fields = {
@@ -48,8 +48,8 @@ function DiskInfo:initialize()
   end
 end
 
-function DiskInfo:getType()
+function Info:getType()
   return 'DISK'
 end
 
-return DiskInfo
+return Info

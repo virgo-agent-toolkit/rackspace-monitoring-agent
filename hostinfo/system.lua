@@ -22,8 +22,8 @@ local table = require('table')
 
 
 --[[ System Info ]]--
-local SystemInfo = HostInfo:extend()
-function SystemInfo:initialize()
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
   local sysinfo = sigarCtx:sysinfo()
   local obj = {name = sysinfo.name, arch = sysinfo.arch,
@@ -34,8 +34,8 @@ function SystemInfo:initialize()
   table.insert(self._params, obj)
 end
 
-function SystemInfo:getType()
+function Info:getType()
   return 'SYSTEM'
 end
 
-return SystemInfo
+return Info

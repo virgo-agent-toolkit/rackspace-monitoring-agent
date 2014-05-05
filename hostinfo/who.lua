@@ -21,8 +21,8 @@ local sigarutil = require('/base/util/sigar')
 local table = require('table')
 
 --[[ Who is logged In ]]--
-local WhoInfo = HostInfo:extend()
-function WhoInfo:initialize()
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
   local who = sigarCtx:who()
   local fields = {
@@ -41,8 +41,8 @@ function WhoInfo:initialize()
   end
 end
 
-function WhoInfo:getType()
+function Info:getType()
   return 'WHO'
 end
 
-return WhoInfo
+return Info

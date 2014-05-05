@@ -21,8 +21,8 @@ local sigarutil = require('/base/util/sigar')
 local table = require('table')
 
 --[[ Process Info ]]--
-local ProcessInfo = HostInfo:extend()
-function ProcessInfo:initialize()
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
   local procs = sigarCtx:procs()
 
@@ -100,8 +100,8 @@ function ProcessInfo:initialize()
   end
 end
 
-function ProcessInfo:getType()
+function Info:getType()
   return 'PROCS'
 end
 
-return ProcessInfo
+return Info

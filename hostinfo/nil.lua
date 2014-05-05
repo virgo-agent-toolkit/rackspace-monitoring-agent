@@ -15,14 +15,14 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
---[[ NilInfo ]]--
-local NilInfo = HostInfo:extend()
-function NilInfo:initialize()
+--[[ Info ]]--
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
 end
 
-function NilInfo:getType()
+function Info:getType()
   return 'NIL'
 end
 
-return NilInfo
+return Info

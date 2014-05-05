@@ -20,9 +20,9 @@ local sigarutil = require('/base/util/sigar')
 
 local table = require('table')
 
---[[ CPUInfo ]]--
-local CPUInfo = HostInfo:extend()
-function CPUInfo:initialize()
+--[[ Info ]]--
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
   local cpus = sigarCtx:cpus()
   for i=1, #cpus do
@@ -61,8 +61,8 @@ function CPUInfo:initialize()
   end
 end
 
-function CPUInfo:getType()
+function Info:getType()
   return 'CPU'
 end
 
-return CPUInfo
+return Info
