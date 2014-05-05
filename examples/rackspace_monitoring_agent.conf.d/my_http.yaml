@@ -1,0 +1,14 @@
+type           : remote.http
+label          : Website check 1
+timeout        : 30
+period         : 90
+target_alias   : default
+details        : 
+    url        : http://www.foo.com
+    method     : GET
+monitoring_zones_poll: 
+               - mzord
+alarms         :
+    alarm1     :
+        label                 : http connect alarm
+        notification_plan_id  : npTechnicalContactsEmail
