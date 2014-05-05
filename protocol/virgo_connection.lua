@@ -1,5 +1,5 @@
 local msg = require('./virgo_messages')
-local hostInfo = require('../host_info')
+local hostInfo = require('/hostinfo')
 local check = require('../check')
 local JSON = require('json')
 
@@ -40,8 +40,14 @@ function VirgoProtocolConnection:_bindHandlers()
 
   self._responses['host_info.get'] = function(self, request, callback)
     local info = hostInfo.create(request.params.type)
-    local m = msg.HostInfoResponse:new(request, info:serialize())
-    self:_send(m, callback)
+    info:run(function(err)
+      if err then
+        self._log(logging.ERR, fmt('host_info.get error', tostring(err)))
+        return
+      end
+      local m = msg.HostInfoResponse:new(request, info:serialize())
+      self:_send(m, callback)
+    end)
   end
 
   self._responses['check.targets'] = function(self, request, callback)
