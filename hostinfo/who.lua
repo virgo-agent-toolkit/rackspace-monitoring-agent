@@ -45,6 +45,4 @@ function WhoInfo:getType()
   return 'WHO'
 end
 
-local exports = {}
-exports.WhoInfo = WhoInfo
-return exports
+return WhoInfo

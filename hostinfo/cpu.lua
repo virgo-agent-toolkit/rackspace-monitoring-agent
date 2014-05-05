@@ -65,6 +65,4 @@ function CPUInfo:getType()
   return 'CPU'
 end
 
-local exports = {}
-exports.CPUInfo = CPUInfo
-return exports
+return CPUInfo

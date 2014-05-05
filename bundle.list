@@ -55,6 +55,7 @@
 ./crashreport.lua
 ./endpoint.lua
 ./init.lua
+./hostinfo/all.lua
 ./hostinfo/base.lua
 ./hostinfo/cpu.lua
 ./hostinfo/disk.lua
@@ -172,6 +173,7 @@
 ./tests/check/mysql_mock.lua
 ./tests/check/redis.lua
 ./tests/check/windows.lua
+./tests/hostinfo/init.lua
 ./tests/code_cert.test.lua
 ./tests/collector/init.lua
 ./tests/crash-dump/init.lua

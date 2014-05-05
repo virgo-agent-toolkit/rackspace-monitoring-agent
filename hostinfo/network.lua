@@ -77,6 +77,4 @@ function NetworkInfo:getType()
   return 'NETWORK'
 end
 
-local exports = {}
-exports.NetworkInfo = NetworkInfo
-return exports
+return NetworkInfo

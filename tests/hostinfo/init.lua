@@ -13,16 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local HostInfo = require('./base').HostInfo
 
---[[ NilInfo ]]--
-local NilInfo = HostInfo:extend()
-function NilInfo:initialize()
-  HostInfo.initialize(self)
+local hostinfo = require('/hostinfo')
+local fmt = require('string').format
+
+local function run(_type)
+  return function(test, asserts)
+    local hi = hostinfo.create(_type)
+    hi:run(function(err, info)
+      asserts.ok(not err)
+      asserts.ok(type(info) == 'table')
+      test.done()
+    end)
+  end
 end
 
-function NilInfo:getType()
-  return 'NIL'
+local exports = {}
+
+for _, v in pairs(hostinfo.classes) do
+  local fun_name = fmt('test_hostinfo_%s', v.getType())
+  exports[fun_name] = run(v.getType())
 end
 
-return NilInfo
+return exports

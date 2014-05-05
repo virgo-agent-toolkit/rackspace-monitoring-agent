@@ -52,6 +52,4 @@ function DiskInfo:getType()
   return 'DISK'
 end
 
-local exports = {}
-exports.DiskInfo = DiskInfo
-return exports
+return DiskInfo

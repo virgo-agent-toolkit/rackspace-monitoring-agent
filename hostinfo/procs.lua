@@ -104,6 +104,4 @@ function ProcessInfo:getType()
   return 'PROCS'
 end
 
-local exports = {}
-exports.ProcessInfo = ProcessInfo
-return exports
+return ProcessInfo

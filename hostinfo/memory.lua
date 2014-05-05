@@ -59,6 +59,4 @@ function MemoryInfo:getType()
   return 'MEMORY'
 end
 
-local exports = {}
-exports.MemoryInfo = MemoryInfo
-return exports
+return MemoryInfo

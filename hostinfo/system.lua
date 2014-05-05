@@ -38,6 +38,4 @@ function SystemInfo:getType()
   return 'SYSTEM'
 end
 
-local exports = {}
-exports.SystemInfo = SystemInfo
-return exports
+return SystemInfo

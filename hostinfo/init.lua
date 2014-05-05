@@ -19,41 +19,16 @@ local JSON = require('json')
 local fs = require('fs')
 local misc = require('/base/util/misc')
 local os = require('os')
-local table = require('table')
-local vutils = require('virgo_utils')
-
-local sigarCtx = require('/sigar').ctx
-local sigarutil = require('/base/util/sigar')
-
-local HostInfo = require('./base').HostInfo
-local CPUInfo = require('./cpu').CPUInfo
-local DiskInfo = require('./disk').DiskInfo
-local FilesystemInfo = require('./filesystem').FilesystemInfo
-local MemoryInfo = require('./memory').MemoryInfo
-local NetworkInfo = require('./network').NetworkInfo
-local NilInfo = require('./nil').NilInfo
-local ProcessInfo = require('./procs').ProcessInfo
-local SystemInfo = require('./system').SystemInfo
-local WhoInfo = require('./who').WhoInfo
 
 local asserts = require('bourbon').asserts
 
-local hostInfo_classes = {
-  CPUInfo = CPUInfo,
-  MemoryInfo = MemoryInfo,
-  NetworkInfo = NetworkInfo,
-  DiskInfo = DiskInfo,
-  ProcessInfo = ProcessInfo,
-  FilesystemInfo = FilesystemInfo,
-  SystemInfo = SystemInfo,
-  WhoInfo = WhoInfo
-}
+local classes = require('./all')
 
 local function create_map()
   local map = {}
-  for x, hostInfo_class in pairs(hostInfo_classes) do
-    asserts.ok(hostInfo_class.getType and hostInfo_class.getType(), "HostInfo getType() undefined or returning nil: " .. tostring(x))
-    map[hostInfo_class.getType()] = hostInfo_class
+  for x, klass in pairs(classes) do
+    asserts.ok(klass.getType and klass.getType(), "HostInfo getType() undefined or returning nil: " .. tostring(x))
+    map[klass.getType()] = klass
   end
   return map
 end
@@ -86,4 +61,5 @@ end
 local exports = {}
 exports.create = create
 exports.debugInfo = debugInfo
+exports.classes = classes
 return exports

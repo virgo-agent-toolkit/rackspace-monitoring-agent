@@ -64,6 +64,4 @@ function FilesystemInfo:getType()
   return 'FILESYSTEM'
 end
 
-local exports = {}
-exports.FilesystemInfo = FilesystemInfo
-return exports
+return FilesystemInfo
