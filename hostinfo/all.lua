@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,22 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local BaseCheck = require('./base').BaseCheck
-local CheckResult = require('./base').CheckResult
-
-local NullCheck = BaseCheck:extend()
-
-function NullCheck:initialize(params)
-  BaseCheck.initialize(self, params)
-end
-
-function NullCheck:getType()
-  return "NULL"
-end
-
-function NullCheck:run(callback)
-end
-
-local exports = {}
-exports.NullCheck = NullCheck
-return exports
+return {
+  require('./cpu'),
+  require('./disk'),
+  require('./filesystem'),
+  require('./memory'),
+  require('./network'),
+  require('./nil'),
+  require('./procs'),
+  require('./system'),
+  require('./who')
+}

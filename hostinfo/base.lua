@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,22 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local BaseCheck = require('./base').BaseCheck
-local CheckResult = require('./base').CheckResult
+local Object = require('core').Object
+local vutils = require('virgo_utils')
 
-local NullCheck = BaseCheck:extend()
-
-function NullCheck:initialize(params)
-  BaseCheck.initialize(self, params)
+--[[ HostInfo ]]--
+local HostInfo = Object:extend()
+function HostInfo:initialize()
+  self._params = {}
 end
 
-function NullCheck:getType()
-  return "NULL"
+function HostInfo:serialize()
+  return {
+    metrics = self._params,
+    timestamp = vutils.gmtNow()
+  }
 end
 
-function NullCheck:run(callback)
+function HostInfo:run(callback)
+  callback(nil, self._params)
 end
 
 local exports = {}
-exports.NullCheck = NullCheck
+exports.HostInfo = HostInfo
 return exports

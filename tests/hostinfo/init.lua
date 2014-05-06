@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,22 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local BaseCheck = require('./base').BaseCheck
-local CheckResult = require('./base').CheckResult
+local hostinfo = require('/hostinfo')
+local fmt = require('string').format
 
-local NullCheck = BaseCheck:extend()
-
-function NullCheck:initialize(params)
-  BaseCheck.initialize(self, params)
-end
-
-function NullCheck:getType()
-  return "NULL"
-end
-
-function NullCheck:run(callback)
+local function run(_type)
+  return function(test, asserts)
+    local hi = hostinfo.create(_type)
+    hi:run(function(err, info)
+      asserts.ok(not err)
+      asserts.ok(type(info) == 'table')
+      test.done()
+    end)
+  end
 end
 
 local exports = {}
-exports.NullCheck = NullCheck
+
+for _, v in pairs(hostinfo.classes) do
+  local fun_name = fmt('test_hostinfo_%s', v.getType())
+  exports[fun_name] = run(v.getType())
+end
+
 return exports

@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,23 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+local HostInfo = require('./base').HostInfo
 
-local BaseCheck = require('./base').BaseCheck
-local CheckResult = require('./base').CheckResult
-
-local NullCheck = BaseCheck:extend()
-
-function NullCheck:initialize(params)
-  BaseCheck.initialize(self, params)
+--[[ Info ]]--
+local Info = HostInfo:extend()
+function Info:initialize()
+  HostInfo.initialize(self)
 end
 
-function NullCheck:getType()
-  return "NULL"
+function Info:getType()
+  return 'NIL'
 end
 
-function NullCheck:run(callback)
-end
-
-local exports = {}
-exports.NullCheck = NullCheck
-return exports
+return Info
