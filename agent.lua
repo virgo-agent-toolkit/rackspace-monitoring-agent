@@ -30,12 +30,12 @@ local async = require('async')
 local sigarCtx = require('/sigar').ctx
 
 local MachineIdentity = require('machineidentity').MachineIdentity
-local constants = require('/base/util/constants')
+local constants = require('/constants')
 local misc = require('/base/util/misc')
 local fsutil = require('/base/util/fs')
 local UUID = require('/base/util/uuid')
 local logging = require('logging')
-local Endpoint = require('/endpoint').Endpoint
+local endpoint = require('/endpoint')
 local ConnectionStream = require('/base/client/connection_stream').ConnectionStream
 local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
@@ -254,7 +254,7 @@ end
 
 function Agent:loadEndpoints(callback)
   local config = self._config
-  local queries = config['query_endpoints'] or table.concat(constants:get('DEFAULT_MONITORING_SRV_QUERIES'), ',')
+  local queries = config['query_endpoints'] or table.concat(endpoint.getEndpointSRV(), ',')
   local snetregion = config['snet_region']
   local endpoints = config['endpoints']
 
@@ -292,7 +292,7 @@ function Agent:loadEndpoints(callback)
 
     logging.info(fmt('Using ServiceNet endpoints in %s region', snetregion))
 
-    for _, address in ipairs(constants:get('SNET_MONITORING_TEMPLATE_SRV_QUERIES')) do
+    for _, address in ipairs(endpoint.getServiceNetSRV()) do
       address = address:gsub('${region}', snetregion)
       logging.debug(fmt('Endpoint SRV %s', address))
       table.insert(domains, address)
@@ -314,18 +314,18 @@ function Agent:loadEndpoints(callback)
   local new_endpoints = {}
 
   for _, address in ipairs(endpoints) do
-    table.insert(new_endpoints, Endpoint:new(address))
+    table.insert(new_endpoints, endpoint.Endpoint:new(address))
   end
 
   return _callback(nil, new_endpoints)
 end
 
 function Agent:_queryForEndpoints(domains, callback)
-  local endpoint, _
+  local _
   local endpoints = {}
-  for _, endpoint in pairs(domains) do
-    endpoint = Endpoint:new(nil, nil, endpoint)
-    table.insert(endpoints, endpoint)
+  for _, domain in pairs(domains) do
+    local ep = endpoint.Endpoint:new(nil, nil, domain)
+    table.insert(endpoints, ep)
   end
   callback(nil, endpoints)
 end

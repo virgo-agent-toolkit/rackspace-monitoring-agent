@@ -23,7 +23,7 @@ local fs = require('fs')
 local table = require('table')
 
 local helper = require('./helper')
-local constants = require('constants')
+local constants = require('/constants')
 local split = require('/base/util/misc').split
 
 local exports = {}
