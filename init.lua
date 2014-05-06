@@ -99,7 +99,7 @@ function Entry.run()
   types.AgentClient = agentClient
   types.ConnectionStream = connectionStream
 
-  -- hacks to make monitoring specific config files compatible with a generic agent.lua
+  virgo.config = virgo.config or {}
   virgo.config['endpoints'] = virgo.config['monitoring_endpoints']
   virgo.config['upgrade'] = virgo.config['monitoring_upgrade']
   virgo.config['id'] = virgo.config['monitoring_id']
