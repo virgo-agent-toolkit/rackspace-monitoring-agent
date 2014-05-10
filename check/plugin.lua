@@ -105,12 +105,26 @@ function PluginCheck:run(callback)
     -- If we are on windows, we want to suport custom plugins like "foo.py",
     -- but this means we need to map the .py file ending to the Python Executable,
     -- and mutate our run path to be like: C:/Python27/python.exe custom_plugins_path/foo.py
-    local assocExe, err = virgo.win32_get_associated_exe(ext)
+    local assocExe, err = virgo.win32_get_associated_exe(ext, '0') -- Try the 0 verb first for Powershell
+    if assocExe == nil then
+      assocExe, err = virgo.win32_get_associated_exe(ext, 'open')
+    end
+
     if assocExe ~= nil then
+      -- If Powershell is the EXE then add a parameter for the exec policy
+      local justExe = path.basename(assocExe)
+      -- On windows if the associated exe is %1 it references itself
+      if assocExe ~= "%1" then
         table.insert(exeArgs, 1, self._pluginPath)
         exePath = assocExe
+        -- Force Bypass for this child powershell
+        if justExe == "powershell.exe" then
+          table.insert(exeArgs, 1, 'Bypass')
+          table.insert(exeArgs, 1, '-ExecutionPolicy')
+        end
+      end
     else
-        self._log(logging.WARNING, fmt('error getting associated executable for "%s": %s', ext, err))
+      self._log(logging.WARNING, fmt('error getting associated executable for "%s": %s', ext, err))
     end
   end
 

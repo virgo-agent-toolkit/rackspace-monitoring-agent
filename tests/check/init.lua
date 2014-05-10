@@ -523,6 +523,33 @@ exports['test_custom_plugin_invalid_metric_line_unrecognized_line'] = plugin_tes
   end}
 )
 
+if os.type() == 'win32' then
+  exports['test_custom_plugin_windows_batch_file'] = plugin_test(
+    'windows1.bat', 'Test plugin is OK',
+    'available', {cb = function(test, asserts, metrics)
+      asserts.dequals(metrics['none']['metric1'], {t = 'int64', v = '1'})
+      asserts.dequals(metrics['none']['metric2'], {t = 'int64', v = '100'})
+      test.done()
+    end}
+  )
+
+  exports['test_custom_plugin_windows_ps_file'] = plugin_test(
+    'windows2.ps1', 'Test plugin is OK',
+    'available', {cb = function(test, asserts, metrics)
+      asserts.dequals(metrics['none']['metric1'], {t = 'int64', v = '1'})
+      asserts.dequals(metrics['none']['metric2'], {t = 'int64', v = '100'})
+      test.done()
+    end}
+  )
+else
+  exports['test_custom_plugin_windows_batch_file'] = function(test, asserts)
+    return test.skip('test_custom_plugin_windows_batch_file is Windows Only')
+  end
+  exports['test_custom_plugin_windows_ps_file'] = function(test, asserts)
+    return test.skip('test_custom_plugin_windows_ps_file is Windows Only')
+  end
+end
+
 exports['test_check_metrics_post_serialization'] = function(test, asserts)
   local check = MemoryCheck:new({id='foo', period=30})
   asserts.ok(check._lastResult == nil)
