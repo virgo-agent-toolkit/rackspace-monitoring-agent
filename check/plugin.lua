@@ -100,6 +100,7 @@ function PluginCheck:run(callback)
   local exePath = self._pluginPath
   local exeArgs = self._pluginArgs
   local ext = path.extname(exePath)
+  local closeStdin = false
 
   if virgo.win32_get_associated_exe ~= nil and ext ~= "" then
     -- If we are on windows, we want to suport custom plugins like "foo.py",
@@ -121,6 +122,7 @@ function PluginCheck:run(callback)
         if justExe == "powershell.exe" then
           table.insert(exeArgs, 1, 'Bypass')
           table.insert(exeArgs, 1, '-ExecutionPolicy')
+          closeStdin = true -- NEEDED for Powershell 2.0 to exit
         end
       end
     else
@@ -132,6 +134,9 @@ function PluginCheck:run(callback)
   -- Ruby 1.9.1p0 crashes when stdin is closed, so we let luvit take care of
   -- closing the pipe after the process runs.
   local child = self:_runChild(exePath, exeArgs, cenv, callback)
+  if closeStdin then
+    child.stdin:close()
+  end
 end
 
 
