@@ -273,8 +273,8 @@ function Agent:loadEndpoints(callback)
     callback(nil, endpoints)
   end
 
-  if snetregion and endpoints then
-    logging.errorf("Invalid configuration: snet_region and endpoints cannot be set at the same time.")
+  if snetregion and queries and endpoints then
+    logging.errorf("Invalid configuration: only one of snet_region, queries, and endpoints can be set.")
     process.exit(1)
   end
 
@@ -299,10 +299,13 @@ function Agent:loadEndpoints(callback)
     end
 
     return self:_queryForEndpoints(domains, _callback)
-  elseif queries and not endpoints then
+  end
+
+  if queries then
     local domains = misc.split(queries, '[^,]+')
     return self:_queryForEndpoints(domains, _callback)
   end
+
   -- split address,address,address
   endpoints = misc.split(endpoints, '[^,]+')
 
