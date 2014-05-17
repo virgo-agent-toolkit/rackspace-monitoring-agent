@@ -637,7 +637,7 @@ function SubProcCheck:_findLibrary(lexact, paths, osexts)
   return clib
 end
 
-
+local METRIC_STATUS_MAX_LENGTH = constants:get('METRIC_STATUS_MAX_LENGTH')
 
 function CheckResult:initialize(check, options)
   self._options = options or {}
@@ -676,6 +676,9 @@ function CheckResult:getStatus()
 end
 
 function CheckResult:setStatus(status)
+  if status and #status > METRIC_STATUS_MAX_LENGTH then
+    status = status:sub(1, METRIC_STATUS_MAX_LENGTH) -- trim excess
+  end
   self._status = status
 end
 

@@ -20,6 +20,8 @@ local os = require('os')
 local fs = require('fs')
 local async = require('async')
 
+local string = require('string')
+
 local fixtures = require('/tests/fixtures')
 local Check = require('/check')
 local Metric = require('/check/base').Metric
@@ -326,6 +328,15 @@ exports['test_checkresult_serialization'] = function(test, asserts)
   asserts.equals(serialized[2][1], 'eth0')
   asserts.equals(serialized[2][2]['m2']['t'], 'string')
   asserts.equals(serialized[2][2]['m2']['v'], 'test')
+
+  -- Validate status truncation
+  local max_length = constants:get('METRIC_STATUS_MAX_LENGTH')
+  cr = CheckResult:new({id='foo', period=30})
+  cr:setStatus(string.rep('a', max_length + 1))
+  asserts.equals(#cr:getStatus(), max_length)
+
+  cr:setStatus(string.rep('a', max_length - 10))
+  asserts.equals(#cr:getStatus(), max_length - 10)
 
   test.done()
 end
