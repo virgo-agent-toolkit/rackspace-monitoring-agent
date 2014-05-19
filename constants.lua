@@ -44,4 +44,6 @@ constants:setGlobal('SNET_MONITORING_TEMPLATE_SRV_QUERIES', {
   '_monitoringagent._tcp.snet-${region}-region2.prod.monitoring.api.rackspacecloud.com'
 })
 
+constants:setGlobal('METRIC_STATUS_MAX_LENGTH', 256)
+
 return constants
