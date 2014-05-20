@@ -301,7 +301,7 @@ function Agent:loadEndpoints(callback)
     return self:_queryForEndpoints(domains, _callback)
   end
 
-  if queries then
+  if queries and not endpoints then
     local domains = misc.split(queries, '[^,]+')
     return self:_queryForEndpoints(domains, _callback)
   end
