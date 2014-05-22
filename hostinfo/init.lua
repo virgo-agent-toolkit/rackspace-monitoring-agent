@@ -22,6 +22,7 @@ local os = require('os')
 
 local asserts = require('bourbon').asserts
 
+local HostInfo = require('./base').HostInfo
 local classes = require('./all')
 
 local function create_map()
@@ -34,6 +35,9 @@ local function create_map()
 end
 
 local HOST_INFO_MAP = create_map()
+
+--[[ NilInfo ]]--
+local NilInfo = HostInfo:extend()
 
 --[[ Factory ]]--
 local function create(infoType)
