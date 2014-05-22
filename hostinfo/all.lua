@@ -23,5 +23,7 @@ return {
   require('./nil'),
   require('./procs'),
   require('./system'),
-  require('./who')
+  require('./who'),
+  require('./date'),
+  require('./sysctl')
 }
