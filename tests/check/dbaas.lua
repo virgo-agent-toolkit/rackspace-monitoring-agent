@@ -15,9 +15,12 @@ limitations under the License.
 --]]
 
 local env = require('env')
+local os = require('os')
 
 local Check = require('/check')
 local Metric = require('/check/base').Metric
+
+local helper = require('../helper')
 
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
@@ -46,6 +49,10 @@ exports['test_dbaas_multi_query'] = function(test, asserts)
 
     test.done()
   end)
+end
+
+if os.type() == "win32" then
+  exports = helper.skip_all(exports, os.type())
 end
 
 return exports
