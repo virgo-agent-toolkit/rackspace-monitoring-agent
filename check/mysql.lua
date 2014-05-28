@@ -136,6 +136,58 @@ local stat_map = {
   Qcache_total_blocks = { type = 'uint64', alias = 'qcache.total_blocks', unit = 'blocks'},
 }
 
+local function runQuery(conn, query, cr, clib, stat_map)
+  rv = clib.mysql_query(conn, query)
+  if rv ~= 0 then
+    cr:setError(fmt('mysql_query "%s" failed: (%d) %s',
+                    query,
+                    clib.mysql_errno(conn),
+                    ffi.string(clib.mysql_error(conn))))
+    clib.mysql_close(conn)
+    return
+  end
+
+  local result = clib.mysql_use_result(conn)
+  if result == nil then
+    cr:setError(fmt('mysql_use_result failed: (%d) %s',
+                    clib.mysql_errno(conn),
+                    ffi.string(clib.mysql_error(conn))))
+    clib.mysql_close(conn)
+    return
+  end
+
+  local nfields = clib.mysql_num_fields(result)
+  if nfields ~= 2 then
+    cr:setError(fmt('mysql_num_fields failed: expected 2 fields, but got %i',
+                    nfields))
+    clib.mysql_free_result(result)
+    clib.mysql_close(conn)
+    return
+  end
+
+  while true do
+    local r = clib.mysql_fetch_row(result)
+    if r == nil then
+      break
+    end
+    local keyname = ffi.string(r[0])
+    local kstat = stat_map[keyname]
+    if kstat ~= nil then
+      -- TODO: would be nice to use mysql native types here?
+      local val = ffi.string(r[1])
+      cr:addMetric(kstat.alias, nil, kstat.type, val, rawget(kstat, 'unit'))
+    end
+  end
+end
+
+function MySQLCheck:getQueries()
+   return {"show status"}
+end
+
+function MySQLCheck:getStatMap()
+   return stat_map
+end
+
 function MySQLCheck:_runCheckInChild(callback)
   local cr = CheckResult:new(self, {})
 
@@ -157,8 +209,8 @@ function MySQLCheck:_runCheckInChild(callback)
 
   local osexts = {
     '', -- default to no os extension
-    '.16', 
-    '.17', 
+    '.16',
+    '.17',
     '.18'
   }
 
@@ -229,54 +281,11 @@ function MySQLCheck:_runCheckInChild(callback)
     callback(cr)
     return
   end
-
-  rv = clib.mysql_query(conn, "show status")
-  if rv ~= 0 then
-    cr:setError(fmt('mysql_query "show status" failed: (%d) %s',
-                    clib.mysql_errno(conn),
-                    ffi.string(clib.mysql_error(conn))))
-    clib.mysql_close(conn)
-    callback(cr)
-    return
+  for idx, query in pairs(self:getQueries()) do
+     runQuery(conn, query, cr, clib, self:getStatMap())
   end
-
-  local result = clib.mysql_use_result(conn)
-  if result == nil then
-    cr:setError(fmt('mysql_use_result failed: (%d) %s',
-                    clib.mysql_errno(conn),
-                    ffi.string(clib.mysql_error(conn))))
-    clib.mysql_close(conn)
-    callback(cr)
-    return
-  end
-
-  local nfields = clib.mysql_num_fields(result)
-  if nfields ~= 2 then
-    cr:setError(fmt('mysql_num_fields failed: expected 2 fields, but got %i',
-                    nfields))
-    clib.mysql_free_result(result)
-    clib.mysql_close(conn)
-    callback(cr)
-    return
-  end
-
-  while true do
-    local r = clib.mysql_fetch_row(result)
-    if r == nil then
-      break
-    end
-    local keyname = ffi.string(r[0])
-    local kstat = stat_map[keyname]
-    if kstat ~= nil then
-      -- TODO: would be nice to use mysql native types here?
-      local val = ffi.string(r[1])
-      cr:addMetric(kstat.alias, nil, kstat.type, val, rawget(kstat, 'unit'))
-    end
-  end
-
-  -- TOOD: status message
+  -- Issue callback here for any errors/metrics in runQuery(s)
   callback(cr)
-  return
 end
 
 local exports = {}
