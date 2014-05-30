@@ -23,7 +23,7 @@ local CheckResult = require('./base').CheckResult
 local MySQLCheck = require('mysql').MySQLCheck
 local DBaaSMySQLCheck = MySQLCheck:extend()
 
-local stat_map = {
+local status_stat_map = {
   -- show status mappings
   Aborted_clients = { type = 'uint64', alias = 'core.aborted_clients', unit = 'clients' },
   Connections = { type = 'gauge', alias = 'core.connections', unit = 'connections'},
@@ -90,6 +90,9 @@ local stat_map = {
   Handler_write = { type = 'gauge', alias = 'handler.write', unit = 'queries'},
   Handler_commit = { type = 'gauge', alias = 'handler.commit', unit = 'queries'},
 
+  Slave_running = { type = 'string', alias = 'replication.slave_running', unit = ''},
+}
+local variables_stat_map = {
   -- show variables mappings
   query_cache_size = { type = 'uint64', alias = 'qcache.size', unit = 'bytes'},
   max_connections = { type = 'uint64', alias = 'max.connections', unit = 'connections'},
@@ -98,16 +101,31 @@ local stat_map = {
   thread_cache_size = { type = 'uint64', alias = 'thread.cache_size', unit = 'bytes'},
 }
 
-function DBaaSMySQLCheck:getStatMap()
-   return stat_map
-end
+replication_stat_map = {
+  -- show slave status mappings
+  Read_Master_Log_Pos = { type = 'uint64', alias = 'replication.read_master_log_pos', unit = 'position'},
+  Slave_IO_Running = { type = 'string', alias = 'replication.slave_io_running', unit = ''},
+  Slave_SQL_Running = { type = 'string', alias = 'replication.slave_sql_running', unit = ''},
+  Exec_Master_Log_Pos = { type = 'uint64', alias = 'replication.exec_master_log_pos', unit = 'position'},
+  Relay_Log_Pos = { type = 'uint64', alias = 'replication.relay_log_pos', unit = 'position'},
+  Relay_Log_Size = { type = 'uint64', alias = 'replication.relay_log_size', unit = 'bytes'},
+  Seconds_Behind_Master = { type = 'uint64', alias = 'replication.seconds_behind_master', unit = 'seconds'},
+  Last_Errno = { type = 'uint64', alias = 'replication.last_errno', unit = 'errno'},
+  Slave_IO_State = { type = 'string', alias = 'replication.slave_io_state', unit = ''},
+  Last_IO_Error = { type = 'string', alias = 'replication.last_io_error', unit = ''},
+  Slave_open_temp_tables = { type = 'uint64', alias = 'replication.slave_open_temp_tables', unit = 'tables'},
+  Slave_retried_transactions = { type = 'uint64', alias = 'replication.slave_retried_transactions', unit = 'transactions'},
+}
 
 function DBaaSMySQLCheck:getType()
   return 'agent.dbaas_mysql'
 end
 
 function DBaaSMySQLCheck:getQueries()
-   return {'show status', 'show variables'}
+   return { replication_query = { query = 'show slave status', stat_map = replication_stat_map, kvquery = false },
+            status_query = { query = "show status", stat_map = status_stat_map, kvquery = true },
+            variables_query = { query = 'show variables', stat_map = variables_stat_map, kvquery = true },
+   }
 end
 
 local exports = {}

@@ -57,7 +57,13 @@ end
 function MySQLMock:mysql_num_fields(results)
   return 2
 end
+function MySQLMock:mysql_fetch_fields(result)
+   return {[0]={name = 'Master_Host'},
+           [1]={name = 'Slave_IO_State'},
+   }
+end
 
+local ColumnRowResult = {[1]={[0]='localhost',[1]='3'}}
 
 local RowResult = {
   {"Aborted_clients", "17"},
@@ -141,14 +147,29 @@ testcases['fake_results'] = MySQLMock:new()
 local MockQueryData = MySQLMock:extend()
 
 local MysqlResult = Object:extend()
-function MysqlResult:initialize(rows)
+function MysqlResult:initialize(rows, kvquery)
   self.rows = rows
+  self.kvquery = kvquery
   self.rowIndex = 1
 end
 
 function MysqlResult:count()
   return #self.rows
 end
+
+function MysqlResult:fetchColumnRow()
+  local rv = {}
+  local row = ColumnRowResult[self.rowIndex]
+  if not row then
+    return nil
+  end
+  rv[0] = ffi.new("char[?]", #row[0], row[0])
+  rv[1] = ffi.new("char[?]", #row[1], row[1])
+
+  self.rowIndex = self.rowIndex + 1
+  return rv
+end
+
 
 function MysqlResult:fetchRow()
   local rv = {}
@@ -171,11 +192,12 @@ function MysqlResult:fetchRow()
 end
 
 local QUERIES = {
-  ['show status'] = {
-    {'Uptime', '2'},
-  },
   ['show slave status'] = {
     {'Master_Host', 'localhost'},
+    {'Slave_IO_State', '3'},
+  },
+  ['show status'] = {
+    {'Uptime', '2'},
   },
   ['show variables'] = {
     {'query_cache_size', '1'},
@@ -198,7 +220,11 @@ function MockQueryData.mysql_init()
 end
 
 function MockQueryData.mysql_query(conn, query)
-  conn.results = MysqlResult:new(QUERIES[query])
+  local kvquery = true
+  if query == 'show slave status' then
+    kvquery = false
+  end
+  conn.results = MysqlResult:new(QUERIES[query], kvquery)
   return 0
 end
 
@@ -209,8 +235,12 @@ end
 -- Need to mock out a new fetch row based on this query
 -- or maybe just mod the one above to conditionally return?
 function MockQueryData.mysql_fetch_row(results)
-  local row = results:fetchRow()
-  return row
+  if results.kvquery then
+    local row = results:fetchRow()
+    return row
+  else
+    return results:fetchColumnRow()
+  end
 end
 
 testcases['test_multi_query'] = MockQueryData:new()

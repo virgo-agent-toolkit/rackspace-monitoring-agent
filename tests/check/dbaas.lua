@@ -43,7 +43,8 @@ exports['test_dbaas_multi_query'] = function(test, asserts)
     asserts.equal(tonumber(m['core']['uptime']['v']), 2)
     -- show variables result
     asserts.equal(tonumber(m['qcache']['size']['v']), 1)
-
+    -- show slave status result
+    asserts.equal(tonumber(m['replication']['slave_io_state']['v']), 3)
     test.done()
   end)
 end
