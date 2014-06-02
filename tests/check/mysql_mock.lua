@@ -199,7 +199,7 @@ local QUERIES = {
   ['show global status'] = {
     {'Uptime', '2'},
   },
-  ['show variables'] = {
+  ['show global variables'] = {
     {'query_cache_size', '1'},
   },
 }
