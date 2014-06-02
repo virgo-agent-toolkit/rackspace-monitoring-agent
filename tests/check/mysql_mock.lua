@@ -196,7 +196,7 @@ local QUERIES = {
     {'Master_Host', 'localhost'},
     {'Slave_IO_State', '3'},
   },
-  ['show status'] = {
+  ['show global status'] = {
     {'Uptime', '2'},
   },
   ['show variables'] = {

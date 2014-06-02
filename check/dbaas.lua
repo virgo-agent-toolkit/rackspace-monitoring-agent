@@ -123,7 +123,7 @@ end
 
 function DBaaSMySQLCheck:getQueries()
    return { replication_query = { query = 'show slave status', stat_map = replication_stat_map, kvquery = false },
-            status_query = { query = "show status", stat_map = status_stat_map, kvquery = true },
+            status_query = { query = "show global status", stat_map = status_stat_map, kvquery = true },
             variables_query = { query = 'show variables', stat_map = variables_stat_map, kvquery = true },
    }
 end

@@ -272,7 +272,7 @@ local function runColumnBasedQuery(conn, query, cr, clib, stat_map)
 end
 
 function MySQLCheck:getQueries()
-   return { status_query = { query = "show status", stat_map = status_stat_map, kvquery = true },
+   return { status_query = { query = "show global status", stat_map = status_stat_map, kvquery = true },
    }
 end
 
