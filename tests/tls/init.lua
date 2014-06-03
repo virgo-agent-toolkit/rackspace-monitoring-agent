@@ -120,7 +120,7 @@ exports['test_set_options'] = function(test, asserts)
   local err, res = pcall(sc.setOptions, sc, "barrrrrr")
   -- expected string
   asserts.equals(err, false)
-  asserts.equals(tlsbinding.SSL_OP_ALL, 2147487743)
+  asserts.ok(tlsbinding.SSL_OP_ALL)
   err, res = pcall(sc.setOptions, sc, tlsbinding.SSL_OP_ALL)
   asserts.equals(err, true)
   sc:close()
