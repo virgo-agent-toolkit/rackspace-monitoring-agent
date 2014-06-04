@@ -83,7 +83,9 @@ exports['test_makes_dump'] = function(test, asserts)
       end)
     end
   }, function(err)
-    AEP:kill(9)
+    if AEP then
+      AEP:kill(9)
+    end
     asserts.ok(err==nil, tostring(err))
     test.done()
   end)
