@@ -688,6 +688,11 @@ function CheckResult:setError(message)
 end
 
 function CheckResult:addMetric(name, dimension, type, value, unit)
+  if value == nil then
+    -- log the nil value
+    self._check._log(logging.DEBUG, fmt('nil value for %s', name))
+    return
+  end
   local metric = Metric:new(name, dimension, type, value, unit)
 
   if not self._metrics[metric.dimension] then

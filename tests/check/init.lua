@@ -253,8 +253,10 @@ if not process.env['TRAVIS'] then
         asserts.not_nil(m['write_bytes'])
         asserts.not_nil(m['rtime'])
         asserts.not_nil(m['wtime'])
-        asserts.not_nil(m['qtime'])
-        asserts.not_nil(m['time'])
+        if os.type() ~= 'win32' then
+          asserts.not_nil(m['qtime'])
+          asserts.not_nil(m['time'])
+        end
         asserts.not_nil(m['service_time'])
         asserts.not_nil(m['queue'])
         test.done()
