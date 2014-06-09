@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-1.0.0-45
+
+- Bump libuv for spawn bugfix
+
 ## rackspace-monitoring-agent-1.0.0-39
 
 - ** Upgrade OpenSSL to 1.0.1h
