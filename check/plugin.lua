@@ -120,6 +120,7 @@ function PluginCheck:run(callback)
         exePath = assocExe
         -- Force Bypass for this child powershell
         if justExe == "powershell.exe" then
+          table.insert(exeArgs, 1, '-File')
           table.insert(exeArgs, 1, 'Bypass')
           table.insert(exeArgs, 1, '-ExecutionPolicy')
           closeStdin = true -- NEEDED for Powershell 2.0 to exit
