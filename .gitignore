@@ -1,5 +1,6 @@
 *.*~
 options.gypi
+bundle.list
 build/*
 out/*
 .scons*

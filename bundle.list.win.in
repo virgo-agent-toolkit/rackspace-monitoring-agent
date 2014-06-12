@@ -1,0 +1,4 @@
+./static/tests/custom_plugins/windows1.bat
+./static/tests/custom_plugins/windows2.ps1
+./static/tests/custom_plugins/windows3 space.ps1
+./static/tests/custom_plugins/windows4 space.bat
