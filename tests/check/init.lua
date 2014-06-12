@@ -557,12 +557,37 @@ if os.type() == 'win32' then
       test.done()
     end}
   )
+
+  exports['test_custom_plugin_windows_ps_file_spaces'] = plugin_test(
+    'windows3 space.ps1', 'Test plugin is OK',
+    'available', {cb = function(test, asserts, metrics)
+      asserts.dequals(metrics['none']['metric1'], {t = 'int64', v = '1'})
+      asserts.dequals(metrics['none']['metric2'], {t = 'int64', v = '100'})
+      test.done()
+    end}
+  )
+
+  exports['test_custom_plugin_windows_batch_file_spaces'] = plugin_test(
+    'windows4 space.bat', 'Test plugin is OK',
+    'available', {cb = function(test, asserts, metrics)
+      asserts.dequals(metrics['none']['metric1'], {t = 'int64', v = '1'})
+      asserts.dequals(metrics['none']['metric2'], {t = 'int64', v = '100'})
+      test.done()
+    end}
+  )
+
 else
   exports['test_custom_plugin_windows_batch_file'] = function(test, asserts)
     return test.skip('test_custom_plugin_windows_batch_file is Windows Only')
   end
   exports['test_custom_plugin_windows_ps_file'] = function(test, asserts)
     return test.skip('test_custom_plugin_windows_ps_file is Windows Only')
+  end
+  exports['test_custom_plugin_windows_ps_file_spaces'] = function(test, asserts)
+    return test.skip('test_custom_plugin_windows_ps_file_spaces is Windows Only')
+  end
+  exports['test_custom_plugin_windows_batch_file_spaces'] = function(test, asserts)
+    return test.skip('test_custom_plugin_windows_batch_file_spaces is Windows Only')
   end
 end
 

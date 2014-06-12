@@ -134,6 +134,7 @@ function PluginCheck:run(callback)
   local cenv = self:_childEnv()
   -- Ruby 1.9.1p0 crashes when stdin is closed, so we let luvit take care of
   -- closing the pipe after the process runs.
+  self._log(logging.DEBUG, fmt('running plugin, exePath: %s ; exeArgs: %s', exePath, exeArgs))
   local child = self:_runChild(exePath, exeArgs, cenv, callback)
   if closeStdin then
     child.stdin:close()
