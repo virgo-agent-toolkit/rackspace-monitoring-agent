@@ -140,18 +140,18 @@ function Confd:_sendFiles(conn, entity, callback)
       for _, indivres in ipairs(response.result.values) do
         if indivres.success then
           self.logger(logging.INFO,
-                      fmt('config_file post operation result: %s for %s, handle: %s at %s',
+                      fmt('config_file post operation result: %s for %s at %s, handle: %s',
                           (indivres.success and "success" or "failure"),
                           indivres.type,
-                          indivres.handle,
-                          indivres.location))
+                          indivres.location,
+                          indivres.handle))
         else
           self.logger(logging.ERROR,
-                      fmt('config_file post operation result: %s for %s, handle: %s at %s, error %s',
+                      fmt('config_file post operation result: %s for %s at %s, handle: %s, error %s',
                           (indivres.success and "success" or "failure"),
                           indivres.type,
-                          indivres.handle,
                           indivres.location,
+                          indivres.handle,
                           JSON.stringify(indivres.err)))
         end
       end
