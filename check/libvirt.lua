@@ -133,7 +133,10 @@ end
 function LIBVirtCheck:_runCheckInChild(callback)
   local cr = CheckResult:new(self, {})
   -- local library
-  local clib = ffi.load("virt")
+  local clib
+  pcall(function()
+    clib = ffi.load("virt")
+  end)
   if clib == nil then
     cr:setError("Could not find libvirt")
     callback(cr)
