@@ -37,6 +37,7 @@
 ./check/disk.lua
 ./check/filesystem.lua
 ./check/init.lua
+./check/libvirt.lua
 ./check/load_average.lua
 ./check/memory.lua
 ./check/mysql.lua
