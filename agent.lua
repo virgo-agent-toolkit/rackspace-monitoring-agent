@@ -89,10 +89,10 @@ function Agent:start(options)
       misc.writePid(options.pidFile, callback)
     end,
     function(callback)
-      self:connect(callback)
+      self._confd:setup(callback)
     end,
     function(callback)
-      self._confd:setup(callback)
+      self:connect(callback)
     end
   },
   function(err)
