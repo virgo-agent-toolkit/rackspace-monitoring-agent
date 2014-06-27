@@ -3,5 +3,4 @@
 import base.configure
 
 if __name__ == "__main__":
-    #base.configure.submodule_update_init()
     base.configure.main(bundle_list_file="bundle.list")
