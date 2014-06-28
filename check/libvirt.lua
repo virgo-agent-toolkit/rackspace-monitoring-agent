@@ -18,7 +18,7 @@ local ffi = require('ffi')
 local fmt = require('string').format
 
 local SubProcCheck = require('./base').SubProcCheck
-local LIBVirtCheck = SubProcCheck:extend()
+local LibVirtCheck = SubProcCheck:extend()
 local CheckResult = require('./base').CheckResult
 
 local function canon(str)
@@ -116,7 +116,7 @@ ffi.cdef[[
 
 ]]
 
-function LIBVirtCheck:initialize(params)
+function LibVirtCheck:initialize(params)
   SubProcCheck.initialize(self, params)
 
   if params.details == nil then
@@ -125,11 +125,11 @@ function LIBVirtCheck:initialize(params)
   end
 end
 
-function LIBVirtCheck:getType()
+function LibVirtCheck:getType()
   return 'agent.libvirt'
 end
 
-function LIBVirtCheck:_stateToString(state)
+function LibVirtCheck:_stateToString(state)
   local states = {
     [self.clib.VIR_DOMAIN_NOSTATE] = "NOSTATE",
     [self.clib.VIR_DOMAIN_RUNNING] = "RUNNING",
@@ -147,7 +147,7 @@ function LIBVirtCheck:_stateToString(state)
   return "UNKNOWN"
 end
 
-function LIBVirtCheck:_gatherDomainInfo(cr, domain, stats)
+function LibVirtCheck:_gatherDomainInfo(cr, domain, stats)
   local results = {}
 
   local namePtr = self.clib.virDomainGetName(domain)
@@ -173,7 +173,7 @@ function LIBVirtCheck:_gatherDomainInfo(cr, domain, stats)
   return results
 end
 
-function LIBVirtCheck:_runCheckInChild(callback)
+function LibVirtCheck:_runCheckInChild(callback)
   local cr = CheckResult:new(self, {})
 
   local libvirtexact = {
@@ -263,5 +263,5 @@ function LIBVirtCheck:_runCheckInChild(callback)
 end
 
 local exports = {}
-exports.LIBVirtCheck = LIBVirtCheck
+exports.LibVirtCheck = LibVirtCheck
 return exports
