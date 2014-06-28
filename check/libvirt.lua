@@ -162,12 +162,12 @@ function LibVirtCheck:_gatherDomainInfo(cr, domain, stats)
     results.nr_virt_cpu = tonumber(info.nrVirtCpu)
     results.cpu_time_percentage = 1.0e-7 * results.cpu_time / stats.processors
 
-    cr:addMetric(fmt("libvirt.%s.domain.memory", name), nil, 'uint64', results.memory)
-    cr:addMetric(fmt("libvirt.%s.domain.max_memory", name), nil, 'uint64', results.max_memory)
-    cr:addMetric(fmt("libvirt.%s.domain.state", name), nil, 'string', self:_stateToString(info.state))
-    cr:addMetric(fmt("libvirt.%s.domain.cpu_time", name), nil, 'double', results.cpu_time)
-    cr:addMetric(fmt("libvirt.%s.domain.nr_virt_cpu", name), nil, 'uint64', results.nr_virt_cpu)
-    cr:addMetric(fmt("libvirt.%s.domain.cpu_percentage", name), nil, 'double', results.cpu_time_percentage)
+    cr:addMetric(fmt("libvirt_%s_domain.memory", name), nil, 'uint64', results.memory)
+    cr:addMetric(fmt("libvirt_%s_domain.max_memory", name), nil, 'uint64', results.max_memory)
+    cr:addMetric(fmt("libvirt_%s_domain.state", name), nil, 'string', self:_stateToString(info.state))
+    cr:addMetric(fmt("libvirt_%s_domain.cpu_time", name), nil, 'double', results.cpu_time)
+    cr:addMetric(fmt("libvirt_%s_domain.nr_virt_cpu", name), nil, 'uint64', results.nr_virt_cpu)
+    cr:addMetric(fmt("libvirt_%s_domain.cpu_percentage", name), nil, 'double', results.cpu_time_percentage)
   end
 
   return results
@@ -215,7 +215,7 @@ function LibVirtCheck:_runCheckInChild(callback)
     callback(cr)
     return
   end
-  cr:addMetric("libvirt.domains.total", nil, 'uint64', count)
+  cr:addMetric("libvirt_domains.total", nil, 'uint64', count)
 
   -- gather domain information
   local domids = ffi.new("int[?]", count)
@@ -240,8 +240,8 @@ function LibVirtCheck:_runCheckInChild(callback)
     stats.memory = tonumber(info.memory) * 1024
   end
 
-  cr:addMetric("libvirt.node.memory", nil, 'uint64', stats.memory)
-  cr:addMetric("libvirt.node.processors", nil, 'uint64', stats.processors)
+  cr:addMetric("libvirt_node.memory", nil, 'uint64', stats.memory)
+  cr:addMetric("libvirt_node.processors", nil, 'uint64', stats.processors)
 
   -- add domain metrics
   for i=0, ret-1  do
@@ -256,8 +256,8 @@ function LibVirtCheck:_runCheckInChild(callback)
   end
 
   -- add node metrics
-  cr:addMetric("libvirt.node.total", nil, 'uint64', total)
-  cr:addMetric("libvirt.node.total_max", nil, 'uint64', total_max)
+  cr:addMetric("libvirt_node.total", nil, 'uint64', total)
+  cr:addMetric("libvirt_node.total_max", nil, 'uint64', total_max)
 
   callback(cr)
 end
