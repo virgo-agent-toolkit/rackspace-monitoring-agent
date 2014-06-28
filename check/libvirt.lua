@@ -83,6 +83,23 @@ ffi.cdef[[
     unsigned int threads;
   };
 
+  /**
+   * virDomainState:
+   *
+   * A domain may be in different states at a given point in time
+   */
+  typedef enum {
+      VIR_DOMAIN_NOSTATE = 0,     /* no state */
+      VIR_DOMAIN_RUNNING = 1,     /* the domain is running */
+      VIR_DOMAIN_BLOCKED = 2,     /* the domain is blocked on resource */
+      VIR_DOMAIN_PAUSED  = 3,     /* the domain is paused by user */
+      VIR_DOMAIN_SHUTDOWN= 4,     /* the domain is being shut down */
+      VIR_DOMAIN_SHUTOFF = 5,     /* the domain is shut off */
+      VIR_DOMAIN_CRASHED = 6,     /* the domain is crashed */
+      VIR_DOMAIN_PMSUSPENDED = 7, /* the domain is suspended by guest
+                                     power management */
+  } virDomainState;
+
   typedef void *virConnectPtr;
   typedef void *virDomainPtr;
 
@@ -112,20 +129,40 @@ function LIBVirtCheck:getType()
   return 'agent.libvirt'
 end
 
+function LIBVirtCheck:_stateToString(state)
+  local states = {
+    [self.clib.VIR_DOMAIN_NOSTATE] = "NOSTATE",
+    [self.clib.VIR_DOMAIN_RUNNING] = "RUNNING",
+    [self.clib.VIR_DOMAIN_BLOCKED] = "BLOCKED",
+    [self.clib.VIR_DOMAIN_PAUSED] = "PAUSED",
+    [self.clib.VIR_DOMAIN_SHUTDOWN] = "SHUTDOWN",
+    [self.clib.VIR_DOMAIN_SHUTOFF] = "SHUTOFF",
+    [self.clib.VIR_DOMAIN_CRASHED] = "CRASHED",
+    [self.clib.VIR_DOMAIN_PMSUSPENDED] = "SUSPENDED",
+  }
+  local name = states[state]
+  if name then
+    return name
+  end
+  return "UNKNOWN"
+end
+
 function LIBVirtCheck:_gatherDomainInfo(cr, domain)
   local results = {}
 
-  local namePtr = libvirt.virDomainGetName(domainPtr)
+  local namePtr = self.clib.virDomainGetName(domain)
   local name = canon(ffi.string(namePtr))
-  local domainInfo = ffi.new("virDomainInfo")
+  local info = ffi.new("virDomainInfo")
 
-  local rv = libvirt.virDomainGetInfo(domainPtr, domainInfo)
+  local rv = self.clib.virDomainGetInfo(domain, info)
   if rv == 0 then
-    results.memory = tonumber(domainInfo.memory) * 1024
-    results.max_memory = tonumber(domainInfo.maxMem) * 1024
+    
+    results.memory = tonumber(info.memory) * 1024
+    results.max_memory = tonumber(info.maxMem) * 1024
 
     cr:addMetric(fmt("libvirt.%s.domain.memory", name), nil, 'uint64', results.memory)
     cr:addMetric(fmt("libvirt.%s.domain.max_memory", name), nil, 'uint64', results.max_memory)
+    cr:addMetric(fmt("libvirt.%s.domain.state", name), nil, 'uint64', self:_stateToString(info.state))
   end
 
   return results
@@ -151,15 +188,15 @@ function LIBVirtCheck:_runCheckInChild(callback)
   }
 
   -- local library
-  local clib = self:_findLibrary(libvirtexact, libvirtpaths, osexts)
-  if clib == nil then
+  self.clib = self:_findLibrary(libvirtexact, libvirtpaths, osexts)
+  if self.clib == nil then
     cr:setError("Could not find libvirt")
     callback(cr)
     return
   end
 
   -- open connection
-  local conn = clib.virConnectOpenReadOnly(self._params.details.uri)
+  local conn = self.clib.virConnectOpenReadOnly(self._params.details.uri)
   if conn == nil then
     cr:setError(fmt("Error opening connection (%s)", self._params.details.uri))
     callback(cr)
@@ -167,7 +204,7 @@ function LIBVirtCheck:_runCheckInChild(callback)
   end
 
   -- how many domains are there?
-  local count = clib.virConnectNumOfDomains(conn)
+  local count = self.clib.virConnectNumOfDomains(conn)
   if count < 0 then
     cr:setError("virConnectNumOfDomains errored")
     callback(cr)
@@ -177,7 +214,7 @@ function LIBVirtCheck:_runCheckInChild(callback)
 
   -- gather domain information
   local domids = ffi.new("int[?]", count)
-  local ret = clib.virConnectListDomains(conn, domids, count)
+  local ret = self.clib.virConnectListDomains(conn, domids, count)
   if ret < 0 then
     cr:setError("virConnectListDomains Failed")
     callback(cr)
@@ -189,8 +226,8 @@ function LIBVirtCheck:_runCheckInChild(callback)
   local total_max = 0
 
   for i=0, ret-1  do
-    local domainPtr = clib.virDomainLookupByID(conn, domids[i])
-    local stats = self._gatherDomainInfo(cr, domainPtr)
+    local domainPtr = self.clib.virDomainLookupByID(conn, domids[i])
+    local stats = self:_gatherDomainInfo(cr, domainPtr)
     if stats.memory then
       total = total + stats.memory
     end
@@ -204,7 +241,7 @@ function LIBVirtCheck:_runCheckInChild(callback)
   cr:addMetric("libvirt.node.total_max", nil, 'uint64', total_max)
 
   local nodeInfo = ffi.new("virNodeInfo")
-  local rv = clib.virNodeGetInfo(conn, nodeInfo)
+  local rv = self.clib.virNodeGetInfo(conn, nodeInfo)
   if rv == 0 then
     local memory = tonumber(nodeInfo.memory) * 1024
     cr:addMetric("libvirt.node.memory", nil, 'uint64', memory)
