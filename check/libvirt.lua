@@ -73,7 +73,7 @@ ffi.cdef[[
   typedef virNodeInfo *virNodeInfoPtr;
 
   struct _virNodeInfo {
-    char *name;
+    char name[32];
     unsigned long memory;
     unsigned int cpus;
     unsigned int mhz;
@@ -147,7 +147,7 @@ function LIBVirtCheck:_stateToString(state)
   return "UNKNOWN"
 end
 
-function LIBVirtCheck:_gatherDomainInfo(cr, domain)
+function LIBVirtCheck:_gatherDomainInfo(cr, domain, stats)
   local results = {}
 
   local namePtr = self.clib.virDomainGetName(domain)
@@ -156,13 +156,18 @@ function LIBVirtCheck:_gatherDomainInfo(cr, domain)
 
   local rv = self.clib.virDomainGetInfo(domain, info)
   if rv == 0 then
-    
     results.memory = tonumber(info.memory) * 1024
     results.max_memory = tonumber(info.maxMem) * 1024
+    results.cpu_time = tonumber(info.cpuTime)
+    results.nr_virt_cpu = tonumber(info.nrVirtCpu)
+    results.cpu_time_percentage = 1.0e-7 * results.cpu_time / stats.processors
 
     cr:addMetric(fmt("libvirt.%s.domain.memory", name), nil, 'uint64', results.memory)
     cr:addMetric(fmt("libvirt.%s.domain.max_memory", name), nil, 'uint64', results.max_memory)
     cr:addMetric(fmt("libvirt.%s.domain.state", name), nil, 'uint64', self:_stateToString(info.state))
+    cr:addMetric(fmt("libvirt.%s.domain.cpu_time", name), nil, 'double', results.cpu_time)
+    cr:addMetric(fmt("libvirt.%s.domain.nr_virt_cpu", name), nil, 'uint64', results.nr_virt_cpu)
+    cr:addMetric(fmt("libvirt.%s.domain.cpu_percentage", name), nil, 'double', results.cpu_time_percentage)
   end
 
   return results
@@ -221,31 +226,38 @@ function LIBVirtCheck:_runCheckInChild(callback)
     return
   end
 
-  -- add domain metrics
-  local total = 0
-  local total_max = 0
+  -- get node info
+  local stats = {}
+  stats.processors = 0
+  stats.memory = 0
+  stats.total = 0
+  stats.total_max = 0
+  
+  local info = ffi.new("virNodeInfo")
+  local rv = self.clib.virNodeGetInfo(conn, info)
+  if rv == 0 then
+    stats.processors = tonumber(info.cpus)
+    stats.memory = tonumber(info.memory) * 1024
+  end
 
+  cr:addMetric("libvirt.node.memory", nil, 'uint64', stats.memory)
+  cr:addMetric("libvirt.node.processors", nil, 'uint64', stats.processors)
+
+  -- add domain metrics
   for i=0, ret-1  do
-    local domainPtr = self.clib.virDomainLookupByID(conn, domids[i])
-    local stats = self:_gatherDomainInfo(cr, domainPtr)
-    if stats.memory then
-      total = total + stats.memory
+    local domain = self.clib.virDomainLookupByID(conn, domids[i])
+    local dinfo = self:_gatherDomainInfo(cr, domain, stats)
+    if dinfo.memory then
+      stats.total = stats.total + dinfo.memory
     end
-    if stats.max_memory then
-      total_max = total_max + stats.max_memory
+    if dinfo.max_memory then
+      stats.total_max = stats.total_max + dinfo.max_memory
     end
   end
 
   -- add node metrics
   cr:addMetric("libvirt.node.total", nil, 'uint64', total)
   cr:addMetric("libvirt.node.total_max", nil, 'uint64', total_max)
-
-  local nodeInfo = ffi.new("virNodeInfo")
-  local rv = self.clib.virNodeGetInfo(conn, nodeInfo)
-  if rv == 0 then
-    local memory = tonumber(nodeInfo.memory) * 1024
-    cr:addMetric("libvirt.node.memory", nil, 'uint64', memory)
-  end
 
   callback(cr)
 end
