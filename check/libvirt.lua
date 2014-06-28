@@ -106,7 +106,6 @@ function LIBVirtCheck:initialize(params)
     self._params.details = {}
     self._params.details.uri = ""
   end
-p(self)
 end
 
 function LIBVirtCheck:getType()
