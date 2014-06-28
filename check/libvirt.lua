@@ -164,7 +164,7 @@ function LibVirtCheck:_gatherDomainInfo(cr, domain, stats)
 
     cr:addMetric(fmt("libvirt.%s.domain.memory", name), nil, 'uint64', results.memory)
     cr:addMetric(fmt("libvirt.%s.domain.max_memory", name), nil, 'uint64', results.max_memory)
-    cr:addMetric(fmt("libvirt.%s.domain.state", name), nil, 'uint64', self:_stateToString(info.state))
+    cr:addMetric(fmt("libvirt.%s.domain.state", name), nil, 'string', self:_stateToString(info.state))
     cr:addMetric(fmt("libvirt.%s.domain.cpu_time", name), nil, 'double', results.cpu_time)
     cr:addMetric(fmt("libvirt.%s.domain.nr_virt_cpu", name), nil, 'uint64', results.nr_virt_cpu)
     cr:addMetric(fmt("libvirt.%s.domain.cpu_percentage", name), nil, 'double', results.cpu_time_percentage)
