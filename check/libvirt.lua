@@ -103,9 +103,10 @@ function LIBVirtCheck:initialize(params)
   SubProcCheck.initialize(self, params)
 
   if params.details == nil then
-    params.details = {}
-    params.details.uri = ""
+    self._params.details = {}
+    self._params.details.uri = ""
   end
+p(self)
 end
 
 function LIBVirtCheck:getType()
@@ -123,6 +124,7 @@ function LIBVirtCheck:_gatherDomainInfo(cr, domain)
   if rv == 0 then
     results.memory = tonumber(domainInfo.memory) * 1024
     results.max_memory = tonumber(domainInfo.maxMem) * 1024
+
     cr:addMetric(fmt("libvirt.%s.domain.memory", name), nil, 'uint64', results.memory)
     cr:addMetric(fmt("libvirt.%s.domain.max_memory", name), nil, 'uint64', results.max_memory)
   end
@@ -132,33 +134,51 @@ end
 
 function LIBVirtCheck:_runCheckInChild(callback)
   local cr = CheckResult:new(self, {})
+
+  local libvirtexact = {
+    'libvirt'
+  }
+
+  local libvirtpaths = {
+    '/usr/lib',
+    '/usr/local/lib',
+    '/usr/lib64',
+    '/usr/lib/x86_64-linux-gnu', -- ubuntu, thanks guys.
+  }
+
+  local osexts = {
+    '',
+    '.0'
+  }
+
   -- local library
-  local clib
-  pcall(function()
-    clib = ffi.load("virt")
-  end)
+  local clib = self:_findLibrary(libvirtexact, libvirtpaths, osexts)
   if clib == nil then
     cr:setError("Could not find libvirt")
     callback(cr)
     return
   end
+
   -- open connection
-  local conn = libvirt.virConnectOpenReadOnly("vmwarefusion:///session")
+  local conn = clib.virConnectOpenReadOnly(self._params.details.uri)
   if conn == nil then
-    cr:setError(fmt("Error opening connection (%s)", params.details.uri))
-    callback(cr)
-    return
-  end
-  -- how many domains are there?
-  local count = libvirt.virConnectNumOfDomains(conn)
-  if count <= 0 then
+    cr:setError(fmt("Error opening connection (%s)", self._params.details.uri))
     callback(cr)
     return
   end
 
+  -- how many domains are there?
+  local count = clib.virConnectNumOfDomains(conn)
+  if count < 0 then
+    cr:setError("virConnectNumOfDomains errored")
+    callback(cr)
+    return
+  end
+  cr:addMetric("libvirt.domains.total", nil, 'uint64', count)
+
   -- gather domain information
   local domids = ffi.new("int[?]", count)
-  local ret = libvirt.virConnectListDomains(conn, domids, count)
+  local ret = clib.virConnectListDomains(conn, domids, count)
   if ret < 0 then
     cr:setError("virConnectListDomains Failed")
     callback(cr)
@@ -170,7 +190,7 @@ function LIBVirtCheck:_runCheckInChild(callback)
   local total_max = 0
 
   for i=0, ret-1  do
-    local domainPtr = libvirt.virDomainLookupByID(conn, domids[i])
+    local domainPtr = clib.virDomainLookupByID(conn, domids[i])
     local stats = self._gatherDomainInfo(cr, domainPtr)
     if stats.memory then
       total = total + stats.memory
@@ -185,7 +205,7 @@ function LIBVirtCheck:_runCheckInChild(callback)
   cr:addMetric("libvirt.node.total_max", nil, 'uint64', total_max)
 
   local nodeInfo = ffi.new("virNodeInfo")
-  local rv = libvirt.virNodeGetInfo(conn, nodeInfo)
+  local rv = clib.virNodeGetInfo(conn, nodeInfo)
   if rv == 0 then
     local memory = tonumber(nodeInfo.memory) * 1024
     cr:addMetric("libvirt.node.memory", nil, 'uint64', memory)
