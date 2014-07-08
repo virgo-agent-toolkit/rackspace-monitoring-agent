@@ -42,7 +42,6 @@ local LoadAverageCheck = Check.LoadAverageCheck
 
 local MySQLTests = require('./mysql')
 local ApacheTests = require('./apache')
-local DBaaSTests = require('./dbaas')
 local FileSystemTests = require('./filesystem')
 local LoadTests = require('./load_average')
 local RedisTests = require('./redis')
@@ -51,7 +50,6 @@ local WindowsTests = require('./windows')
 local exports = {}
 exports = merge(exports, MySQLTests)
 exports = merge(exports, ApacheTests)
-exports = merge(exports, DBaaSTests)
 exports = merge(exports, FileSystemTests)
 exports = merge(exports, LoadTests)
 exports = merge(exports, RedisTests)
