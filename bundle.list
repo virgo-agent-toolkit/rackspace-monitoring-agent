@@ -33,7 +33,6 @@
 ./check/apache.lua
 ./check/base.lua
 ./check/cpu.lua
-./check/dbaas.lua
 ./check/disk.lua
 ./check/filesystem.lua
 ./check/init.lua
