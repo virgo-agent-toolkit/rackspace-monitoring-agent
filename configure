@@ -16,6 +16,5 @@ def make_bundle_list(outfilename, infilenames):
                 outfile.write(infile.read())
 
 if __name__ == "__main__":
-    #base.configure.submodule_update_init()
     make_bundle_list("bundle.list", bundle_list_files)
     base.configure.main(bundle_list_file="bundle.list")
