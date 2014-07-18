@@ -40,9 +40,6 @@ local status_stat_map = {
   Innodb_rows_read = { type = 'gauge', alias = 'innodb.rows_read', unit = 'rows'},
   Innodb_rows_updated = { type = 'gauge', alias = 'innodb.rows_updated', unit = 'rows'},
   Innodb_buffer_pool_pages_data = { type = 'uint64', alias = 'innodb.buffer_pool_pages_data', unit = 'pages'},
-  Innodb_buffer_pool_pages_dirty = { type = 'uint64', alias = 'innodb.buffer_pool_pages_dirty', unit = 'pages'},
-  Innodb_buffer_pool_pages_free = { type = 'uint64', alias = 'innodb.buffer_pool_pages_free', unit = 'pages'},
-  Innodb_buffer_pool_pages_total = { type = 'uint64', alias = 'innodb.buffer_pool_pages_total', unit = 'pages'},
   Innodb_buffer_pool_read_requests = { type = 'gauge', alias = 'innodb.buffer_pool_read_requests', unit = 'queries'},
   Innodb_buffer_pool_reads = { type = 'gauge', alias = 'innodb.buffer_pool_reads', unit = 'queries'},
   Innodb_data_pending_fsyncs = { type = 'uint64', alias = 'innodb.data_pending_fsyncs', unit = 'queries'},
@@ -54,7 +51,6 @@ local status_stat_map = {
   Innodb_pages_read = { type = 'gauge', alias = 'innodb.pages_read', unit = 'pages'},
   Innodb_pages_written = { type = 'gauge', alias = 'innodb.pages_written', unit = 'pages'},
   Innodb_row_lock_waits = { type = 'gauge', alias = 'innodb.row_lock_waits', unit = 'locks'},
-  Innodb_buffer_pool_pages_flushed = { type = 'gauge', alias = 'innodb.buffer_pool_pages_flushed', unit = 'pages'},
 
   Queries = { type = 'gauge', alias = 'core.queries', unit = 'queries'},
 
