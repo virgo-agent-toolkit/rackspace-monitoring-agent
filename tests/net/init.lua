@@ -8,11 +8,56 @@ local consts = require('/constants')
 local Endpoint = require('../../endpoint').Endpoint
 local path = require('path')
 local os = require('os')
+local Server = require('../server').Server
+
+local TimeoutServer = Server:extend()
+function TimeoutServer:initialize(options)
+  Server.initialize(self, options)
+end
+
+function TimeoutServer:_onLineProtocol(client, line)
+  -- Timeout All Requests
+end
 
 local exports = {}
-local AEP
+
+exports['test_handshake_timeout'] = function(test, asserts)
+  local AEP, options, endpoints, client
+
+  if os.type() == "win32" then
+    test.skip("Skip test_handshake_timeout until a suitable SIGUSR1 replacement is used in runner.py")
+    return nil
+  end
+
+  options = {
+    datacenter = 'test',
+    tls = { rejectUnauthorized = false }
+  }
+
+  endpoints = { Endpoint:new('127.0.0.1:4444') }
+
+  async.series({
+    function(callback)
+      AEP = TimeoutServer:new({
+        includeTimeouts = false,
+      })
+      AEP:listen(4444, '127.0.0.1', callback)
+    end,
+    function(callback)
+      client = ConnectionStream:new('id', 'token', 'guid', false, options)
+      client:createConnections(endpoints, callback)
+    end,
+    function(callback)
+      client:once('reconnect', callback)
+    end
+  }, function()
+    AEP:close()
+    test.done()
+  end)
+end
 
 exports['test_reconnects'] = function(test, asserts)
+  local AEP
 
   if os.type() == "win32" then
     test.skip("Skip test_reconnects until a suitable SIGUSR1 replacement is used in runner.py")
@@ -103,13 +148,9 @@ exports['test_upgrades'] = function(test, asserts)
     end,
     function(callback)
       client = ConnectionStream:new('id', 'token', 'guid', false, options)
-      client:on('handshake_success', misc.nCallbacks(callback, 3))
+      client:once('error', callback)
       client:createConnections(endpoints, function() end)
     end,
-    function(callback)
-      client:on('upgrade_done', callback)
-      client:getUpgrade():forceUpgradeCheck({test = true})
-    end
   }, function()
     AEP:kill(9)
     client:done()
