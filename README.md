@@ -107,3 +107,11 @@ flag set to tests.
 
     make test
 
+Configuration File Parameters
+=============================
+
+    monitoring_token                 - (required) The authentication token.
+    monitoring_id                    - (optional) The Agent's monitoring_id
+                                       (default: Instance ID (Xen) or Cloud-Init ID)
+    monitoring_snet_region [region]  - (optional) Enable Service Net endpoints 
+                                       (region: dfw, ord, lon, syd, hkg, iad)
