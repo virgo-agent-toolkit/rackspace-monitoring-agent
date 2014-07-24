@@ -87,6 +87,8 @@ local status_stat_map = {
   Handler_commit = { type = 'gauge', alias = 'handler.commit', unit = 'queries'},
 
   Slave_running = { type = 'string', alias = 'replication.slave_running', unit = ''},
+  Slave_open_temp_tables = { type = 'uint64', alias = 'replication.slave_open_temp_tables', unit = 'tables'},
+  Slave_retried_transactions = { type = 'uint64', alias = 'replication.slave_retried_transactions', unit = 'transactions'},
 }
 local variables_stat_map = {
   -- show variables mappings
@@ -95,6 +97,7 @@ local variables_stat_map = {
   innodb_buffer_pool_size = { type = 'uint64', alias = 'innodb.buffer_pool_size', unit = 'bytes'},
   key_buffer_size = { type = 'uint64', alias = 'key.buffer_size', unit = 'bytes'},
   thread_cache_size = { type = 'uint64', alias = 'thread.cache_size', unit = 'bytes'},
+  max_relay_log_size = { type = 'uint64', alias = 'replication.max_relay_log_size', unit = 'bytes'},
 }
 
 replication_stat_map = {
@@ -104,13 +107,10 @@ replication_stat_map = {
   Slave_SQL_Running = { type = 'string', alias = 'replication.slave_sql_running', unit = ''},
   Exec_Master_Log_Pos = { type = 'uint64', alias = 'replication.exec_master_log_pos', unit = 'position'},
   Relay_Log_Pos = { type = 'uint64', alias = 'replication.relay_log_pos', unit = 'position'},
-  Relay_Log_Size = { type = 'uint64', alias = 'replication.relay_log_size', unit = 'bytes'},
   Seconds_Behind_Master = { type = 'uint64', alias = 'replication.seconds_behind_master', unit = 'seconds'},
   Last_Errno = { type = 'uint64', alias = 'replication.last_errno', unit = 'errno'},
   Slave_IO_State = { type = 'string', alias = 'replication.slave_io_state', unit = ''},
   Last_IO_Error = { type = 'string', alias = 'replication.last_io_error', unit = ''},
-  Slave_open_temp_tables = { type = 'uint64', alias = 'replication.slave_open_temp_tables', unit = 'tables'},
-  Slave_retried_transactions = { type = 'uint64', alias = 'replication.slave_retried_transactions', unit = 'transactions'},
 }
 
 function DBaaSMySQLCheck:getType()
