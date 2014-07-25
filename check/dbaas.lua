@@ -40,9 +40,6 @@ local status_stat_map = {
   Innodb_rows_read = { type = 'gauge', alias = 'innodb.rows_read', unit = 'rows'},
   Innodb_rows_updated = { type = 'gauge', alias = 'innodb.rows_updated', unit = 'rows'},
   Innodb_buffer_pool_pages_data = { type = 'uint64', alias = 'innodb.buffer_pool_pages_data', unit = 'pages'},
-  Innodb_buffer_pool_pages_dirty = { type = 'uint64', alias = 'innodb.buffer_pool_pages_dirty', unit = 'pages'},
-  Innodb_buffer_pool_pages_free = { type = 'uint64', alias = 'innodb.buffer_pool_pages_free', unit = 'pages'},
-  Innodb_buffer_pool_pages_total = { type = 'uint64', alias = 'innodb.buffer_pool_pages_total', unit = 'pages'},
   Innodb_buffer_pool_read_requests = { type = 'gauge', alias = 'innodb.buffer_pool_read_requests', unit = 'queries'},
   Innodb_buffer_pool_reads = { type = 'gauge', alias = 'innodb.buffer_pool_reads', unit = 'queries'},
   Innodb_data_pending_fsyncs = { type = 'uint64', alias = 'innodb.data_pending_fsyncs', unit = 'queries'},
@@ -54,7 +51,6 @@ local status_stat_map = {
   Innodb_pages_read = { type = 'gauge', alias = 'innodb.pages_read', unit = 'pages'},
   Innodb_pages_written = { type = 'gauge', alias = 'innodb.pages_written', unit = 'pages'},
   Innodb_row_lock_waits = { type = 'gauge', alias = 'innodb.row_lock_waits', unit = 'locks'},
-  Innodb_buffer_pool_pages_flushed = { type = 'gauge', alias = 'innodb.buffer_pool_pages_flushed', unit = 'pages'},
 
   Queries = { type = 'gauge', alias = 'core.queries', unit = 'queries'},
 
@@ -91,6 +87,8 @@ local status_stat_map = {
   Handler_commit = { type = 'gauge', alias = 'handler.commit', unit = 'queries'},
 
   Slave_running = { type = 'string', alias = 'replication.slave_running', unit = ''},
+  Slave_open_temp_tables = { type = 'uint64', alias = 'replication.slave_open_temp_tables', unit = 'tables'},
+  Slave_retried_transactions = { type = 'uint64', alias = 'replication.slave_retried_transactions', unit = 'transactions'},
 }
 local variables_stat_map = {
   -- show variables mappings
@@ -99,6 +97,7 @@ local variables_stat_map = {
   innodb_buffer_pool_size = { type = 'uint64', alias = 'innodb.buffer_pool_size', unit = 'bytes'},
   key_buffer_size = { type = 'uint64', alias = 'key.buffer_size', unit = 'bytes'},
   thread_cache_size = { type = 'uint64', alias = 'thread.cache_size', unit = 'bytes'},
+  max_relay_log_size = { type = 'uint64', alias = 'replication.max_relay_log_size', unit = 'bytes'},
 }
 
 replication_stat_map = {
@@ -108,13 +107,10 @@ replication_stat_map = {
   Slave_SQL_Running = { type = 'string', alias = 'replication.slave_sql_running', unit = ''},
   Exec_Master_Log_Pos = { type = 'uint64', alias = 'replication.exec_master_log_pos', unit = 'position'},
   Relay_Log_Pos = { type = 'uint64', alias = 'replication.relay_log_pos', unit = 'position'},
-  Relay_Log_Size = { type = 'uint64', alias = 'replication.relay_log_size', unit = 'bytes'},
   Seconds_Behind_Master = { type = 'uint64', alias = 'replication.seconds_behind_master', unit = 'seconds'},
   Last_Errno = { type = 'uint64', alias = 'replication.last_errno', unit = 'errno'},
   Slave_IO_State = { type = 'string', alias = 'replication.slave_io_state', unit = ''},
   Last_IO_Error = { type = 'string', alias = 'replication.last_io_error', unit = ''},
-  Slave_open_temp_tables = { type = 'uint64', alias = 'replication.slave_open_temp_tables', unit = 'tables'},
-  Slave_retried_transactions = { type = 'uint64', alias = 'replication.slave_retried_transactions', unit = 'transactions'},
 }
 
 function DBaaSMySQLCheck:getType()
