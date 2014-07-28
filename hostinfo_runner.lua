@@ -19,11 +19,15 @@ local json = require('json')
 local exports = {}
 
 local argv = require("options")
-  .usage('Usage: ')
+  .usage('Usage: -x [Host Info Type]')
   .describe("x", "host info type to run")
   .argv("x:")
 
 exports.run = function()
+  if not argv.args.x then
+    process.stdout:write(argv._usage .. '\n')
+    process.exit(0)
+  end
   process.stdout:write("HostInfo Running " .. argv.args.x .. "\n")
 
   local klass = HostInfo.create(argv.args.x)
