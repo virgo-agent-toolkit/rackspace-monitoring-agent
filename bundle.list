@@ -56,6 +56,7 @@
 ./crashreport.lua
 ./endpoint.lua
 ./init.lua
+./hostinfo_runner.lua
 ./hostinfo/all.lua
 ./hostinfo/base.lua
 ./hostinfo/cpu.lua
