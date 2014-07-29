@@ -42,18 +42,21 @@ end
 
 exports['test_pid'] = function(test, asserts)
   local path = 'test.pid'
-  writePid(path, function(err)
+  if os.type() == "win32" then
+    local err = virgo.write_pid(path)
+    asserts.ok(err ~= nil)
+    test.done()
+  else
+    local err = virgo.write_pid(path)
     asserts.equals(err, nil)
     fs.readFile(path, function(err, data)
       asserts.equals(err, nil)
       local pid = data
       asserts.equals(pid, tostring(process.pid))
-      fs.unlink(path, function(err)
-        asserts.equals(err, nil)
-        test.done()
-      end)
+      virgo.close_pid()
+      test.done()
     end)
-  end)
+  end
 end
 
 exports['test_gmtnow'] = function(test, asserts)

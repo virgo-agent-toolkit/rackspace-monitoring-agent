@@ -81,12 +81,19 @@ function Agent:start(options)
       callback()
     end,
     function(callback)
-      if os.type() ~= 'win32' then
-        if not options.pidFile then
-          options.pidFile = constants:get('DEFAULT_PID_FILE_PATH')
-        end
+      if os.type() == 'win32' then
+        return callback()
       end
-      misc.writePid(options.pidFile, callback)
+      if not options.pidFile then
+        options.pidFile = constants:get('DEFAULT_PID_FILE_PATH')
+      end
+      err, msg = virgo.write_pid(options.pidFile)
+      if err then
+        local pid = fs.readFileSync(options.pidFile)
+        logging.error(fmt('Agent in use (pid: %d, path: %s)', pid, options.pidFile))
+        process.exit(0)
+      end
+      callback()
     end,
     function(callback)
       self._confd:setup(callback)
