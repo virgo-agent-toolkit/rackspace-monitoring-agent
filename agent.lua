@@ -91,7 +91,7 @@ function Agent:start(options)
       if err then
         local pid = fs.readFileSync(options.pidFile)
         logging.error(fmt('Agent in use (pid: %d, path: %s)', pid, options.pidFile))
-        process.exit(1)
+        process.exit(3)
       end
       callback()
     end,
