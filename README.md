@@ -115,3 +115,10 @@ Configuration File Parameters
                                        (default: Instance ID (Xen) or Cloud-Init ID)
     monitoring_snet_region [region]  - (optional) Enable Service Net endpoints 
                                        (region: dfw, ord, lon, syd, hkg, iad)
+
+Exit Codes
+==========
+
+1 unknown error
+2 config file fail
+3 already running
