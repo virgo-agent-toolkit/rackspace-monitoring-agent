@@ -1,3 +1,13 @@
+## rackspace-monitoring-agent-1.0.2-1
+
+- Host info for Waldo 
+- New host info types message and host info for sysctl and date/time
+
+## rackspace-monitoring-agent-1.0.1-25
+
+- New host info type runner
+- Fixes for various integration tests (xenserver)
+
 ## rackspace-monitoring-agent-1.0.1-18
 
 - Fix systemd for Centos7
