@@ -14,28 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local Object = require('core').Object
-local vutils = require('virgo_utils')
+local HostInfo = require('./base').HostInfo
 
---[[ HostInfo ]]--
-local HostInfo = Object:extend()
-function HostInfo:initialize()
-  self._params = {}
-  self._error = nil
+local table = require('table')
+local os = require('os')
+
+--[[ Date ]]--
+local Date = HostInfo:extend()
+function Date:initialize()
+  HostInfo.initialize(self)
+  local it = os.date('%H:%M:%S %Y %m %d %Z'):gmatch('%S+')
+  local fields = {}
+  fields.time = it()
+  fields.date = {}
+  fields.date.year = it()
+  fields.date.month = it()
+  fields.date.day = it()
+  fields.timezone = it()
+  table.insert(self._params, fields)
 end
 
-function HostInfo:serialize()
-  return {
-    error = self._error,
-    metrics = self._params,
-    timestamp = vutils.gmtNow()
-  }
+function Date:getType()
+  return 'DATE'
 end
 
-function HostInfo:run(callback)
-  callback()
-end
+return Date
 
-local exports = {}
-exports.HostInfo = HostInfo
-return exports

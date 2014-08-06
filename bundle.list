@@ -69,6 +69,8 @@
 ./hostinfo/procs.lua
 ./hostinfo/system.lua
 ./hostinfo/who.lua
+./hostinfo/date.lua
+./hostinfo/sysctl.lua
 ./lua_modules/async/init.lua
 ./lua_modules/async/queue.lua
 ./lua_modules/bourbon/init.lua

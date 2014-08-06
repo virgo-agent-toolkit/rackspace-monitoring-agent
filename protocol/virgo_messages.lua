@@ -74,6 +74,17 @@ function ScheduleChangeAck:serialize(msgId)
   return msg.Response.serialize(self, msgId)
 end
 
+--[[ HostInfoTypesResponse ]]--
+local HostInfoTypesResponse = msg.Response:extend()
+function HostInfoTypesResponse:initialize(replyTo, types)
+  msg.Response.initialize(self, replyTo)
+  self.result = {types = types}
+end
+
+function HostInfoTypesResponse:serialize(msgId)
+  return msg.Response.serialize(self, msgId)
+end
+
 --[[ HostInfoResponse ]]--
 local HostInfoResponse = msg.Response:extend()
 function HostInfoResponse:initialize(replyTo, info)
@@ -132,6 +143,7 @@ exports.Manifest = Manifest
 exports.MetricsRequest = MetricsRequest
 exports.SystemInfoResponse = SystemInfoResponse
 exports.ScheduleChangeAck = ScheduleChangeAck
+exports.HostInfoTypesResponse = HostInfoTypesResponse
 exports.HostInfoResponse = HostInfoResponse
 exports.CheckTestResponse = CheckTestResponse
 exports.CheckTargetsResponse = CheckTargetsResponse

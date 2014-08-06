@@ -16,13 +16,15 @@ limitations under the License.
 
 local hostinfo = require('/hostinfo')
 local fmt = require('string').format
+local os = require('os')
 
 local function run(_type)
   return function(test, asserts)
     local hi = hostinfo.create(_type)
     hi:run(function(err, info)
       asserts.ok(not err)
-      asserts.ok(type(info) == 'table')
+      local data = hi:serialize()
+      asserts.ok(type(data.metrics) == 'table')
       test.done()
     end)
   end
@@ -30,9 +32,25 @@ end
 
 local exports = {}
 
+exports.test_hostinfo_SYSCTL = function(test, asserts)
+  local hi = hostinfo.create(_type)
+  hi:run(function(err, info)
+    asserts.ok(not err)
+    local data = hi:serialize()
+    if os.type() == 'Linux' then
+      asserts.ok(type(data.metrics) == 'table')
+    else
+      asserts.ok(type(data.error) == 'string')
+    end
+    test.done()
+  end)
+end
+
 for _, v in pairs(hostinfo.classes) do
   local fun_name = fmt('test_hostinfo_%s', v.getType())
-  exports[fun_name] = run(v.getType())
+  if not exports[fun_name] then
+    exports[fun_name] = run(v.getType())
+  end
 end
 
 return exports

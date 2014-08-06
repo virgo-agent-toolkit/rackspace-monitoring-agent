@@ -38,6 +38,12 @@ function VirgoProtocolConnection:_bindHandlers()
     self:_send(m, callback)
   end
 
+  self._responses['host_info_types.get'] = function(self, request, callback)
+    local types = hostInfo.getTypes()
+    local m = msg.HostInfoTypesResponse:new(request, types)
+    self:_send(m, callback)
+  end
+
   self._responses['host_info.get'] = function(self, request, callback)
     local info = hostInfo.create(request.params.type)
     info:run(function(err)
