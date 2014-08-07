@@ -89,9 +89,11 @@ function Agent:start(options)
       end
       err, msg = virgo.write_pid(options.pidFile)
       if err then
-        local pid = fs.readFileSync(options.pidFile)
-        logging.error(fmt('Agent in use (pid: %d, path: %s)', pid, options.pidFile))
-        process.exit(3)
+        pcall(function()
+          local pid = fs.readFileSync(options.pidFile)
+          logging.error(fmt('Agent in use (pid: %d, path: %s)', pid, options.pidFile))
+          process.exit(3)
+        end)
       end
       callback()
     end,
