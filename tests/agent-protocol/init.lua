@@ -18,6 +18,7 @@ local fs = require('fs')
 local JSON = require('json')
 local errors = require('/base/errors')
 local Emitter = require('core').Emitter
+local stream = require('/base/modules/stream')
 
 local AgentProtocolConnection = require('/base/protocol/connection')
 local loggingUtil = require ('/base/util/logging')
@@ -26,21 +27,24 @@ local instanceof = require('core').instanceof
 local fixtures = require('/tests/fixtures')
 
 local exports = {}
--- TODO: fix tests
---[[
 
 local prepareJson = function(msg)
   return JSON.stringify(msg):gsub('\n', " ")
 end
 
 exports['test_completion_key'] = function(test, asserts)
-  local sock = Emitter:new()
+  local sock = stream.Readable:new()
+  sock._read = function() end
   local conn = AgentProtocolConnection:new(loggingUtil.makeLogger(), 'MYID', 'TOKEN', 'GUID', sock)
   asserts.equals('GUID:1', conn:_completionKey('1'))
   asserts.equals('hello:1', conn:_completionKey('hello', '1'))
   test.done()
 end
 
+-- FOLLOWING TESTS ARE REPLACED BY /tests/unit-tests/test-connection.lua
+
+-- TODO: fix tests
+--[[
 exports['test_bad_version_hello_gives_err'] = function(test, asserts)
   local sock = Emitter:new()
   local data = fixtures['invalid-version']['handshake.hello.response']
