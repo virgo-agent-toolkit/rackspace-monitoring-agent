@@ -115,6 +115,10 @@ Configuration File Parameters
                                        (default: Instance ID (Xen) or Cloud-Init ID)
     monitoring_snet_region [region]  - (optional) Enable Service Net endpoints 
                                        (region: dfw, ord, lon, syd, hkg, iad)
+    monitoring_query_endpoints [queries] - (optional) SRV queries comma
+                                            delimited
+    monitoring_endpoints             - (optional) Force IP and Port, comma
+                                       delimited
 
 Exit Codes
 ==========
