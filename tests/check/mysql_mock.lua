@@ -195,6 +195,7 @@ local QUERIES = {
   ['show slave status'] = {
     {'Master_Host', 'localhost'},
     {'Slave_IO_State', '3'},
+    {'Last_IO_State', 'error'},
   },
   ['show global status'] = {
     {'Uptime', '2'},
@@ -236,8 +237,7 @@ end
 -- or maybe just mod the one above to conditionally return?
 function MockQueryData.mysql_fetch_row(results)
   if results.kvquery then
-    local row = results:fetchRow()
-    return row
+    return results:fetchRow()
   else
     return results:fetchColumnRow()
   end
