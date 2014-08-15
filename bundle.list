@@ -99,6 +99,7 @@
 ./lua_modules/rackspace-monitoring/lib/init.lua
 ./lua_modules/rackspace-monitoring/lib/misc.lua
 ./lua_modules/rackspace-monitoring/package.lua
+./lua_modules/request/init.lua
 ./lua_modules/traceroute/examples/example1.lua
 ./lua_modules/traceroute/init.lua
 ./lua_modules/traceroute/lib/traceroute.lua

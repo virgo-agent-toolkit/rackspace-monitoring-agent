@@ -107,6 +107,12 @@ function Entry.run()
   virgo.config['guid'] = virgo.config['monitoring_guid']
   virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
   virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
+  virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
+
+  options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
+  if virgo.config['proxy'] then
+    options.proxy = virgo.config['proxy']
+  end
 
   local agent = MonitoringAgent:new(options, types)
 
