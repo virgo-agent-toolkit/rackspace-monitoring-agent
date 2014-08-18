@@ -14,7 +14,7 @@ alarms:
         label: ZNC running
         notification_plan_id: npTechnicalContactsEmail
         criteria: |
-            if (metric['process_counss_mon'] == 0) {
+            if (metric['process_mon'] == 0) {
                 return new AlarmStatus(CRITICAL, 'ZNC is not running!');
             }
             return new AlarmStatus(OK, 'ZNC is running');
