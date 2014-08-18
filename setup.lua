@@ -77,9 +77,14 @@ function Setup:save(token, agent_id, write_agent_id, callback)
   process.stdout:write(fmt('Writing token to %s: ', self._configFile))
 
   local data = fmt('monitoring_token %s\n', token)
+  local proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
 
   if write_agent_id then
     data = data .. fmt('monitoring_id %s\n', agent_id)
+  end
+
+  if proxy then
+    data = data .. fmt('monitoring_proxy_url %s\n', proxy)
   end
 
   --[[
