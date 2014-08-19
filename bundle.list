@@ -13,7 +13,9 @@
 ./base/client/upgrade.lua
 ./base/errors.lua
 ./base/libs/connection.lua
-./base/libs/refragmenter.lua
+./base/modules/split-stream/init.lua
+./base/modules/split-stream/package.lua
+./base/modules/split-stream/lib/split.lua
 ./base/modules/stream/init.lua
 ./base/modules/stream/lib/stream.lua
 ./base/modules/stream/lib/stream_duplex.lua
