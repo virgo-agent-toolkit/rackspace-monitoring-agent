@@ -1,10 +1,3 @@
-./agents/monitoring/collector/api/handlers/init.lua
-./agents/monitoring/collector/api/handlers/traceroute.lua
-./agents/monitoring/collector/api/urls.lua
-./agents/monitoring/collector/http/router.lua
-./agents/monitoring/collector/http/utils.lua
-./agents/monitoring/collector/init.lua
-./agents/monitoring/init.lua
 ./base/client/client.lua
 ./base/client/connection_messages.lua
 ./base/client/connection_statemachine.lua
