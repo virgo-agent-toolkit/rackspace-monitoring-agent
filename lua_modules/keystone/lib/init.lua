@@ -154,8 +154,12 @@ function Client:_updateToken(callback)
       end)
     end
 
-    local function handleResponse(res)
-      if res.statusCode == 401 then
+    local function handleResponse(err, res)
+      if err then
+        return callback(err)
+      end
+
+      if res.statusCode == 400 then
         handleMFAResponse(res)
       else
         handleTokenResponse(res)

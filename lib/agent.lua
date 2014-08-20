@@ -86,7 +86,7 @@ function Agent.run()
   if argv.args.i then
     options.tls = {
       rejectUnauthorized = false,
-      ca = require('./certs').caCertsDebug
+      ca = require('/certs').caCertsDebug
     }
   end
 
