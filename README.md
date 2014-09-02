@@ -19,12 +19,12 @@ Otherwise, continue reading this section.
 
 First get the source 
 
-    git clone https://github.com/racker/virgo virgo-0.1.9
+    git clone https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent
 
 
 Go into the directory that you just created 
 
-    cd virgo-0.1.9
+    cd rackspace-monitoring-agent
 
 
 Then get the submodules that you need
