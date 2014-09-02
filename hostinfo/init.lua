@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+local table = require('table')
 local Object = require('core').Object
 local JSON = require('json')
 
@@ -25,19 +26,27 @@ local asserts = require('bourbon').asserts
 local HostInfo = require('./base').HostInfo
 local classes = require('./all')
 
-local function create_map()
+local function create_class_info()
   local map = {}
+  local types = {}
   for x, klass in pairs(classes) do
     asserts.ok(klass.getType and klass.getType(), "HostInfo getType() undefined or returning nil: " .. tostring(x))
     map[klass.getType()] = klass
+    table.insert(types, klass.getType())
   end
-  return map
+  return {map = map, types = types}
 end
 
-local HOST_INFO_MAP = create_map()
+local CLASS_INFO = create_class_info()
+local HOST_INFO_MAP = CLASS_INFO.map
+local HOST_INFO_TYPES = CLASS_INFO.types
 
 --[[ NilInfo ]]--
 local NilInfo = HostInfo:extend()
+function NilInfo:initialize()
+  HostInfo.initialize(self)
+  self._error = 'Agent does not support this Host Info type'
+end
 
 --[[ Factory ]]--
 local function create(infoType)
@@ -46,6 +55,11 @@ local function create(infoType)
     return klass:new()
   end
   return NilInfo:new()
+end
+
+-- [[ Types ]]--
+local function getTypes()
+  return HOST_INFO_TYPES
 end
 
 -- Dump all the info objects to a file
@@ -66,4 +80,5 @@ local exports = {}
 exports.create = create
 exports.debugInfo = debugInfo
 exports.classes = classes
+exports.getTypes = getTypes
 return exports

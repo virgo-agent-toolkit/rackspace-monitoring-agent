@@ -21,6 +21,7 @@ local http = require('http')
 local table = require('table')
 local fmt = require('string').format
 local url = require('url')
+local request = require('request').request
 
 local Client = Object:extend()
 function Client:initialize(authUrl, options)
@@ -30,11 +31,6 @@ function Client:initialize(authUrl, options)
   self.password = options.password
   self.extraArgs = options.extraArgs or {}
   self.mfaCallback = options.mfaCallback
-  if authUrl:find('http:') then
-    self._proto = http
-  else
-    self._proto = https
-  end
   self._token = nil
   self._tokenExpires = nil
   self._tenantId = nil
@@ -92,11 +88,10 @@ function Client:_updateToken(callback)
     body = JSON.stringify(body)
     headers['Content-Length'] = #body
     options = {
-      host = parsed.hostname,
-      port = tonumber(parsed.port),
-      path = urlPath,
+      url = self.authUrl,
       headers = headers,
-      method = 'POST'
+      method = 'POST',
+      body = body
     }
 
     local function handleMFAResponse(res)
@@ -159,16 +154,25 @@ function Client:_updateToken(callback)
       end)
     end
 
-    local function handleResponse(res)
-      if res.statusCode == 401 then
+    local function handleResponse(err, res)
+      if err then
+        return callback(err)
+      end
+
+      if res.statusCode == 400 then
         handleMFAResponse(res)
       else
         handleTokenResponse(res)
       end
     end
 
-    client = self._proto.request(options, handleResponse)
-    client:done(body)
+  if process.env.HTTP_PROXY then
+    options.proxy = process.env.HTTP_PROXY
+  elseif process.env.HTTPS_PROXY then
+    options.proxy = process.env.HTTPS_PROXY
+  end
+
+    request(options, handleResponse)
   end
 
   iter()

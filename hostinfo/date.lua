@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2014 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,12 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local exports = {}
+local HostInfo = require('./base').HostInfo
 
-local handlers = {'traceroute'}
+local table = require('table')
+local os = require('os')
 
-for i,v in ipairs(handlers) do
-  exports[v] = require('./' .. v)
+--[[ Date ]]--
+local Date = HostInfo:extend()
+function Date:initialize()
+  HostInfo.initialize(self)
+  local it = os.date('%H:%M:%S %Y %m %d %Z'):gmatch('%S+')
+  local fields = {}
+  fields.time = it()
+  fields.date = {}
+  fields.date.year = it()
+  fields.date.month = it()
+  fields.date.day = it()
+  fields.timezone = it()
+  table.insert(self._params, fields)
 end
 
-return exports
+function Date:getType()
+  return 'DATE'
+end
+
+return Date
+

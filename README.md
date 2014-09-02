@@ -106,3 +106,27 @@ Virgo with command line flags set to feed it the testing bundle and with the -e
 flag set to tests.
 
     make test
+
+Configuration File Parameters
+=============================
+
+    monitoring_token [token]         - (required) The authentication token.
+    monitoring_id [agent_id]         - (optional) The Agent's monitoring_id
+                                       (default: Instance ID (Xen) or Cloud-Init ID)
+    monitoring_snet_region [region]  - (optional) Enable Service Net endpoints 
+                                       (region: dfw, ord, lon, syd, hkg, iad)
+    monitoring_endpoints             - (optional) Force IP and Port, comma
+                                       delimited
+    monitoring_proxy_url [url]       - (optional) Use a HTTP Proxy
+                                       Must support CONNECT on port 443.
+                                       Additionally, HTTP_PROXY and HTTPS_PROXY
+                                       are honored.
+    monitoring_query_endpoints [queries] - (optional) SRV queries comma
+                                            delimited
+
+Exit Codes
+==========
+
+1 unknown error
+2 config file fail
+3 already running

@@ -21,17 +21,19 @@ local vutils = require('virgo_utils')
 local HostInfo = Object:extend()
 function HostInfo:initialize()
   self._params = {}
+  self._error = nil
 end
 
 function HostInfo:serialize()
   return {
+    error = self._error,
     metrics = self._params,
     timestamp = vutils.gmtNow()
   }
 end
 
 function HostInfo:run(callback)
-  callback(nil, self._params)
+  callback()
 end
 
 local exports = {}

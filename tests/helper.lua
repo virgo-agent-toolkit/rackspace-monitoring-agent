@@ -36,8 +36,13 @@ end
 
 local child
 
-local function start_server(callback)
+local function start_server(options, callback)
   local data = ''
+
+  if type(options) == 'function' then
+    callback = options
+    options = {}
+  end
 
   local pprint = function(d)
     print('[* AEP *]: ' .. d)
@@ -50,7 +55,7 @@ local function start_server(callback)
     '-z', virgo.loaded_zip_path,
     '-e', 'tests/server.lua'
   }
-  child = spawn(process.execPath, args)
+  child = spawn(process.execPath, args, options)
   child.stderr:on('data', function(d)
     pprint('got stderr' .. d)
     callback(d)

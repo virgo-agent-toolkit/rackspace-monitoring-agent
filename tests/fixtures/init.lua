@@ -1,5 +1,6 @@
 local os = require('os')
 local path = require('path')
+local path_base = require('path_base')
 local string = require('string')
 
 local statics = require('/lua_modules').statics
@@ -19,8 +20,8 @@ local load_fixtures = function(dir, is_json)
   local fixtures = {}
 
   for i,v in ipairs(statics) do
-    if path.posix:dirname(v) == dir then
-      local _, _, name = path.posix:basename(v):find(finder)
+    if path_base.posix:dirname(v) == dir then
+      local _, _, name = path_base.posix:basename(v):find(finder)
       if name ~= nil then
         local fixture = get_static(v)
         if is_json then

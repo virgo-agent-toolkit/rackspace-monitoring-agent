@@ -61,19 +61,6 @@ exports['test_mysql_check_failed_real_connect'] = function(test, asserts)
   end)
 end
 
-exports['test_mysql_check_mysql_query_failed'] = function(test, asserts)
-  setupTest('failed_query')
-  local check = MySQLCheck:new({id='foo', period=30})
-  asserts.is_nil(check._lastResult)
-  check:run(function(result)
-    asserts.not_nil(result, nil)
-    asserts.not_nil(check._lastResult, nil)
-    asserts.equal(result['_status'], 'mysql_query "show global status" failed: (42) mocked error')
-    asserts.equal(result['_state'], "unavailable")
-    test.done()
-  end)
-end
-
 exports['test_mysql_check_use_result_failed'] = function(test, asserts)
   setupTest('failed_use_result')
   local check = MySQLCheck:new({id='foo', period=30})
@@ -82,19 +69,6 @@ exports['test_mysql_check_use_result_failed'] = function(test, asserts)
     asserts.not_nil(result, nil)
     asserts.not_nil(check._lastResult, nil)
     asserts.equal(result['_status'], "mysql_use_result failed: (42) mocked error")
-    asserts.equal(result['_state'], "unavailable")
-    test.done()
-  end)
-end
-
-exports['test_mysql_check_num_fields'] = function(test, asserts)
-  setupTest('failed_num_fields')
-  local check = MySQLCheck:new({id='foo', period=30})
-  asserts.is_nil(check._lastResult)
-  check:run(function(result)
-    asserts.not_nil(result, nil)
-    asserts.not_nil(check._lastResult, nil)
-    asserts.equal(result['_status'], "mysql_num_fields failed: expected 2 fields, but got 3")
     asserts.equal(result['_state'], "unavailable")
     test.done()
   end)
@@ -121,6 +95,25 @@ exports['test_mysql_row_parsing'] = function(test, asserts)
     -- asserts.equal(result['_status'], "mysql_num_fields failed: expected 2 fields, but got 3")
     asserts.ok(#check._lastResult:serialize() > 0)
     asserts.equal(result['_state'], "available")
+    test.done()
+  end)
+end
+
+exports['test_dbaas_multi_query'] = function(test, asserts)
+  local check
+
+  setupTest('test_multi_query')
+
+  check = MySQLCheck:new({id='foo', period=30, details={username='fooo'}})
+  check:run(function(result)
+    asserts.not_nil(check._lastResult)
+    local m = result:getMetrics()
+    -- show status result
+    asserts.equal(tonumber(m['core']['uptime']['v']), 2)
+    -- show variables result
+    asserts.equal(tonumber(m['qcache']['size']['v']), 1)
+    -- show slave status result
+    asserts.equal(tonumber(m['replication']['slave_io_state']['v']), 3)
     test.done()
   end)
 end

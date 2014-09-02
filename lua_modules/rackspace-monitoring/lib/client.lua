@@ -17,10 +17,11 @@ local JSON = require('json')
 local Object = require('core').Object
 local string = require('string')
 local fmt = require('string').format
-local https = require('https')
 local url = require('url')
 local table = require('table')
 local Error = require('core').Error
+
+local request = require('request').request
 
 local async = require('async')
 
@@ -34,24 +35,20 @@ local MAAS_CLIENT_DEFAULT_HOST
 local MAAS_CLIENT_DEFAULT_VERSION
 
 if process.env.STAGING then
-  MAAS_CLIENT_KEYSTONE_URL = 'https://staging.identity.api.rackspacecloud.com/v2.0'
-  MAAS_CLIENT_DEFAULT_HOST = 'staging.monitoring.api.rackspacecloud.com'
-  MAAS_CLIENT_DEFAULT_VERSION = 'v1.0'
+  MAAS_CLIENT_KEYSTONE_URL = 'https://staging.identity.api.rackspacecloud.com/v2.0/tokens'
+  MAAS_CLIENT_DEFAULT_HOST = 'https://staging.monitoring.api.rackspacecloud.com/v1.0'
 else
-  MAAS_CLIENT_KEYSTONE_URL = 'https://identity.api.rackspacecloud.com/v2.0'
-  MAAS_CLIENT_DEFAULT_HOST = 'monitoring.api.rackspacecloud.com'
-  MAAS_CLIENT_DEFAULT_VERSION = 'v1.0'
+  MAAS_CLIENT_KEYSTONE_URL = 'https://identity.api.rackspacecloud.com/v2.0/tokens'
+  MAAS_CLIENT_DEFAULT_HOST = 'https://monitoring.api.rackspacecloud.com/v1.0'
 end
 
 --[[ ClientBase ]]--
 
 local ClientBase = Object:extend()
-function ClientBase:initialize(host, port, version, options)
+function ClientBase:initialize(host, options)
   local headers = {}
 
   self.host = host
-  self.port = port
-  self.version = version
   self.apiType = apiType
   self.tenantId = nil
   self._mfaCallback = nil
@@ -111,22 +108,30 @@ function ClientBase:request(method, path, payload, expectedStatusCode, callback)
 
   -- setup path
   if self.tenantId then
-    path = fmt('/%s/%s%s', self.version, self.tenantId, path)
+    path = fmt('%s/%s%s', self.host, self.tenantId, path)
   else
-    path = fmt('/%s%s', self.version, path)
+    path = fmt('%s/%s', self.host, path)
   end
 
   headers = misc.merge(self.headers, extraHeaders)
 
   options = {
-    host = self.host,
-    port = self.port,
-    path = path,
+    url = path,
     headers = headers,
-    method = method
+    method = method,
+    body = payload
   }
 
-  local req = https.request(options, function(res)
+  if process.env.HTTP_PROXY then
+    options.proxy = process.env.HTTP_PROXY
+  elseif process.env.HTTPS_PROXY then
+    options.proxy = process.env.HTTPS_PROXY
+  end
+
+  request(options, function(err, res)
+    if err then
+      return callback(err)
+    end
     local data = ''
     res:on('data', function(chunk)
       data = data .. chunk
@@ -147,10 +152,6 @@ function ClientBase:request(method, path, payload, expectedStatusCode, callback)
       end
     end)
   end)
-  if payload then
-    req:write(payload)
-  end
-  req:done()
 end
 
 --[[ Client ]]--
@@ -164,8 +165,7 @@ function Client:initialize(userId, key, options)
   self.entities = {}
   self.agent_tokens = {}
   self:_init()
-  ClientBase.initialize(self, MAAS_CLIENT_DEFAULT_HOST, 443,
-                        MAAS_CLIENT_DEFAULT_VERSION, options)
+  ClientBase.initialize(self, MAAS_CLIENT_DEFAULT_HOST, options)
 end
 
 function Client:_init()
