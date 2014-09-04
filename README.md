@@ -127,12 +127,12 @@ Configuration File Parameters
 Exit Codes
 ==========
 
-1 unknown error
-2 config file fail
-3 already running
+    1 unknown error
+    2 config file fail
+    3 already running
 
 Signals
 =======
 
-SIGUSR1: Force GC
-SIGUSR2: Toggle Debug
+    SIGUSR1: Force GC
+    SIGUSR2: Toggle Debug
