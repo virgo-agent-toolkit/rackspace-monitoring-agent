@@ -3,54 +3,78 @@ layout: default
 title: Rackspace Cloud Monitoring Agent
 ---
 
-Rackspace Monitoring Agent
+What is it?
+===========
+
+A tiny service running on your servers which samples system & application metrics, and pushes them to Rackspace Cloud Monitoring where they can be <a href="http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/alerts-language.html#concepts-alarms-alarm-language">analyzed</a>, <a href="http://blueflood.io/">graphed</a>, and <a href="http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/service-notification-types-crud.html">alerted on</a>. Your favorite tools (<a href="https://github.com/rackspace-cookbooks/rackspace_cloudmonitoring">Chef</a>, <a href="https://github.com/vickleford/puppet-cloudmonitoring">Puppet</a>, <a href="https://galaxy.ansible.com/list#/roles/855">Ansible</a>, <a href="https://github.com/rgbkrk/salt-states-rackspace-monitoring">Salt</a>, etc…) integrate with us to transparently install & configure monitoring when you provision new servers or deploy new code. You can also do it yourself with <a href="http://www.rackspace.com/blog/monitor-like-a-pro-with-server-side-configuration/">local YAML configurations</a> or via <a href="http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/service-api-operations.html">our API</a> if you like.
+
+## Monitoring Features
+
+### Metrics
+
+We bundle many <a href="https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/tree/master/check">fundamental check types</a> into our agent.
+
+* CPU
+* Disk
+* Filesystem
+* Network
+* Load Average
+* Memory
+* Apache
+* MySQL
+* Redis
+* SQL Server
+* Windows PerfOS
+
+Each of these reports a variety of metrics about the resource they target.
+
+### Host Info
+
+You can <a href="http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/service-agent-host_info.html#service-agent-host_info-types">query your connected agents via our API</a> to instantly retrieve <a href="https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/tree/master/hostinfo">structured data about your hosts</a>. 
+
+### Custom Plugins
+
+Just like the <a href="https://github.com/cloudkick/agent-plugins">Cloudkick agent</a> or Nagios, you can use any tool you like to sample data about your systems, reformat its output into <a href="http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/appendix-check-types-agent.html#section-ct-agent.plugin">a simple text format</a>, and the monitoring agent will push the metrics into Cloud Monitoring where you can graph and alert on them. We maintain <a href="https://github.com/racker/rackspace-monitoring-agent-plugins-contrib">a repository of custom agent plugins</a> that many developers & sysadmins have contributed. If you don't see what you need there, write your own. It's easy!
+
+### Want new features?
+
+Join us on #cloudmonitoring on <a href="https://freenode.net/">Freenode</a> and share your monitoring ideas with us! We also <a href="https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent"><3 pull requests</a>.
+
+## Technology
+
+The <a href="https://github.com/virgo-agent-toolkit/virgo-base-agent">core agent</a> functionality is carefully written in C, so it is efficient and cross-platform with almost no system dependencies. We embed <a href="http://luvit.io">Luvit</a> so we can use a high-level language to enable rapid iteration on <a href="https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/check/memory.lua">simple, easily-verifiable monitoring code</a>. This idea inspired the <a href="https://github.com/virgo-agent-toolkit">Virgo Agent Toolkit</a> project. 
+
+Much of our monitoring uses <a href="https://support.hyperic.com/display/SIGAR/Home;jsessionid=EE17A264DA80C76BCB7197D6D37129D0">SIGAR</a>, but we also do cool things like using <a href="http://luajit.org/ext_ffi.html">LuaJIT FFI</a> to link against external libraries for monitoring <a href="https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/check/mysql.lua#L54">specific applications</a>.
+
+## Performance
+
+Our monitoring agent uses very little CPU and only about 6 megabytes of RAM (most of this is <a href="http://en.wikipedia.org/wiki/Static_library#Advantages_and_disadvantages">statically linking</a> <a href="https://www.openssl.org/">OpenSSL</a>). Only 3 persistent socket connections are maintained, and we use only the bandwidth necessary to send your metrics. We have over 60k agents installed in heterogenous environments all around the world, and we want to have many more, so we strive to be as lightweight and low-impact as possible.
+
+## Security
+
+Our agent is open-source, so you can review the code yourself for security issues and know that other users of our agent are doing the same. You can compile your own builds, leaving in only the features you like. OpenSSL is statically linked, and we frequently ship updated packages. We sign our packages with GPG. Our outbound connections are secured with TLS. Our agent authenticates our servers using a private Certificate Authority, and connect to only 3 well-known VIPs, so firewall rules are easy to write. Our agent can also use your HTTP proxies to route its traffic outside of your sequestered networks, so your networks can remain secure.
+
+Installing
+==========
+
+## … from our packages
+
+We distribute packages for many operating systems at <a href="https://meta.packages.cloudmonitoring.rackspace.com/">https://meta.packages.cloudmonitoring.rackspace.com/</a>.
+
+## … from source
+
+{% highlight bash %}
+git clone https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent
+cd rackspace-monitoring-agent
+git submodule update --init --recursive
+./configure && make
+make install
+{% endhighlight %}
+
+Setup
 =====
 
-[![Build Status](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent.png?branch=master)](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent)
-
-The monitoring agent is the first agent to use the infrastructure provided by
-[virgo-base-agent](https://github.com/virgo-agent-toolkit/virgo-base-agent)
-
-
-Installing The Agent
-====================
-
-Make sure you have the required packages to build things on your system. EG.
-`build-essential`. Please note, if you don't want to compile things and or don't
-have too, you can install using the normal "Package" method as outlined
-[here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent).
-Otherwise, continue reading this section.
-
-
-First get the source 
-
-    git clone https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent
-
-
-Go into the directory that you just created 
-
-    cd rackspace-monitoring-agent
-
-
-Then get the submodules that you need
-
-    git submodule update --init --recursive
-
-
-Now configure and make all the things
-
-    ./configure && make 
-
-
-Now simply install the virgo client by running this last and final command.
-
-    make install
-
-Post installation you will have a new Binary on your system,
-`rackspace-monitoring-agent`.  To get the client running on your system please
-follow the setup procedure as found
-[here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup)
-
+<a href="(http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup">http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup</a>
 
 License
 =======
@@ -59,79 +83,3 @@ The Monitoring Agent is distributed under the [Apache License 2.0][apache].
 
 [apache]: http://www.apache.org/licenses/LICENSE-2.0.html
 
-
-Bundles
-=======
-
-The Lua files in this repository are not used directly (nor will they run under
-Luvit).  Instead, they must first be bundled into a zip archive which virgo
-undertands.  Virgo makes this process easy by taking a flag to configure,
---bundle, which should be set to the directory this repo lives in.  See Virgo
-for more information on bundles.
-
-Building for Rackspace Cloud Monitoring
-=======================================
-
-Rackspace customers: Virgo is the open source project for the Rackspace
-Cloud Monitoring agent. Feel free to build your own copy from this
-source.
-
-But! Please don't contact Rackspace Support about issues you encounter
-with your custom build. We can't support every change people may make
-and master might not be fully tested.
-
-Versioning
-==========
-
-The agent is versioned with a three digit dot seperated "semantic
-version" with the template being x.y.z. An example being e.g. 1.4.2. The
-rough meaning of each of these parts are:
-
-- major version numbers will change when we make a backwards
-  incompatible change to the bundle format. Binaries can only run
-  bundles with identical major version numbers. e.g. a binary of version
-  2.3.1 can only run bundles starting with 2.
-
-- minor version numbers will change when we make backwards compatible
-  changes to the bundle format. Binaries can only run bundles with minor
-  versions that are greater than or equal to the bundle version. e.g. a
-  binary of version 2.3.1 can run a 2.3.4 bundle but not a 2.2.1 bundle.
-
-- patch version numbers will change everytime a new bundle is released.
-  It has no semantic meaning to the versioning.
-
-The zip file bundle and the binary shipped in an rpm/deb/msi will be
-identical. If the binary is 1.4.2 then the bundle will be 1.4.2.
-
-Running tests
-=============
-
-Virgo supplies infrastructure for running tests.  Calling make test will launch
-Virgo with command line flags set to feed it the testing bundle and with the -e
-flag set to tests.
-
-    make test
-
-Configuration File Parameters
-=============================
-
-    monitoring_token [token]         - (required) The authentication token.
-    monitoring_id [agent_id]         - (optional) The Agent's monitoring_id
-                                       (default: Instance ID (Xen) or Cloud-Init ID)
-    monitoring_snet_region [region]  - (optional) Enable Service Net endpoints 
-                                       (region: dfw, ord, lon, syd, hkg, iad)
-    monitoring_endpoints             - (optional) Force IP and Port, comma
-                                       delimited
-    monitoring_proxy_url [url]       - (optional) Use a HTTP Proxy
-                                       Must support CONNECT on port 443.
-                                       Additionally, HTTP_PROXY and HTTPS_PROXY
-                                       are honored.
-    monitoring_query_endpoints [queries] - (optional) SRV queries comma
-                                            delimited
-
-Exit Codes
-==========
-
-1. unknown error
-2. config file fail
-3. already running
