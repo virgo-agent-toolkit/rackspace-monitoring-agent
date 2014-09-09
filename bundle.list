@@ -100,6 +100,7 @@
 ./hostinfo/filesystem.lua
 ./hostinfo/filepermissions.lua
 ./hostinfo/init.lua
+./hostinfo/iptables.lua
 ./hostinfo/memory.lua
 ./hostinfo/network.lua
 ./hostinfo/nil.lua
