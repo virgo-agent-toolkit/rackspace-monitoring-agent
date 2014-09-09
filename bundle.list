@@ -64,6 +64,7 @@
 ./hostinfo/filepermissions.lua
 ./hostinfo/init.lua
 ./hostinfo/iptables.lua
+./hostinfo/listening.lua
 ./hostinfo/memory.lua
 ./hostinfo/network.lua
 ./hostinfo/nil.lua
