@@ -19,6 +19,7 @@ return {
   require('./disk'),
   require('./filesystem'),
   require('./filepermissions'),
+  require('./iptables'),
   require('./memory'),
   require('./network'),
   require('./nil'),
