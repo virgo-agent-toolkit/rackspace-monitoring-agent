@@ -20,6 +20,7 @@ return {
   require('./filesystem'),
   require('./filepermissions'),
   require('./iptables'),
+  require('./listening'),
   require('./memory'),
   require('./network'),
   require('./nil'),
