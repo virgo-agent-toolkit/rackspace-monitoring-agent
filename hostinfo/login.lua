@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local io = require('io')
+local fs = require('fs');
 local string = require('string')
 local table = require('table')
 
@@ -27,37 +27,43 @@ end
 
 function Info:run(callback)
   local obj = {}
-  local file = io.lines('/etc/login.defs')
-  local append = table.insert
-  
+  local filename = "/etc/login.defs"
+    
   obj['login.defs'] = {}
   
-  -- loop through lines in file
-  for line in file do
-    local iscomment = string.match(line, '^#')
-    local isblank = string.len(line:gsub("%s+", "")) <= 0
-    
-    -- find defs
-    if not iscomment and not isblank then
-      local items = {}
-      local i = 0
-      
-      -- split and assign key/values
-      for item in line:gmatch("%S+") do
-        i = i + 1
-        items[i] = item;
-      end
-      
-      local key = items[1]
-      local value = items[2]
-      
-      -- add def
-      obj['login.defs'][key] = value
+  -- open /etc/login.defs
+  fs.readFile(filename, function (err, data)
+    if (err) then
+      return
     end
-  end
-  
-  table.insert(self._params, obj)
-  callback()
+
+    -- split and assign key/values
+    for line in data:gmatch("[^\r\n]+") do
+      local iscomment = string.match(line, '^#')
+      local isblank = string.len(line:gsub("%s+", "")) <= 0
+
+      -- find defs
+      if not iscomment and not isblank then
+        local items = {}
+        local i = 0
+        
+        -- split and assign key/values
+        for item in line:gmatch("%S+") do
+          i = i + 1
+          items[i] = item;
+        end
+        
+        local key = items[1]
+        local value = items[2]
+
+        -- add def
+        obj['login.defs'][key] = value
+      end
+    end
+    
+    table.insert(self._params, obj)
+    callback()
+  end)
 end
 
 function Info:getType()
