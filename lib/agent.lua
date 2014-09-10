@@ -83,13 +83,6 @@ function Agent.run()
     options.pidFile = argv.args.p
   end
 
-  if argv.args.i then
-    options.tls = {
-      rejectUnauthorized = false,
-      ca = require('/certs').caCertsDebug
-    }
-  end
-
   if argv.args.e then
     local mod = require(argv.args.e)
     return mod.run(argv.args)
@@ -109,6 +102,21 @@ function Agent.run()
   virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
   virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
   virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
+  virgo.config['insecure'] = virgo.config['monitoring_insecure']
+  virgo.config['debug'] = virgo.config['monitoring_debug']
+
+  if argv.args.d or virgo.config['debug'] == 'true' then
+    logging.set_level(logging.EVERYTHING)
+  else
+    logging.set_level(logging.INFO)
+  end
+
+  if argv.args.i or virgo.config['insecure'] == 'true' then
+    options.tls = {
+      rejectUnauthorized = false,
+      ca = require('/certs').caCertsDebug
+    }
+  end
 
   options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
   if virgo.config['proxy'] then
