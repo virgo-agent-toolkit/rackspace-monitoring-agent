@@ -21,6 +21,7 @@ return {
   require('./filepermissions'),
   require('./iptables'),
   require('./listening'),
+  require('./login'),
   require('./memory'),
   require('./network'),
   require('./nil'),
