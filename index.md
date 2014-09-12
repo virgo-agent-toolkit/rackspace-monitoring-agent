@@ -74,7 +74,7 @@ make install
 Setup
 =====
 
-<a href="(http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup">http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup</a>
+<a href="http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup">http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup</a>
 
 License
 =======
