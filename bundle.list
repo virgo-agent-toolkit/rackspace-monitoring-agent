@@ -60,6 +60,7 @@
 ./base/util/sigar.lua
 ./base/util/test.lua
 ./base/util/underscore.lua
+./base/util/upgrade.lua
 ./base/util/uuid.lua
 ./certs.lua
 ./constants.lua
