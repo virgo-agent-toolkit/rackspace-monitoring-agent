@@ -246,26 +246,27 @@ local replication_stat_map = {
 local function runQuery(conn, query, cr, clib)
   rv = clib.mysql_query(conn, query)
   if rv ~= 0 then
-    cr:setError(fmt('mysql_query "%s" failed: (%d) %s',
+    local msg = fmt('mysql_query "%s" failed: (%d) %s',
                     query,
                     clib.mysql_errno(conn),
-                    ffi.string(clib.mysql_error(conn))))
-    return
+                    ffi.string(clib.mysql_error(conn)))
+    return nil, msg
   end
 
   local result = clib.mysql_use_result(conn)
   if result == nil then
-    cr:setError(fmt('mysql_use_result failed: (%d) %s',
+    local msg = fmt('mysql_use_result failed: (%d) %s',
                     clib.mysql_errno(conn),
-                    ffi.string(clib.mysql_error(conn))))
-    return
+                    ffi.string(clib.mysql_error(conn)))
+    return nil, msg
   end
   return result
 end
 
 local function runKeyValueQuery(conn, query, cr, clib, stat_map)
-  local result = runQuery(conn, query, cr, clib)
+  local result, msg = runQuery(conn, query, cr, clib)
   if result == nil then
+    process.stderr:write(msg .. '\n')
     return
   end
   local nfields = clib.mysql_num_fields(result)
@@ -296,8 +297,9 @@ local function runKeyValueQuery(conn, query, cr, clib, stat_map)
 end
 
 local function runColumnBasedQuery(conn, query, cr, clib, stat_map)
-  local result = runQuery(conn, query, cr, clib)
+  local result, msg = runQuery(conn, query, cr, clib)
   if result == nil then
+    process.stderr:write(msg .. '\n')
     return
   end
   local nfields = clib.mysql_num_fields(result)
