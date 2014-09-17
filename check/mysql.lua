@@ -266,7 +266,6 @@ end
 local function runKeyValueQuery(conn, query, cr, clib, stat_map)
   local result, msg = runQuery(conn, query, cr, clib)
   if result == nil then
-    process.stderr:write(msg .. '\n')
     return true, msg
   end
   local nfields = clib.mysql_num_fields(result)
@@ -301,7 +300,6 @@ end
 local function runColumnBasedQuery(conn, query, cr, clib, stat_map)
   local result, msg = runQuery(conn, query, cr, clib)
   if result == nil then
-    process.stderr:write(msg .. '\n')
     return true, msg
   end
   local nfields = clib.mysql_num_fields(result)
