@@ -246,27 +246,28 @@ local replication_stat_map = {
 local function runQuery(conn, query, cr, clib)
   rv = clib.mysql_query(conn, query)
   if rv ~= 0 then
-    cr:setError(fmt('mysql_query "%s" failed: (%d) %s',
+    local msg = fmt('mysql_query "%s" failed: (%d) %s',
                     query,
                     clib.mysql_errno(conn),
-                    ffi.string(clib.mysql_error(conn))))
-    clib.mysql_close(conn)
-    return
+                    ffi.string(clib.mysql_error(conn)))
+    return nil, msg
   end
 
   local result = clib.mysql_use_result(conn)
   if result == nil then
-    cr:setError(fmt('mysql_use_result failed: (%d) %s',
+    local msg = fmt('mysql_use_result failed: (%d) %s',
                     clib.mysql_errno(conn),
-                    ffi.string(clib.mysql_error(conn))))
-    clib.mysql_close(conn)
-    return
+                    ffi.string(clib.mysql_error(conn)))
+    return nil, msg
   end
   return result
 end
 
 local function runKeyValueQuery(conn, query, cr, clib, stat_map)
-  local result = runQuery(conn, query, cr, clib)
+  local result, msg = runQuery(conn, query, cr, clib)
+  if result == nil then
+    return true, msg
+  end
   local nfields = clib.mysql_num_fields(result)
 
   -- Key/Value assumes 2 fields only. examples of this
@@ -276,7 +277,6 @@ local function runKeyValueQuery(conn, query, cr, clib, stat_map)
     cr:setError(fmt('mysql_num_fields failed: expected 2 fields, but got %i',
                     nfields))
     clib.mysql_free_result(result)
-    clib.mysql_close(conn)
     return
   end
 
@@ -293,10 +293,15 @@ local function runKeyValueQuery(conn, query, cr, clib, stat_map)
       cr:addMetric(kstat.alias, nil, kstat.type, val, rawget(kstat, 'unit'))
     end
   end
+
+  return false
 end
 
 local function runColumnBasedQuery(conn, query, cr, clib, stat_map)
-  local result = runQuery(conn, query, cr, clib)
+  local result, msg = runQuery(conn, query, cr, clib)
+  if result == nil then
+    return true, msg
+  end
   local nfields = clib.mysql_num_fields(result)
   local colnames = clib.mysql_fetch_fields(result)
   local fieldnames = {}
@@ -331,6 +336,8 @@ local function runColumnBasedQuery(conn, query, cr, clib, stat_map)
        end
     end
   end
+
+  return false
 end
 
 function MySQLCheck:getQueries()
@@ -397,7 +404,7 @@ function MySQLCheck:_runCheckInChild(callback)
   end
 
   -- read mycnf
-  local rv
+  local rv, msg
   if self.mysql_mycnf then
     rv = clib.mysql_options(conn, ffi.C.MYSQL_READ_DEFAULT_GROUP, 'client')
     if rv ~= 0 then
@@ -448,9 +455,17 @@ function MySQLCheck:_runCheckInChild(callback)
   end
   for idx, query in pairs(self:getQueries()) do
      if query.kvquery then
-       runKeyValueQuery(conn, query.query, cr, clib, query.stat_map)
+       rv, msg = runKeyValueQuery(conn, query.query, cr, clib, query.stat_map)
+       if rv == true then
+         cr:setError(msg)
+         break
+       end
      else
-       runColumnBasedQuery(conn, query.query, cr, clib, query.stat_map)
+       rv, msg = runColumnBasedQuery(conn, query.query, cr, clib, query.stat_map)
+       if rv == true then
+         cr:setError(msg)
+         break
+       end
      end
   end
   -- Issue callback here for any errors/metrics in the query methods above

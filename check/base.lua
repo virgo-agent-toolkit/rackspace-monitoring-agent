@@ -683,6 +683,7 @@ function CheckResult:setStatus(status)
 end
 
 function CheckResult:setError(message)
+  self._metrics = {}
   self:setUnavailable()
   self:setStatus(message)
 end
