@@ -1,5 +1,5 @@
 --[[
-Copyright 2013 Rackspace
+Copyright 2014 Rackspace
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -16,14 +16,20 @@ local upgrade = require('/base/client/upgrade')
 local path = require('path')
 local async = require('async')
 local fs = require('fs')
+local os = require('os')
 local fixtures = require('/tests/fixtures')
 
 local exports = {}
-local testexe = '0001.sh'
+local testbinary
+if os.type() == 'win32' then
+  testbinary = 'test.msi'
+else
+  testbinary = '0001.sh'
+end
 
-local function createOptions(bExe, myVersion)
+local function createOptions(bBin, myVersion)
   return {
-    ['b'] = { ['exe'] = bExe },
+    ['b'] = { ['exe'] = bBin },
     my_version = myVersion,
     pretend = true
   }
@@ -53,9 +59,9 @@ local setupExe = function(dir, name, perms, cb)
 end
 
 local function test_upgrade(version, expected_status, test, asserts)
-  local options = createOptions(path.join(TEST_DIR, testexe), version)
-  setupExe(TEST_DIR, testexe, '0777', function(err)
-    asserts.ok(not err, err)
+  local options = createOptions(path.join(TEST_DIR, testbinary), version)
+  setupExe(TEST_DIR, testbinary, '0777', function(err)
+    asserts.ok(not err, tostring(err))
     upgrade.attempt(options, function(err, status)
       asserts.ok(not err)
       asserts.ok(status == expected_status)

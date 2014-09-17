@@ -205,6 +205,7 @@
 ./static/tests/protocol/static_files/upgrades/bundle/1.0.2.19
 ./static/tests/system_info.network_interfaces.request.json
 ./static/tests/upgrade/0001.sh
+./static/tests/upgrade/test.msi
 ./tests/agent-protocol/init.lua
 ./tests/check/apache.lua
 ./tests/check/dbaas.lua
