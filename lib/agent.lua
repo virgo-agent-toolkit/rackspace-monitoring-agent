@@ -28,6 +28,7 @@ local logging = require('logging')
 local protocolConnection = require('/protocol/virgo_connection')
 local upgrade = require('/base/client/upgrade')
 local vutils = require('virgo_utils')
+local os = require('os')
 
 local argv = require("options")
   .usage('Usage: ')
@@ -131,14 +132,19 @@ function Agent.run()
 
   async.series({
     function(callback)
-      local opts = {}
-      opts.skip = (options.upgrades_enabled == false)
-      upgrade.attempt(opts, function(err)
-        if err then
-          logging.log(logging.ERROR, fmt("Error upgrading: %s", tostring(err)))
-        end
+      if os.type() ~= 'win32' then
+        local opts = {}
+        opts.skip = (options.upgrades_enabled == false)
+        upgrade.attempt(opts, function(err)
+          if err then
+            logging.log(logging.ERROR, fmt("Error upgrading: %s", tostring(err)))
+          end
+          callback()
+        end)
+      else
+        --on windows the upgrade occurs right after the download as an external process
         callback()
-      end)
+      end
     end,
     function(callback)
       local agent = MonitoringAgent:new(options, types)
