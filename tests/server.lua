@@ -290,18 +290,21 @@ end
 
 local servers = {}
 
-local function create_server(port)
+local function create_server(port, callback)
   local srv = Server:new()
-  srv:listen(port, opts.listen_ip)
   table.insert(servers, srv)
+  srv:listen(port, opts.listen_ip, callback)
 end
 
 local function run()
   -- There is no cleanup code for the server here as the process for exiting is
   -- to just ctrl+c the runner or kill the process.
   for _, port in pairs(ports) do
-    print("TLS fixture server listening on port " .. port)
-    create_server(port)
+    create_server(port, function(err)
+      if not err then
+        print("TLS fixture server listening on port " .. port)
+      end
+    end)
   end
 end
 --
