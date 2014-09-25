@@ -282,7 +282,12 @@ function Agent:loadEndpoints(callback)
     callback(nil, endpoints)
   end
 
-  if snetregion and queries and endpoints then
+  if not (snetregion or endpoints or queries) then
+    logging.errorf("Invalid configuration: one (and only one) of snet_region, queries, and endpoints need to be set.")
+    process.exit(1)
+  end
+
+  if (snetregion and queries) or (snetregion and endpoints) or (queries and endpoints) then
     logging.errorf("Invalid configuration: only one of snet_region, queries, and endpoints can be set.")
     process.exit(1)
   end
@@ -310,10 +315,12 @@ function Agent:loadEndpoints(callback)
     return self:_queryForEndpoints(domains, _callback)
   end
 
-  if queries and not endpoints then
+  if queries then
     local domains = misc.split(queries, '[^,]+')
     return self:_queryForEndpoints(domains, _callback)
   end
+
+  -- It's neither `snetregion` nor `queries`, has to be `endpoints`.
 
   -- split address,address,address
   endpoints = misc.split(endpoints, '[^,]+')
