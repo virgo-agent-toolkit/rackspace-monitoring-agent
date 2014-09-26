@@ -1,6 +1,3 @@
 [submodule "base"]
 	path = base
 	url = https://github.com/virgo-agent-toolkit/virgo-base-agent
-[submodule "lua_modules/async"]
-	path = lua_modules/async
-	url = https://github.com/virgo-agent-toolkit/luvit-async
