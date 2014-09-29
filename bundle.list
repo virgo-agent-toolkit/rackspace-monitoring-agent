@@ -4,8 +4,16 @@
 ./base/client/connection_stream.lua
 ./base/client/init.lua
 ./base/client/upgrade.lua
+./base/client/endpoint.lua
 ./base/errors.lua
 ./base/libs/connection.lua
+./base/modules/init.lua
+./base/modules/async/init.lua
+./base/modules/async/queue.lua
+./base/modules/hsm/init.lua
+./base/modules/hsm/hsm.lua
+./base/modules/request/init.lua
+./base/modules/request/lib/request.lua
 ./base/modules/split-stream/init.lua
 ./base/modules/split-stream/package.lua
 ./base/modules/split-stream/lib/split.lua
@@ -98,8 +106,6 @@
 ./hostinfo/who.lua
 ./hostinfo/date.lua
 ./hostinfo/sysctl.lua
-./lua_modules/async/init.lua
-./lua_modules/async/queue.lua
 ./lua_modules/bourbon/init.lua
 ./lua_modules/bourbon/lib/asserts.lua
 ./lua_modules/bourbon/lib/context.lua
@@ -109,8 +115,6 @@
 ./lua_modules/bourbon/test.lua
 ./lua_modules/bourbon/tests/test-asserts.lua
 ./lua_modules/bourbon/tests/test-setup-teardown.lua
-./lua_modules/hsm/hsm.lua
-./lua_modules/hsm/package.lua
 ./lua_modules/keystone/init.lua
 ./lua_modules/keystone/lib/init.lua
 ./lua_modules/line-emitter/init.lua
