@@ -14,19 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local core = require('core')
-local logging = require('logging')
-local debugm = require('debug')
-local fmt = require('string').format
-
 local MonitoringAgent = require('../agent').Agent
 local Setup = require('../setup').Setup
-local constants = require('/constants')
-local protocolConnection = require('/protocol/virgo_connection')
 local agentClient = require('/client/virgo_client')
+local async = require('async')
 local connectionStream = require('/client/virgo_connection_stream')
-local vutils = require('virgo_utils')
+local constants = require('/constants')
+local core = require('core')
 local debugger = require('virgo_debugger')
+local debugm = require('debug')
+local fmt = require('string').format
+local logging = require('logging')
+local protocolConnection = require('/protocol/virgo_connection')
+local upgrade = require('/base/client/upgrade')
+local vutils = require('virgo_utils')
+local os = require('os')
 
 local argv = require("options")
   .usage('Usage: ')
@@ -83,13 +85,6 @@ function Agent.run()
     options.pidFile = argv.args.p
   end
 
-  if argv.args.i then
-    options.tls = {
-      rejectUnauthorized = false,
-      ca = require('/certs').caCertsDebug
-    }
-  end
-
   if argv.args.e then
     local mod = require(argv.args.e)
     return mod.run(argv.args)
@@ -109,19 +104,58 @@ function Agent.run()
   virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
   virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
   virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
+  virgo.config['insecure'] = virgo.config['monitoring_insecure']
+  virgo.config['debug'] = virgo.config['monitoring_debug']
+
+  if argv.args.d or virgo.config['debug'] == 'true' then
+    logging.set_level(logging.EVERYTHING)
+  else
+    logging.set_level(logging.INFO)
+  end
+
+  if argv.args.i or virgo.config['insecure'] == 'true' then
+    options.tls = {
+      rejectUnauthorized = false,
+      ca = require('/certs').caCertsDebug
+    }
+  end
 
   options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
   if virgo.config['proxy'] then
     options.proxy = virgo.config['proxy']
   end
 
-  local agent = MonitoringAgent:new(options, types)
-
-  if not argv.args.u then
-    return agent:start(options)
+  options.upgrades_enabled = true
+  if argv.args.o or virgo.config['upgrade'] == 'disabled' then
+    options.upgrades_enabled = false
   end
 
-  Setup:new(argv, options.configFile, agent):run()
+  async.series({
+    function(callback)
+      if os.type() ~= 'win32' then
+        local opts = {}
+        opts.skip = (options.upgrades_enabled == false)
+        upgrade.attempt(opts, function(err)
+          if err then
+            logging.log(logging.ERROR, fmt("Error upgrading: %s", tostring(err)))
+          end
+          callback()
+        end)
+      else
+        --on windows the upgrade occurs right after the download as an external process
+        callback()
+      end
+    end,
+    function(callback)
+      local agent = MonitoringAgent:new(options, types)
+      if argv.args.u then
+        Setup:new(argv, options.configFile, agent):run()
+      else
+        agent:start(options)
+      end
+      callback()
+    end
+  })
 end
 
 return function(features)

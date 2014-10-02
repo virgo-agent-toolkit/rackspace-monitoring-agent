@@ -1,5 +1,5 @@
 --[[
-Copyright 2013 Rackspace
+Copyright 2014 Rackspace
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -12,39 +12,74 @@ limitations under the License.
 --]]
 local exec = require('virgo_exec')
 local string = require('string')
+local upgrade = require('/base/client/upgrade')
+local path = require('path')
+local async = require('async')
+local fs = require('fs')
+local os = require('os')
+local fixtures = require('/tests/fixtures')
+
 local exports = {}
-local function test_instance_is_newer_logic(exe, version)
-  newer = exec.is_new_exe(exe, version)
-  p('exe:', exe, 'version:', version, 'newer:', newer)
-  return newer
+local testbinary
+if os.type() == 'win32' then
+  testbinary = 'test.msi'
+else
+  testbinary = '0001.sh'
 end
-exports['test_virgo_exec_upgrade_is_newer_logic'] = function(test, asserts)
-  local prefix = '/foo/rackspace-monitoring-agent'
-  local version_format = '%d.%d.%d-%d'
-  local extensions = {'', '.exe'}
-  --Move each number in the file version up 1, up 11, and down 1, alternating with a file extension
-  for x, extension in ipairs(extensions) do
-    local movements = {1, 11, -1}
-    for y, movement in ipairs(movements) do
-      for i = 1,4 do
-        local current_versions = {5, 5, 5, 5}
-        local file_versions = {5, 5, 5, 5}
-        file_versions[i] = file_versions[i] + movement
-        exe = string.format('%s' .. '-' .. version_format .. '%s', prefix, file_versions[1], file_versions[2], file_versions[3], file_versions[4], extension)
-        version = string.format(version_format, current_versions[1], current_versions[2], current_versions[3], current_versions[4])
-        newer = test_instance_is_newer_logic(exe, version)
-        if movement < 0 then
-          asserts.not_ok(newer)
-        else
-          asserts.ok(newer)
-        end
-      end
-    end
-    --check plain filename
-    asserts.not_ok(test_instance_is_newer_logic(prefix .. extension, string.format(version_format, 5, 5, 5, 5)))
+
+local function createOptions(bBin, myVersion)
+  return {
+    ['b'] = { ['exe'] = bBin },
+    my_version = myVersion,
+    pretend = true
+  }
+end
+
+local setupExe = function(dir, name, perms, cb)
+  local exe = fixtures['upgrade'][name]
+  if not exe then
+    return cb('no exe named: ' .. name)
   end
-  --check no filename
-  asserts.not_ok(test_instance_is_newer_logic('', string.format(version_format, 5, 5, 5, 5)))
-  test.done()
+  async.waterfall({
+    function(cb)
+      fs.open(path.join(dir, name), 'w', perms, cb)
+    end,
+    function(fd, cb)
+      fs.write(fd, 0, exe, function(err, written)
+        return cb(err, written, fd)
+      end)
+    end,
+    function(written, fd, cb)
+      if written ~= #exe then
+        return cb("did not write it all " .. written .. " " .. #exe)
+      end
+      fs.close(fd, cb)
+    end},
+  cb)
 end
+
+local function test_upgrade(version, expected_status, test, asserts)
+  local options = createOptions(path.join(TEST_DIR, testbinary), version)
+  setupExe(TEST_DIR, testbinary, '0777', function(err)
+    asserts.ok(not err, tostring(err))
+    upgrade.attempt(options, function(err, status)
+      asserts.ok(not err)
+      asserts.ok(status == expected_status)
+      test.done()
+    end)
+  end)
+end
+
+exports['test_virgo_upgrade_1'] = function(test, asserts)
+  test_upgrade('0.2.0-24', upgrade.UPGRADE_EQUAL, test, asserts)
+end
+
+exports['test_virgo_upgrade_2'] = function(test, asserts)
+  test_upgrade('0.2.0-23', upgrade.UPGRADE_PERFORM, test, asserts)
+end
+
+exports['test_virgo_upgrade_3'] = function(test, asserts)
+  test_upgrade('0.2.0-25', upgrade.UPGRADE_DOWNGRADE, test, asserts)
+end
+
 return exports

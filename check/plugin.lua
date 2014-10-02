@@ -58,6 +58,7 @@ local tableContains = require('/base/util/misc').tableContains
 local lastIndexOf = require('/base/util/misc').lastIndexOf
 local constants = require('/constants')
 local loggingUtil = require('/base/util/logging')
+local windowsConvertCmd = require('virgo_utils').windowsConvertCmd
 
 local toString = require('/base/util/misc').toString
 
@@ -97,39 +98,11 @@ function PluginCheck:getType()
 end
 
 function PluginCheck:run(callback)
-  local exePath = self._pluginPath
-  local exeArgs = self._pluginArgs
-  local ext = path.extname(exePath)
-  local closeStdin = false
+  local exePath
+  local exeArgs 
+  local closeStdin
 
-  if virgo.win32_get_associated_exe ~= nil and ext ~= "" then
-    -- If we are on windows, we want to suport custom plugins like "foo.py",
-    -- but this means we need to map the .py file ending to the Python Executable,
-    -- and mutate our run path to be like: C:/Python27/python.exe custom_plugins_path/foo.py
-    local assocExe, err = virgo.win32_get_associated_exe(ext, '0') -- Try the 0 verb first for Powershell
-    if assocExe == nil then
-      assocExe, err = virgo.win32_get_associated_exe(ext, 'open')
-    end
-
-    if assocExe ~= nil then
-      -- If Powershell is the EXE then add a parameter for the exec policy
-      local justExe = path.basename(assocExe)
-      -- On windows if the associated exe is %1 it references itself
-      if assocExe ~= "%1" then
-        table.insert(exeArgs, 1, self._pluginPath)
-        exePath = assocExe
-        -- Force Bypass for this child powershell
-        if justExe == "powershell.exe" then
-          table.insert(exeArgs, 1, '-File')
-          table.insert(exeArgs, 1, 'Bypass')
-          table.insert(exeArgs, 1, '-ExecutionPolicy')
-          closeStdin = true -- NEEDED for Powershell 2.0 to exit
-        end
-      end
-    else
-      self._log(logging.WARNING, fmt('error getting associated executable for "%s": %s', ext, err))
-    end
-  end
+  exePath, exeArgs, closeStdin = windowsConvertCmd(self._pluginPath, self._pluginArgs)
 
   local cenv = self:_childEnv()
   -- Ruby 1.9.1p0 crashes when stdin is closed, so we let luvit take care of
