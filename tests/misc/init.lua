@@ -23,11 +23,13 @@ local splitAddress = require('/base/util/misc').splitAddress
 local writePid = require('/base/util/misc').writePid
 local lastIndexOf = require('/base/util/misc').lastIndexOf
 local compareVersions = require('/base/util/misc').compareVersions
+local copyFileAndRemove = require('/base/util/misc').copyFileAndRemove
 local os = require('os')
 local logging = require('logging')
 local native = require('uv_native')
 local constants = require('constants')
 local timer = require('timer')
+local async = require('async')
 
 exports['test_uuid_generation'] = function(test, asserts)
   local uuid1 = Uuid:new('01:02:ba:cd:32:6d')
@@ -119,6 +121,35 @@ exports['test_virgo_signals'] = function(test, asserts)
 
     test.done()
   end
+end
+
+exports['test_copy_file_and_remove'] = function(test, asserts)
+  local DATA = 'hello world'
+  async.series({
+    function(callback)
+      fs.writeFile('test_copy_file_and_remove_A.txt', DATA, callback)
+    end,
+    function(callback)
+      copyFileAndRemove('test_copy_file_and_remove_A.txt',
+                        'test_copy_file_and_remove_B.txt',
+                        callback)
+    end,
+    function(callback)
+      fs.stat('test_copy_file_and_remove_A.txt', function(err, stat)
+        asserts.ok(err.code == 'ENOENT')
+        callback()
+      end)
+    end,
+    function(callback)
+      fs.stat('test_copy_file_and_remove_B.txt', function(err, stat)
+        asserts.ok(err == nil)
+        asserts.ok(stat)
+        callback()
+      end)
+    end
+  }, function(err)
+    test.done()
+  end)
 end
 
 return exports
