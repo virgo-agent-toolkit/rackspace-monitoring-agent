@@ -46,6 +46,12 @@ The <a href="https://github.com/virgo-agent-toolkit/virgo-base-agent">core agent
 
 Much of our monitoring uses <a href="https://support.hyperic.com/display/SIGAR/Home;jsessionid=EE17A264DA80C76BCB7197D6D37129D0">SIGAR</a>, but we also do cool things like using <a href="http://luajit.org/ext_ffi.html">LuaJIT FFI</a> to link against external libraries for monitoring <a href="https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/check/mysql.lua#L54">specific applications</a>.
 
+## Topology
+
+Every agent connects to endpoints in three datacenters for redunancy, but only sends metrics to one primary datacenter at a time.
+
+<img src="images/1.dot.png" alt="" width="300">
+
 ## Performance
 
 Our monitoring agent uses very little CPU and only about 6 megabytes of RAM (most of this is <a href="http://en.wikipedia.org/wiki/Static_library#Advantages_and_disadvantages">statically linking</a> <a href="https://www.openssl.org/">OpenSSL</a>). Only 3 persistent socket connections are maintained, and we use only the bandwidth necessary to send your metrics. We have over 60k agents installed in heterogenous environments all around the world, and we want to have many more, so we strive to be as lightweight and low-impact as possible.

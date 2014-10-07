@@ -1,2 +1,4 @@
 _site
 .vagrant
+.DS_Store
+.sass-cachegit 

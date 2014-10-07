@@ -1,0 +1,32 @@
+digraph topology {
+  splines = line;
+  overlap = false;
+  remincross = true;
+  rankdir = LR;
+  node [shape = box];
+  "Agent 1" :e -> "ORD" :w [weight=0 label="Agent Protocol"];
+  "Agent 1" :e -> "DFW" :w [weight=0];
+  "Agent 1" :e -> "LON" :w [weight=0];
+  "Agent 2" :e -> "ORD" :w [weight=0];
+  "Agent 2" :e -> "DFW" :w [weight=0];
+  "Agent 2" :e -> "LON" :w [weight=0];
+  "Agent N" :e -> "ORD" :w [weight=0];
+  "Agent N" :e -> "DFW" :w [weight=0];
+  "Agent N" :e -> "LON" :w [weight=0];
+
+  subgraph cluster_host {
+    style = dashed;
+    label = "Agents";
+    "Agent 1";
+    "Agent 2";
+    "Agent N";
+  }
+
+  subgraph cluster_server {
+    style = dashed;
+    label = "Endpoints";
+    "ORD";
+    "DFW";
+    "LON";
+  }
+}
