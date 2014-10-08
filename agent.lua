@@ -263,7 +263,7 @@ end
 
 function Agent:loadEndpoints(callback)
   local config = self._config
-  local queries = config['query_endpoints'] or table.concat(endpoint.getEndpointSRV(), ',')
+  local queries = config['query_endpoints']
   local snetregion = config['snet_region']
   local endpoints = config['endpoints']
 
@@ -280,6 +280,11 @@ function Agent:loadEndpoints(callback)
     end
     config['endpoints'] = endpoints
     callback(nil, endpoints)
+  end
+
+  -- default to SRV lookup if endpoints and queries are not overwritten
+  if not endpoints and not queries then
+    queries = table.concat(endpoint.getEndpointSRV(), ',')
   end
 
   if not (snetregion or endpoints or queries) then
