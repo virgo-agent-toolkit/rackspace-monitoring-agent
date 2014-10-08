@@ -4,17 +4,17 @@ digraph topology {
   remincross = true;
   rankdir = LR;
   node [shape = box];
-  "Agent 1" :e -> "ORD" :w [weight=0 label="Agent Protocol"];
-  "Agent 1" :e -> "DFW" :w [weight=0];
-  "Agent 1" :e -> "LON" :w [weight=0];
-  "Agent 2" :e -> "ORD" :w [weight=0];
-  "Agent 2" :e -> "DFW" :w [weight=0];
-  "Agent 2" :e -> "LON" :w [weight=0];
-  "Agent N" :e -> "ORD" :w [weight=0];
-  "Agent N" :e -> "DFW" :w [weight=0];
-  "Agent N" :e -> "LON" :w [weight=0];
+  "Agent 1" :e -> "ORD" :w [weight=0 dir="both" label="Agent Protocol"];
+  "Agent 1" :e -> "DFW" :w [weight=0 dir="both"];
+  "Agent 1" :e -> "LON" :w [weight=0 dir="both"];
+  "Agent 2" :e -> "ORD" :w [weight=0 dir="both"];
+  "Agent 2" :e -> "DFW" :w [weight=0 dir="both"];
+  "Agent 2" :e -> "LON" :w [weight=0 dir="both"];
+  "Agent N" :e -> "ORD" :w [weight=0 dir="both"];
+  "Agent N" :e -> "DFW" :w [weight=0 dir="both"];
+  "Agent N" :e -> "LON" :w [weight=0 dir="both"];
 
-  subgraph cluster_host {
+  subgraph cluster_agents {
     style = dashed;
     label = "Agents";
     "Agent 1";
@@ -22,7 +22,7 @@ digraph topology {
     "Agent N";
   }
 
-  subgraph cluster_server {
+  subgraph cluster_endpoints {
     style = dashed;
     label = "Endpoints";
     "ORD";
