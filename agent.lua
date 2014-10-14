@@ -129,9 +129,6 @@ function Agent:connect(callback)
     return
   end
 
-  -- ReEnable upgrades when we have a handle on them
-  self._upgradesEnabled = false
-
   logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
 
   local connectionStreamType = self._types.ConnectionStream or ConnectionStream
