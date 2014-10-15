@@ -36,10 +36,19 @@ local fsutil = require('/base/util/fs')
 local UUID = require('/base/util/uuid')
 local logging = require('logging')
 local endpoint = require('/endpoint')
+local deepCopyTable = require('/base/util/misc').deepCopyTable
 local ConnectionStream = require('/base/client/connection_stream').ConnectionStream
 local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
 local Confd = require('confd')
+
+local FEATURE_UPGRADES = 'upgrades'
+local FEATURE_CONFD = 'confd'
+
+local FEATURES = {
+  FEATURE_UPGRADES,
+  FEATURE_CONFD
+}
 
 function Agent:initialize(options, types)
   if not options.stateDirectory then
@@ -52,6 +61,7 @@ function Agent:initialize(options, types)
   self._upgradesEnabled = true
   self._types = types or {}
   self._confd = Confd:new(options.confdDir, options.stateDirectory)
+  self._features = deepCopyTable(FEATURES)
 end
 
 function Agent:start(options)
@@ -118,6 +128,12 @@ function Agent:connect(callback)
     upgradeStr = upgradeStr:lower()
     if upgradeStr == 'false' or upgradeStr == 'disabled' then
       self._upgradesEnabled = false
+      for i, v in ipairs(self._features) do
+        if v == FEATURE_UPGRADES then
+          self._features[i] = nil
+          break
+        end
+      end
     end
   end
 
@@ -137,7 +153,8 @@ function Agent:connect(callback)
                                        self._config['guid'],
                                        self._upgradesEnabled,
                                        self._options,
-                                       self._types)
+                                       self._types,
+                                       self._features)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)
