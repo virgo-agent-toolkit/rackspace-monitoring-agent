@@ -130,7 +130,7 @@ function Agent:connect(callback)
       self._upgradesEnabled = false
       for i, v in ipairs(self._features) do
         if v == FEATURE_UPGRADES then
-          self._features[i] = nil
+          table.remove(self._features, i)
           break
         end
       end
