@@ -159,7 +159,11 @@ function Agent:connect(callback)
     logging.error(JSON.stringify(err))
   end)
   self._streams:on('upgrade.success', function()
-    self:_onShutdown(constants:get('SHUTDOWN_UPGRADE'))
+    local shutdownType = constants:get('SHUTDOWN_UPGRADE')
+    if virgo.restart_on_upgrade == 'true' then
+      shutdownType = constants:get('SHUTDOWN_RESTART')
+    end
+    self:_onShutdown(shutdownType)
   end)
   self._streams:on('promote', function(stream)
     local conn = stream:getClient().protocol
