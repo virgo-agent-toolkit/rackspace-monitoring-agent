@@ -46,6 +46,7 @@ local timer = require('timer')
 local path = require('path')
 local string = require('string')
 local fmt = string.format
+local readdir = require('fs').readdir
 
 local logging = require('logging')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -95,6 +96,22 @@ end
 
 function PluginCheck:getType()
   return 'agent.plugin'
+end
+
+function PluginCheck:getTargets(callback)
+  readdir(constants:get('DEFAULT_CUSTOM_PLUGINS_PATH'), function(err, files)
+    if err then
+      callback(err, {})
+      return
+    end
+    local i, x
+    for i, x in ipairs(files) do
+      if x == '.' or x == '..' then
+        table.remove(files, i)
+      end
+    end
+    callback(nil, files)
+  end)
 end
 
 function PluginCheck:run(callback)
