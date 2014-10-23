@@ -42,8 +42,8 @@ local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
 local Confd = require('confd')
 
-local FEATURE_UPGRADES = 'upgrades'
-local FEATURE_CONFD = 'confd'
+local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
+local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
 
 local FEATURES = {
   FEATURE_UPGRADES,
@@ -129,7 +129,7 @@ function Agent:connect(callback)
     if upgradeStr == 'false' or upgradeStr == 'disabled' then
       self._upgradesEnabled = false
       for i, v in ipairs(self._features) do
-        if v == FEATURE_UPGRADES then
+        if v.name == FEATURE_UPGRADES.name then
           table.remove(self._features, i)
           break
         end
