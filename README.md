@@ -136,4 +136,3 @@ Signals
 
     SIGUSR1: Force GC
     SIGUSR2: Toggle Debug
-
