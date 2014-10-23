@@ -42,8 +42,8 @@ local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
 local Confd = require('confd')
 
-local FEATURE_UPGRADES = 'upgrades'
-local FEATURE_CONFD = 'confd'
+local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
+local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
 
 local FEATURES = {
   FEATURE_UPGRADES,
