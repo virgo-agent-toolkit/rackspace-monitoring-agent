@@ -129,7 +129,7 @@ function Agent:connect(callback)
     if upgradeStr == 'false' or upgradeStr == 'disabled' then
       self._upgradesEnabled = false
       for i, v in ipairs(self._features) do
-        if v == FEATURE_UPGRADES then
+        if v.name == FEATURE_UPGRADES.name then
           table.remove(self._features, i)
           break
         end
