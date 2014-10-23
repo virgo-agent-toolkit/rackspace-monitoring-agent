@@ -34,6 +34,7 @@ local Error = require('core').Error
 
 local merge = require('/base/util/misc').merge
 local fmt = require('string').format
+local table = require('table')
 local asserts = require('bourbon').asserts
 
 local check_classes = {
@@ -113,6 +114,24 @@ local function targets(checkType, callback)
   end
 end
 
+-- Plugin List
+local function getPluginList(callback)
+  readdir(constants:get('DEFAULT_CUSTOM_PLUGINS_PATH'), function(err, files)
+    if err then
+      callback(err)
+      return
+    end
+    local i, x
+    for i, x in ipairs(files) do
+      if x == '.' or x == '..' then
+        table.remove(files, i)
+      end
+    end
+    callback(nil, files)
+  end)
+end
+
+
 local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
@@ -122,4 +141,5 @@ exports = merge(exports, check_classes)
 exports.create = create
 exports.test = test
 exports.targets = targets
+exports.getPluginList = getPluginList
 return exports

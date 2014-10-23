@@ -38,6 +38,13 @@ function VirgoProtocolConnection:_bindHandlers()
     self:_send(m, callback)
   end
 
+  self._responses['plugin_list.get'] = function(self, request, callback)
+    check.getPluginList(function (err, list)
+      local m = msg.PluginListResponse:new(request, err, list)
+      self:_send(m, callback)
+    end)
+  end
+
   self._responses['host_info_types.get'] = function(self, request, callback)
     local types = hostInfo.getTypes()
     local m = msg.HostInfoTypesResponse:new(request, types)
