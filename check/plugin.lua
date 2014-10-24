@@ -41,12 +41,14 @@ metric <name 3> <type> <value> [<unit>]
 --]]
 
 local table = require('table')
+local os = require('os')
+local bit = require('bit')
 local childprocess = require('childprocess')
 local timer = require('timer')
 local path = require('path')
 local string = require('string')
 local fmt = string.format
-local readdir = require('fs').readdir
+local fs = require('fs')
 
 local logging = require('logging')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -64,6 +66,8 @@ local windowsConvertCmd = require('virgo_utils').windowsConvertCmd
 local toString = require('/base/util/misc').toString
 
 local PluginCheck = ChildCheck:extend()
+
+local targetLogger = loggingUtil.makeLogger('(plugin targets)')
 
 --[[
 
@@ -98,15 +102,51 @@ function PluginCheck:getType()
   return 'agent.plugin'
 end
 
+function filterTarget(parent, file)
+  local ok, stats, filepath
+  filepath = path.join(parent, file)
+  ok, stats = pcall(fs.statSync, filepath)
+  if not ok then
+    targetLogger(logging.WARNING, fmt('failed to stat plugin, %s', filepath))
+    return true
+  end
+
+  if not stats.is_file then
+    return true
+  end
+
+  if os.type() ~= 'win32' then
+    local executable = bit.bor(
+      bit.band(stats.mode, tonumber(1, 8)),
+      bit.band(stats.mode, tonumber(10, 8)),
+      bit.band(stats.mode, tonumber(100, 8))
+    )
+
+    if executable == 0 then
+      return true
+    end
+  end
+
+  return false
+end
+
 function PluginCheck:getTargets(callback)
-  readdir(constants:get('DEFAULT_CUSTOM_PLUGINS_PATH'), function(err, files)
+  local path = constants:get('DEFAULT_CUSTOM_PLUGINS_PATH')
+  fs.readdir(path, function(err, files)
     if err then
-      callback(err, {})
+      local msg
+      if err.code == 'ENOENT' then
+        msg = fmt('Plugin Directory, %s, does not exist', path)
+      else
+        msg = fmt('Error Reading Directory, %s', path, err.message)
+      end
+      targetLogger(logging.WARNING, msg)
+      callback(err, {msg})
       return
     end
-    local i, x
-    for i, x in ipairs(files) do
-      if x == '.' or x == '..' then
+    local i
+    for i = #files, 1, -1 do
+      if filterTarget(path, files[i]) then
         table.remove(files, i)
       end
     end
