@@ -47,6 +47,11 @@ local path = require('path')
 local string = require('string')
 local fmt = string.format
 local readdir = require('fs').readdir
+local stat = require('fs').stat
+local bit = require('bit')
+local os = require('os')
+
+local async = require('async')
 
 local logging = require('logging')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -64,6 +69,12 @@ local windowsConvertCmd = require('virgo_utils').windowsConvertCmd
 local toString = require('/base/util/misc').toString
 
 local PluginCheck = ChildCheck:extend()
+
+
+local octal = function(s)
+  return tonumber(s, 8)
+end
+
 
 --[[
 
@@ -99,18 +110,53 @@ function PluginCheck:getType()
 end
 
 function PluginCheck:getTargets(callback)
-  readdir(constants:get('DEFAULT_CUSTOM_PLUGINS_PATH'), function(err, files)
-    if err then
-      callback(err, {})
-      return
-    end
-    local i, x
-    for i, x in ipairs(files) do
-      if x == '.' or x == '..' then
-        table.remove(files, i)
+  local targets = {}
+  local root = constants:get('DEFAULT_CUSTOM_PLUGINS_PATH')
+
+  local function executeCheck(file, callback)
+    stat(path.join(root, file), function(err, s)
+      if err then
+        return callback()
       end
+
+      if not s.is_file or not s.mode then
+        return callback()
+      end
+
+      if os.type() == 'win32' then
+        table.insert(targets, file)
+      else
+        local executable = bit.bor(
+        bit.band(s.mode, octal(1)),
+        bit.band(s.mode, octal(10)),
+        bit.band(s.mode, octal(100))
+        )
+        if executable ~= 0 then
+          table.insert(targets, file)
+        end
+      end
+
+      callback()
+    end)
+  end
+
+--  readdir(, function(err, files)
+  readdir(root, function(err, files)
+    if err then
+      local msg
+
+      if err.code == 'ENOENT' then
+        msg = fmt('Plugin Directory, %s, does not exist', root)
+      else
+        msg = fmt('Error Reading Directory, %s', root, err.message)
+      end
+
+      return callback(err, { msg })
     end
-    callback(nil, files)
+
+    async.forEachLimit(files, 5, executeCheck, function(err)
+      callback(err, targets)
+    end)
   end)
 end
 
