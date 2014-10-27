@@ -1,3 +1,12 @@
+## rackspace-monitoring-agent-1.1.0-5
+
+- Targets for agent.plugins
+	- Returns the list of plugins
+- Memory leak fix in FS_CALL
+- Config: Fix for custom endpoints
+- Windows: Fix for powershell parameter expansion
+- Initial upgrade support
+
 ## rackspace-monitoring-agent-1.0.2-1
 
 - Host info for Waldo 
