@@ -206,6 +206,7 @@
 ./static/tests/system_info.network_interfaces.request.json
 ./static/tests/upgrade/0001.sh
 ./static/tests/upgrade/test.msi
+./tests/agent/init.lua
 ./tests/agent-protocol/init.lua
 ./tests/check/apache.lua
 ./tests/check/dbaas.lua

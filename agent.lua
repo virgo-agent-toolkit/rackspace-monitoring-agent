@@ -56,8 +56,8 @@ function Agent:initialize(options, types)
   end
   logging.debug('Using state directory ' .. options.stateDirectory)
   self._stateDirectory = options.stateDirectory
-  self._config = virgo.config
   self._options = options
+  self._config = options.config or virgo.config
   self._upgradesEnabled = true
   self._types = types or {}
   self._confd = Confd:new(options.confdDir, options.stateDirectory)
