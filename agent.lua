@@ -56,8 +56,8 @@ function Agent:initialize(options, types)
   end
   logging.debug('Using state directory ' .. options.stateDirectory)
   self._stateDirectory = options.stateDirectory
-  self._config = virgo.config
   self._options = options
+  self._config = options.config or virgo.config
   self._upgradesEnabled = true
   self._types = types or {}
   self._confd = Confd:new(options.confdDir, options.stateDirectory)
@@ -303,14 +303,8 @@ function Agent:loadEndpoints(callback)
     callback(nil, endpoints)
   end
 
-  -- default to SRV lookup if endpoints and queries are not overwritten
-  if not endpoints and not queries then
-    queries = table.concat(endpoint.getEndpointSRV(), ',')
-  end
-
   if not (snetregion or endpoints or queries) then
-    logging.errorf("Invalid configuration: one (and only one) of snet_region, queries, and endpoints need to be set.")
-    process.exit(1)
+    queries = table.concat(endpoint.getEndpointSRV(), ',')
   end
 
   if (snetregion and queries) or (snetregion and endpoints) or (queries and endpoints) then
