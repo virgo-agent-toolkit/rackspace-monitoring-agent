@@ -109,7 +109,7 @@ exports['test_load_endpoints'] = function(test, asserts)
       end)
     end,
     function(callback)
-      -- Add failure case with no selections
+      -- Add nil case with no selections
       --   This is the default use case
       local options = {
         ['config'] = {
