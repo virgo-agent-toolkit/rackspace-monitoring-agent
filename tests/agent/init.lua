@@ -102,9 +102,28 @@ exports['test_load_endpoints'] = function(test, asserts)
       ag:loadEndpoints(function(err, endpoints)
         asserts.ok(err == nil)
         asserts.ok(#endpoints == 3)
-        p(endpoints)
         for i, _ in ipairs(endpoints) do
           asserts.ok(endpoints[i]['srv_query']:find('srv'..i) ~= nil)
+        end
+        callback()
+      end)
+    end,
+    function(callback)
+      -- Add failure case with no selections
+      --   This is the default use case
+      local options = {
+        ['config'] = {
+          ['query_endpoints'] = nil,
+          ['endpoints'] = nil,
+          ['snet_region'] = nil
+        }
+      }
+      local ag = Agent:new(options)
+      ag:loadEndpoints(function(err, endpoints)
+        asserts.ok(err == nil)
+        asserts.ok(#endpoints == 3)
+        for i, _ in ipairs(endpoints) do
+          asserts.ok(endpoints[i]['srv_query'])
         end
         callback()
       end)
