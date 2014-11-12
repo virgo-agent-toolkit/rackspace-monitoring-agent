@@ -41,13 +41,16 @@ local ConnectionStream = require('/base/client/connection_stream').ConnectionStr
 local CrashReporter = require('/crashreport').CrashReporter
 local Agent = Emitter:extend()
 local Confd = require('confd')
+local Entity = require('entity')
 
 local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
 local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
+local FEATURES_ENTITY_HINT = { name = 'entity_hint', version = '1.0.0', net_info = Entity.getNetInfo() }
 
 local FEATURES = {
   FEATURE_UPGRADES,
-  FEATURE_CONFD
+  FEATURE_CONFD,
+  FEATURES_ENTITY_HINT
 }
 
 function Agent:initialize(options, types)

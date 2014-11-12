@@ -16,7 +16,6 @@ limitations under the License.
 local HostInfo = require('./base').HostInfo
 
 local sigarCtx = require('/sigar').ctx
-local sigarutil = require('/base/util/sigar')
 
 local table = require('table')
 
