@@ -16,6 +16,7 @@ limitations under the License.
 local HostInfo = require('./base').HostInfo
 
 local forEachLimit = require('async').forEachLimit
+local fs = require('fs')
 local os = require('os')
 local spawn = require('childprocess').spawn
 local table = require('table')
@@ -86,20 +87,14 @@ function Info:run(callback)
     end)
   end
 
-  local passwd
   local users = {}
   local data = ''
-  --[[ Probably should replace this with reading the file. ]]
-  local passwd = spawn('cat', {'/etc/passwd'}, {})
 
-  passwd.stdout:on('data', function(chunk)
-    data = data .. chunk
-  end)
-
-  passwd:on('exit', function(exit_code)
-    if exit_code ~= 0 then
-      return
-    end
+  filename = '/etc/passwd'
+  fs.readFile(filename, function (err, data)
+      if (err) then
+          return
+      end
 
     local line
     for line in data:gmatch("[^\r\n]+") do
