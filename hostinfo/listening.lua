@@ -21,7 +21,7 @@ local table = require('table')
 local os = require('os')
 local spawn = require('childprocess').spawn
 
---[[ Sysctl Variables ]]--
+--[[ Listening Variables ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
@@ -69,6 +69,9 @@ function Info:run(callback)
       callback()
       return
     end
+  end)
+
+  child.stdout:on('end', function()
     local line
     local count = 0
     for line in data:gmatch("[^\r\n]+") do

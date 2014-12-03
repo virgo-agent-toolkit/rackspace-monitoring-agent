@@ -47,6 +47,9 @@ function Info:run(callback)
       callback()
       return
     end
+  end)
+
+  child.stdout:on('end', function()
     local line
     for line in data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
