@@ -103,6 +103,7 @@
 ./hostinfo/init.lua
 ./hostinfo/iptables.lua
 ./hostinfo/listening.lua
+./hostinfo/login.lua
 ./hostinfo/memory.lua
 ./hostinfo/network.lua
 ./hostinfo/nil.lua
