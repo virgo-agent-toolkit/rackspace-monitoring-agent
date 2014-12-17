@@ -21,6 +21,7 @@ return {
   require('./memory'),
   require('./network'),
   require('./nil'),
+  require('./passwdstatus'),
   require('./procs'),
   require('./system'),
   require('./who'),
