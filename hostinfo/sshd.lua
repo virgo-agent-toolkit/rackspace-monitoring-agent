@@ -21,20 +21,20 @@ local table = require('table')
 local os = require('os')
 local spawn = require('childprocess').spawn
 
---[[ Sysctl Variables ]]--
+--[[ SSHd Variables ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
 end
 
 function Info:run(callback)
-  if os.type() ~= 'Linux' then
-    self._error = 'Unsupported OS for sysctl'
+  if os.type() ~= 'Linux' and os.type() ~= 'Darwin' then
+    self._error = 'Unsupported OS for SSHd'
     callback()
     return
   end
 
-  local child = spawn('sysctl', {'-A'}, {})
+  local child = spawn('sshd', {'-T'}, {})
   local data = ''
 
   child.stdout:on('data', function(chunk)
@@ -43,7 +43,7 @@ function Info:run(callback)
 
   child:on('exit', function(exit_code)
     if exit_code ~= 0 then
-      self._error = fmt("sysctl exited with a %d exit_code", exitcode)
+      self._error = fmt("sshd exited with a %d exit_code", exit_code)
       callback()
       return
     end
@@ -53,7 +53,7 @@ function Info:run(callback)
     local line
     for line in data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
-      local a, b, key, value = line:find("([^=^%s]+)%s*=%s*([^=]*)")
+      local a, b, key, value = line:find("(.*)%s(.*)")
       if key ~= nil then
         local obj = {}
         obj[key] = value
@@ -70,7 +70,7 @@ function Info:run(callback)
 end
 
 function Info:getType()
-  return 'SYSCTL'
+  return 'SSHD'
 end
 
 return Info

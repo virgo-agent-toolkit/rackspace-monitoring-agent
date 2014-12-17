@@ -15,13 +15,21 @@ limitations under the License.
 --]]
 
 return {
+  require('./autoupdates'),
   require('./cpu'),
   require('./disk'),
   require('./filesystem'),
+  require('./filepermissions'),
+  require('./iptables'),
+  require('./listening'),
+  require('./login'),
   require('./memory'),
   require('./network'),
   require('./nil'),
+  require('./packages'),
+  require('./passwdstatus'),
   require('./procs'),
+  require('./sshd'),
   require('./system'),
   require('./who'),
   require('./date'),

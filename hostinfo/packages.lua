@@ -15,13 +15,13 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local string = require('string')
 local fmt = require('string').format
-local table = require('table')
 local os = require('os')
+local sctx = require('../sigar').ctx
 local spawn = require('childprocess').spawn
+local table = require('table')
 
---[[ Sysctl Variables ]]--
+--[[ Packages Variables ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
@@ -29,12 +29,28 @@ end
 
 function Info:run(callback)
   if os.type() ~= 'Linux' then
-    self._error = 'Unsupported OS for sysctl'
+    self._error = 'Unsupported OS for Packages'
     callback()
     return
   end
 
-  local child = spawn('sysctl', {'-A'}, {})
+  local sysinfo = sctx:sysinfo()
+  local package_cmd = ''
+  local child = ''
+  local vendor = sysinfo.vendor:lower()
+
+  if vendor == 'ubuntu' or vendor == 'debian' then
+    package_cmd = 'dpkg-query'
+    child = spawn('dpkg-query', {'-W'}, {})
+  elseif vendor == 'rhel' or vendor == 'centos' then
+    package_cmd = 'rpm'
+    child = spawn('rpm', {"-qa", '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n'}, {})
+  else
+    self._error = 'Could not determine OS for Packages'
+    callback()
+    return
+  end
+
   local data = ''
 
   child.stdout:on('data', function(chunk)
@@ -43,17 +59,14 @@ function Info:run(callback)
 
   child:on('exit', function(exit_code)
     if exit_code ~= 0 then
-      self._error = fmt("sysctl exited with a %d exit_code", exitcode)
+      self._error = fmt("Packages exited with a %d exit_code", exit_code)
       callback()
       return
     end
-  end)
-
-  child.stdout:on('end', function()
     local line
     for line in data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
-      local a, b, key, value = line:find("([^=^%s]+)%s*=%s*([^=]*)")
+      local a, b, key, value = line:find("(.*)%s(.*)")
       if key ~= nil then
         local obj = {}
         obj[key] = value
@@ -70,7 +83,7 @@ function Info:run(callback)
 end
 
 function Info:getType()
-  return 'SYSCTL'
+  return 'PACKAGES'
 end
 
 return Info

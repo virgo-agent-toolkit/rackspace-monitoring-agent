@@ -15,62 +15,67 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
+local fs = require('fs');
 local string = require('string')
-local fmt = require('string').format
 local table = require('table')
 local os = require('os')
-local spawn = require('childprocess').spawn
 
---[[ Sysctl Variables ]]--
+--[[ Login ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
 end
 
 function Info:run(callback)
+  
   if os.type() ~= 'Linux' then
-    self._error = 'Unsupported OS for sysctl'
+    self._error = 'Unsupported OS for Login Definitions'
     callback()
     return
   end
-
-  local child = spawn('sysctl', {'-A'}, {})
-  local data = ''
-
-  child.stdout:on('data', function(chunk)
-    data = data .. chunk
-  end)
-
-  child:on('exit', function(exit_code)
-    if exit_code ~= 0 then
-      self._error = fmt("sysctl exited with a %d exit_code", exitcode)
-      callback()
+  
+  local obj = {}
+  local filename = "/etc/login.defs"
+    
+  obj['login.defs'] = {}
+  
+  -- open /etc/login.defs
+  fs.readFile(filename, function (err, data)
+    if (err) then
       return
     end
-  end)
 
-  child.stdout:on('end', function()
-    local line
+    -- split and assign key/values
     for line in data:gmatch("[^\r\n]+") do
-      line = line:gsub("^%s*(.-)%s*$", "%1")
-      local a, b, key, value = line:find("([^=^%s]+)%s*=%s*([^=]*)")
-      if key ~= nil then
-        local obj = {}
-        obj[key] = value
-        table.insert(self._params, obj)
+      local iscomment = string.match(line, '^#')
+      local isblank = string.len(line:gsub("%s+", "")) <= 0
+
+      -- find defs
+      if not iscomment and not isblank then
+        local items = {}
+        local i = 0
+        
+        -- split and assign key/values
+        for item in line:gmatch("%S+") do
+          i = i + 1
+          items[i] = item;
+        end
+        
+        local key = items[1]
+        local value = items[2]
+
+        -- add def
+        obj['login.defs'][key] = value
       end
     end
-    callback()
-  end)
-
-  child:on('error', function(err)
-    self._error = err
+    
+    table.insert(self._params, obj)
     callback()
   end)
 end
 
 function Info:getType()
-  return 'SYSCTL'
+  return 'LOGIN'
 end
 
 return Info
