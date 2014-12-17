@@ -17,6 +17,7 @@ limitations under the License.
 return {
   require('./cpu'),
   require('./disk'),
+  require('./filepermissions'),
   require('./filesystem'),
   require('./memory'),
   require('./network'),
