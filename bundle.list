@@ -94,6 +94,7 @@
 ./lib/agent.lua
 ./hostinfo_runner.lua
 ./hostinfo/all.lua
+./hostinfo/autoupdates.lua
 ./hostinfo/base.lua
 ./hostinfo/cpu.lua
 ./hostinfo/disk.lua
