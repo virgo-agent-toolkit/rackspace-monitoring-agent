@@ -99,6 +99,7 @@
 ./hostinfo/disk.lua
 ./hostinfo/filesystem.lua
 ./hostinfo/init.lua
+./hostinfo/login.lua
 ./hostinfo/memory.lua
 ./hostinfo/network.lua
 ./hostinfo/nil.lua

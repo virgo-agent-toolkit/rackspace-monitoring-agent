@@ -18,6 +18,7 @@ return {
   require('./cpu'),
   require('./disk'),
   require('./filesystem'),
+  require('./login'),
   require('./memory'),
   require('./network'),
   require('./nil'),
