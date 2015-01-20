@@ -431,6 +431,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   callback = fireOnce(callback)
 
   self._log(logging.DEBUG, fmt("%s: starting process", exePath))
+  self:_resetLines()
 
   local child = childprocess.spawn(exePath,
                                    exeArgs,
