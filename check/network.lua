@@ -15,6 +15,9 @@ limitations under the License.
 --]]
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
+local fs = require('fs')
+local os = require('os')
+local misc = require('/base/util/misc')
 
 local table = require('table')
 local units = {
@@ -30,7 +33,8 @@ local units = {
   tx_dropped = 'packets',
   tx_errors = 'errors',
   tx_overruns = 'overruns',
-  tx_packets = 'packets'
+  tx_packets = 'packets',
+  link_state = 'link_state'
 }
 
 local NetworkCheck = BaseCheck:extend()
@@ -87,9 +91,36 @@ function NetworkCheck:run(callback)
     end
   end
 
-  -- Return Result
-  self._lastResult = checkResult
-  callback(checkResult)
+  -- Get link state
+  self:getLinkState(function(linkState)
+    checkResult:addMetric('link_state', nil, 'string', linkState, units['link_state'])
+    -- Return Result
+    self._lastResult = checkResult
+    callback(checkResult)
+  end)
+end
+
+function NetworkCheck:getLinkState(callback)
+  local linkState = 'unknown'
+  local cfname = '/sys/class/net/' .. self.interface_name .. '/carrier'
+
+  -- Linux
+  if os.type() == 'Linux' then
+    fs.readFile(cfname, function(err, cstate)
+      if not err then
+        local tcstate = misc.trim(cstate)
+        if tcstate == '1' then
+          linkState = 'up'
+        elseif tcstate == '0' then
+          linkState = 'down'
+        end
+      end
+      callback(linkState)
+    end)
+  -- Other OSes (for now)
+  else
+    callback(linkState)
+  end
 end
 
 local exports = {}
