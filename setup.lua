@@ -383,7 +383,7 @@ function Setup:run(callback)
           local function entitySelection()
             self:_out('Please select the Entity that corresponds to this server:')
             displayEntities()
-            self:_out(fmt('  %i. Create a new Entity for this server (not supported by Rackspace Cloud Control Panel)', #localEntities + 1))
+            self:_out(fmt('  %i. Create a new Entity for this server (Entities can be viewed within Rackspace Intelligence - https://intelligence.rackspace.com)', #localEntities + 1))
             self:_out(fmt('  %i. Do not associate with an Entity', #localEntities + 2))
             self:_out('')
 
@@ -395,23 +395,15 @@ function Setup:run(callback)
 
               local validatedIndex = tonumber(index)
               if validatedIndex == #localEntities + 1 then
-                ask('Creating an entity does not work with the Rackspace Cloud Control Panel. Really create an entity? (yes/no)', function(err, resp)
+                client.entities.create(self:_buildLocalEntity(agentId), function(err, entity)
                   if err then
-                    return callback(err)
+                    callback(err)
+                    return
                   end
-                  if resp:lower() ~= 'y' and resp:lower() ~= 'yes' then
-                    return entitySelection()
-                  end
-                  client.entities.create(self:_buildLocalEntity(agentId), function(err, entity)
-                    if err then
-                      callback(err)
-                      return
-                    end
-                    self:_out('')
-                    self:_out(fmt('New Entity Created: %s', entity))
-                    callback(nil, entity)
-                  end)
-                end);
+                  self:_out('')
+                  self:_out(fmt('New Entity Created: %s', entity))
+                  callback(nil, entity)
+                end)
               elseif validatedIndex == #localEntities + 2 then
                 callback()
               elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
