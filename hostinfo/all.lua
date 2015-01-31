@@ -26,5 +26,6 @@ return {
   require('./system'),
   require('./who'),
   require('./date'),
-  require('./sysctl')
+  require('./sysctl'),
+  require('./sshd')
 }
