@@ -33,7 +33,7 @@ function Info:run(callback)
     local line
     self._error = err
 
-    p({err=err, exitcode=exitcode, stdout=stdout_data, stderr=stderr_data})
+    --p({err=err, exitcode=exitcode, stdout=stdout_data, stderr=stderr_data})
 
     for line in stdout_data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
@@ -44,11 +44,12 @@ function Info:run(callback)
         table.insert(self._params, obj)
       end
     end
+    callback()
   end
 
-  command = 'sshd'
-  args = {'-z'}
-  options = {}
+  local command = 'sshd'
+  local args = {'-T'}
+  local options = {}
 
   execFileToBuffers(command, args, options, execCb)
 
