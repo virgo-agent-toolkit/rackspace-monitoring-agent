@@ -468,6 +468,7 @@ function MySQLCheck:_runCheckInChild(callback)
        end
      end
   end
+  clib.mysql_close(conn)
   -- Issue callback here for any errors/metrics in the query methods above
   callback(cr)
 end
