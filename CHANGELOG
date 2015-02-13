@@ -1,3 +1,38 @@
+## rackspace-monitoring-agent-1.1.0-41
+
+- Close the mysql connection gracefully
+
+## rackspace-monitoring-agent-1.1.0-34
+
+- An OpenSSL bump to 1.0.1L
+
+## rackspace-monitoring-agent-1.1.0-31
+
+- A fix for automatic upgrade logging post update
+
+## rackspace-monitoring-agent-1.1.0-30
+
+- A new metric on Linux whether a networking link is up/down
+- Fix for automatic upgrades
+
+## rackspace-monitoring-agent-1.1.0-27
+
+# Luvit memory leak fix
+
+## rackspace-monitoring-agent-1.1.0-18
+
+- This is a minor release to the monitoring agent with a fix for a connection
+memory leak and Fedora 21 support.
+
+## rackspace-monitoring-agent-1.1.0-15
+
+- Memory fix within luvit
+
+## rackspace-monitoring-agent-1.1.0-14
+
+- Correct behavior for configuring properties with service net
+- Fix log rotation permissions for Redhat based systems
+
 ## rackspace-monitoring-agent-1.1.0-5
 
 - Targets for agent.plugins
