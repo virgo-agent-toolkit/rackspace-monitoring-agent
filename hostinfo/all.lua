@@ -23,6 +23,7 @@ return {
   require('./network'),
   require('./nil'),
   require('./procs'),
+  require('./sshd'),
   require('./system'),
   require('./who'),
   require('./date'),

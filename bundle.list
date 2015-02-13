@@ -104,6 +104,7 @@
 ./hostinfo/network.lua
 ./hostinfo/nil.lua
 ./hostinfo/procs.lua
+./hostinfo/sshd.lua
 ./hostinfo/system.lua
 ./hostinfo/who.lua
 ./hostinfo/date.lua
