@@ -108,6 +108,8 @@
 ./hostinfo/who.lua
 ./hostinfo/date.lua
 ./hostinfo/sysctl.lua
+./hostinfo/misc.lua
+./hostinfo/sshd.lua
 ./lua_modules/bourbon/init.lua
 ./lua_modules/bourbon/lib/asserts.lua
 ./lua_modules/bourbon/lib/context.lua
