@@ -22,13 +22,12 @@ local async = require('async')
 
 local string = require('string')
 
-local fixtures = require('/tests/fixtures')
-local Check = require('/check')
-local Metric = require('/check/base').Metric
-local constants = require('/constants')
-local merge = require('/base/util/misc').merge
-local msg = require ('/base/protocol/messages')
-local virgoMsg = require('/protocol/virgo_messages')
+local fixtures = require('../fixtures')
+local Check = require('../../lib/check')
+local Metric = require('../../lib/check/base').Metric
+local constants = require('../../lib/constants')
+local merge = require('virgo/lib/util/misc').merge
+local virgoMsg = require('virgo/lib/protocol/virgo_messages')
 
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult
@@ -38,7 +37,6 @@ local DiskCheck = Check.DiskCheck
 local MemoryCheck = Check.MemoryCheck
 local NetworkCheck = Check.NetworkCheck
 local PluginCheck = Check.PluginCheck
-local LoadAverageCheck = Check.LoadAverageCheck
 
 local MySQLTests = require('./mysql')
 local ApacheTests = require('./apache')

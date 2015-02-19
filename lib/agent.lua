@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,151 +13,396 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-
-local MonitoringAgent = require('../agent').Agent
-local Setup = require('../setup').Setup
-local agentClient = require('/client/virgo_client')
-local async = require('async')
-local connectionStream = require('/client/virgo_connection_stream')
-local constants = require('/constants')
-local core = require('core')
-local debugger = require('virgo_debugger')
-local debugm = require('debug')
+local JSON = require('json')
+local timer = require('timer')
+local fs = require('fs')
+local los = require('los')
+local path = require('path')
+local table = require('table')
 local fmt = require('string').format
+local Emitter = require('core').Emitter
+
+local async = require('async')
+local sigarCtx = require('./sigar').ctx
+
+local MachineIdentity = require('virgo/lib/machineidentity').MachineIdentity
+local constants = require('./constants')
+local misc = require('virgo/lib/util/misc')
+local fsutil = require('virgo/lib/util/fs')
+local UUID = require('virgo/lib/util/uuid')
 local logging = require('logging')
-local protocolConnection = require('/protocol/virgo_connection')
-local upgrade = require('/base/client/upgrade')
-local vutils = require('virgo_utils')
-local os = require('os')
+local endpoint = require('./endpoint')
+local deepCopyTable = require('virgo/lib/util/misc').deepCopyTable
+local ConnectionStream = require('virgo/lib/client/connection_stream').ConnectionStream
+local CrashReporter = require('./crashreport').CrashReporter
+local Confd = require('./confd')
 
-local argv = require("options")
-  .usage('Usage: ')
-  .describe("i", "use insecure tls cert")
-  .describe("i", "insecure")
-  .describe("e", "entry module")
-  .describe("x", "runner params (eg. check or hostinfo to run)")
-  .describe("s", "state directory path")
-  .describe("c", "config file path")
-  .describe("j", "object conf.d path")
-  .describe("p", "pid file path")
-  .describe("o", "skip automatic upgrade")
-  .describe("d", "enable debug logging")
-  .alias({['o'] = 'no-upgrade'})
-  .alias({['p'] = 'pidfile'})
-  .alias({['j'] = 'confd'})
-  .alias({['d'] = 'debug'})
-  .describe("u", "setup")
-  .alias({['u'] = 'setup'})
-  .describe("U", "username")
-  .alias({['U'] = 'username'})
-  .describe("K", "apikey")
-  .alias({['K'] = 'apikey'})
-  .argv("idonhU:K:e:x:p:c:j:s:n:k:u")
+local Agent = Emitter:extend()
 
-local Agent = core.Object:extend()
+local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
+local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
 
-function Agent.run()
-  virgo_crash.init(vutils.getCrashPath())
+local FEATURES = {
+  FEATURE_UPGRADES,
+  FEATURE_CONFD
+}
 
-  if argv.args.d then
-    logging.set_level(logging.EVERYTHING)
-  else
-    logging.set_level(logging.INFO)
+function Agent:initialize(options, types)
+  if not options.stateDirectory then
+    options.stateDirectory = constants:get('DEFAULT_STATE_PATH')
   end
+  logging.debug('Using state directory ' .. options.stateDirectory)
+  self._stateDirectory = options.stateDirectory
+  self._options = options
+  self._config = options.config
+  self._upgradesEnabled = true
+  self._types = types or {}
+  self._confd = Confd:new(options.confdDir, options.stateDirectory)
+  self._features = deepCopyTable(FEATURES)
+end
 
-  if argv.args.crash then
-    return virgo.force_crash()
-  end
-
-  local options = {}
-
-  if argv.args.s then
-    options.stateDirectory = argv.args.s
-  end
-
-  if argv.args.j then
-    options.confdDir = argv.args.j
-  end
-
-  options.configFile = argv.args.c or constants:get('DEFAULT_CONFIG_PATH')
-
-  if argv.args.p then
-    options.pidFile = argv.args.p
-  end
-
-  if argv.args.e then
-    local mod = require(argv.args.e)
-    return mod.run(argv.args)
-  end
-
-  local types = {}
-  types.ProtocolConnection = protocolConnection
-  types.AgentClient = agentClient
-  types.ConnectionStream = connectionStream
-
-  virgo.config = virgo.config or {}
-  virgo.config['endpoints'] = virgo.config['monitoring_endpoints']
-  virgo.config['upgrade'] = virgo.config['monitoring_upgrade']
-  virgo.config['id'] = virgo.config['monitoring_id']
-  virgo.config['token'] = virgo.config['monitoring_token']
-  virgo.config['guid'] = virgo.config['monitoring_guid']
-  virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
-  virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
-  virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
-  virgo.config['insecure'] = virgo.config['monitoring_insecure']
-  virgo.config['debug'] = virgo.config['monitoring_debug']
-
-  if argv.args.d or virgo.config['debug'] == 'true' then
-    logging.set_level(logging.EVERYTHING)
-  else
-    logging.set_level(logging.INFO)
-  end
-
-  if argv.args.i or virgo.config['insecure'] == 'true' then
-    options.tls = {
-      rejectUnauthorized = false,
-      ca = require('/certs').caCertsDebug
-    }
-  end
-
-  options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
-  if virgo.config['proxy'] then
-    options.proxy = virgo.config['proxy']
-  end
-
-  options.upgrades_enabled = true
-  if argv.args.o or virgo.config['upgrade'] == 'disabled' then
-    options.upgrades_enabled = false
+function Agent:start(options)
+  if self:getConfig() == nil then
+    logging.error("config missing or invalid")
+    process:exit(1)
   end
 
   async.series({
     function(callback)
-      if os.type() ~= 'win32' then
-        local opts = {}
-        opts.skip = (options.upgrades_enabled == false)
-        upgrade.attempt(opts, function(err)
+      self:_preConfig(callback)
+    end,
+    function(callback)
+      self:loadEndpoints(callback)
+    end,
+    function(callback)
+      local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
+      local endpoints = self._config['endpoints']
+      local reporter = CrashReporter:new(virgo.virgo_version, virgo.bundle_version, virgo.platform, dump_dir, endpoints)
+      reporter:submit(function(err)
+        if err then
+          logging.info(fmt('CrashReporter done with errors: %s', tostring(err)))
+        else
+          logging.info('CrashReporter done without errors')
+        end
+      end)
+      callback()
+    end,
+    function(callback)
+      if los.type() == 'win32' then
+        return callback()
+      end
+      if not options.pidFile then
+        options.pidFile = constants:get('DEFAULT_PID_FILE_PATH')
+      end
+      --err, msg = virgo.write_pid(options.pidFile)
+      --if err then
+      --  pcall(function()
+      --    local pid = fs.readFileSync(options.pidFile)
+      --    logging.error(fmt('Agent in use (pid: %d, path: %s)', pid, options.pidFile))
+      --    process:exit(3)
+      --  end)
+      --end
+      callback()
+    end,
+    function(callback)
+      self._confd:setup(callback)
+    end,
+    function(callback)
+      self:connect(callback)
+    end
+  },
+  function(err)
+    if err then
+      logging.error(err.message)
+    end
+  end)
+end
+
+function Agent:connect(callback)
+  local endpoints = self._config['endpoints']
+  local upgradeStr = self._config['upgrade']
+  if upgradeStr then
+    upgradeStr = upgradeStr:lower()
+    if upgradeStr == 'false' or upgradeStr == 'disabled' then
+      self._upgradesEnabled = false
+      for i, v in ipairs(self._features) do
+        if v.name == FEATURE_UPGRADES.name then
+          table.remove(self._features, i)
+          break
+        end
+      end
+    end
+  end
+
+  if #endpoints <= 0 then
+    logging.error('no endpoints')
+    timer.setTimeout(misc.calcJitter(constants:get('SRV_RECORD_FAILURE_DELAY'), constants:get('SRV_RECORD_FAILURE_DELAY_JITTER')), function()
+      process:exit(1)
+    end)
+    return
+  end
+
+  logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
+
+  local connectionStreamType = self._types.ConnectionStream or ConnectionStream
+  self._streams = connectionStreamType:new(self._config['id'],
+                                       self._config['token'],
+                                       self._config['guid'],
+                                       self._upgradesEnabled,
+                                       self._options,
+                                       self._types,
+                                       self._features)
+  self._streams:on('error', function(err)
+    logging.error(JSON.stringify(err))
+  end)
+  self._streams:on('upgrade.success', function()
+    local shutdownType = constants:get('SHUTDOWN_UPGRADE')
+    if virgo.restart_on_upgrade == 'true' then
+      shutdownType = constants:get('SHUTDOWN_RESTART')
+    end
+    self:_onShutdown(shutdownType)
+  end)
+  self._streams:on('promote', function(stream)
+    local conn = stream:getClient().protocol
+    local entity = stream:getEntityId()
+    self._confd:runOnce(conn, entity, function()
+      self:emit('promote')
+    end)
+  end)
+
+  self._streams:createConnections(endpoints, callback)
+end
+
+function Agent:_shutdown(msg, timeout, exit_code, shutdownType)
+  if shutdownType == constants:get('SHUTDOWN_RESTART') then
+    virgo.perform_restart_on_upgrade()
+  else
+    -- Sleep to keep from busy restarting on upstart/systemd/etc
+    timer.setTimeout(timeout, function()
+      if msg then
+        logging.info(msg)
+      end
+      process:exit(exit_code)
+    end)
+  end
+end
+
+function Agent:_onShutdown(shutdownType)
+  local sleep = 0
+  local timeout = 0
+  local exit_code = 0
+  local msg
+
+  -- Destroy Socket Streams
+  self._streams:shutdown()
+
+  if shutdownType == constants:get('SHUTDOWN_UPGRADE') then
+    msg = 'Shutting down agent due to upgrade'
+  elseif shutdownType == constants:get('SHUTDOWN_RATE_LIMIT') then
+    msg = 'Shutting down. The rate limit was exceeded for the ' ..
+    'agent API endpoint. Contact support if you need an increased rate limit.'
+    exit_code = constants:get('RATE_LIMIT_RETURN_CODE')
+    timeout = constants:get('RATE_LIMIT_SLEEP')
+  elseif shutdownType == constants:get('SHUTDOWN_RESTART') then
+    msg = 'Attempting to restart agent'
+  else
+    msg = fmt('Shutdown called for unknown type %s', shutdownType)
+  end
+
+  self:_shutdown(msg, timeout, exit_code, shutdownType)
+end
+
+function Agent:getStreams()
+  return self._streams
+end
+
+function Agent:disableUpgrades()
+  self._upgradesEnabled = false
+end
+
+function Agent:getConfig()
+  return self._config
+end
+
+function Agent:setConfig(config)
+  self._config = config
+end
+
+function Agent:_preConfig(callback)
+  if self._config['token'] == nil then
+    logging.error("'monitoring_token' is missing from 'config'")
+    process:exit(1)
+  end
+
+  -- Regen GUID
+  self._config['guid'] = self:_getSystemId()
+
+  async.series({
+    -- retrieve xen id
+    function(callback)
+      local monitoring_id = self._config['monitoring_id']
+      if monitoring_id then
+        logging.infof('Using config agent ID (id=%s)', monitoring_id)
+        self._config['id'] = monitoring_id
+        callback()
+      else
+        local machid = MachineIdentity:new(self._config)
+        machid:get(function(err, results)
           if err then
-            logging.log(logging.ERROR, fmt("Error upgrading: %s", tostring(err)))
+            logging.infof('Machine ID unobtainable, %s', err.message)
+          end
+          if not err and results and results.id then
+            logging.infof('Using detected agent ID (id=%s)', results.id)
+            self._config['id'] = results.id
+          else
+            logging.infof('Using hostname as agent ID (id=%s)', os.hostname())
+            self._config['id'] = os.hostname()
           end
           callback()
         end)
-      else
-        --on windows the upgrade occurs right after the download as an external process
-        callback()
       end
     end,
+    -- log
     function(callback)
-      local agent = MonitoringAgent:new(options, types)
-      if argv.args.u then
-        Setup:new(argv, options.configFile, agent):run()
-      else
-        agent:start(options)
+      if self._config['id'] == nil then
+        logging.error("Agent ID not configured, and could not automatically detect an ID")
+        process:exit(1)
       end
+      logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
+                      self._config['id'],
+                      self._config['guid'],
+                      virgo.virgo_version,
+                      virgo.bundle_version)
       callback()
     end
-  })
+  }, callback)
 end
 
-return function(features)
-  return Agent:new()
+
+function Agent:loadEndpoints(callback)
+  local config = self._config
+  local queries = config['query_endpoints']
+  local snetregion = config['snet_region']
+  local endpoints = config['endpoints']
+
+  local function _callback(err, endpoints)
+    if err then return callback(err) end
+
+    for _, ep in pairs(endpoints) do
+      if not ep.srv_query then
+        if not ep.host or not ep.port then
+          logging.errorf("Invalid endpoint: %s, %s", ep.host or "", ep.port or  "")
+          process:exit(1)
+        end
+      end
+    end
+    config['endpoints'] = endpoints
+    callback(nil, endpoints)
+  end
+
+  if not (snetregion or endpoints or queries) then
+    queries = table.concat(endpoint.getEndpointSRV(), ',')
+  end
+
+  if (snetregion and queries) or (snetregion and endpoints) or (queries and endpoints) then
+    logging.errorf("Invalid configuration: only one of snet_region, queries, and endpoints can be set.")
+    process:exit(1)
+  end
+
+  if snetregion then
+    local domains = {}
+
+    local function matcher(v)
+      return v == snetregion
+    end
+
+    if not misc.tableContains(matcher, constants:get('VALID_SNET_REGION_NAMES')) then
+      logging.errorf("Invalid configuration: snet_region '%s' is not supported.", snetregion)
+      process:exit(1)
+    end
+
+    logging.info(fmt('Using ServiceNet endpoints in %s region', snetregion))
+
+    for _, address in ipairs(endpoint.getServiceNetSRV()) do
+      address = address:gsub('${region}', snetregion)
+      logging.debug(fmt('Endpoint SRV %s', address))
+      table.insert(domains, address)
+    end
+
+    return self:_queryForEndpoints(domains, _callback)
+  end
+
+  if queries then
+    local domains = misc.split(queries, '[^,]+')
+    return self:_queryForEndpoints(domains, _callback)
+  end
+
+  -- It's neither `snetregion` nor `queries`, has to be `endpoints`.
+
+  -- split address,address,address
+  endpoints = misc.split(endpoints, '[^,]+')
+
+  if #endpoints == 0 then
+    logging.error("at least one endpoint needs to be specified")
+    process:exit(1)
+  end
+
+  local new_endpoints = {}
+
+  for _, address in ipairs(endpoints) do
+    table.insert(new_endpoints, endpoint.Endpoint:new(address))
+  end
+
+  return _callback(nil, new_endpoints)
 end
+
+function Agent:_queryForEndpoints(domains, callback)
+  local _
+  local endpoints = {}
+  for _, domain in pairs(domains) do
+    local ep = endpoint.Endpoint:new(nil, nil, domain)
+    table.insert(endpoints, ep)
+  end
+  callback(nil, endpoints)
+end
+
+function Agent:_getSystemId()
+  --local netifs = sigarCtx:netifs()
+  --for i=1, #netifs do
+  --  local eth = netifs[i]:info()
+  --  if eth['type'] ~= 'Local Loopback' then
+  --    return UUID:new(eth.hwaddr):toString()
+  --  end
+  --end
+  return nil
+end
+
+function Agent:_getPersistentFilename(variable)
+  return path.join(constants:get('DEFAULT_PERSISTENT_VARIABLE_PATH'), variable .. '.txt')
+end
+
+function Agent:_savePersistentVariable(variable, data, callback)
+  local filename = self:_getPersistentFilename(variable)
+  fsutil.mkdirp(constants:get('DEFAULT_PERSISTENT_VARIABLE_PATH'), "0755", function(err)
+    if err and err.code ~= 'EEXIST' then
+      callback(err)
+      return
+    end
+    fs.writeFile(filename, data, function(err)
+      callback(err, filename)
+    end)
+  end)
+end
+
+function Agent:_getPersistentVariable(variable, callback)
+  local filename = self:_getPersistentFilename(variable)
+  fs.readFile(filename, function(err, data)
+    if err then
+      callback(err)
+      return
+    end
+    callback(nil, misc.trim(data))
+  end)
+end
+
+return { Agent = Agent }

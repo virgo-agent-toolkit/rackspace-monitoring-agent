@@ -1,6 +1,0 @@
-#!/usr/bin/env python
-
-import base.configure
-
-if __name__ == "__main__":
-    base.configure.main(bundle_list_file="bundle.list")

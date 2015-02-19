@@ -24,3 +24,6 @@ scheduler.state
 ._*
 rpmbuild/*
 tests/tmp
+rackspace-monitoring-agent
+lit*
+luvi
