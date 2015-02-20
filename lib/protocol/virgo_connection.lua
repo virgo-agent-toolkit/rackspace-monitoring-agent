@@ -3,7 +3,7 @@ local hostInfo = require('../hostinfo')
 local check = require('../check')
 local JSON = require('json')
 
-local AgentProtocolConnection = require('virgo/lib/protocol/connection')
+local AgentProtocolConnection = require('virgo/protocol/connection')
 
 local VirgoProtocolConnection = AgentProtocolConnection:extend()
 function VirgoProtocolConnection:initialize(log, myid, token, guid, conn)

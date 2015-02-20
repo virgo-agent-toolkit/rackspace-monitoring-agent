@@ -25,15 +25,15 @@ local Emitter = require('core').Emitter
 local async = require('async')
 local sigarCtx = require('./sigar').ctx
 
-local MachineIdentity = require('virgo/lib/machineidentity').MachineIdentity
+local MachineIdentity = require('virgo/machineidentity').MachineIdentity
 local constants = require('./constants')
-local misc = require('virgo/lib/util/misc')
-local fsutil = require('virgo/lib/util/fs')
-local UUID = require('virgo/lib/util/uuid')
+local misc = require('virgo/util/misc')
+local fsutil = require('virgo/util/fs')
+local UUID = require('virgo/util/uuid')
 local logging = require('logging')
 local endpoint = require('./endpoint')
-local deepCopyTable = require('virgo/lib/util/misc').deepCopyTable
-local ConnectionStream = require('virgo/lib/client/connection_stream').ConnectionStream
+local deepCopyTable = require('virgo/util/misc').deepCopyTable
+local ConnectionStream = require('virgo/client/connection_stream').ConnectionStream
 local CrashReporter = require('./crashreport').CrashReporter
 local Confd = require('./confd')
 

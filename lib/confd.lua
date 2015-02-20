@@ -14,16 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local Object = require('core').Object
-local fs = require('fs')
-local path = require('path')
-local logging = require('logging')
-local loggingUtil = require('virgo/lib/util/logging')
-local fmt = require('string').format
-local async = require('async')
-local table = require('table')
 local JSON = require('json')
-local misc = require('virgo/lib/util/misc')
+local Object = require('core').Object
+local async = require('async')
+local fmt = require('string').format
+local fs = require('fs')
+local logging = require('logging')
+local path = require('path')
+
+local loggingUtil = require('virgo/util/logging')
 
 local Confd = Object:extend()
 

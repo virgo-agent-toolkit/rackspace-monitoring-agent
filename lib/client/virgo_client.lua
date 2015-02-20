@@ -1,5 +1,5 @@
 local check = require('../check')
-local AgentClient = require('virgo/lib/client/client').AgentClient
+local AgentClient = require('virgo/client/client').AgentClient
 local logging = require('logging')
 local table = require('table')
 

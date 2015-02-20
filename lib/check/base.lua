@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local us  = require('virgo/lib/util/underscore')
+local us  = require('virgo/util/underscore')
 local Emitter = require('core').Emitter
 local JSON = require('json')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -26,23 +26,23 @@ local logging = require('logging')
 local os = require('os')
 local table = require('table')
 local timer = require('timer')
-local vutils = require('virgo/lib/utils')
+local vutils = require('virgo/utils')
 local utils = require('utils')
 local path = require('path')
 
 local async = require('async')
 
 local constants = require('../constants')
-local loggingUtil = require('virgo/lib/util/logging')
-local tableContains = require('virgo/lib/util/misc').tableContains
-local toString = require('virgo/lib/util/misc').toString
-local lastIndexOf = require('virgo/lib/util/misc').lastIndexOf
-local split = require('virgo/lib/util/misc').split
-local fireOnce = require('virgo/lib/util/misc').fireOnce
-local trim = require('virgo/lib/util/misc').trim
-local deepCopyTable = require('virgo/lib/util/misc').deepCopyTable
-local tableToString = require('virgo/lib/util/misc').tableToString
-local randstr = require('virgo/lib/util/misc').randstr
+local loggingUtil = require('virgo/util/logging')
+local tableContains = require('virgo/util/misc').tableContains
+local toString = require('virgo/util/misc').toString
+local lastIndexOf = require('virgo/util/misc').lastIndexOf
+local split = require('virgo/util/misc').split
+local fireOnce = require('virgo/util/misc').fireOnce
+local trim = require('virgo/util/misc').trim
+local deepCopyTable = require('virgo/util/misc').deepCopyTable
+local tableToString = require('virgo/util/misc').tableToString
+local randstr = require('virgo/util/misc').randstr
 
 local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()

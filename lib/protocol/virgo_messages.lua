@@ -1,4 +1,4 @@
-local msg = require('virgo/lib/protocol/messages')
+local msg = require('virgo/protocol/messages')
 
 --[[ Manifest.get ]]--
 local Manifest = msg.Request:extend()

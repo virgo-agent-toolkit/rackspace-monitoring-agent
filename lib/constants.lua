@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local ConstantsCtx = require('virgo/lib/util/constants_ctx').ConstantsCtx
+local ConstantsCtx = require('virgo/util/constants_ctx').ConstantsCtx
 local path = require('path')
 
 local constants = ConstantsCtx:new()

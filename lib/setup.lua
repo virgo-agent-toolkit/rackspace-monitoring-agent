@@ -22,11 +22,11 @@ local timer = require('timer')
 local JSON = require('json')
 local table = require('table')
 
-local MachineIdentity = require('virgo/lib/machineidentity').MachineIdentity
-
 local async = require('async')
-local ask = require('virgo/lib/util/prompt').ask
-local errors = require('virgo/lib/errors')
+
+local MachineIdentity = require('virgo/machineidentity').MachineIdentity
+local ask = require('virgo/util/prompt').ask
+local errors = require('virgo/errors')
 local constants = require('./constants')
 --local sigarCtx = require('./sigar').ctx
 

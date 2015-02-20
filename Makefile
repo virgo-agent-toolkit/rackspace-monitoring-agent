@@ -8,7 +8,7 @@ test: lit
 	./rackspace-monitoring-agent tests/run.lua
 
 clean:
-	rm -rf rackspace-monitoring-agen lit lit-* luvi
+	rm -rf rackspace-monitoring-agent lit lit-* luvi
 
 lit:
 	curl -L https://github.com/luvit/lit/raw/0.9.4/web-install.sh | sh

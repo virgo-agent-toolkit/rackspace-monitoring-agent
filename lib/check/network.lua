@@ -17,7 +17,7 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local fs = require('fs')
 local os = require('os')
-local misc = require('virgo/lib/util/misc')
+local misc = require('virgo/util/misc')
 
 local table = require('table')
 local units = {

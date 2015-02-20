@@ -3,7 +3,7 @@ local utils = require('utils')
 local Emitter = require('core').Emitter
 
 local logging = require('logging')
-local loggingUtil = require('virgo/lib/util/logging')
+local loggingUtil = require('virgo/util/logging')
 
 local fmt = require('string').format
 

@@ -26,8 +26,9 @@ local fixtures = require('../fixtures')
 local Check = require('../../lib/check')
 local Metric = require('../../lib/check/base').Metric
 local constants = require('../../lib/constants')
-local merge = require('virgo/lib/util/misc').merge
-local virgoMsg = require('virgo/lib/protocol/virgo_messages')
+
+local merge = require('virgo/util/misc').merge
+local virgoMsg = require('virgo/protocol/virgo_messages')
 
 local BaseCheck = Check.BaseCheck
 local CheckResult = Check.CheckResult

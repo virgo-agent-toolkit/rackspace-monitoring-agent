@@ -22,8 +22,8 @@ local path = require('path')
 
 local Object = require('core').Object
 local async = require('async')
-local misc = require('virgo/lib/util/misc')
-local request = require('virgo/lib/protocol/request')
+local misc = require('virgo/util/misc')
+local request = require('virgo/protocol/request')
 
 local logging = require('logging')
 

@@ -16,7 +16,7 @@ limitations under the License.
 local table = require('table')
 
 local fs = require('fs')
-local misc = require('virgo/lib/util/misc')
+local misc = require('virgo/util/misc')
 local os = require('os')
 
 local HostInfo = require('./base').HostInfo

@@ -53,8 +53,8 @@ local async = require('async')
 
 local ChildCheck = require('./base').ChildCheck
 local constants = require('../constants')
-local loggingUtil = require('virgo/lib/util/logging')
-local windowsConvertCmd = require('virgo/lib/utils').windowsConvertCmd
+local loggingUtil = require('virgo/util/logging')
+local windowsConvertCmd = require('virgo/utils').windowsConvertCmd
 
 local PluginCheck = ChildCheck:extend()
 

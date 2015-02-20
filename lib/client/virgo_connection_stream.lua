@@ -1,7 +1,7 @@
 local Scheduler = require('../schedule').Scheduler
 
-local ConnectionStream = require("virgo/lib/client/connection_stream").ConnectionStream
-local loggingUtil = require('virgo/lib/util/logging')
+local ConnectionStream = require("virgo/client/connection_stream").ConnectionStream
+local loggingUtil = require('virgo/util/logging')
 local logging = require('logging')
 local fmt = require('string').format
 

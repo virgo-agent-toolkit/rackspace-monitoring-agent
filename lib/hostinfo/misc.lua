@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 local table = require('table')
-local misc = require('virgo/lib/util/misc')
+local misc = require('virgo/util/misc')
 local async = require('async')
 local childProcess = require('childprocess')
 

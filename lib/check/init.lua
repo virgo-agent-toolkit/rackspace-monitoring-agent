@@ -32,7 +32,7 @@ local Windows = require('./windows')
 
 local Error = require('core').Error
 
-local merge = require('virgo/lib/util/misc').merge
+local merge = require('virgo/util/misc').merge
 
 local check_classes = {
   CpuCheck = CpuCheck,

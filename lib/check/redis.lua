@@ -23,9 +23,9 @@ local async = require('async')
 
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
-local split = require('virgo/lib/util/misc').split
-local trim = require('virgo/lib/util/misc').trim
-local fireOnce = require('virgo/lib/util/misc').fireOnce
+local split = require('virgo/util/misc').split
+local trim = require('virgo/util/misc').trim
+local fireOnce = require('virgo/util/misc').fireOnce
 
 local MAX_BUFFER_LENGTH = 1024 * 1024 * 1 -- 1 MB
 

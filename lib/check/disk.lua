@@ -20,7 +20,7 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 
 -- TODO: PORT
---local sigarutil = require('virgo/lib/util/sigar')
+--local sigarutil = require('virgo/util/sigar')
 
 local DiskCheck = BaseCheck:extend()
 

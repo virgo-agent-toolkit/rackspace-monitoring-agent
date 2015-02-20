@@ -16,7 +16,7 @@ limitations under the License.
 
 local constants = require('./constants')
 local staging = require('./staging')
-local endpoint = require('virgo/lib/client/endpoint')
+local endpoint = require('virgo/client/endpoint')
 
 function getEndpointSRV()
   if staging.isStaging() then

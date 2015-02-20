@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 
 local Object = require('core').Object
-local vutils = require('virgo/lib/utils')
+local vutils = require('virgo/utils')
 
 --[[ HostInfo ]]--
 local HostInfo = Object:extend()
