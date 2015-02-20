@@ -20,5 +20,6 @@ return {
     "!static",
     "!tests",
     "!rackspace-monitoring-agent",
+    "*.so",
   }
 }

@@ -1,6 +1,8 @@
 APP_FILES=$(shell find . -type f -name '*.lua')
+BINARY_MODULES=binary_modules/$(shell uname -s)_$(shell uname -m)
 
 rackspace-monitoring-agent: lit $(APP_FILES)
+	[ -d $(BINARY_MODULES) ] && cp $(BINARY_MODULES)/* .
 	./lit make
 
 test: lit
