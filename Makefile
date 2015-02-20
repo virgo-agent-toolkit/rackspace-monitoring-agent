@@ -4,8 +4,8 @@ BIN_ROOT=lit/luvi-binaries/$(shell uname -s)_$(shell uname -m)
 rackspace-monitoring-agent: lit $(APP_FILES)
 	./lit make
 
-test: luvit
-	./rackspace-monitoring-agen tests/run.lua
+test: lit
+	./rackspace-monitoring-agent tests/run.lua
 
 clean:
 	rm -rf rackspace-monitoring-agen lit lit-* luvi

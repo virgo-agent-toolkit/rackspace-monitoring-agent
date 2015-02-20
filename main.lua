@@ -18,14 +18,18 @@ local luvi = require('luvi')
 luvi.bundle.register('require', "modules/require.lua")
 local require = require('require')()("bundle:main.lua")
 
-_G.virgo = {}
-_G.virgo_paths = {}
-_G.virgo.virgo_version = "1.9.0" -- TODO
-_G.virgo.bundle_version = _G.virgo.virgo_version
+local options = {}
+options.version = require('./package').version
+options.pkg_name = "rackspace-monitoring-agent"
+options.paths = {}
+options.paths.persistent_dir = "/var/lib/rackspace-monitoring-agent"
+options.paths.exe_dir = "/var/lib/rackspace-monitoring-agent/exe"
+options.paths.config_dir = "/etc"
+options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
+options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
 
-function _G.virgo_paths.get() end
-
--- Create a luvit powered main that does the luvit CLI interface
 return require('luvit')(function (...)
-  require('./lib/main')
+  local args = { ... }
+  require('virgo')(options)
+  require('./lib/main')(unpack(args))
 end)
