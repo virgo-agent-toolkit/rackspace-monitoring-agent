@@ -6,8 +6,9 @@ return {
     "rphillips/options@v0.0.5",
   },
   files = {
-    "binary_modules/sigar.*",
-    "*.lua",
+    "**.so",
+    "**.dll",
+    "**.lua",
     "!*.ico",
     "!CHANGELOG",
     "!Dockerfile",

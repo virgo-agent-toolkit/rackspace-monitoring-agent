@@ -5,7 +5,18 @@ IF NOT "x%1" == "x" GOTO :%1
 :rackspace-monitoring-agent
 ECHO "Building agent"
 IF NOT EXIST lit.exe CALL Make.bat lit
+IF NOT EXIST binary_modules/sigar.dll CALL make.bat sigar
 lit.exe make
+GOTO :end
+
+:sigar
+ECHO "Building Sigar"
+IF NOT EXIST lua-sigar git clone https://github.com/virgo-agent-toolkit/lua-sigar
+pushd lua-sigar
+call make.bat
+popd
+IF NOT EXIST binary_modules mkdir binary_modules
+COPY lua-sigar\build\Release\sigar.dll binary_modules
 GOTO :end
 
 :lit
@@ -24,3 +35,4 @@ IF EXIST lit RMDIR /S /Q lit
 IF EXIST luvi-binaries RMDIR /S /Q luvi-binaries
 
 :end
+
