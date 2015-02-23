@@ -16,26 +16,17 @@ have too, you can install using the normal "Package" method as outlined
 [here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent).
 Otherwise, continue reading this section.
 
-
 First get the source 
 
     git clone https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent
-
 
 Go into the directory that you just created 
 
     cd rackspace-monitoring-agent
 
+Build:
 
-Then get the submodules that you need
-
-    git submodule update --init --recursive
-
-
-Now configure and make all the things
-
-    ./configure && make 
-
+    make 
 
 Now simply install the virgo client by running this last and final command.
 
