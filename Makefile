@@ -1,11 +1,9 @@
 APP_FILES=$(shell find . -type f -name '*.lua')
-BINARY_MODULES=binary_modules/$(shell uname -s)_$(shell uname -m)
 TARGET=rackspace-monitoring-agent
 
 all: $(TARGET)
 
 rackspace-monitoring-agent: modules lit $(APP_FILES)
-	[ -d $(BINARY_MODULES) ] && cp $(BINARY_MODULES)/* .
 	./lit make
 
 modules: modules/sigar.so
