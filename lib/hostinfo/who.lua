@@ -14,26 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
---local sigarCtx = require('/sigar').ctx
-
+local sigar = require('sigar')
 local table = require('table')
 
 --[[ Who is logged In ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
-  local who = sigarCtx:who()
-  local fields = {
-    'user',
-    'device',
-    'time',
-    'host'
-  }
-
+  local ctx, who
+  ctx = sigar:new()
+  who = ctx:who()
   for i=1, #who do
     local obj = {}
-    for _, v in pairs(fields) do
+    for _, v in pairs({'user', 'device', 'time', 'host'}) do
       obj[v] = who[i][v]
     end
     table.insert(self._params, obj)

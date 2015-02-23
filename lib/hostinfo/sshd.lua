@@ -15,10 +15,7 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local string = require('string')
-local fmt = require('string').format
 local table = require('table')
-local os = require('os')
 local execFileToBuffers = require('./misc').execFileToBuffers
 
 --[[ SSHd Variables ]]--
@@ -30,14 +27,13 @@ end
 function Info:run(callback)
 
   local function execCb(err, exitcode, stdout_data, stderr_data)
-    local line
     self._error = err
 
     --p({err=err, exitcode=exitcode, stdout=stdout_data, stderr=stderr_data})
 
     for line in stdout_data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
-      local a, b, key, value = line:find("(.*)%s(.*)")
+      local _, _, key, value = line:find("(.*)%s(.*)")
       if key ~= nil then
         local obj = {}
         obj[key] = value

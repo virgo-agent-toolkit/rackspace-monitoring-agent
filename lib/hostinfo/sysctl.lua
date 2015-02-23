@@ -15,7 +15,6 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local string = require('string')
 local fmt = require('string').format
 local table = require('table')
 local os = require('os')
@@ -43,14 +42,13 @@ function Info:run(callback)
 
   child:on('exit', function(exit_code)
     if exit_code ~= 0 then
-      self._error = fmt("sysctl exited with a %d exit_code", exitcode)
+      self._error = fmt("sysctl exited with a %d exit_code", exit_code)
       callback()
       return
     end
-    local line
     for line in data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
-      local a, b, key, value = line:find("([^=^%s]+)%s*=%s*([^=]*)")
+      local _, _, key, value = line:find("([^=^%s]+)%s*=%s*([^=]*)")
       if key ~= nil then
         local obj = {}
         obj[key] = value

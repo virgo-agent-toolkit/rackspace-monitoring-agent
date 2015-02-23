@@ -14,17 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
---local sigarCtx = require('/sigar').ctx
---local sigarutil = require('/base/util/sigar')
-
+local sigar = require('sigar')
 local table = require('table')
 
 --[[ Filesystem Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
-  local fses = sigarCtx:filesystems()
+  local ctx = sigar:new()
+  local fses = ctx:filesystems()
   for i=1, #fses do
     local obj = {}
     local fs = fses[i]

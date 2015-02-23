@@ -14,19 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
---local sigarCtx = require('/sigar').ctx
---local sigarutil = require('/base/util/sigar')
-
-local table = require('table')
+local sigar = require('sigar')
 
 --[[ Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
+  local ctx , swapinfo, data, data_fields, swap_metrics
+
   HostInfo.initialize(self)
-  local swapinfo = sigarCtx:swap()
-  local data = sigarCtx:mem()
-  local data_fields = {
+
+  ctx = sigar:new()
+  swapinfo = ctx:swap()
+  data = ctx:mem()
+  data_fields = {
     'actual_free',
     'actual_used',
     'free',
@@ -36,7 +36,7 @@ function Info:initialize()
     'used',
     'used_percent'
   }
-  local swap_metrics = {
+  swap_metrics = {
     'total',
     'used',
     'free',

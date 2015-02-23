@@ -54,7 +54,8 @@ return function(...)
   local function readConfig(path)
     local config, data
     config = {}
-    data = fs.readFileSync(path)
+    data, err = fs.readFileSync(path)
+    if err then print(err) ; os.exit(1) end
     for line in data:gmatch("[^\r\n]+") do
       local key, value = line:match("(%S+) (.*)")
       config[key] = value

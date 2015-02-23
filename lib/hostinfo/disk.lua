@@ -14,9 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
---local sigarCtx = require('/sigar').ctx
---local sigarutil = require('/base/util/sigar')
+local sigar = require('sigar')
+local sigarutil = require('virgo/util/sigar')
 
 local table = require('table')
 
@@ -24,8 +23,10 @@ local table = require('table')
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
-  local disks = sigarutil.diskTargets(sigarCtx)
-  local usage_fields = {
+  local ctx, disks, usage_fields
+  ctx = sigar:new()
+  disks = sigarutil.diskTargets(ctx)
+  usage_fields = {
     'read_bytes',
     'reads',
     'rtime',

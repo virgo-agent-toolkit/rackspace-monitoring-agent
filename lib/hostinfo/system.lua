@@ -14,23 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
---local sigarCtx = require('/sigar').ctx
-
+local sigar = require('sigar')
 local table = require('table')
-
 
 --[[ System Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
-  local sysinfo = sigarCtx:sysinfo()
-  local obj = {name = sysinfo.name, arch = sysinfo.arch,
-               version = sysinfo.version, vendor = sysinfo.vendor,
-               vendor_version = sysinfo.vendor_version,
-               vendor_name = sysinfo.vendor_name or sysinfo.vendor_version}
-
-  table.insert(self._params, obj)
+  local ctx, sysinfo
+  ctx = sigar:new()
+  sysinfo = ctx:sysinfo()
+  table.insert(self._params, {
+    name = sysinfo.name,
+    arch = sysinfo.arch,
+    version = sysinfo.version,
+    vendor = sysinfo.vendor,
+    vendor_version = sysinfo.vendor_version,
+    vendor_name = sysinfo.vendor_name or sysinfo.vendor_version
+  })
 end
 
 function Info:getType()

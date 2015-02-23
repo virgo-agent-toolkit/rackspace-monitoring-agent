@@ -14,9 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
---local sigarCtx = require('/sigar').ctx
-
+local sigar = require('sigar')
 local table = require('table')
 
 
@@ -24,7 +22,8 @@ local table = require('table')
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
-  local netifs = sigarCtx:netifs()
+  local ctx = sigar:new()
+  local netifs = ctx:netifs()
   for i=1,#netifs do
     local info = netifs[i]:info()
     local usage = netifs[i]:usage()

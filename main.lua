@@ -18,18 +18,16 @@ local luvi = require('luvi')
 luvi.bundle.register('require', "modules/require.lua")
 local require = require('require')()("bundle:main.lua")
 
-local options = {}
-options.version = require('./package').version
-options.pkg_name = "rackspace-monitoring-agent"
-options.paths = {}
-options.paths.persistent_dir = "/var/lib/rackspace-monitoring-agent"
-options.paths.exe_dir = "/var/lib/rackspace-monitoring-agent/exe"
-options.paths.config_dir = "/etc"
-options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
-options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
-
 return require('luvit')(function (...)
-  local args = { ... }
+  local options = {}
+  options.version = require('./package').version
+  options.pkg_name = "rackspace-monitoring-agent"
+  options.paths = {}
+  options.paths.persistent_dir = "/var/lib/rackspace-monitoring-agent"
+  options.paths.exe_dir = "/var/lib/rackspace-monitoring-agent/exe"
+  options.paths.config_dir = "/etc"
+  options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
+  options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
   require('virgo')(options)
-  require('./lib/main')(unpack(args))
+  require('./lib/main')(...)
 end)

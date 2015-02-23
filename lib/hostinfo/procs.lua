@@ -14,20 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
---local sigarCtx = require('/sigar').ctx
-
+local sigar = require('sigar')
 local table = require('table')
 
 --[[ Process Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
-  local procs = sigarCtx:procs()
-
+  local ctx, procs
+  ctx = sigar:new()
+  procs = ctx:procs()
   for i=1, #procs do
     local pid = procs[i]
-    local proc = sigarCtx:proc(pid)
+    local proc = ctx:proc(pid)
     local obj = {}
     obj.pid = pid
 
@@ -85,16 +84,6 @@ function Info:initialize()
       end
     end
 
-    t, msg = proc:cred()
-    if t then
-      local cred_fields = {
-        'user',
-        'group',
-      }
-      for _,v in pairs(cred_fields) do
-        obj['cred_' .. v] = t[v]
-      end
-    end
     table.insert(self._params, obj)
   end
 end

@@ -14,17 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
---local sigarCtx = require('sigar').ctx
---local sigarutil = require('/base/util/sigar')
-
+local sigar = require('sigar')
 local table = require('table')
 
 --[[ Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
-  local cpus = sigarCtx:cpus()
+  local ctx = sigar:new()
+  local cpus = ctx:cpus()
   for i=1, #cpus do
     local obj = {}
     local info = cpus[i]:info()
