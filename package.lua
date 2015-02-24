@@ -6,8 +6,9 @@ return {
     "rphillips/options@v0.0.5",
   },
   files = {
+    "**.so",
+    "**.dll",
     "**.lua",
-    "*.so",
     "!*.ico",
     "!CHANGELOG",
     "!Dockerfile",
@@ -21,7 +22,6 @@ return {
     "!luvi",
     "!static",
     "!tests",
-    "!rackspace-monitoring-agent",
-    "!binary_modules/**"
+    "!lua-sigar",
   }
 }
