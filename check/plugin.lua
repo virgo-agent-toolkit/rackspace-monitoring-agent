@@ -41,8 +41,6 @@ metric <name 3> <type> <value> [<unit>]
 --]]
 
 local table = require('table')
-local childprocess = require('childprocess')
-local timer = require('timer')
 local path = require('path')
 local string = require('string')
 local fmt = string.format
@@ -53,23 +51,12 @@ local os = require('os')
 
 local async = require('async')
 
-local logging = require('logging')
-local LineEmitter = require('line-emitter').LineEmitter
-
 local ChildCheck = require('./base').ChildCheck
-local CheckResult = require('./base').CheckResult
-local Metric = require('./base').Metric
-local split = require('/base/util/misc').split
-local tableContains = require('/base/util/misc').tableContains
-local lastIndexOf = require('/base/util/misc').lastIndexOf
 local constants = require('/constants')
 local loggingUtil = require('/base/util/logging')
 local windowsConvertCmd = require('virgo_utils').windowsConvertCmd
 
-local toString = require('/base/util/misc').toString
-
 local PluginCheck = ChildCheck:extend()
-
 
 local octal = function(s)
   return tonumber(s, 8)
@@ -140,7 +127,6 @@ function PluginCheck:getTargets(callback)
     end)
   end
 
---  readdir(, function(err, files)
   readdir(root, function(err, files)
     if err then
       local msg
