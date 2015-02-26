@@ -23,7 +23,6 @@ local childprocess = require('childprocess')
 local env = require('env')
 local fmt = require('string').format
 local logging = require('logging')
-local os = require('os')
 local table = require('table')
 local timer = require('timer')
 local vutils = require('virgo_utils')
@@ -39,7 +38,6 @@ local toString = require('/base/util/misc').toString
 local lastIndexOf = require('/base/util/misc').lastIndexOf
 local split = require('/base/util/misc').split
 local fireOnce = require('/base/util/misc').fireOnce
-local trim = require('/base/util/misc').trim
 local deepCopyTable = require('/base/util/misc').deepCopyTable
 local tableToString = require('/base/util/misc').tableToString
 local randstr = require('/base/util/misc').randstr
@@ -50,7 +48,6 @@ local CheckResult = Object:extend()
 local Metric = Object:extend()
 
 local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
-local VALID_STATES = {'available', 'unavailable'}
 
 -- Default check status
 local DEFAULT_STATUS = 'success'
@@ -249,13 +246,6 @@ function ChildCheck:initialize(params)
     params.details = {}
   end
   self._params = params
-  self._lines = {}
-  self:_resetLines()
-end
-
-function ChildCheck:_resetLines()
-  self._lines.stdout = {}
-  self._lines.stderr = {}
 end
 
 --[[
@@ -295,21 +285,13 @@ function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension,
   end
 end
 
-function ChildCheck:_addStdoutLine(line)
-  table.insert(self._lines.stdout, line)
-end
-
-function ChildCheck:_addStderrLine(line)
-  table.insert(self._lines.stderr, line)
-end
-
 --[[
 Parse a line output by a plugin and mutate CheckResult object (set status
 or add a metric).
 --]]
 function ChildCheck:_handleLine(runCtx, checkResult, line)
   local stateEndIndex, statusEndIndex, metricEndIndex, splitString, value, state
-  local metricName, metricType, metricValue, metricUnit, dotIndex, internalMetricType
+  local metricName, metricType, metricValue, metricUnit, dotIndex
   local msg, partsCount, _
   local status, metricDimension
 
@@ -405,7 +387,7 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
 
     if metricType ~= 'string' and partsCount > 4 then
       -- Only values for string metrics can contain spaces
-      local msg = fmt('Invalid "<value> [<unit>]" combination "%s" for a non-string metric', metricValue)
+      msg = fmt('Invalid "<value> [<unit>]" combination "%s" for a non-string metric', metricValue)
       self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
       self:_setError(runCtx, checkResult, msg)
       return
@@ -431,7 +413,6 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   callback = fireOnce(callback)
 
   self._log(logging.DEBUG, fmt("%s: starting process", exePath))
-  self:_resetLines()
 
   local child = childprocess.spawn(exePath,
                                    exeArgs,
@@ -450,12 +431,11 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   end)
 
   stdoutLineEmitter:on('data', function(line)
-    self:_addStdoutLine(line)
     self:_handleLine(runCtx, checkResult, line)
   end)
 
   stderrLineEmitter:on('data', function(line)
-    self:_addStderrLine(line)
+    self._log(logging.INFO, fmt("%s: stderr: %s)", exePath, line))
   end)
 
   child.stdout:on('data', function(chunk)
@@ -500,24 +480,12 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
         -- If a status is provided use it instead of using the default one
         checkStatus = checkResult:getStatus()
 
-        for _, v in ipairs(self._lines.stdout) do
-          v = trim(v)
-          self._log(logging.DEBUG, fmt("stdout: %s", v))
-        end
-
-        for _, v in ipairs(self._lines.stderr) do
-          v = trim(v)
-          self._log(logging.DEBUG, fmt("stderr: %s", v))
-        end
-
         if not checkStatus or checkStatus == DEFAULT_STATUS then
           checkStatus = fmt('Plugin exited with non-zero status code (code=%s)', (code))
         end
 
         checkResult:setError(checkStatus)
       end
-
-      self:_resetLines()
 
       self._lastResult = checkResult
       callback(checkResult)
@@ -542,11 +510,10 @@ end
 
 function ChildCheck:_childEnv()
   local ENV_PREFIX = 'RAX_'
-  local k,v
   local cenv = {}
 
   -- process.env isn't a real table, but this works, so iterate rather than using a merge() function.
-  for k,v in pairs(process.env) do
+  for k, v in pairs(process.env) do
     cenv[k] = v
   end
 
@@ -731,7 +698,6 @@ end
 
 function CheckResult:serializeAsPluginOutput()
   local result = {}
-  local k,v,j,metric
   local line
 
   table.insert(result, 'state '.. self:getState())
@@ -739,8 +705,8 @@ function CheckResult:serializeAsPluginOutput()
 
   local m = self:getMetrics()
 
-  for k,v in pairs(m) do
-    for j,metric in pairs(v) do
+  for k, v in pairs(m) do
+    for j, metric in pairs(v) do
       local mname
       if (k ~= 'none') then
         mname = k .. '.' .. j
