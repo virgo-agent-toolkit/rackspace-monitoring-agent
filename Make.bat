@@ -5,12 +5,22 @@ IF NOT "x%1" == "x" GOTO :%1
 :rackspace-monitoring-agent
 ECHO "Building agent"
 IF NOT EXIST lit.exe CALL Make.bat lit
+IF NOT EXIST sigar.dll CALL Make.bat sigar
 lit.exe make
+GOTO :end
+
+:sigar
+git clone --recursive https://github.com/virgo-agent-toolkit/lua-sigar
+pushd lua-sigar
+call cmake .
+call make.bat
+copy sigar.dll ..
 GOTO :end
 
 :lit
 ECHO "Building lit"
-@powershell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/luvit/lit/a1bef9c234cf2569ded3b5c7516277c0f5746f70/web-install.ps1'))"
+@powershell -NoProfile -ExecutionPolicy unrestricted -Command "https://github.com/luvit/lit/raw/0.10.4/get-lit.ps1"
+GOTO :end
 
 :test
 CALL Make.bat rackspace-monitoring-agent
