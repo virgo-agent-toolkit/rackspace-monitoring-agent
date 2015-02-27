@@ -21,7 +21,7 @@ local timer = require('timer')
 local math = require('math')
 local table = require('table')
 local async = require('async')
-local sctx = require('../sigar').ctx
+local sigar = require('sigar')
 
 local CpuCheck = BaseCheck:extend()
 

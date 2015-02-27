@@ -7,7 +7,7 @@ return {
   },
   files = {
     "**.lua",
-    "*.so",
+    "**.so",
     "!*.ico",
     "!CHANGELOG",
     "!Dockerfile",
@@ -21,6 +21,7 @@ return {
     "!luvi",
     "!static",
     "!tests",
+    "!lua-sigar",
     "!rackspace-monitoring-agent",
   }
 }

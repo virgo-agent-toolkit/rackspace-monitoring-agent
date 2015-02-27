@@ -6,11 +6,12 @@ all: $(TARGET)
 rackspace-monitoring-agent: modules lit $(APP_FILES)
 	./lit make
 
-modules: sigar.so
+modules: libs/sigar.so
 
-sigar.so:
+libs/sigar.so:
+	mkdir -p libs
 	[ -d lua-sigar ] || git clone --recursive https://github.com/virgo-agent-toolkit/lua-sigar
-	cd lua-sigar && cmake . && make && cp sigar.so ..
+	cd lua-sigar && cmake . && make && cp sigar.so ../libs
 
 test: lit
 	./rackspace-monitoring-agent tests/run.lua
