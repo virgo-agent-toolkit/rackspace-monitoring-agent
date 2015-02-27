@@ -23,7 +23,6 @@ local fmt = require('string').format
 local Emitter = require('core').Emitter
 
 local async = require('async')
-local sigarCtx = require('./sigar').ctx
 
 local MachineIdentity = require('virgo/machineidentity').MachineIdentity
 local constants = require('./constants')
