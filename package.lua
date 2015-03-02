@@ -2,7 +2,7 @@ return {
   name = "rackspace-monitoring-agent",
   version = "1.9.0",
   dependencies = {
-    "virgo-agent-toolkit/virgo@0.10.4",
+    "virgo-agent-toolkit/virgo@0.10.6",
     "rphillips/options@v0.0.5",
   },
   files = {

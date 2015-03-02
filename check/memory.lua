@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local sigar = require('sigar')
+
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
-
 local MemoryCheck = BaseCheck:extend()
 
 function MemoryCheck:initialize(params)

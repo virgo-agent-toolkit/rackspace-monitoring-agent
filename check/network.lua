@@ -16,8 +16,10 @@ limitations under the License.
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local fs = require('fs')
-local os = require('os')
+local los = require('los')
 local misc = require('virgo/util/misc')
+
+local sigar = require('sigar')
 
 local table = require('table')
 local units = {
@@ -105,7 +107,7 @@ function NetworkCheck:getLinkState(callback)
   local cfname = '/sys/class/net/' .. self.interface_name .. '/carrier'
 
   -- Linux
-  if os.type() == 'Linux' then
+  if los.type() == 'Linux' then
     fs.readFile(cfname, function(err, cstate)
       if not err then
         local tcstate = misc.trim(cstate)

@@ -60,21 +60,21 @@ function CpuCheck:getType()
 end
 
 function CpuCheck:_getCpuInfo()
-  return {}
-  --local cpuinfo = sctx:cpus()
-  --local results = {}
+  local sctx = sigar:new()
+  local cpuinfo = sctx:cpus()
+  local results = {}
 
-  --for i = 1, #cpuinfo do
-  --  local data = cpuinfo[i]:data()
+  for i = 1, #cpuinfo do
+    local data = cpuinfo[i]:data()
 
-  --  -- store sigar metrics
-  --  results[i] = {}
-  --  for _, v in pairs(SIGAR_METRICS) do
-  --    results[i][v] = data[v]
-  --  end
-  --end
+    -- store sigar metrics
+    results[i] = {}
+    for _, v in pairs(SIGAR_METRICS) do
+      results[i][v] = data[v]
+    end
+  end
 
-  --return results
+  return results
 end
 
 function CpuCheck:_aggregateMetrics(cpuinfo, callback)
