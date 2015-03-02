@@ -1,6 +1,7 @@
 language: erlang
 
 script:
+  - make
   - make test
 
 notifications:
