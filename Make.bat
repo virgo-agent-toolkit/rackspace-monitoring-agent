@@ -5,16 +5,18 @@ IF NOT "x%1" == "x" GOTO :%1
 :rackspace-monitoring-agent
 ECHO "Building agent"
 IF NOT EXIST lit.exe CALL Make.bat lit
-IF NOT EXIST sigar.dll CALL Make.bat sigar
+IF NOT EXIST libs\sigar.dll CALL Make.bat sigar
 lit.exe make
 GOTO :end
 
 :sigar
 git clone --recursive https://github.com/virgo-agent-toolkit/lua-sigar
+IF NOT EXIST libs CALL mkdir libs
 pushd lua-sigar
-call cmake .
+call cmake -G"Visual Studio 12 Win64" .
 call make.bat
-copy sigar.dll ..
+copy sigar.dll ..\libs
+popd
 GOTO :end
 
 :lit
@@ -34,3 +36,4 @@ IF EXIST lit RMDIR /S /Q lit
 IF EXIST luvi-binaries RMDIR /S /Q luvi-binaries
 
 :end
+
