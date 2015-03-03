@@ -8,6 +8,7 @@ return {
   files = {
     "**.lua",
     "**.so",
+    "**.dll",
     "!*.ico",
     "!CHANGELOG",
     "!Dockerfile",
