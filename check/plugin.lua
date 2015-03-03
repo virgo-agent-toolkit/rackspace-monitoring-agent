@@ -47,7 +47,7 @@ local fmt = string.format
 local readdir = require('fs').readdir
 local stat = require('fs').stat
 local bit = require('bit')
-local os = require('os')
+local los = require('los')
 
 local async = require('async')
 
@@ -109,7 +109,7 @@ function PluginCheck:getTargets(callback)
         return callback()
       end
 
-      if os.type() == 'win32' then
+      if los.type() == 'win32' then
         table.insert(targets, file)
       else
         local executable = bit.bor(

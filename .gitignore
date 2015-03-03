@@ -28,3 +28,5 @@ rackspace-monitoring-agent
 lit*
 luvi
 lua-sigar
+sigar.so
+sigar.dll

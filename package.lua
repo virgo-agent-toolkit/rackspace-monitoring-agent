@@ -2,12 +2,12 @@ return {
   name = "rackspace-monitoring-agent",
   version = "1.9.0",
   dependencies = {
-    "virgo-agent-toolkit/virgo@0.10.2",
+    "virgo-agent-toolkit/virgo@0.10.7",
     "rphillips/options@v0.0.5",
   },
   files = {
     "**.lua",
-    "*.so",
+    "**.so",
     "!*.ico",
     "!CHANGELOG",
     "!Dockerfile",
@@ -21,7 +21,7 @@ return {
     "!luvi",
     "!static",
     "!tests",
+    "!lua-sigar",
     "!rackspace-monitoring-agent",
-    "!binary_modules/**"
   }
 }

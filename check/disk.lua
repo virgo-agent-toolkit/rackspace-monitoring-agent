@@ -19,8 +19,8 @@ local table = require('table')
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 
--- TODO: PORT
---local sigarutil = require('virgo/util/sigar')
+local sigar = require('sigar')
+local sigarutil = require('virgo/util/sigar')
 
 local DiskCheck = BaseCheck:extend()
 
@@ -56,7 +56,7 @@ function DiskCheck:run(callback)
   local s = sigar:new()
   local disks = s:disks()
   local checkResult = CheckResult:new(self, {})
-  local name, usage
+  local usage
   local units = {
     reads = 'reads',
     writes = 'writes',

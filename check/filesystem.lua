@@ -19,7 +19,7 @@ local upper = require('string').upper
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local table = require('table')
-local os = require('os')
+local los = require('los')
 
 local FileSystemCheck = BaseCheck:extend()
 
@@ -103,7 +103,7 @@ function FileSystemCheck:run(callback)
 
     -- Search for the mount point we want. TODO: modify sigar bindings to
     -- let us do a lookup from this.
-    if os.type() == "win32" then
+    if los.type() == "win32" then
       if upper(info['dir_name']) == upper(self.mount_point) then
         found = true
       end
