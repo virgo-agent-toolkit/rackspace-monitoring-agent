@@ -14,7 +14,7 @@ libs/sigar.so:
 	cd lua-sigar && cmake . && make && cp sigar.so ../libs
 
 test: lit
-	./rackspace-monitoring-agent tests/run.lua
+	./rackspace-monitoring-agent -e tests
 
 clean:
 	rm -rf rackspace-monitoring-agent lit lit-* luvi

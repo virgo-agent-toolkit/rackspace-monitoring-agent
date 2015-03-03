@@ -82,7 +82,7 @@ local function start(...)
   end
 
   if argv.args.e then
-    local mod = require(argv.args.e)
+    local mod = require('./runners/' .. argv.args.e)
     return mod.run(argv.args)
   end
 
