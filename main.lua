@@ -37,15 +37,15 @@ local function start(...)
   uv.unref(gcCollect)
 
   local argv = require('options')
-    .usage('Usage: ')
     .describe("i", "use insecure tls cert")
-    .describe("i", "insecure")
+    .describe("l", "log file path")
     .describe("e", "entry module")
     .describe("x", "runner params (eg. check or hostinfo to run)")
     .describe("s", "state directory path")
     .describe("c", "config file path")
     .describe("j", "object conf.d path")
     .describe("p", "pid file path")
+    .describe("z", "lock file path")
     .describe("o", "skip automatic upgrade")
     .describe("d", "enable debug logging")
     .describe("l", "log file")
@@ -61,7 +61,14 @@ local function start(...)
     .alias({['U'] = 'username'})
     .describe("K", "apikey")
     .alias({['K'] = 'apikey'})
-    .argv("idonhl:U:K:e:x:p:c:j:s:n:k:u")
+    .argv("idonhl:U:K:e:x:p:c:j:s:n:k:uz:")
+
+  argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
+
+  if argv.args.h then
+    argv.showUsage("idonhU:K:e:x:p:c:j:s:n:k:ul:z:")
+    process:exit(0)
+  end
 
   local function readConfig(path)
     local config, data, err
@@ -92,6 +99,10 @@ local function start(...)
     options.pidFile = argv.args.p
   end
 
+  if argv.args.z then
+    options.lockFile = argv.args.z
+  end
+
   if argv.args.e then
     local mod = require('./runners/' .. argv.args.e)
     return mod.run(argv.args)
@@ -111,6 +122,16 @@ local function start(...)
   options.tls = {}
   options.tls.rejectUnauthorized = true
   options.tls.ca = certs.caCerts
+
+  virgo.config['endpoints'] = virgo.config['monitoring_endpoints']
+  virgo.config['upgrade'] = virgo.config['monitoring_upgrade']
+  virgo.config['id'] = virgo.config['monitoring_id']
+  virgo.config['guid'] = virgo.config['monitoring_guid']
+  virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
+  virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
+  virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
+  virgo.config['insecure'] = virgo.config['monitoring_insecure']
+  virgo.config['debug'] = virgo.config['monitoring_debug']
 
   if argv.args.i or virgo.config['insecure'] == 'true' then
     options.tls.ca = certs.caCertsDebug
