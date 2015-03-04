@@ -1,5 +1,6 @@
-local tap = require("tap")
+local tap = require("../tap")
 local uv = require('uv')
+local path = require('path')
 
 local req = uv.fs_scandir("tests")
 
@@ -12,8 +13,8 @@ repeat
   end
   local match = string.match(ent.name, "^test%-(.*).lua$")
   if match then
-    local path = "./tests/test-" .. match
+    local file = path.join(uv.cwd(), 'tests', 'test-' .. match)
     tap(match)
-    require(path)
+    require(file)
   end
 until not ent
