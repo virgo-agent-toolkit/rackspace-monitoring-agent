@@ -21,7 +21,8 @@ GOTO :end
 
 :lit
 ECHO "Building lit"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/0.10.6/get-lit.ps1'))"
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/0.11.0/get-lit.ps1'))"
+copy lit.exe luvi.exe
 GOTO :end
 
 :test
@@ -33,7 +34,9 @@ GOTO :end
 IF EXIST rackspace-monitoring-agent.exe DEL /F /Q rackspace-monitoring-agent.exe
 IF EXIST lit.exe DEL /F /Q lit.exe
 IF EXIST lit RMDIR /S /Q lit
+IF EXIST luvi.exe DEL /F /Q luvi.exe
 IF EXIST luvi-binaries RMDIR /S /Q luvi-binaries
 
 :end
+
 
