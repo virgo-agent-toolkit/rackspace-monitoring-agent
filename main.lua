@@ -14,10 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local luvi = require('luvi')
-luvi.bundle.register('require', "deps/require.lua")
-_G.require = require('require')("bundle:main.lua")
-
 local function start(...)
   local async = require('async')
   local fs = require('fs')
@@ -56,7 +52,7 @@ local function start(...)
     .argv("idonhU:K:e:x:p:c:j:s:n:k:u")
 
   local function readConfig(path)
-    local config, data
+    local config, data, err
     config = {}
     data, err = fs.readFileSync(path)
     if err then print(err) ; os.exit(1) end
