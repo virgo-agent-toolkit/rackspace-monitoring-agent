@@ -23,6 +23,8 @@ local function start(...)
   local constants = require('./constants')
   local Setup = require('./setup').Setup
 
+  local certs = require('./certs')
+
   local agentClient = require('./client/virgo_client')
   local connectionStream = require('./client/virgo_connection_stream')
   local protocolConnection = require('./protocol/virgo_connection')
@@ -89,25 +91,15 @@ local function start(...)
 
   virgo.config = readConfig(options.configFile)
   virgo.config['token'] = virgo.config['monitoring_token']
+
   options.config = virgo.config
-  options.tls = { rejectUnauthorized = false }
 
-
-  --virgo.config['endpoints'] = virgo.config['monitoring_endpoints']
-  --virgo.config['upgrade'] = virgo.config['monitoring_upgrade']
-  --virgo.config['id'] = virgo.config['monitoring_id']
-  --virgo.config['guid'] = virgo.config['monitoring_guid']
-  --virgo.config['query_endpoints'] = virgo.config['monitoring_query_endpoints']
-  --virgo.config['snet_region'] = virgo.config['monitoring_snet_region']
-  --virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
-  --virgo.config['insecure'] = virgo.config['monitoring_insecure']
-  --virgo.config['debug'] = virgo.config['monitoring_debug']
+  options.tls = {}
+  options.tls.rejectUnauthorized = true
+  options.tls.ca = certs.caCerts
 
   if argv.args.i or virgo.config['insecure'] == 'true' then
-    options.tls = {
-      rejectUnauthorized = false,
-      ca = require('/certs').caCertsDebug
-    }
+    options.tls.ca = certs.caCertsDebug
   end
 
   options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
