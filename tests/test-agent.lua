@@ -15,9 +15,9 @@ limitations under the License.
 --]]
 
 local async = require('async')
-local Agent = require('agent').Agent
+local Agent = require('../agent').Agent
 
-require('tap')(function(test)
+require('../tap')(function(test)
   test('load endpoints', function()
     async.series({
       function(callback)

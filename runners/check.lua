@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@ limitations under the License.
 
 local async = require('async')
 local Emitter = require('core').Emitter
-local JSON = require('json')
-local checks = require('/check')
-
-local exports = {}
+local checks = require('../check')
 
 local CheckRunner = Emitter:extend()
 
@@ -62,6 +59,11 @@ function CheckRunner:run(callback)
   }
 
   local check = checks.create(checkParams)
+  if not check then
+    p(checkParams)
+    print('Invalid Check Parameters')
+    process:exit(1)
+  end
   check:_runCheckInChild(function(cr)
     self._cr = cr
     callback(nil)
@@ -87,8 +89,7 @@ function CheckRunner:report(callback)
   callback()
 end
 
-
-exports.run = function(argv)
+local function run(argv)
   local checkType = argv.x
   local cr = CheckRunner:new(checkType)
 
@@ -113,4 +114,6 @@ exports.run = function(argv)
   end)
 end
 
-return exports
+return {
+  run = run
+}
