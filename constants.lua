@@ -14,10 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local ConstantsCtx = require('virgo/util/constants_ctx').ConstantsCtx
+local const = require('virgo/util/constants_ctx')
 local path = require('path')
-
-local constants = ConstantsCtx:new()
 
 local SNET_REGIONS = {
   'dfw',
@@ -28,8 +26,8 @@ local SNET_REGIONS = {
   'iad'
 }
 
-local LIBRARY_DIR = "/var/lib/rackspace-monitoring-agent"
-constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', path.join(LIBRARY_DIR, 'plugins'))
+local constants = const.ConstantsCtx:new()
+constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', path.join(const.LIBRARY_DIR, 'plugins'))
 constants:setGlobal('DEFAULT_PLUGIN_TIMEOUT', 60 * 1000)
 constants:setGlobal('PLUGIN_TYPE_MAP', {string = 'string', int = 'int64', float = 'double', gauge = 'gauge'})
 constants:setGlobal('CRASH_REPORT_URL', 'https://monitoring.api.rackspacecloud.com/agent-crash-report')
