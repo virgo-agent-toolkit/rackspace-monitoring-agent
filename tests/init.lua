@@ -30,7 +30,7 @@ local exports = {}
 
 local failed = 0
 
-_G.TESTING_CERTS = require('./code_cert.test.lua')
+_G.TESTING_CERTS = require('../certs')
 _G.TEST_DIR = path.join(process.cwd(), 'tests', 'tmp')
 _G.TESTING_AGENT_ENDPOINTS = {'127.0.0.1:50041', '127.0.0.1:50051', '127.0.0.1:50061'}
 
