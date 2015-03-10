@@ -20,7 +20,7 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 
 local sigar = require('sigar')
-local sigarutil = require('virgo/util/sigar')
+local diskTargets = require('../util').diskTargets
 
 local DiskCheck = BaseCheck:extend()
 
@@ -39,7 +39,7 @@ function DiskCheck:getType()
 end
 
 function DiskCheck:getTargets(callback)
-  local disks = sigarutil.diskTargets()
+  local disks = diskTargets()
   local targets = {}
 
   for i=1, #disks do

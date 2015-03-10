@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 local sigar = require('sigar')
-local sigarutil = require('virgo/util/sigar')
+local diskTargets = require('../util').diskTargets
 
 local table = require('table')
 
@@ -25,7 +25,7 @@ function Info:initialize()
   HostInfo.initialize(self)
   local ctx, disks, usage_fields
   ctx = sigar:new()
-  disks = sigarutil.diskTargets(ctx)
+  disks = diskTargets(ctx)
   usage_fields = {
     'read_bytes',
     'reads',

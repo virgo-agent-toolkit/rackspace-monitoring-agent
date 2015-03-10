@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-function isStaging()
+local function isStaging()
   virgo.config = virgo.config or {}
   local b = virgo.config['monitoring_use_staging']
   b = process.env.STAGING or (b and b:lower() == 'true')
@@ -24,6 +24,4 @@ function isStaging()
   return b
 end
 
-local exports = {}
 exports.isStaging = isStaging
-return exports
