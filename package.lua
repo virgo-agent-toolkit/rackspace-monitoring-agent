@@ -2,13 +2,12 @@ return {
   name = "rackspace-monitoring-agent",
   version = "1.9.0",
   dependencies = {
-    "virgo-agent-toolkit/virgo@0.10.7",
+    "virgo-agent-toolkit/virgo@0.11.0",
     "rphillips/options@v0.0.5",
   },
   files = {
     "**.lua",
-    "**.so",
-    "**.dll",
+    "libs/$OS-$ARCH/*",
     "!*.ico",
     "!CHANGELOG",
     "!Dockerfile",
