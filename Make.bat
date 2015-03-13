@@ -21,7 +21,7 @@ GOTO :end
 
 :lit
 ECHO "Building lit"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/0.11.0/get-lit.ps1'))"
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/1.0.0/get-lit.ps1'))"
 copy lit.exe luvi.exe
 GOTO :end
 
