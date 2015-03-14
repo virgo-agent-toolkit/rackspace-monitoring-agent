@@ -57,7 +57,7 @@ local function start(...)
     local config, data, err
     config = {}
     data, err = fs.readFileSync(path)
-    if err then print(err) ; os.exit(1) end
+    if err then return {} end
     for line in data:gmatch("[^\r\n]+") do
       local key, value = line:match("(%S+) (.*)")
       config[key] = value
@@ -89,11 +89,10 @@ local function start(...)
   types.AgentClient = agentClient
   types.ConnectionStream = connectionStream
 
-  virgo.config = readConfig(options.configFile)
+  virgo.config = readConfig(options.configFile) or {}
   virgo.config['token'] = virgo.config['monitoring_token']
 
   options.config = virgo.config
-
   options.tls = {}
   options.tls.rejectUnauthorized = true
   options.tls.ca = certs.caCerts

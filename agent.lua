@@ -24,19 +24,17 @@ local Emitter = require('core').Emitter
 
 local async = require('async')
 
-local MachineIdentity = require('virgo/machineidentity').MachineIdentity
-local constants = require('./constants')
-local misc = require('virgo/util/misc')
-local fsutil = require('virgo/util/fs')
-local UUID = require('virgo/util/uuid')
-local logging = require('logging')
-local endpoint = require('./endpoint')
-local deepCopyTable = require('virgo/util/misc').deepCopyTable
+local Confd = require('./confd')
 local ConnectionStream = require('virgo/client/connection_stream').ConnectionStream
 local CrashReporter = require('./crashreport').CrashReporter
-local Confd = require('./confd')
-
-local Agent = Emitter:extend()
+local MachineIdentity = require('virgo/machineidentity').MachineIdentity
+local constants = require('./constants')
+local deepCopyTable = require('virgo/util/misc').deepCopyTable
+local endpoint = require('./endpoint')
+local fsutil = require('virgo/util/fs')
+local hostname = require('./hostname')
+local logging = require('logging')
+local misc = require('virgo/util/misc')
 
 local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
 local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
@@ -46,6 +44,7 @@ local FEATURES = {
   FEATURE_CONFD
 }
 
+local Agent = Emitter:extend()
 function Agent:initialize(options, types)
   if not options.stateDirectory then
     options.stateDirectory = constants:get('DEFAULT_STATE_PATH')
@@ -254,8 +253,8 @@ function Agent:_preConfig(callback)
             logging.infof('Using detected agent ID (id=%s)', results.id)
             self._config['id'] = results.id
           else
-            logging.infof('Using hostname as agent ID (id=%s)', os.hostname())
-            self._config['id'] = os.hostname()
+            self._config['id'] = hostname()
+            logging.infof('Using hostname as agent ID (id=%s)', self._config['id'])
           end
           callback()
         end)

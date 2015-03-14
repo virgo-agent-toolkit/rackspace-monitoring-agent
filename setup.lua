@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,24 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local os = require('os')
+local JSON = require('json')
+local MachineIdentity = require('virgo/machineidentity').MachineIdentity
 local Object = require('core').Object
+local ask = require('virgo/util/prompt').ask
+local async = require('async')
+local constants = require('./constants')
+local errors = require('virgo/errors')
 local fmt = require('string').format
 local fs = require('fs')
-local timer = require('timer')
-local JSON = require('json')
+local hostname = require('./hostname')
+local los = require('los')
+local maas = require('rackspace-monitoring-client')
+local sigar = require('sigar')
 local table = require('table')
-
-local async = require('async')
-
-local MachineIdentity = require('virgo/machineidentity').MachineIdentity
-local ask = require('virgo/util/prompt').ask
-local errors = require('virgo/errors')
-local constants = require('./constants')
---local sigarCtx = require('./sigar').ctx
-
--- TODO: PORT
---local maas = require('rackspace-monitoring')
+local timer = require('timer')
 
 local Setup = Object:extend()
 function Setup:initialize(argv, configFile, agent)
@@ -49,6 +46,7 @@ function Setup:initialize(argv, configFile, agent)
   self._agent:disableUpgrades()
 
   -- build a "set" (table keyed by address) of local IP addresses
+  local sigarCtx = sigar:new()
   local netifs = sigarCtx:netifs()
 
   for i=1,#netifs do
@@ -110,7 +108,7 @@ function Setup:_out(msg)
 end
 
 function Setup:_getOsStartString()
-  if os.type() == "win32" then
+  if los.type() == "win32" then
     return 'This agent is controlled by the Windows Service Manager.'
   else
     return 'service rackspace-monitoring-agent start'
@@ -191,7 +189,7 @@ function Setup:run(callback)
     end,
     function(callback)
       if agentId == nil then
-        agentId = os.hostname()
+        agentId = hostname()
         writeAgentId = true
       end
       callback()
@@ -351,7 +349,6 @@ function Setup:run(callback)
           client.entities.list(callback)
         end,
         function(entities, callback)
-          local addresses = {}
           local localEntities = {}
 
           local function displayEntities()
@@ -450,6 +447,4 @@ function Setup:run(callback)
 
 end
 
-local exports = {}
 exports.Setup = Setup
-return exports
