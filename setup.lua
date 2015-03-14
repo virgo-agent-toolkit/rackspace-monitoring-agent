@@ -136,7 +136,8 @@ end
 
 function Setup:_buildLocalEntity(agentId)
   local addresses = {}
-  local netifs = sigarCtx:netifs()
+  local ctx = sigar:new()
+  local netifs = ctx:netifs()
 
   for i=1,#netifs do
     local info = netifs[i]:info()
