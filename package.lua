@@ -2,8 +2,9 @@ return {
   name = "rackspace-monitoring-agent",
   version = "1.9.0",
   dependencies = {
-    "virgo-agent-toolkit/virgo@0.11.0",
-    "rphillips/options@v0.0.5",
+    "rphillips/options@0.0.5",
+    "virgo-agent-toolkit/rackspace-monitoring-client@0.2.2",
+    "virgo-agent-toolkit/virgo@0.11.2",
   },
   files = {
     "**.lua",
