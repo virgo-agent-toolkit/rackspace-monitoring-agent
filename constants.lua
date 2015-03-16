@@ -33,6 +33,8 @@ constants:setGlobal('PLUGIN_TYPE_MAP', {string = 'string', int = 'int64', float 
 constants:setGlobal('CRASH_REPORT_URL', 'https://monitoring.api.rackspacecloud.com/agent-crash-report')
 constants:setGlobal('DEFAULT_PID_FILE_PATH', '/var/run/rackspace-monitoring-agent.pid')
 constants:setGlobal('VALID_SNET_REGION_NAMES', SNET_REGIONS)
+constants:setGlobal('SETUP_AUTH_CHECK_INTERVAL', 1000)
+constants:setGlobal('SETUP_AUTH_TIMEOUT', 10000)
 
 constants:setGlobal('DEFAULT_MONITORING_SRV_QUERIES_STAGING', {
   '_monitoringagent._tcp.dfw1.stage.monitoring.api.rackspacecloud.com',

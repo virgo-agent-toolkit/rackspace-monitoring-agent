@@ -24,10 +24,15 @@ local function start(...)
   local Setup = require('./setup').Setup
 
   local certs = require('./certs')
+  local timer = require('timer')
 
   local agentClient = require('./client/virgo_client')
   local connectionStream = require('./client/virgo_connection_stream')
   local protocolConnection = require('./protocol/virgo_connection')
+
+  timer.setInterval(10000, function()
+    collectgarbage()
+  end)
 
   local argv = require('options')
     .usage('Usage: ')
