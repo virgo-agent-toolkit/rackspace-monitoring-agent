@@ -78,7 +78,7 @@ function ApacheCheck:_parseScoreboard(board)
 end
 
 function ApacheCheck:_parseLine(line, checkResult)
-  local i, j = line:find(":")
+  local i = line:find(":")
 
   if not i then
     return Error:new('Invalid Apache Status Page')
@@ -148,8 +148,8 @@ function ApacheCheck:_parseLine(line, checkResult)
 
   if f == 'Scoreboard' then
     local t = self:_parseScoreboard(v)
-    for i,x in pairs(t) do
-      checkResult:addMetric(i, nil, 'uint64', x)
+    for j, x in pairs(t) do
+      checkResult:addMetric(j, nil, 'uint64', x)
     end
   end
 
@@ -192,6 +192,4 @@ function ApacheCheck:run(callback)
   req:done()
 end
 
-local exports = {}
 exports.ApacheCheck = ApacheCheck
-return exports

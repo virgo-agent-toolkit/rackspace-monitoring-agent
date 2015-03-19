@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ local childprocess = require('childprocess')
 local env = require('env')
 local fmt = require('string').format
 local logging = require('logging')
-local os = require('os')
 local table = require('table')
 local timer = require('timer')
 local vutils = require('virgo/utils')
@@ -49,7 +48,6 @@ local CheckResult = Object:extend()
 local Metric = Object:extend()
 
 local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
-local VALID_STATES = {'available', 'unavailable'}
 
 -- Default check status
 local DEFAULT_STATUS = 'success'
@@ -279,7 +277,7 @@ function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension,
     return
   end
 
-  local status, err = pcall(function()
+  local _, err = pcall(function()
     checkResult:addMetric(metricName, metricDimension, internalMetricType,
                           metricValue, metricUnit)
   end)
@@ -307,7 +305,7 @@ or add a metric).
 --]]
 function ChildCheck:_handleLine(runCtx, checkResult, line)
   local stateEndIndex, statusEndIndex, metricEndIndex, splitString, value, state
-  local metricName, metricType, metricValue, metricUnit, dotIndex, internalMetricType
+  local metricName, metricType, metricValue, metricUnit, dotIndex
   local msg, partsCount, _
   local status, metricDimension
 
@@ -403,7 +401,7 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
 
     if metricType ~= 'string' and partsCount > 4 then
       -- Only values for string metrics can contain spaces
-      local msg = fmt('Invalid "<value> [<unit>]" combination "%s" for a non-string metric', metricValue)
+      msg = fmt('Invalid "<value> [<unit>]" combination "%s" for a non-string metric', metricValue)
       self._log(logging.WARNING, fmt('Invalid metric line (line=%s) - %s', line, msg))
       self:_setError(runCtx, checkResult, msg)
       return
@@ -540,7 +538,6 @@ end
 
 function ChildCheck:_childEnv()
   local ENV_PREFIX = 'RAX_'
-  local k,v
   local cenv = {}
 
   -- process.env isn't a real table, but this works, so iterate rather than using a merge() function.
@@ -713,7 +710,6 @@ end
 
 -- Serialize a result to the format which is understood by the endpoint.
 function CheckResult:serialize()
-  local dimension, metric
   local result = {}
 
   for dimension, metrics in pairs(self._metrics) do
@@ -729,7 +725,6 @@ end
 
 function CheckResult:serializeAsPluginOutput()
   local result = {}
-  local k,v,j,metric
   local line
 
   table.insert(result, 'state '.. self:getState())
@@ -773,8 +768,6 @@ function Metric:initialize(name, dimension, type, value, unit)
   end
 end
 
-
-local exports = {}
 exports.VALID_METRIC_TYPES = VALID_METRIC_TYPES
 exports.DEFAULT_STATE = DEFAULT_STATE
 exports.DEFAULT_STATUS = DEFAULT_STATUS
@@ -783,4 +776,3 @@ exports.ChildCheck = ChildCheck
 exports.SubProcCheck = SubProcCheck
 exports.CheckResult = CheckResult
 exports.Metric = Metric
-return exports

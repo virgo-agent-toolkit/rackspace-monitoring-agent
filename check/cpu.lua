@@ -15,8 +15,6 @@ limitations under the License.
 --]]
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
-local Metric = require('./base').Metric
-local logging = require('logging')
 local timer = require('timer')
 local math = require('math')
 local table = require('table')
@@ -81,7 +79,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
   local diffcpuinfo = {}
   local percentages = {}
   local metrics = {}
-  local total = 0
+  local total
 
   -- calculate the delta between two runs
   for i = 1, #cpuinfo do
@@ -192,6 +190,4 @@ function CpuCheck:run(callback)
   end)
 end
 
-local exports = {}
 exports.CpuCheck = CpuCheck
-return exports

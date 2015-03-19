@@ -172,7 +172,6 @@ function Agent:_shutdown(msg, timeout, exit_code, shutdownType)
 end
 
 function Agent:_onShutdown(shutdownType)
-  local sleep = 0
   local timeout = 0
   local exit_code = 0
   local msg
