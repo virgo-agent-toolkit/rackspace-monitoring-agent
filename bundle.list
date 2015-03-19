@@ -103,6 +103,7 @@
 ./hostinfo/memory.lua
 ./hostinfo/network.lua
 ./hostinfo/nil.lua
+./hostinfo/packages.lua
 ./hostinfo/procs.lua
 ./hostinfo/system.lua
 ./hostinfo/who.lua

@@ -22,6 +22,7 @@ return {
   require('./memory'),
   require('./network'),
   require('./nil'),
+  require('./packages'),
   require('./procs'),
   require('./system'),
   require('./who'),
