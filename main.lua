@@ -32,7 +32,7 @@ local function start(...)
 
   timer.setInterval(10000, function()
     collectgarbage()
-  end)
+  end):unref()
 
   local argv = require('options')
     .usage('Usage: ')
