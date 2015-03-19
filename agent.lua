@@ -26,7 +26,6 @@ local async = require('async')
 
 local Confd = require('./confd')
 local ConnectionStream = require('virgo/client/connection_stream').ConnectionStream
-local CrashReporter = require('./crashreport').CrashReporter
 local MachineIdentity = require('virgo/machineidentity').MachineIdentity
 local constants = require('./constants')
 local deepCopyTable = require('virgo/util/misc').deepCopyTable
@@ -71,19 +70,6 @@ function Agent:start(options)
     end,
     function(callback)
       self:loadEndpoints(callback)
-    end,
-    function(callback)
-      local dump_dir = virgo_paths.get(virgo_paths.VIRGO_PATH_PERSISTENT_DIR)
-      local endpoints = self._config['endpoints']
-      local reporter = CrashReporter:new(virgo.virgo_version, virgo.bundle_version, virgo.platform, dump_dir, endpoints)
-      reporter:submit(function(err)
-        if err then
-          logging.info(fmt('CrashReporter done with errors: %s', tostring(err)))
-        else
-          logging.info('CrashReporter done without errors')
-        end
-      end)
-      callback()
     end,
     function(callback)
       if los.type() == 'win32' then
