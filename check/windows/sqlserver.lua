@@ -86,7 +86,6 @@ function MSSQLServerDatabaseCheck:_db_unspec(callback)
 end
 
 function MSSQLServerDatabaseCheck:initialize(params)
-  local query = ""
   if params.details == nil then
     params.details = {}
   end
@@ -214,12 +213,9 @@ function MSSQLServerPlanCacheCheck:getType()
   return 'agent.mssql_plan_cache'
 end
 
-local exports = {}
 exports.MSSQLServerVersionCheck = MSSQLServerVersionCheck
 exports.MSSQLServerDatabaseCheck = MSSQLServerDatabaseCheck
 exports.MSSQLServerBufferManagerCheck = MSSQLServerBufferManagerCheck
 exports.MSSQLServerSQLStatisticsCheck = MSSQLServerSQLStatisticsCheck
 exports.MSSQLServerMemoryManagerCheck = MSSQLServerMemoryManagerCheck
 exports.MSSQLServerPlanCacheCheck = MSSQLServerPlanCacheCheck
-
-return exports

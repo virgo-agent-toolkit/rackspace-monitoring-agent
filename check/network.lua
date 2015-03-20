@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -68,7 +68,6 @@ function NetworkCheck:run(callback)
   local s = sigar:new()
   local netifs = s:netifs()
   local checkResult = CheckResult:new(self, {})
-  local usage
 
   if not self.interface_name then
     checkResult:setError('Missing target parameter; give me an interface.')
@@ -125,6 +124,4 @@ function NetworkCheck:getLinkState(callback)
   end
 end
 
-local exports = {}
 exports.NetworkCheck = NetworkCheck
-return exports

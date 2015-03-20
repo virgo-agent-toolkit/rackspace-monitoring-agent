@@ -15,7 +15,6 @@ limitations under the License.
 --]]
 
 local BaseCheck = require('./base').BaseCheck
-local CheckResult = require('./base').CheckResult
 
 local NullCheck = BaseCheck:extend()
 
@@ -30,6 +29,4 @@ end
 function NullCheck:run(callback)
 end
 
-local exports = {}
 exports.NullCheck = NullCheck
-return exports

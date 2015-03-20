@@ -1,5 +1,5 @@
 --[[
-Copyright 2013 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ end
 
 function WindowsPowershellCmdletCheck:run(callback)
   -- Set up
-  local callback = fireOnce(callback)
+  callback = fireOnce(callback)
   local checkResult = CheckResult:new(self, {})
   local block_data = ''
 
@@ -90,7 +90,7 @@ function WindowsPowershellCmdletCheck:run(callback)
           local temp = parseCSVLine(line)
           local i = 0
           -- Map headings to indexes
-          for x, heading in pairs(temp) do
+          for _, heading in pairs(temp) do
             i = i + 1
             headings[heading] = i
           end
@@ -157,7 +157,4 @@ function WindowsPowershellCmdletCheck:run(callback)
   end
 end
 
-
-local exports = {}
 exports.WindowsPowershellCmdletCheck = WindowsPowershellCmdletCheck
-return exports

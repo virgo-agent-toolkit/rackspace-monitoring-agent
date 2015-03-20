@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local table = require('table')
-local timer = require('timer')
 local net = require('net')
 local Error = require('core').Error
 
@@ -65,7 +63,7 @@ function RedisCheck:_parseResponse(data)
   local mapItem
   local name
 
-  lines = data:gmatch('([^\n]*)\n')
+  local lines = data:gmatch('([^\n]*)\n')
   for line in lines do
     item = self:_parseLine(line)
 
@@ -88,7 +86,7 @@ end
 
 function RedisCheck:_parseLine(line)
   local parts = split(line, '[^:]+')
-  local result = {}, value
+  local result = {}
 
   if #parts < 2 then
     return nil
@@ -199,6 +197,4 @@ function RedisCheck:run(callback)
   end)
 end
 
-local exports = {}
 exports.RedisCheck = RedisCheck
-return exports

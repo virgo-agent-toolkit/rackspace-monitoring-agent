@@ -20,6 +20,7 @@ local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local table = require('table')
 local los = require('los')
+local sigar = require('sigar')
 
 local FileSystemCheck = BaseCheck:extend()
 
@@ -135,6 +136,4 @@ function FileSystemCheck:run(callback)
   callback(checkResult)
 end
 
-local exports = {}
 exports.FileSystemCheck = FileSystemCheck
-return exports

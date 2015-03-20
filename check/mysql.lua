@@ -1,5 +1,5 @@
 --[[
-Copyright 2012 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,10 +19,9 @@ local ffi = require('ffi')
 local fmt = require('string').format
 
 local SubProcCheck = require('./base').SubProcCheck
-local MySQLCheck = SubProcCheck:extend()
 local CheckResult = require('./base').CheckResult
 
-
+local MySQLCheck = SubProcCheck:extend()
 function MySQLCheck:initialize(params)
   SubProcCheck.initialize(self, params)
 
@@ -244,7 +243,7 @@ local replication_stat_map = {
 
 
 local function runQuery(conn, query, cr, clib)
-  rv = clib.mysql_query(conn, query)
+  local rv = clib.mysql_query(conn, query)
   if rv ~= 0 then
     local msg = fmt('mysql_query "%s" failed: (%d) %s',
                     query,
@@ -327,7 +326,7 @@ local function runColumnBasedQuery(conn, query, cr, clib, stat_map)
     -- is valid as per the mysql c lib. It will only add metrics that
     -- are niether empty nor nil.
     for i=0,nfields-1 do
-       kstat = stat_map[fieldnames[i]]
+       local kstat = stat_map[fieldnames[i]]
        if kstat ~= nil and r[i] ~= nil then
          local val = ffi.string(r[i])
          if val ~= '' then
@@ -473,6 +472,4 @@ function MySQLCheck:_runCheckInChild(callback)
   callback(cr)
 end
 
-local exports = {}
 exports.MySQLCheck = MySQLCheck
-return exports
