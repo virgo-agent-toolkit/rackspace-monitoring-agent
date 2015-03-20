@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ function Info:initialize()
     local obj = {}
     obj.pid = pid
 
-    local t, msg = proc:exe()
+    local t = proc:exe()
     if t then
       local exe_fields = {
         'name',
@@ -42,7 +42,7 @@ function Info:initialize()
       end
     end
 
-    t, msg = proc:time()
+    t = proc:time()
     if t then
       local time_fields = {
         'start_time',
@@ -55,7 +55,7 @@ function Info:initialize()
       end
     end
 
-    t, msg = proc:state()
+    t = proc:state()
     if t then
       local proc_fields = {
         'name',
@@ -69,7 +69,7 @@ function Info:initialize()
       end
     end
 
-    t, msg = proc:mem()
+    t = proc:mem()
     if t then
       local memory_fields = {
         'size',
