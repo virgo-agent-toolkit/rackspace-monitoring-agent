@@ -29,5 +29,5 @@ return function(maxlen)
   local buf = ffi.new("uint8_t[?]", maxlen)
   local res = ffi.C.gethostname(buf, maxlen)
   assert(res == 0)
-  return ffi.string(buf, maxlen)
+  return ffi.string(buf)
 end
