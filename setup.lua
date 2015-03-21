@@ -443,7 +443,7 @@ function Setup:run(callback)
       self:_out('')
       self:_out('')
     end
-    process.exit(0)
+    process:exit(0)
   end)
 
 end

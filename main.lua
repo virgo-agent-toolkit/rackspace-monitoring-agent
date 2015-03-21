@@ -70,7 +70,7 @@ local function start(...)
     return config
   end
 
-  if argv.args.d then
+  if argv.args.d or argv.args.u then
     local log = logging.StdoutLogger:new({
       log_level = logging.LEVELS['everything']
     })
