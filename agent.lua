@@ -171,13 +171,16 @@ function Agent:_shutdown(msg, timeout, exit_code, shutdownType)
   end
 end
 
+function Agent:disconnect()
+  self._streams:shutdown()
+end
+
 function Agent:_onShutdown(shutdownType)
   local timeout = 0
   local exit_code = 0
   local msg
 
-  -- Destroy Socket Streams
-  self._streams:shutdown()
+  self:disconnect()
 
   if shutdownType == constants:get('SHUTDOWN_UPGRADE') then
     msg = 'Shutting down agent due to upgrade'
