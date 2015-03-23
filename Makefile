@@ -3,14 +3,14 @@ TARGET=rackspace-monitoring-agent
 
 all: $(TARGET)
 
-rackspace-monitoring-agent: lit $(APP_FILES)
+$(TARGET): lit $(APP_FILES)
 	./lit make
 
 test: lit
-	./rackspace-monitoring-agent -e tests
+	./$(TARGET) -e tests
 
 clean:
-	rm -rf rackspace-monitoring-agent lit lit-* luvi
+	rm -rf $(TARGET) lit
 
 lit:
 	curl -L https://github.com/luvit/lit/raw/1.0.2/get-lit.sh | sh
