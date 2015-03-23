@@ -3,6 +3,8 @@ Rackspace Monitoring Agent
 
 [![Build Status](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent.png?branch=master)](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent) [![Stories in Ready](https://badge.waffle.io/virgo-agent-toolkit/rackspace-monitoring-agent.png?label=ready&title=Ready)](https://waffle.io/virgo-agent-toolkit/waffle-tracker)
 
+[![Throughput Graph](https://graphs.waffle.io/virgo-agent-toolkit/waffle-tracker/throughput.svg)](https://waffle.io/virgo-agent-toolkit/waffle-tracker/metrics)
+
 The monitoring agent is the first agent to use the infrastructure provided by
 [virgo-base-agent](https://github.com/virgo-agent-toolkit/virgo-base-agent)
 
