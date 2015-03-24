@@ -23,6 +23,7 @@ local childprocess = require('childprocess')
 local env = require('env')
 local fmt = require('string').format
 local logging = require('logging')
+local math = require('math')
 local table = require('table')
 local timer = require('timer')
 local vutils = require('virgo_utils')
@@ -209,16 +210,14 @@ function BaseCheck:schedule()
     return
   end
 
+  local timeout = self.period * 1000
   if self._firstRun then
     self._firstRun = false
-    process.nextTick(function()
-      self:_runCheck()
-    end)
-    return
+    timeout = timeout * math.random()
   end
 
-  self._log(logging.INFO, fmt('%s scheduled for %ss', self:toString(), self.period))
-  self._timer = timer.setTimeout(self.period * 1000, utils.bind(BaseCheck._runCheck, self))
+  self._log(logging.INFO, fmt('%s scheduled for %ss', self:toString(), timeout))
+  self._timer = timer.setTimeout(timeout, utils.bind(BaseCheck._runCheck, self))
 end
 
 function BaseCheck:clearSchedule()
