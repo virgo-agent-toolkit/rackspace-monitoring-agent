@@ -484,6 +484,9 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
           checkStatus = fmt('Plugin exited with non-zero status code (code=%s)', (code))
         end
 
+        -- some python crash dumps print to stdout and were getting set in the
+        -- status line. clear the status line and set to failure
+        checkResult:setStatus("failure")
         checkResult:setError(checkStatus)
       end
 
