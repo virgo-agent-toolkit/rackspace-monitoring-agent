@@ -46,9 +46,13 @@ function LineEmitter:write(chunk)
       self.buffer = last
     else
       if self._includeNewLine then
-        self:emit('data', line .. '\n')
+        process.nextTick(function()
+          self:emit('data', line .. '\n')
+        end)
       else
-        self:emit('data', line)
+        process.nextTick(function()
+          self:emit('data', line)
+        end)
       end
     end
   end
