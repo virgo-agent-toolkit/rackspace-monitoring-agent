@@ -213,7 +213,7 @@ function BaseCheck:schedule()
   local timeout = self.period * 1000
   if self._firstRun then
     self._firstRun = false
-    timeout = timeout * math.random()
+    timeout = math.floor(timeout * math.random())
   end
 
   self._log(logging.INFO, fmt('%s scheduled for %ss', self:toString(), timeout))
