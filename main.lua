@@ -23,6 +23,9 @@ local function start(...)
 
   local MonitoringAgent = require('./agent').Agent
   local Setup = require('./setup').Setup
+  local los = require('los')
+  local WinSvcWrap = require('./winsvcwrap')
+  local timer = require('timer')
   local agentClient = require('./client/virgo_client')
   local certs = require('./certs')
   local connectionStream = require('./client/virgo_connection_stream')
@@ -43,7 +46,6 @@ local function start(...)
 
   local argv = require('options')
     .describe("i", "use insecure tls cert")
-    .describe("l", "log file path")
     .describe("e", "entry module")
     .describe("x", "runner params (eg. check or hostinfo to run)")
     .describe("s", "state directory path")
@@ -53,7 +55,9 @@ local function start(...)
     .describe("z", "lock file path")
     .describe("o", "skip automatic upgrade")
     .describe("d", "enable debug logging")
-    .describe("l", "log file")
+    .describe("l", "log file path")
+    .describe("w", "windows service command: install, delete, start, stop, status")
+    .alias({['w'] = 'winsvc'})
     .alias({['o'] = 'no-upgrade'})
     .alias({['p'] = 'pidfile'})
     .alias({['j'] = 'confd'})
@@ -66,12 +70,12 @@ local function start(...)
     .alias({['U'] = 'username'})
     .describe("K", "apikey")
     .alias({['K'] = 'apikey'})
-    .argv("idonhl:U:K:e:x:p:c:j:s:n:k:uz:")
+    .argv("idonhl:U:K:e:x:p:c:j:s:n:k:ul:z:w:")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 
   if argv.args.h then
-    argv.showUsage("idonhU:K:e:x:p:c:j:s:n:k:ul:z:")
+    argv.showUsage("idonhU:K:e:x:p:c:j:s:n:k:ul:z:w:")
     process:exit(0)
   end
 
@@ -85,6 +89,22 @@ local function start(...)
       config[key] = value
     end
     return config
+  end
+
+  if argv.args.w then
+    -- set up windows service 
+    if argv.args.w == 'install' then
+      WinSvcWrap.SvcInstall(virgo.pkg_name, "Rackspace Monitoring Service", "Monitors this host")
+    elseif argv.args.w == 'delete' then
+      WinSvcWrap.SvcDelete(virgo.pkg_name)
+    elseif argv.args.w == 'start' then
+      WinSvcWrap.SvcStart(virgo.pkg_name)
+    elseif argv.args.w == 'stop' then
+      WinSvcWrap.SvcStop(virgo.pkg_name)
+    else
+      -- write something here....
+    end
+    return
   end
 
   if argv.args.d or argv.args.u then
@@ -171,7 +191,13 @@ local function start(...)
       if argv.args.u then
         Setup:new(argv, options.configFile, agent):run()
       else
-        agent:start(options)
+        if los.type() == 'win32' then
+          WinSvcWrap.tryRunAsService(virgo.pkg_name, function()
+            agent:start(options)
+          end) 
+        else
+          agent:start(options)
+        end 
       end
       callback()
     end
