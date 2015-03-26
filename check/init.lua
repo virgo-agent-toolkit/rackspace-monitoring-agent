@@ -33,8 +33,9 @@ local Windows = require('./windows')
 local Error = require('core').Error
 
 local merge = require('/base/util/misc').merge
-local fmt = require('string').format
 local asserts = require('bourbon').asserts
+local timer = require('timer')
+local math = require('math')
 
 local check_classes = {
   CpuCheck = CpuCheck,
@@ -85,8 +86,11 @@ local function test(checkParams, callback)
   end
   local check = create(checkParams)
   if check then
-    check:run(function(results)
-      callback(nil, check, results)
+    local timeout = math.random(25, 50) -- milliseconds
+    timer.setTimeout(timeout, function()
+      check:run(function(results)
+        callback(nil, check, results)
+      end)
     end)
   else
     callback(Error:new('Invalid check type'))
