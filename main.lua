@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 local function start(...)
+  local uv = require('uv')
   local async = require('async')
   local fs = require('fs')
   local logging = require('logging')
@@ -24,15 +25,14 @@ local function start(...)
   local Setup = require('./setup').Setup
 
   local certs = require('./certs')
-  local timer = require('timer')
 
   local agentClient = require('./client/virgo_client')
   local connectionStream = require('./client/virgo_connection_stream')
   local protocolConnection = require('./protocol/virgo_connection')
 
-  timer.setInterval(10000, function()
-    collectgarbage()
-  end):unref()
+  local gcCollect = uv.new_prepare()
+  uv.prepare_start(gcCollect, function() collectgarbage('step') end)
+  uv.unref(gcCollect)
 
   local argv = require('options')
     .usage('Usage: ')
