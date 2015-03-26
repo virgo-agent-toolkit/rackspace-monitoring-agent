@@ -47,6 +47,8 @@ local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 local Metric = Object:extend()
 
+local CHECK_SCHEDULE_JITTER = 15000 -- milliseconds
+
 local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
 
 -- Default check status
@@ -208,16 +210,16 @@ function BaseCheck:schedule()
     return
   end
 
+  local timeout = self.period * 1000
   if self._firstRun then
     self._firstRun = false
-    process.nextTick(function()
-      self:_runCheck()
-    end)
-    return
+    timeout = math.floor(timeout * math.random())
+  else
+    timeout = timeout + math.random(1, CHECK_SCHEDULE_JITTER)
   end
 
   self._log(logging.INFO, fmt('%s scheduled for %ss', self:toString(), self.period))
-  self._timer = timer.setTimeout(self.period * 1000, utils.bind(BaseCheck._runCheck, self))
+  self._timer = timer.setTimeout(timeout, utils.bind(BaseCheck._runCheck, self))
 end
 
 function BaseCheck:clearSchedule()

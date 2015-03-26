@@ -30,6 +30,9 @@ local LoadAverageCheck = require('./load_average').LoadAverageCheck
 local PluginCheck = require('./plugin').PluginCheck
 local Windows = require('./windows')
 
+local timer = require('timer')
+local math = require('math')
+
 local Error = require('core').Error
 
 local merge = require('virgo/util/misc').merge
@@ -81,13 +84,15 @@ local function test(checkParams, callback)
     return
   end
   local check = create(checkParams)
-  if check then
+  if not check then
+    return callback(Error:new('Invalid check type'))
+  end
+  local timeout = math.random(25, 25) -- milliseconds
+  timer.setTimeout(timeout, function()
     check:run(function(results)
       callback(nil, check, results)
     end)
-  else
-    callback(Error:new('Invalid check type'))
-  end
+  end)
 end
 
 -- Fetch Targets
