@@ -4,7 +4,7 @@ return {
   dependencies = {
     "rphillips/options@0.0.5",
     "virgo-agent-toolkit/rackspace-monitoring-client@0.3.4",
-    "virgo-agent-toolkit/virgo@0.11.5",
+    "virgo-agent-toolkit/virgo@0.12.0",
   },
   files = {
     "**.lua",
