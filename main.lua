@@ -94,10 +94,12 @@ local function start(...)
   types.AgentClient = agentClient
   types.ConnectionStream = connectionStream
 
-  virgo.config = readConfig(options.configFile) or {}
-  virgo.config['token'] = virgo.config['monitoring_token']
+  if not argv.args.x then
+    virgo.config = readConfig(options.configFile) or {}
+    virgo.config['token'] = virgo.config['monitoring_token']
+    options.config = virgo.config
+  end
 
-  options.config = virgo.config
   options.tls = {}
   options.tls.rejectUnauthorized = true
   options.tls.ca = certs.caCerts

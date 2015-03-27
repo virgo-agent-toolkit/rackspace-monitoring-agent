@@ -29,13 +29,14 @@ local function run(...)
   end
 
   typeName = argv.args.x
-  print("HostInfo Running " .. typeName .. "\n")
   klass = HostInfo.create(typeName)
   klass:run(function(err, callback)
-    print("Serialized Results:\n" .. json.stringify(klass:serialize(), {beautify = true}))
+    if err then
+      print(json.stringify({error = err}))
+    else
+      print(json.stringify(klass:serialize()))
+    end
   end)
 end
 
-return {
-  run = run
-}
+return { run = run }
