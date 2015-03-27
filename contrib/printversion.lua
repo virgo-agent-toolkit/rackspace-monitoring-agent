@@ -1,1 +1,2 @@
-print(require('../package.lua').version)
+local pathJoin = require('luvi').path.join
+print(require('./package').version)

@@ -5,6 +5,7 @@ project(rackspace-monitoring-agent NONE)
 set(APP_NAME    "rackspace-monitoring-agent")
 set(APP_VENDOR  "Rackspace")
 set(APP_SUMMARY "Rackspace Monitoring Agent")
+set(APP_CONTACT "monitoring@rackspace.com")
 
 set(ENV{LUVI_APP} ".")
 set(ENV{LUVI_MAIN} "contrib/printversion.lua")
@@ -33,11 +34,18 @@ option(WithPackageBUNDLE "Build OSX bundle." OFF)
 
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt)
 
-install(PROGRAMS rackspace-monitoring-agent DESTINATION bin)
+install(PROGRAMS ${APP_NAME} DESTINATION bin)
 
 ###############################################################################
 ## Packaging
 ###############################################################################
+
+if (NOT CPACK_SYSTEM_NAME)
+  set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_PROCESSOR}")
+  if (CPACK_SYSTEM_NAME STREQUAL "x86_64")
+    set(CPACK_SYSTEM_NAME "amd64")
+  endif ()
+endif ()
 
 if(WithPackageSH OR WithPackageTGZ OR WithPackageTBZ2 OR WithPackageDEB
    OR WithPackageRPM OR WithPackageNSIS OR WithPackageBUNDLE)
@@ -47,6 +55,7 @@ if(WithPackageSH OR WithPackageTGZ OR WithPackageTBZ2 OR WithPackageDEB
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${APP_SUMMARY})
   set(CPACK_PACKAGE_VERSION ${VERSION_SHORT})
   set(CPACK_PACKAGE_INSTALL_DIRECTORY ${APP_NAME})
+  set(CPACK_PACKAGE_CONTACT ${APP_CONTACT})
   set(CPACK_NSIS_MODIFY_PATH ON)
 
   unset(PACKAGE_LIST)
@@ -66,7 +75,7 @@ if(WithPackageSH OR WithPackageTGZ OR WithPackageTBZ2 OR WithPackageDEB
     list(APPEND CPACK_GENERATOR "DEB")
     list(APPEND PACKAGE_LIST "DEB package (.deb)")
     set(CPACK_DEBIAN_PACKAGE_SECTION "net")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Luvit Authors")
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${CPACK_SYSTEM_NAME}")
   endif ()
   if (WithPackageRPM)
     list(APPEND CPACK_GENERATOR "RPM")

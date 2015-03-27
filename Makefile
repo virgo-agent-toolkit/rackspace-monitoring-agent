@@ -18,11 +18,11 @@ lit:
 lint:
 	find . -name "*.lua" | xargs luacheck
 
-package-rpm:
+package-rpm: $(TARGET)
 	cmake -H. -Bbuild -DWithPackageRPM=ON
 	cmake --build build -- package
 
-package-deb:
+package-deb: $(TARGET)
 	cmake -H. -Bbuild -DWithPackageDEB=ON
 	cmake --build build -- package
 
