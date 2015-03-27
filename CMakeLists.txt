@@ -31,6 +31,8 @@ option(WithPackageBUNDLE "Build OSX bundle." OFF)
 ## Installation Targets
 ###############################################################################
 
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt)
+
 install(PROGRAMS rackspace-monitoring-agent DESTINATION bin)
 
 ###############################################################################
