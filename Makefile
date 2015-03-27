@@ -18,7 +18,7 @@ lit:
 lint:
 	find . -name "*.lua" | xargs luacheck
 
-package: $(TARGET)
+package:
 	cmake -H. -Bbuild
 	cmake --build build -- package
 
