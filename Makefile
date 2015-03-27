@@ -18,12 +18,8 @@ lit:
 lint:
 	find . -name "*.lua" | xargs luacheck
 
-package-rpm: $(TARGET)
-	cmake -H. -Bbuild -DWithPackageRPM=ON
-	cmake --build build -- package
-
-package-deb: $(TARGET)
-	cmake -H. -Bbuild -DWithPackageDEB=ON
+package: $(TARGET)
+	cmake -H. -Bbuild
 	cmake --build build -- package
 
 .PHONY: clean lint
