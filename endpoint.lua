@@ -18,22 +18,20 @@ local constants = require('./constants')
 local staging = require('./staging')
 local endpoint = require('virgo/client/endpoint')
 
-function getEndpointSRV()
+local function getEndpointSRV()
   if staging.isStaging() then
     return constants:get('DEFAULT_MONITORING_SRV_QUERIES_STAGING')
   end
   return constants:get('DEFAULT_MONITORING_SRV_QUERIES')
 end
 
-function getServiceNetSRV()
+local function getServiceNetSRV()
   if staging.isStaging() then
     return constants:get('SNET_MONITORING_TEMPLATE_SRV_QUERIES_STAGING')
   end
   return constants:get('SNET_MONITORING_TEMPLATE_SRV_QUERIES')
 end
 
-local exports = {}
 exports.Endpoint = endpoint.Endpoint
 exports.getEndpointSRV = getEndpointSRV
 exports.getServiceNetSRV = getServiceNetSRV
-return exports
