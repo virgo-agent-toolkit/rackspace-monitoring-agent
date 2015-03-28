@@ -10,7 +10,7 @@ set(APP_CONTACT "monitoring@rackspace.com")
 set(ENV{LUVI_APP} ".")
 set(ENV{LUVI_MAIN} "contrib/printversion.lua")
 execute_process(
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/lit
+  COMMAND lit
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   OUTPUT_VARIABLE VERSION_SHORT
   OUTPUT_STRIP_TRAILING_WHITESPACE
