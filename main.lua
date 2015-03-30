@@ -156,6 +156,5 @@ return require('luvit')(function(...)
   options.paths.config_dir = "/etc"
   options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
   options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
-  require('virgo')(options)
-  start(...)
+  require('virgo')(options, start)
 end)
