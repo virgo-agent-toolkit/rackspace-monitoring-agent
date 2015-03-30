@@ -1,0 +1,61 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          $PKG_NAME
+# Required-Start:    $network
+# Required-Stop:     $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: $SHORT_DESCRIPTION
+# Description:       $LONG_DESCRIPTION
+### END INIT INFO
+
+NAME=$PKG_NAME
+DAEMON=/usr/bin/$PKG_NAME
+PIDFILE=/var/run/$PKG_NAME.pid
+LOG=/var/log/$PKG_NAME.log
+
+[ -r /etc/default/$PKG_NAME ] && . /etc/default/$PKG_NAME
+test -f $DAEMON || exit 0
+
+# If upstart is installed, use it instead
+if [ -x /lib/init/upstart-job ]; then
+        /lib/init/upstart-job $PKG_NAME $@
+        exit $?
+fi
+
+. /lib/lsb/init-functions
+
+case "$1" in
+start)	log_daemon_msg "Starting $NAME" "$NAME"
+        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --startas $DAEMON -- -D -p $PIDFILE -l $LOG --production --restart-sysv-on-upgrade $EXTRA_OPTS
+        log_end_msg $?
+	;;
+stop)	log_daemon_msg "Stopping $NAME" "$NAME"
+        start-stop-daemon --stop --quiet --pidfile $PIDFILE --exec $DAEMON
+        log_end_msg $?
+        ;;
+restart) log_daemon_msg "Restarting $NAME" "$NAME"
+        start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE --exec $DAEMON
+        start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --startas $DAEMON -- -D -p $PIDFILE -l $LOG --production --restart-sysv-on-upgrade $EXTRA_OPTS
+        log_end_msg $?
+        ;;
+status)
+       log_action_begin_msg "Checking $NAME"
+       if pidofproc -p "$PIDFILE" >/dev/null; then
+            log_action_end_msg 0 "running"
+            exit 0
+       else
+           if [ -e "$PIDFILE" ]; then
+                log_action_end_msg 1 "failed to start"
+                exit 1
+           else
+                log_action_end_msg 0 "not running"
+                exit 3
+           fi
+       fi
+         ;;
+*)	log_action_msg "Usage: /etc/init.d/$PKG_NAME {start|stop|status|restart}"
+        exit 2
+        ;;
+esac
+exit 0

@@ -1,0 +1,12 @@
+Source: $PKG_NAME
+Section: admin
+Priority: optional
+Maintainer: $MAINTAINER
+Build-Depends: debhelper (>= 7), python, build-essential
+Standards-Version: 3.9.1
+
+Package: $PKG_NAME
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: $SHORT_DESCRIPTION
+ $LONG_DESCRIPTION

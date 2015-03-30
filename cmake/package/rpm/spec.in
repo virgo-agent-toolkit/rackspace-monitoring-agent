@@ -1,0 +1,90 @@
+Name:		$PKG_NAME
+Version:	$VERSION_SHORT
+Release:	$VERSION_RELEASE
+Summary:	$SHORT_DESCRIPTION
+
+Group:		System Environment/Daemons
+License:	Apache 2.0
+URL:		$DOCUMENTATION_LINK
+#Source0:	$REPO/tarball/$TARNAME.tar.gz
+Source: 	$PKG_NAME-$VERSION_FULL.tar.gz
+BuildRoot:	%(mktemp -ud %{_tmppath}/$PKG_NAME-%{version}-%{release}-XXXXXX)
+
+BuildRequires:	python
+Requires:	glibc
+Requires(post): chkconfig
+Requires(preun): chkconfig
+# This is for /sbin/service
+Requires(preun): initscripts
+
+%description
+$LONG_DESCRIPTION
+
+
+%prep
+%setup -q -n $PKG_NAME-$VERSION_FULL
+
+
+%build
+./configure
+make %{?_smp_mflags}
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+# TODO: do distro detection here
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system/
+install -m 644 ${VIRGO_BASE_DIR}/pkg/out/${PKG_NAME}.service $RPM_BUILD_ROOT/%{_sysconfdir}/systemd/system
+install -d $RPM_BUILD_ROOT/%{_initrddir}
+install -m 755 ${VIRGO_BASE_DIR}/pkg/out/sysv-${PKG_NAME} $RPM_BUILD_ROOT/%{_initrddir}/${PKG_NAME}
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d
+install -m 644 ${VIRGO_BASE_DIR}/pkg/out/script $RPM_BUILD_ROOT/%{_sysconfdir}/logrotate.d/${PKG_NAME}
+# With the first RPM packages we accidently installed the configuration file as
+# an RPM owned "%file" but didn't mark it as a "%config" file. Now we can't
+# really go back on that. So, install an empty config file which will cause the
+# agent to complain about a missing monitoring_id on start
+touch $RPM_BUILD_ROOT/%{_sysconfdir}/${PKG_NAME}.cfg
+
+install -d $RPM_BUILD_ROOT/%{_sysconfdir}/${PKG_NAME}.conf.d
+
+%check
+make test
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%post
+# This adds the proper /etc/rc*.d links for the script
+/sbin/chkconfig --add $PKG_NAME
+
+mkdir -p /var/lib/rackspace-monitoring-agent
+
+# Restart agent on upgrade
+if [ "$1" = "2" ] ; then
+    /sbin/service $PKG_NAME stop  >/dev/null 2>&1 || :
+    /sbin/service $PKG_NAME start >/dev/null 2>&1 || :
+fi
+
+%preun
+# Uninstall the service links on uninstall
+if [ "$1" = "0" ] ; then
+    /sbin/service $PKG_NAME stop >/dev/null 2>&1 || :
+    /sbin/chkconfig --del $PKG_NAME
+fi
+
+%files
+%defattr(-,root,root,-)
+%doc README.md LICENSE.txt
+%{_bindir}/$PKG_NAME
+%{_datadir}/$PKG_NAME/*
+%{_sysconfdir}/systemd/system/$PKG_NAME.service
+%{_sysconfdir}/logrotate.d/$PKG_NAME
+%{_initrddir}/$PKG_NAME
+%config(noreplace) %{_sysconfdir}/$PKG_NAME.cfg
+%config(noreplace) %{_sysconfdir}/$PKG_NAME.conf.d
+
+%changelog
+

@@ -1,0 +1,10 @@
+[Unit]
+Description=$SHORT_DESCRIPTION
+Documentation=$DOCUMENTATION_LINK
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/$PKG_NAME -l /var/log/$PKG_NAME.log --production --exit-on-upgrade
+
+[Install]
+WantedBy=multi-user.target

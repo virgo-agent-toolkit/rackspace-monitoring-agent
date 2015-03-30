@@ -1,0 +1,50 @@
+#!/usr/bin/make -f
+
+NAME=$PKG_NAME
+DESTDIR=$(CURDIR)/debian/$(NAME)
+ETCDIR=$(DESTDIR)/etc
+BINDIR=$(DESTDIR)/usr/bin
+SHAREDIR=$(DESTDIR)/usr/share/$(NAME)
+INITDIR=$(DESTDIR)/etc/init
+INITDDIR=$(DESTDIR)/etc/init.d
+LOGROTATEDDIR=$(DESTDIR)/etc/logrotate.d
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+	$(MAKE) clean
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	./configure
+	$(MAKE)
+	touch build-stamp
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	DESTDIR=$(DESTDIR) $(MAKE) install
+	install -d $(INITDIR)
+	install -o root -g root -m 644 debian/package.upstart $(INITDIR)/$(NAME).conf
+	install -d $(INITDDIR)
+	install -o root -g root -m 755 debian/package.init $(INITDDIR)/$(NAME)
+	install -d $(LOGROTATEDDIR)
+	install -o root -g root -m 644 $(CURDIR)/base/pkg/out/script $(LOGROTATEDDIR)/$(NAME)
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_install
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

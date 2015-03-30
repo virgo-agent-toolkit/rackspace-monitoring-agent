@@ -1,0 +1,12 @@
+/var/log/$PKG_NAME.log {
+    missingok
+    rotate 12
+    size 10M
+    compress
+    delaycompress
+    notifempty
+    create 640 root adm
+    postrotate
+      kill -HUP `cat /var/run/$PKG_NAME.pid`
+    endscript
+}

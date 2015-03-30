@@ -1,0 +1,3 @@
+#!/bin/sh
+
+update-rc.d -f $PKG_NAME remove

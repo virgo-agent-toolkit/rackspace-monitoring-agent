@@ -1,0 +1,12 @@
+#!/bin/sh
+
+. /etc/rc.subr
+
+name=rackspace-monitoring-agent
+rcvar=rackspace_monitoring_agent_enable
+logfile="/var/log/${name}.log"
+pidfile="/var/run/${name}.pid"
+start_cmd="/usr/sbin/daemon -p ${pidfile} /usr/bin/${name} --logfile ${logfile}"
+
+load_rc_config $name
+run_rc_command "$1"

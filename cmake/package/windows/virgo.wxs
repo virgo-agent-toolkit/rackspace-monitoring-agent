@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+  <?define ProductVersion = $(var.VERSIONSHORT) ?>
+  <?define ProductName = $(var.SHORT_DESCRIPTION) ?>
+  <?define ProductShortName = $(var.SHORT_NAME) ?>
+  <?define ProductDescription = $(var.WIN_PRODUCT_DESCRIPTION) ?>
+  <?define ProductServiceDescription = $(var.LONG_DESCRIPTION) ?>
+  <?define ProductAuthor = $(var.AUTHOR) ?>
+  <?define ProductDir = $(var.PRODUCTDIR) ?>
+  <?define RepoDir = $(var.REPODIR) ?>
+  <?define BundleName = $(var.BUNDLE_NAME) ?>
+  <?define PkgName = $(var.PKG_NAME) ?>
+  <?define PFilesDir = $(var.PFILESDIR) ?>
+  <!--    <?define ProductDir = $(var.PRODUCTDIR) ?> -->
+  <!--    <?define ProductDir='C:\data\virgo\Debug' ?> -->
+  <?define SourceDir = $(var.RepoDir) ?>
+  <Product Name="$(var.ProductName)" Id="*" UpgradeCode="826873C9-1A63-4A05-98F4-95D8D8EF3507" Language="1033" Codepage="1252" Version="$(var.ProductVersion)" Manufacturer="$(var.ProductAuthor)">
+    <Package Id="*" Keywords="Installer" Description="$(var.ProductName) Installer" Comments="$(var.ProductDescription)" Manufacturer="$(var.ProductAuthor)" InstallerVersion="200" Languages="1033" Compressed="yes" SummaryCodepage="1252" InstallScope="perMachine" />
+    <Upgrade Id="826873C9-1A63-4A05-98F4-95D8D8EF3507">
+      <UpgradeVersion OnlyDetect="no" Property="PREVIOUSFOUND" Minimum="1.0.0.0" IncludeMinimum="yes" Maximum="99.0.0.0" IncludeMaximum="no" />
+    </Upgrade>
+    <InstallExecuteSequence>
+      <RemoveExistingProducts Before="InstallInitialize" />
+    </InstallExecuteSequence>
+    <Media Id="1" Cabinet="$(var.ProductName)Installer.cab" EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.PFilesDir)" Name="PFiles">
+        <Directory Id="RAXMONAGENT" Name="$(var.ProductShortName)">
+          <Component Id="MainExecutable" Guid="F044290F-E32E-438D-8E1A-C628E0353BD4">
+            <!--TODO: build the exe with the correct name or link it or something -->
+            <File Id="agent_exe"
+                    Name="$(var.PkgName).exe"
+                    DiskId="1"
+                    Source='$(var.ProductDir)\virgo.exe' KeyPath="yes">
+            </File>
+            <!--  Vital="yes" Removed until we can fixup more services integration. -->
+            <!--  Suppress upgrading until it it firther tested, hard code a log file for the short term -->
+            <ServiceInstall Id="Install$(var.ProductName)"
+                Name="$(var.ProductName)"
+                DisplayName="$(var.ProductName)"
+                Type="ownProcess"
+                Start="auto"
+                Vital="yes"
+                ErrorControl="normal"
+                Arguments='--logfile "C:\ProgramData\$(var.ProductShortName)\log.txt"'
+                Description="$(var.ProductServiceDescription)">
+              <util:ServiceConfig
+                  FirstFailureActionType="restart"
+                  SecondFailureActionType="restart"
+                  ThirdFailureActionType="restart"
+                  RestartServiceDelayInSeconds="10" />
+            </ServiceInstall>
+            <ServiceControl Id="StartControlAgent" Name="$(var.ProductName)" Start="install" Wait="no" />
+            <ServiceControl Id="StopControlAgent" Name="$(var.ProductName)" Stop="both" Remove="uninstall" Wait="yes" />
+
+          </Component>
+          <Directory Id="PLUGINS" Name="plugins">
+            <Component Id="PluginDirectory" Guid="9DC64F5F-0B17-4C73-AEEC-A906DB3DEF84">
+              <CreateFolder />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+      <Directory Id="CommonAppDataFolder" Name="ComApptDt">
+        <Directory Id="RaxMonFolder" Name="$(var.ProductShortName)">
+          <Directory Id="RAXMONAGENTCONF" Name="config">
+            <Component Id="ConfigDirectory" Guid="FB99EF1C-AF81-4257-9392-FBA49851A856">
+              <CreateFolder />
+            </Component>
+            <Directory Id="RAXMONSERVERSIDECONF" Name="$(var.PkgName).conf.d">
+              <Component Id="ServerSideConfigDirectory" Guid="6D2E31E6-F109-44CF-88FB-BE9FDD34C557">
+                <CreateFolder />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+    <Feature Id="Complete" Level="1">
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="PluginDirectory" />
+      <ComponentRef Id="ConfigDirectory" />
+      <ComponentRef Id="ServerSideConfigDirectory" />
+    </Feature>
+    <Icon Id="agent_icon" SourceFile="$(var.BUNDLE_DIR)\agent.ico" />
+    <Property Id="ARPPRODUCTICON" Value="agent_icon" />
+    <UIRef Id="WixUI_Minimal" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.BUNDLE_DIR)\base\LICENSE.rtf" />
+    <!--
+        <UI>
+            <Dialog Id="GetRackspaceCreds" Width="370" Height="270">
+                <Control Type="Edit" Id="username" Width="255" Height="15" X="40" Y="90" />
+                <Control Type="Edit" Id="apikey" Width="255" Height="15" X="40" Y="150" />
+            </Dialog>
+            <UIText Id="Username">Username:</UIText>
+        </UI>
+        <Property Id="rackspace_username" />
+        <Property Id="rackspace_apikey" />
+        -->
+  </Product>
+</Wix>
