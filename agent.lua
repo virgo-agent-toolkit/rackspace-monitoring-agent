@@ -22,6 +22,8 @@ local table = require('table')
 local fmt = require('string').format
 local Emitter = require('core').Emitter
 
+local sigar = require('sigar')
+local uuid = require('virgo/util/uuid')
 local async = require('async')
 
 local Confd = require('./confd')
@@ -353,13 +355,13 @@ function Agent:_queryForEndpoints(domains, callback)
 end
 
 function Agent:_getSystemId()
-  --local netifs = sigarCtx:netifs()
-  --for i=1, #netifs do
-  --  local eth = netifs[i]:info()
-  --  if eth['type'] ~= 'Local Loopback' then
-  --    return UUID:new(eth.hwaddr):toString()
-  --  end
-  --end
+  local netifs = sigar:new():netifs()
+  for i=1, #netifs do
+    local eth = netifs[i]:info()
+    if eth['type'] ~= 'Local Loopback' then
+      return uuid:new(eth.hwaddr):toString()
+    end
+  end
   return nil
 end
 
