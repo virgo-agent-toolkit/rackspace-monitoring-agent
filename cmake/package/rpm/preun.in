@@ -1,0 +1,5 @@
+# Uninstall the service links on uninstall
+if [ "$1" = "0" ] ; then
+    /sbin/service $PKG_NAME stop >/dev/null 2>&1 || :
+    /sbin/chkconfig --del $PKG_NAME
+fi
