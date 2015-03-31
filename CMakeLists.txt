@@ -75,6 +75,8 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
 
     ### Do not Strip RPM
     set(CPACK_RPM_SPEC_INSTALL_POST "/bin/true")
+
+    include(createrepo)
   elseif(${SPECIFIC_SYSTEM_PREFERED_CPACK_GENERATOR} MATCHES "DEB")
     ### Control Files
     set(DEB_POSTRM ${GENERATED_PACKAGE_SCRIPTS}/debian/postrm)
