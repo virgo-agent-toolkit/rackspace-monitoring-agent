@@ -1,20 +1,20 @@
 #!/bin/sh
-update-rc.d $PKG_NAME defaults 91 09
+update-rc.d @APP_NAME@ defaults 91 09
 
-mkdir -p /var/lib/$PKG_NAME
-mkdir -p /etc/$PKG_NAME.conf.d
+mkdir -p /var/lib/@APP_NAME@
+mkdir -p /etc/@APP_NAME@.conf.d
 
 case "$1" in
     configure)
-         /etc/init.d/$PKG_NAME stop || :
+         /etc/init.d/@APP_NAME@ stop || :
 
          # Cleanup init's mess if it fails to stop
-         PIDFILE=/var/run/$PKG_NAME.pid
+         PIDFILE=/var/run/@APP_NAME@.pid
          start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE --name rackspace-monit --signal KILL
 
          # Start only if we find a config file in place
-         if [ -f /etc/$PKG_NAME.cfg ]; then
-              /etc/init.d/$PKG_NAME start || :
+         if [ -f /etc/@APP_NAME@.cfg ]; then
+              /etc/init.d/@APP_NAME@ start || :
          fi
         ;;
     *)

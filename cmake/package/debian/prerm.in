@@ -2,7 +2,7 @@
 case "$1" in
     remove)
         # Stop the agent if we are removing
-        service $PKG_NAME stop || :
+        service @APP_NAME@ stop || :
         ;;
     upgrade)
         :
