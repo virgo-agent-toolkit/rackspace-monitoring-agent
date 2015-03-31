@@ -22,10 +22,10 @@ package:
 	cmake -H. -Bbuild
 	cmake --build build -- package
 
-packagerepo: package
+packagerepo:
 	cmake --build build -- packagerepo
 
-packagerepoupload: packagerepo
+packagerepoupload:
 	cmake --build build -- packagerepoupload
 
 .PHONY: clean lint package packagerepo
