@@ -6,7 +6,6 @@ set(APP_NAME    "rackspace-monitoring-agent")
 set(APP_VENDOR  "Rackspace")
 set(APP_SUMMARY "Rackspace Monitoring Agent")
 set(APP_CONTACT "monitoring@rackspace.com")
-set(REPO_RPM_NAME "cloudmonitoring")
 
 set(ENV{LUVI_APP} ".")
 set(ENV{LUVI_MAIN} "contrib/printversion.lua")
@@ -38,6 +37,9 @@ set(PACKAGE_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/package")
 set(GENERATED_PACKAGE_SCRIPTS "${CMAKE_BINARY_DIR}/package")
 set(REPOSITORY_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/repo")
 set(GENERATED_REPOSITORY_SCRIPTS "${CMAKE_BINARY_DIR}/repo")
+
+set(REPO_RPM_NAME "cloudmonitoring")
+set(REPO_UPLOAD_CLOUD "rackspace")
 
 install(PROGRAMS ${APP_NAME} DESTINATION bin)
 install(FILES ${LICENSE_FILE} DESTINATION share/${APP_NAME})

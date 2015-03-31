@@ -25,4 +25,7 @@ package:
 packagerepo: package
 	cmake --build build -- packagerepo
 
+packagerepoupload: packagerepo
+	cmake --build build -- packagerepoupload
+
 .PHONY: clean lint package packagerepo

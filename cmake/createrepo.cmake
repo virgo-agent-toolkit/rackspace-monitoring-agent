@@ -6,3 +6,6 @@ add_custom_target(packagerepo
   COMMAND cp ${CMAKE_BINARY_DIR}/*.rpm ${REPO_PATH}
   COMMAND createrepo ${REPO_PATH}
 )
+add_custom_target(packagerepoupload
+  COMMAND rclone copy ${REPO_PATH} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}/${REPO_NAME}
+)
