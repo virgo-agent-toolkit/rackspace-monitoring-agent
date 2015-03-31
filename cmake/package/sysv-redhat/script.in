@@ -3,14 +3,13 @@
 # Startup script for $SHORT_DESCRIPTION
 #
 # chkconfig: 345 85 15     - start or stop process definition within the boot process
-# description: $SHORT_DESCRIPTION
-# processname: $PKG_NAME
-# pidfile: /var/run/$PKG_NAME.pid
+# processname: @APP_NAME@
+# pidfile: /var/run/@APP_NAME@.pid
 
-NAME=$PKG_NAME
-DAEMON=/usr/bin/$PKG_NAME
-PIDFILE=/var/run/$PKG_NAME.pid
-LOG=/var/log/$PKG_NAME.log
+NAME=@APP_NAME@
+DAEMON=/usr/bin/@APP_NAME@
+PIDFILE=/var/run/@APP_NAME@.pid
+LOG=/var/log/@APP_NAME@.log
 
 # Source function library.      This creates the operating environment for the process to be started
 . /etc/init.d/functions
