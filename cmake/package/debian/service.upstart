@@ -1,7 +1,7 @@
-# $PKG_NAME
+# @APP_NAME@
 
 start on stopped rc RUNLEVEL=[2345]
 stop on runlevel [!2345]
 
 respawn
-exec $PKG_NAME --exit-on-upgrade --production -l /var/log/$PKG_NAME.log 2>&1
+exec @APP_NAME@ --exit-on-upgrade --production -l /var/log/@APP_NAME@.log 2>&1
