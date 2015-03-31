@@ -25,7 +25,7 @@ message("Packaging ${APP_NAME} ${VERSION_SHORT}")
 ###############################################################################
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-include (EnumerateSystem)
+include(EnumerateSystem)
 
 ###############################################################################
 ## Installation Targets
@@ -35,6 +35,8 @@ set(LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 set(CPACK_RESOURCE_FILE_LICENSE ${LICENSE_FILE})
 set(PACKAGE_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/package")
 set(GENERATED_PACKAGE_SCRIPTS "${CMAKE_BINARY_DIR}/package")
+set(REPOSITORY_SCRIPTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/repo")
+set(GENERATED_REPOSITORY_SCRIPTS "${CMAKE_BINARY_DIR}/repo")
 
 install(PROGRAMS ${APP_NAME} DESTINATION bin)
 install(FILES ${LICENSE_FILE} DESTINATION share/${APP_NAME})
@@ -93,6 +95,8 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     set(DEB_UPSTART ${GENERATED_PACKAGE_SCRIPTS}/debian/service.upstart)
     configure_file(${PACKAGE_SCRIPTS}/debian/service.upstart.in ${DEB_UPSTART})
     install(FILES ${DEB_UPSTART} DESTINATION /etc/init/${APP_NAME}.conf)
+
+    include(reprepro)
   endif()
 endif()
 
