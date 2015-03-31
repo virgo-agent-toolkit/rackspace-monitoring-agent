@@ -10,3 +10,5 @@ if [ "$1" = "2" ] ; then
     /sbin/service @APP_NAME@ start >/dev/null 2>&1 || :
 fi
 
+mkdir -p /var/lib/@APP_NAME@
+mkdir -p /etc/@APP_NAME@.conf.d
