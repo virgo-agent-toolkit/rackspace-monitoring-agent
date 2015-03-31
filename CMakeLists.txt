@@ -6,6 +6,7 @@ set(APP_NAME    "rackspace-monitoring-agent")
 set(APP_VENDOR  "Rackspace")
 set(APP_SUMMARY "Rackspace Monitoring Agent")
 set(APP_CONTACT "monitoring@rackspace.com")
+set(REPO_RPM_NAME "cloudmonitoring")
 
 set(ENV{LUVI_APP} ".")
 set(ENV{LUVI_MAIN} "contrib/printversion.lua")
