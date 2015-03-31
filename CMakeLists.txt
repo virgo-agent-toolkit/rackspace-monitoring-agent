@@ -43,9 +43,35 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
   ### logrotate
   set(LOGROTATE_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/logrotate/${APP_NAME})
   message("Generating Log Rotate Script ${LOGROTATE_SCRIPT}")
-  configure_file(${PACKAGE_SCRIPTS}/logrotate/script.in
-                 ${LOGROTATE_SCRIPT})
+  configure_file(${PACKAGE_SCRIPTS}/logrotate/script.in ${LOGROTATE_SCRIPT})
   install(PROGRAMS ${LOGROTATE_SCRIPT} DESTINATION /etc/logrotate.d)
+
+  ### systemd init script
+  set(SYSTEMD_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/systemd/${APP_NAME}.service)
+  message("Generating systemd script ${SYSTEMD_SCRIPT}")
+  configure_file(${PACKAGE_SCRIPTS}/systemd/service.in ${SYSTEMD_SCRIPT})
+  install(FILES ${SYSTEMD_SCRIPT} DESTINATION /etc/systemd/system)
+
+  ### SysV Init Script
+  set(SYSV_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/sysv-redhat/${APP_NAME})
+  message("Generating sysv-redhat script ${SYSV_SCRIPT}")
+  configure_file(${PACKAGE_SCRIPTS}/sysv-redhat/script.in ${SYSV_SCRIPT})
+  install(PROGRAMS ${SYSV_SCRIPT} DESTINATION /etc/init.d)
+
+  # RPM Post Install
+  set(RPM_POSTINST ${GENERATED_PACKAGE_SCRIPTS}/rpm/postinst)
+  message("Generating script ${RPM_POSTINST}")
+  configure_file(${PACKAGE_SCRIPTS}/rpm/postinst.in ${RPM_POSTINST})
+  set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE ${RPM_POSTINST})
+
+  # RPM Pre UnInstall
+  set(RPM_PREUN ${GENERATED_PACKAGE_SCRIPTS}/rpm/preun)
+  message("Generating script ${RPM_PREUN}")
+  configure_file(${PACKAGE_SCRIPTS}/rpm/preun.in ${RPM_PREUN})
+  set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE ${RPM_PREUN})
+
+  ### Do not Strip RPM
+  set(CPACK_RPM_SPEC_INSTALL_POST "/bin/true")
 endif()
 
 ###############################################################################
