@@ -40,6 +40,7 @@ set(GENERATED_REPOSITORY_SCRIPTS "${CMAKE_BINARY_DIR}/repo")
 
 set(REPO_RPM_NAME "cloudmonitoring")
 set(REPO_UPLOAD_CLOUD "rackspace")
+set(SIGNATURE_KEY "~/server.key")
 
 install(PROGRAMS ${APP_NAME} DESTINATION bin)
 install(FILES ${LICENSE_FILE} DESTINATION share/${APP_NAME})
@@ -103,6 +104,7 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
 
     include(reprepro)
   endif()
+  include(sign)
 endif()
 
 ###############################################################################

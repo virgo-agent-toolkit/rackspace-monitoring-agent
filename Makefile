@@ -28,4 +28,10 @@ packagerepo:
 packagerepoupload:
 	cmake --build build -- packagerepoupload
 
+siggen:
+	cmake --build build -- siggen
+
+siggenupload:
+	cmake --build build -- siggenupload
+
 .PHONY: clean lint package packagerepo
