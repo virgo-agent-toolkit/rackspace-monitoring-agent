@@ -51,6 +51,12 @@ if(UNIX)
         if(${LINUX_VER} MATCHES "7")
           set(LINUX_VER "wheezy")
         endif()
+        if(${LINUX_VER} MATCHES "98")
+          set(LINUX_VER "testing")
+        endif()
+        if(${LINUX_VER} MATCHES "99")
+          set(LINUX_VER "unstable")
+        endif()
       endif(LINUX_ISSUE MATCHES "Debian")      
 
       #Find CPU Arch
