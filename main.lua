@@ -29,6 +29,7 @@ local function start(...)
   local agentClient = require('./client/virgo_client')
   local connectionStream = require('./client/virgo_connection_stream')
   local protocolConnection = require('./protocol/virgo_connection')
+  local log_level
 
   local gcCollect = uv.new_prepare()
   uv.prepare_start(gcCollect, function() collectgarbage('step') end)
@@ -46,9 +47,12 @@ local function start(...)
     .describe("p", "pid file path")
     .describe("o", "skip automatic upgrade")
     .describe("d", "enable debug logging")
+    .describe("l", "log file")
     .alias({['o'] = 'no-upgrade'})
     .alias({['p'] = 'pidfile'})
     .alias({['j'] = 'confd'})
+    .alias({['l'] = 'logfile'})
+    .describe("l", "logfile")
     .alias({['d'] = 'debug'})
     .describe("u", "setup")
     .alias({['u'] = 'setup'})
@@ -56,7 +60,7 @@ local function start(...)
     .alias({['U'] = 'username'})
     .describe("K", "apikey")
     .alias({['K'] = 'apikey'})
-    .argv("idonhU:K:e:x:p:c:j:s:n:k:u")
+    .argv("idonhl:U:K:e:x:p:c:j:s:n:k:u")
 
   local function readConfig(path)
     local config, data, err
@@ -71,11 +75,14 @@ local function start(...)
   end
 
   if argv.args.d or argv.args.u then
-    local log = logging.StdoutLogger:new({
-      log_level = logging.LEVELS['everything']
-    })
-    logging.init(log)
+    log_level = logging.LEVELS['everything']
   end
+
+  -- Setup Logging
+  logging.init(logging.StdoutFileLogger:new({
+    log_level = log_level,
+    path = argv.args.l
+  }))
 
   local options = {}
   options.configFile = argv.args.c or constants:get('DEFAULT_CONFIG_PATH')
