@@ -80,7 +80,7 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     ### Do not Strip RPM
     set(CPACK_RPM_SPEC_INSTALL_POST "/bin/true")
 
-    include(createrepo)
+    include(CreateRepo)
   elseif(${SPECIFIC_SYSTEM_PREFERED_CPACK_GENERATOR} MATCHES "DEB")
     ### Control Files
     set(DEB_POSTRM ${GENERATED_PACKAGE_SCRIPTS}/debian/postrm)
@@ -102,9 +102,9 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     configure_file(${PACKAGE_SCRIPTS}/debian/service.upstart.in ${DEB_UPSTART})
     install(FILES ${DEB_UPSTART} DESTINATION /etc/init/${APP_NAME}.conf)
 
-    include(reprepro)
+    include(RepRepro)
   endif()
-  include(sign)
+  include(Sign)
 endif()
 
 ###############################################################################
