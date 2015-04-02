@@ -36,6 +36,7 @@ local fsutil = require('virgo/util/fs')
 local hostname = require('./hostname')
 local logging = require('logging')
 local misc = require('virgo/util/misc')
+local ffi = require('ffi')
 
 local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
 local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
@@ -44,6 +45,18 @@ local FEATURES = {
   FEATURE_UPGRADES,
   FEATURE_CONFD
 }
+
+local function loadFlock()
+  -- do not load on windows
+  if los.type() == 'win32' then return end
+  ffi.cdef[[
+    int flock(int fd, int operation);
+    char *strerror(int errnum);
+    void free(void *ptr);
+  ]]
+end
+
+loadFlock()
 
 local Agent = Emitter:extend()
 function Agent:initialize(options, types)
@@ -75,15 +88,32 @@ function Agent:start(options)
       if not options.pidFile then
         options.pidFile = constants:get('DEFAULT_PID_FILE_PATH')
       end
-      --err, msg = virgo.write_pid(options.pidFile)
-      --if err then
-      --  pcall(function()
-      --    local pid = fs.readFileSync(options.pidFile)
-      --    logging.error(fmt('Agent in use (pid: %d, path: %s)', pid, options.pidFile))
-      --    process:exit(3)
-      --  end)
-      --end
-      callback()
+      if not options.lockFile then
+        options.lockFile = constants:get('DEFAULT_LOCK_FILE_PATH')
+      end
+      -- get the lock
+      fs.open(options.lockFile, 'w', function(err, fd)
+        if err then
+          logging.error(fmt('Agent lock file open error (path: %s): %s', options.lockFile, tostring(err)))
+          process:exit(3)
+        end
+        local rv = ffi.C.flock(fd, 6) -- LOCK_EX 2 | LOCK_NB 4
+        if rv < 0 then
+          local pid, errno, errstr
+          errno = ffi.errno();
+          errstr = ffi.C.strerror(errno)
+          ffi.C.free(errstr)
+          fs.close(fd)
+          pcall(function()
+            pid = fs.readFileSync(options.pidFile)
+          end)
+          logging.error(fmt('Agent in use (pid: %s, path: %s)', tostring(pid), options.pidFile))
+          process:exit(3)
+        end
+
+        fs.writeFileSync(options.pidFile, tostring(process.pid))
+        callback()
+      end)
     end,
     function(callback)
       self._confd:setup(callback)
