@@ -99,12 +99,11 @@ function Agent:start(options)
         end
         local rv = ffi.C.flock(fd, 6) -- LOCK_EX 2 | LOCK_NB 4
         if rv < 0 then
-          local errno = ffi.errno();
-          local errstr = ffi.C.strerror(errno)
-          logging.error(fmt('Agent lock file flock error (path: %s): %s', options.lockFile, ffi.string(errstr)))
+          local pid, errno, errstr
+          errno = ffi.errno();
+          errstr = ffi.C.strerror(errno)
           ffi.C.free(errstr)
           fs.close(fd)
-          local pid
           pcall(function()
             pid = fs.readFileSync(options.pidFile)
           end)
