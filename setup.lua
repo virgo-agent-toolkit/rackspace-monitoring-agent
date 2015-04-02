@@ -200,7 +200,6 @@ function Setup:run(callback)
       self:_out('Setup Settings:')
       self:_out(fmt('  Agent ID: %s', agentId))
       self:_out(fmt('  Config File: %s', self._configFile))
-      self:_out(fmt('  State Directory: %s', self._agent._stateDirectory))
       self:_out('')
       callback()
     end,
