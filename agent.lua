@@ -47,16 +47,11 @@ local FEATURES = {
 
 local Agent = Emitter:extend()
 function Agent:initialize(options, types)
-  if not options.stateDirectory then
-    options.stateDirectory = constants:get('DEFAULT_STATE_PATH')
-  end
-  logging.debug('Using state directory ' .. options.stateDirectory)
-  self._stateDirectory = options.stateDirectory
   self._options = options
   self._config = options.config
   self._upgradesEnabled = true
   self._types = types or {}
-  self._confd = Confd:new(options.confdDir, options.stateDirectory)
+  self._confd = Confd:new(options.confdDir)
   self._features = deepCopyTable(FEATURES)
 end
 
