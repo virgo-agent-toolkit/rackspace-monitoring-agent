@@ -46,11 +46,17 @@ local FEATURES = {
   FEATURE_CONFD
 }
 
-ffi.cdef[[
-int flock(int fd, int operation);
-char *strerror(int errnum);
-void free(void *ptr);
-]]
+local function loadFlock()
+  -- do not load on windows
+  if los.type() == 'win32' then return end
+  ffi.cdef[[
+    int flock(int fd, int operation);
+    char *strerror(int errnum);
+    void free(void *ptr);
+  ]]
+end
+
+loadFlock()
 
 local Agent = Emitter:extend()
 function Agent:initialize(options, types)
