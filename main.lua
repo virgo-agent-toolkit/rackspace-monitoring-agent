@@ -15,20 +15,21 @@ limitations under the License.
 --]]
 
 local function start(...)
-  local uv = require('uv')
   local async = require('async')
   local fs = require('fs')
   local logging = require('logging')
+  local los = require('los')
+  local uv = require('uv')
 
   local MonitoringAgent = require('./agent').Agent
-  local constants = require('./constants')
   local Setup = require('./setup').Setup
-
-  local certs = require('./certs')
-
   local agentClient = require('./client/virgo_client')
+  local certs = require('./certs')
   local connectionStream = require('./client/virgo_connection_stream')
+  local constants = require('./constants')
   local protocolConnection = require('./protocol/virgo_connection')
+  local upgrade = require('virgo/client/upgrade')
+
   local log_level
 
   local gcCollect = uv.new_prepare()
@@ -126,21 +127,19 @@ local function start(...)
   end
 
   async.series({
-  --  function(callback)
-  --    if los.type() ~= 'win32' then
-  --      local opts = {}
-  --      opts.skip = (options.upgrades_enabled == false)
-  --      upgrade.attempt(opts, function(err)
-  --        if err then
-  --          logging.log(logging.ERROR, fmt("Error upgrading: %s", tostring(err)))
-  --        end
-  --        callback()
-  --      end)
-  --    else
-  --      --on windows the upgrade occurs right after the download as an external process
-  --      callback()
-  --    end
-  --  end,
+    function(callback)
+      if los.type() ~= 'win32' then
+        upgrade.attempt({ skip = options.upgrades_enabled == false }, function(err)
+          if err then
+            logging.log(logging.ERROR, string.format("Error upgrading: %s", tostring(err)))
+          end
+          callback()
+        end)
+      else
+        --on windows the upgrade occurs right after the download as an external process
+        callback()
+      end
+    end,
     function(callback)
       local agent = MonitoringAgent:new(options, types)
       if argv.args.u then
@@ -163,5 +162,6 @@ return require('luvit')(function(...)
   options.paths.config_dir = "/etc"
   options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
   options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
+  options.paths.current_exe = args[0]
   require('virgo')(options, start)
 end)
