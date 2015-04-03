@@ -15,13 +15,11 @@ limitations under the License.
 --]]
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
-local Metric = require('./base').Metric
-local logging = require('logging')
 local timer = require('timer')
 local math = require('math')
 local table = require('table')
 local async = require('async')
-local sctx = require('../sigar').ctx
+local sigar = require('sigar')
 
 local CpuCheck = BaseCheck:extend()
 
@@ -60,6 +58,7 @@ function CpuCheck:getType()
 end
 
 function CpuCheck:_getCpuInfo()
+  local sctx = sigar:new()
   local cpuinfo = sctx:cpus()
   local results = {}
 
@@ -80,7 +79,7 @@ function CpuCheck:_aggregateMetrics(cpuinfo, callback)
   local diffcpuinfo = {}
   local percentages = {}
   local metrics = {}
-  local total = 0
+  local total
 
   -- calculate the delta between two runs
   for i = 1, #cpuinfo do
