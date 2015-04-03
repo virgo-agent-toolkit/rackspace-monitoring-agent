@@ -20,7 +20,6 @@ local function start(...)
   local logging = require('logging')
   local los = require('los')
   local uv = require('uv')
-  local timer = require('timer')
 
   local MonitoringAgent = require('./agent').Agent
   local Setup = require('./setup').Setup
