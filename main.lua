@@ -20,6 +20,7 @@ local function start(...)
   local logging = require('logging')
   local los = require('los')
   local uv = require('uv')
+  local timer = require('timer')
 
   local MonitoringAgent = require('./agent').Agent
   local Setup = require('./setup').Setup
@@ -35,6 +36,11 @@ local function start(...)
   local gcCollect = uv.new_prepare()
   uv.prepare_start(gcCollect, function() collectgarbage('step') end)
   uv.unref(gcCollect)
+
+  process:on('sighup', function()
+    logging.info('Received SIGHUP. Rotating logs.')
+    logging.rotate()
+  end)
 
   local argv = require('options')
     .describe("i", "use insecure tls cert")
