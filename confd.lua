@@ -17,6 +17,7 @@ limitations under the License.
 local JSON = require('json')
 local Object = require('core').Object
 local async = require('async')
+local constants = require('./constants')
 local fmt = require('string').format
 local fs = require('fs')
 local logging = require('logging')
@@ -29,37 +30,36 @@ local Confd = Object:extend()
 
 -- Confd Object Init
 function Confd:initialize(confd_dir, state_dir)
-  self.dir = confd_dir or virgo_paths.get(virgo_paths.VIRGO_PATH_CONFD_DIR)
+  self.dir = confd_dir or constants:get('DEFAULT_CONFD_PATH')
   self.files = {}
   self.logger = loggingUtil.makeLogger('Confd')
 end
 
 -- Setup the Confd Object, reading files into list
 function Confd:setup(callback)
-  return callback()
-  --async.series(
-  --  {
-  --    function(callback)
-  --      self:_getFileList(callback)
-  --    end,
-  --    function(callback)
-  --      self:_readFiles(callback)
-  --    end,
-  --  },
-  --  function(err)
-  --    if err then
-  --      if err.logtype == nil then
-  --        err.logtype = logging.ERROR
-  --      end
-  --      if err.message == nil or err.message == '' then
-  --        err.message = 'unknown error'
-  --      end
-  --      self.logger(err.logtype, fmt("Setup: %s", err.message))
-  --    end
-  --  end
-  --)
+  async.series(
+    {
+      function(callback)
+        self:_getFileList(callback)
+      end,
+      function(callback)
+        self:_readFiles(callback)
+      end,
+    },
+    function(err)
+      if err then
+        if err.logtype == nil then
+          err.logtype = logging.ERROR
+        end
+        if err.message == nil or err.message == '' then
+          err.message = 'unknown error'
+        end
+        self.logger(err.logtype, fmt("Setup: %s", err.message))
+      end
+    end
+  )
 
-  --callback()
+  callback()
 end
 
 -- Get the file list
