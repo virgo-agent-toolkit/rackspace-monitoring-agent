@@ -37,28 +37,24 @@ end
 
 -- Setup the Confd Object, reading files into list
 function Confd:setup(callback)
-  async.series(
-    {
-      function(callback)
-        self:_getFileList(callback)
-      end,
-      function(callback)
-        self:_readFiles(callback)
-      end,
-    },
-    function(err)
-      if err then
-        if err.logtype == nil then
-          err.logtype = logging.ERROR
-        end
-        if err.message == nil or err.message == '' then
-          err.message = 'unknown error'
-        end
-        self.logger(err.logtype, fmt("Setup: %s", err.message))
+  async.series({
+    function(callback)
+      self:_getFileList(callback)
+    end,
+    function(callback)
+      self:_readFiles(callback)
+    end,
+  }, function(err)
+    if err then
+      if err.logtype == nil then
+        err.logtype = logging.ERROR
       end
+      if err.message == nil or err.message == '' then
+        err.message = 'unknown error'
+      end
+      self.logger(err.logtype, fmt("Setup: %s", err.message))
     end
-  )
-
+  end) 
   callback()
 end
 
