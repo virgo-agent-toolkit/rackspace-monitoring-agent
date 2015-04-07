@@ -27,7 +27,12 @@ GOTO :end
 
 :test
 CALL Make.bat rackspace-monitoring-agent
-virgo.exe
+CALL lit.exe install
+set LUVI_MAIN=tests\run.lua 
+set LUVI_APP=.
+lit
+set LUVI_MAIN=
+set LUVI_APP=
 GOTO :end
 
 :package
