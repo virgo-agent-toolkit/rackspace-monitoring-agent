@@ -1,0 +1,14 @@
+configuration: Release
+
+matrix:
+    fast_finish: true
+
+build_script:
+    - Make.bat
+
+test_script:
+    - Make.bat test
+
+notifications:
+    email: true
+    irc: "irc.freenode.org#virgo"
