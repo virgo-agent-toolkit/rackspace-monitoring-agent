@@ -18,214 +18,95 @@ require('../tap')(function(test)
   local async = require('async')
   local Agent = require('../agent').Agent
 
-  async.series({
-    function(callback)
-      -- Test Service Net
-      local serviceNets = {
-        'dfw',
-        'ord',
-        'lon',
-        'syd',
-        'hkg',
-        'iad'
-      }
-      local function iter(location, callback)
+  test('test endpoints', function()
+    async.series({
+      function(callback)
+        -- Test Service Net
+        local serviceNets = {
+          'dfw',
+          'ord',
+          'lon',
+          'syd',
+          'hkg',
+          'iad'
+        }
+        local function iter(location, callback)
+          local options = {
+            ['config'] = { ['snet_region'] = location }
+          }
+          local ag = Agent:new(options)
+          ag:loadEndpoints(function(err, endpoints)
+            assert(not err)
+            assert(#endpoints == 3)
+            for i, _ in ipairs(endpoints) do
+              assert(endpoints[i]['srv_query']:find('snet%-'..location) ~= nil)
+            end
+            callback()
+          end)
+        end
+        async.forEach(serviceNets, iter, callback)
+      end,
+      function(callback)
+        -- Test 1 Custom Endpoints
         local options = {
-          ['config'] = { ['snet_region'] = location }
+          ['config'] = { ['endpoints'] = '127.0.0.1:5040', }
+        }
+        local ag = Agent:new(options)
+        ag:loadEndpoints(function(err, endpoints)
+          assert(not err)
+          assert(#endpoints == 1)
+          assert(endpoints[1].host == '127.0.0.1')
+          assert(endpoints[1].port == 5040)
+          callback()
+        end)
+      end,
+      function(callback)
+        -- Test 3 Custom Endpoints
+        local options = {
+          ['config'] = { ['endpoints'] = '127.0.0.1:5040,127.0.0.1:5041,127.0.0.1:5042', }
+        }
+        local ag = Agent:new(options)
+        ag:loadEndpoints(function(err, endpoints)
+          assert(err == nil)
+          assert(#endpoints == 3)
+          assert(endpoints[1].host == '127.0.0.1')
+          assert(endpoints[1].port== 5040)
+          assert(endpoints[2].host == '127.0.0.1')
+          assert(endpoints[2].port== 5041)
+          assert(endpoints[3].host == '127.0.0.1')
+          assert(endpoints[3].port== 5042)
+          callback()
+        end)
+      end,
+      function(callback)
+        -- Test query_endpoints
+        local options = {
+          ['config'] = { ['query_endpoints'] = 'srv1,srv2,srv3', }
         }
         local ag = Agent:new(options)
         ag:loadEndpoints(function(err, endpoints)
           assert(not err)
           assert(#endpoints == 3)
           for i, _ in ipairs(endpoints) do
-            assert(endpoints[i]['srv_query']:find('snet%-'..location) ~= nil)
+            assert(endpoints[i]['srv_query']:find('srv'..i) ~= nil)
+          end
+          callback()
+        end)
+      end,
+      function(callback)
+        -- Add nil case with no selections
+        --   This is the default use case
+        local options = { ['config'] = {} }
+        local ag = Agent:new(options)
+        ag:loadEndpoints(function(err, endpoints)
+          assert(not err)
+          assert(#endpoints == 3)
+          for i, _ in ipairs(endpoints) do
+            assert(endpoints[i]['srv_query'])
           end
           callback()
         end)
       end
-      async.forEach(serviceNets, iter, callback)
-    end,
-    function(callback)
-      -- Test 1 Custom Endpoints
-      local options = {
-        ['config'] = { ['endpoints'] = '127.0.0.1:5040' }
-      }
-      local ag = Agent:new(options)
-      ag:loadEndpoints(function(err, endpoints)
-        assert(not err)
-        assert(#endpoints == 1)
-        assert(endpoints[1].host == '127.0.0.1')
-        assert(endpoints[1].port == 5040)
-        callback()
-      end)
-    end,
-    function(callback)
-      -- Test 3 Custom Endpoints
-      local options = {
-        ['config'] = { ['endpoints'] = '127.0.0.1:5040,127.0.0.1:5041,127.0.0.1:5042', }
-      }
-      local ag = Agent:new(options)
-      ag:loadEndpoints(function(err, endpoints)
-        assert(err == nil)
-        assert(#endpoints == 3)
-        assert(endpoints[1].host == '127.0.0.1')
-        assert(endpoints[1].port== 5040)
-        assert(endpoints[2].host == '127.0.0.1')
-        assert(endpoints[2].port== 5041)
-        assert(endpoints[3].host == '127.0.0.1')
-        assert(endpoints[3].port== 5042)
-        callback()
-      end)
-    end,
-    function(callback)
-      -- Test query_endpoints
-      local options = {
-        ['config'] = { ['query_endpoints'] = 'srv1,srv2,srv3', }
-      }
-      local ag = Agent:new(options)
-      ag:loadEndpoints(function(err, endpoints)
-        assert(not err)
-        assert(#endpoints == 3)
-        for i, _ in ipairs(endpoints) do
-          assert(endpoints[i]['srv_query']:find('srv'..i) ~= nil)
-        end
-        callback()
-      end)
-    end,
-    function(callback)
-      -- Add nil case with no selections
-      --   This is the default use case
-      local options = { ['config'] = {} }
-      local ag = Agent:new(options)
-      ag:loadEndpoints(function(err, endpoints)
-        assert(not err)
-        assert(#endpoints == 3)
-        for i, _ in ipairs(endpoints) do
-          assert(endpoints[i]['srv_query'])
-        end
-        callback()
-      end)
-    end
-  })
+    })
+  end)
 end)
-
---local Agent = require('/agent').Agent
---local exports = {}
---
---exports['test_load_endpoints'] = function(test, asserts)
---  async.series({
---    function(callback)
---      -- Test Service Net
---      local serviceNets = {
---        'dfw',
---        'ord',
---        'lon',
---        'syd',
---        'hkg',
---        'iad'
---      }
---      local function iter(location, callback)
---        local options = {
---          ['config'] = {
---            ['query_endpoints'] = nil,
---            ['endpoints'] = nil,
---            ['snet_region'] = location
---          }
---        }
---        local ag = Agent:new(options)
---        ag:loadEndpoints(function(err, endpoints)
---          asserts.ok(err == nil)
---          asserts.ok(#endpoints == 3)
---          for i, _ in ipairs(endpoints) do
---            asserts.ok(endpoints[i]['srv_query']:find('snet%-'..location) ~= nil)
---          end
---          callback()
---        end)
---      end
---      async.forEach(serviceNets, iter, callback)
---    end,
---    function(callback)
---      -- Test 1 Custom Endpoints
---      local options = {
---        ['config'] = {
---          ['query_endpoints'] = nil,
---          ['endpoints'] = '127.0.0.1:5040',
---          ['snet_region'] = nil
---        }
---      }
---      local ag = Agent:new(options)
---      ag:loadEndpoints(function(err, endpoints)
---        asserts.ok(err == nil)
---        asserts.ok(#endpoints == 1)
---        asserts.ok(endpoints[1].host == '127.0.0.1')
---        asserts.ok(endpoints[1].port== 5040)
---        callback()
---      end)
---    end,
---    function(callback)
---      -- Test 3 Custom Endpoints
---      local options = {
---        ['config'] = {
---          ['query_endpoints'] = nil,
---          ['endpoints'] = '127.0.0.1:5040,127.0.0.1:5041,127.0.0.1:5042',
---          ['snet_region'] = nil
---        }
---      }
---      local ag = Agent:new(options)
---      ag:loadEndpoints(function(err, endpoints)
---        asserts.ok(err == nil)
---        asserts.ok(#endpoints == 3)
---        asserts.ok(endpoints[1].host == '127.0.0.1')
---        asserts.ok(endpoints[1].port== 5040)
---        asserts.ok(endpoints[2].host == '127.0.0.1')
---        asserts.ok(endpoints[2].port== 5041)
---        asserts.ok(endpoints[3].host == '127.0.0.1')
---        asserts.ok(endpoints[3].port== 5042)
---        callback()
---      end)
---    end,
---    function(callback)
---      -- Test query_endpoints
---      local options = {
---        ['config'] = {
---          ['query_endpoints'] = 'srv1,srv2,srv3',
---          ['endpoints'] = nil,
---          ['snet_region'] = nil
---        }
---      }
---      local ag = Agent:new(options)
---      ag:loadEndpoints(function(err, endpoints)
---        asserts.ok(err == nil)
---        asserts.ok(#endpoints == 3)
---        for i, _ in ipairs(endpoints) do
---          asserts.ok(endpoints[i]['srv_query']:find('srv'..i) ~= nil)
---        end
---        callback()
---      end)
---    end,
---    function(callback)
---      -- Add nil case with no selections
---      --   This is the default use case
---      local options = {
---        ['config'] = {
---          ['query_endpoints'] = nil,
---          ['endpoints'] = nil,
---          ['snet_region'] = nil
---        }
---      }
---      local ag = Agent:new(options)
---      ag:loadEndpoints(function(err, endpoints)
---        asserts.ok(err == nil)
---        asserts.ok(#endpoints == 3)
---        for i, _ in ipairs(endpoints) do
---          asserts.ok(endpoints[i]['srv_query'])
---        end
---        callback()
---      end)
---    end
---  }, function(err)
---    asserts.ok(err == nil)
---    test.done()
---  end)
---  end
---end)
