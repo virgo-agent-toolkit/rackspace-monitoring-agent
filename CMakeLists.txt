@@ -7,6 +7,10 @@ set(APP_VENDOR  "Rackspace")
 set(APP_SUMMARY "Rackspace Monitoring Agent")
 set(APP_CONTACT "monitoring@rackspace.com")
 
+if (WIN32)
+  set(APP_NAME  "${APP_NAME}.exe")
+endif()
+
 set(ENV{LUVI_APP} ".")
 set(ENV{LUVI_MAIN} "contrib/printversion.lua")
 execute_process(

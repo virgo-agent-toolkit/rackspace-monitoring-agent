@@ -21,13 +21,19 @@ GOTO :end
 
 :lit
 ECHO "Building lit"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/1.0.0/get-lit.ps1'))"
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/1.0.3/get-lit.ps1'))"
 copy lit.exe luvi.exe
 GOTO :end
 
 :test
 CALL Make.bat rackspace-monitoring-agent
 virgo.exe
+GOTO :end
+
+:package
+IF NOT EXIST rackspace-monitoring-agent.exe CALL Make.bat rackspace-monitoring-agent
+cmake -H. -Bbuild
+cmake --build build --target package
 GOTO :end
 
 :clean
