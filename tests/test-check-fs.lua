@@ -32,9 +32,6 @@ require('../tap')(function(test)
         assert(metrics['files']['t'] == 'int64')
         assert(metrics['free_files']['t'] == 'int64')
         assert(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
-      else
-        assert(metrics['files'])
-        assert(metrics['free_files'])
       end
     end
     check:run(expect(onResult))

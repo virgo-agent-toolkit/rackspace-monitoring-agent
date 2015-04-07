@@ -49,5 +49,3 @@ IF EXIST luvi.exe DEL /F /Q luvi.exe
 IF EXIST luvi-binaries RMDIR /S /Q luvi-binaries
 
 :end
-
-
