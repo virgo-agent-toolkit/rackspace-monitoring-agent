@@ -21,7 +21,7 @@ exports['test_windowsperfos_check'] = function(test, asserts)
       asserts.ok(metrics['Processes']['t'] == 'uint32')
       -- Values always become strings internally
       asserts.ok(tonumber(metrics['Processes']['v']) > 0)
-    else
+   else
       asserts.ok(result:getStatus() ~= 'success')
     end
     test.done()

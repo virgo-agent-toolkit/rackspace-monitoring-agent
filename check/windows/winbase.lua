@@ -21,7 +21,7 @@ local fireOnce = require('virgo/util/misc').fireOnce
 local parseCSVLine = require('virgo/util/misc').parseCSVLine
 local table = require('table')
 local string = require('string')
-local os = require('os')
+local los = require('los')
 
 local function lines(str)
   local t = {}
@@ -125,7 +125,7 @@ function WindowsPowershellCmdletCheck:run(callback)
   end
 
   if not self:getPowershellCSVFixture() then
-    if os.type() ~= 'win32' then
+    if los.type() ~= 'win32' then
       checkResult:setStatus("err " .. self:getType() .. " available only on Windows platforms")
 
       -- Return Result
