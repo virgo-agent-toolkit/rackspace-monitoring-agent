@@ -7,7 +7,8 @@ $(TARGET): lit $(APP_FILES)
 	./lit make
 
 test: lit
-	./$(TARGET) -e tests
+	./lit install
+	LUVI_MAIN=tests/run.lua LUVI_APP=. ./lit
 
 clean:
 	rm -rf $(TARGET) lit
