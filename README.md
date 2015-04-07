@@ -1,8 +1,8 @@
 Rackspace Monitoring Agent
 =====
 
+[![Build status](https://ci.appveyor.com/api/projects/status/56kkuojwo5nxl5q2/branch/luvi-up?svg=true)](https://ci.appveyor.com/project/racker-buildbot/rackspace-monitoring-agent/branch/luvi-up)
 [![Build Status](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent.png?branch=master)](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent) [![Stories in Ready](https://badge.waffle.io/virgo-agent-toolkit/rackspace-monitoring-agent.png?label=ready&title=Ready)](https://waffle.io/virgo-agent-toolkit/waffle-tracker)
-
 [![Throughput Graph](https://graphs.waffle.io/virgo-agent-toolkit/waffle-tracker/throughput.svg)](https://waffle.io/virgo-agent-toolkit/waffle-tracker/metrics)
 
 The monitoring agent is the first agent to use the infrastructure provided by
