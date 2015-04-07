@@ -13,7 +13,7 @@ clean:
 	rm -rf $(TARGET) lit
 
 lit:
-	curl -L https://github.com/luvit/lit/raw/1.0.2/get-lit.sh | sh
+	curl -L https://github.com/luvit/lit/raw/1.0.3/get-lit.sh | sh
 
 lint:
 	find . -name "*.lua" | xargs luacheck
