@@ -34,7 +34,6 @@ require('../tap')(function(test)
           assert(metrics['requests_per_second']['v'] == '136.982')
           assert(metrics['uptime']['v'] == '246417')
           assert(metrics['total_accesses']['v'] == '33754723')
-          p(metrics)
           callback()
         end)
       end
