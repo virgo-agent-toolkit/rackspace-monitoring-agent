@@ -8,7 +8,9 @@ set(APP_SUMMARY "Rackspace Monitoring Agent")
 set(APP_CONTACT "monitoring@rackspace.com")
 
 if (WIN32)
-  set(APP_NAME  "${APP_NAME}.exe")
+  set(APP_NAME_INSTALL  "${APP_NAME}.exe")
+else()
+  set(APP_NAME_INSTALL  "${APP_NAME}")
 endif()
 
 set(ENV{LUVI_APP} ".")
@@ -46,7 +48,7 @@ set(REPO_RPM_NAME "cloudmonitoring")
 set(REPO_UPLOAD_CLOUD "rackspace")
 set(SIGNATURE_KEY "~/server.key")
 
-install(PROGRAMS ${APP_NAME} DESTINATION bin)
+install(PROGRAMS ${APP_NAME_INSTALL} DESTINATION bin)
 install(FILES ${LICENSE_FILE} DESTINATION share/${APP_NAME})
 
 if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
