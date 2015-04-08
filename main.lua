@@ -119,7 +119,7 @@ local function start(...)
 
   local options = {}
   options.configFile = argv.args.c or constants:get('DEFAULT_CONFIG_PATH')
-
+  p(options.configFile)
   if argv.args.p then
     options.pidFile = argv.args.p
   end

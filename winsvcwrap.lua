@@ -50,7 +50,7 @@ local function ReportSvcStatus(svcStatusHandle, svcStatus, dwCurrentState, dwWin
 end
 
 
-exports.SvcInstall = function(svcname, longname, desc)
+exports.SvcInstall = function(svcName, longName, svcPath, desc)
   local svcPath, err = winsvcaux.GetModuleFileName()
   if svcPath == nil then
     logging.error('Cannot install service, service path unobtainable', winsvcaux.GetErrorString(err))
@@ -67,8 +67,8 @@ exports.SvcInstall = function(svcname, longname, desc)
   -- Create the Service
   local schService, tagid, err = winsvc.CreateService(
     schSCManager,
-    svcname,
-    longname,
+    svcName,
+    longName,
     winsvc.SERVICE_ALL_ACCESS,
     winsvc.SERVICE_WIN32_OWN_PROCESS,
     winsvc.SERVICE_DEMAND_START,
