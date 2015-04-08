@@ -32,6 +32,7 @@ local function start(...)
   local constants = require('./constants')
   local protocolConnection = require('./protocol/virgo_connection')
   local upgrade = require('virgo/client/upgrade')
+  local path = require('path')
 
   local log_level
 
@@ -208,12 +209,23 @@ return require('luvit')(function(...)
   local options = {}
   options.version = require('./package').version
   options.pkg_name = "rackspace-monitoring-agent"
+  options.creator_name = "Rackspace Monitoring"
+  options.long_pkg_name = options.creator_name .. " Agent"
   options.paths = {}
-  options.paths.persistent_dir = "/var/lib/rackspace-monitoring-agent"
-  options.paths.exe_dir = "/var/lib/rackspace-monitoring-agent/exe"
-  options.paths.config_dir = "/etc"
-  options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
-  options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
+  if los.type() ~= 'win32' then
+    options.paths.persistent_dir = "/var/lib/rackspace-monitoring-agent"
+    options.paths.exe_dir = options.paths.persistent_dir .. "/exe"
+    options.paths.config_dir = "/etc"
+    options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
+    options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
+  else
+    local winpaths = require('util/win_paths')
+    options.paths.persistent_dir = path.join(win_paths.GetKnownFolderPath(win_paths.FOLDERID_ProgramData), options.creator_name)
+    options.paths.exe_dir = path.join(options.paths.persistent_dir, "exe")
+    options.paths.config_dir = path.join(options.paths.persistent_dir, "config")
+    options.paths.library_dir = path.join(win_paths.GetKnownFolderPath(win_paths.FOLDERID_ProgramFiles), options.creator_name)
+    options.paths.runtime_dir = options.paths.persistent_dir
+  end
   options.paths.current_exe = args[0]
   require('virgo')(options, start)
 end)
