@@ -19,8 +19,7 @@ local winsvc = require('winsvc')
 local winsvcaux = require('winsvcaux')
 local uv = require('uv')
 local logging = require('logging')
-
-local exports = {}
+local jsonStringify = require('json').stringify
 
 local function ReportSvcStatus(svcStatusHandle, svcStatus, dwCurrentState, dwWin32ExitCode, dwWaitHint)
   local dwCheckPoint = 1
@@ -45,22 +44,27 @@ local function ReportSvcStatus(svcStatusHandle, svcStatus, dwCurrentState, dwWin
     svcStatus.dwCheckPoint = dwCheckPoint
   end
 
+  logging.infof('Report Service Status, %s', jsonStringify(svcStatus))
   -- Report the status of the service to the SCM.
   winsvc.SetServiceStatus(svcStatusHandle, svcStatus)
 end
 
 
-exports.SvcInstall = function(svcName, longName, svcPath, desc)
+exports.SvcInstall = function(svcName, longName, desc, params)
   local svcPath, err = winsvcaux.GetModuleFileName()
   if svcPath == nil then
-    logging.error('Cannot install service, service path unobtainable', winsvcaux.GetErrorString(err))
+    logging.errorf('Cannot install service, service path unobtainable, %s', winsvcaux.GetErrorString(err))
     return
+  end
+
+  if params and params.args then
+    svcPath = svcPath .. ' ' .. table.concat(params.args, ' ')
   end
 
   -- Get a handle to the SCM database
   local schSCManager, err = winsvc.OpenSCManager(nil, nil, winsvc.SC_MANAGER_ALL_ACCESS)
   if schSCManager == nil then
-    logging.error('OpenSCManager failed', winsvcaux.GetErrorString(err))
+    logging.errorf('OpenSCManager failed, %s', winsvcaux.GetErrorString(err))
     return
   end
 
@@ -80,7 +84,7 @@ exports.SvcInstall = function(svcName, longName, svcPath, desc)
     nil)
 
   if schService == nil then
-    logging.error('CreateService failed', winsvcaux.GetErrorString(err))
+    logging.errorf('CreateService failed, %s', winsvcaux.GetErrorString(err))
     winsvc.CloseServiceHandle(schSCManager)
     return
   end
@@ -105,7 +109,7 @@ exports.SvcDelete = function(svcname)
   -- Get a handle to the SCM database
   local schSCManager, err = winsvc.OpenSCManager(nil, nil, winsvc.SC_MANAGER_ALL_ACCESS)
   if schSCManager == nil then
-    logging.error('OpenSCManager failed', winsvcaux.GetErrorString(err))
+    logging.error('OpenSCManager failed, %s', winsvcaux.GetErrorString(err))
     return
   end
 
@@ -116,14 +120,14 @@ exports.SvcDelete = function(svcname)
     winsvc.DELETE)
 
   if schService == nil then
-    logging.error('OpenService failed', winsvcaux.GetErrorString(err))
+    logging.errorf('OpenService failed, %s', winsvcaux.GetErrorString(err))
     winsvc.CloseServiceHandle(schSCManager)
     return
   end
 
   local delsuccess, err = winsvc.DeleteService(schService)
   if not delsuccess then
-    logging.error('DeleteService failed', winsvcaux.GetErrorString(err))
+    logging.errorf('DeleteService failed, %s', winsvcaux.GetErrorString(err))
   else
     logging.info('DeleteService succeeded')
   end
@@ -139,7 +143,7 @@ exports.SvcStart = function(svcname)
   -- Get a handle to the SCM database
   local schSCManager, err = winsvc.OpenSCManager(nil, nil, winsvc.SC_MANAGER_ALL_ACCESS)
   if schSCManager == nil then
-    logging.error('OpenSCManager failed', winsvcaux.GetErrorString(err))
+    logging.errorf('OpenSCManager failed, %s', winsvcaux.GetErrorString(err))
     return
   end
 
@@ -150,14 +154,14 @@ exports.SvcStart = function(svcname)
     winsvc.SERVICE_START)
 
   if schService == nil then
-    logging.error('OpenService failed', winsvcaux.GetErrorString(err))
+    logging.errorf('OpenService failed, %s', winsvcaux.GetErrorString(err))
     winsvc.CloseServiceHandle(schSCManager)
     return
   end
 
   local startsuccess, err = winsvc.StartService(schService, nil)
   if not startsuccess then
-    logging.error('StartService failed', winsvcaux.GetErrorString(err))
+    logging.errorf('StartService failed, %s', winsvcaux.GetErrorString(err))
   else
     logging.info('StartService succeeded')
   end
@@ -173,7 +177,7 @@ exports.SvcStop = function(svcname)
   -- Get a handle to the SCM database
   local schSCManager, err = winsvc.OpenSCManager(nil, nil, winsvc.SC_MANAGER_ALL_ACCESS)
   if schSCManager == nil then
-    logging.error('OpenSCManager failed', winsvcaux.GetErrorString(err))
+    logging.errorf('OpenSCManager failed, %s', winsvcaux.GetErrorString(err))
     return
   end
 
@@ -184,7 +188,7 @@ exports.SvcStop = function(svcname)
     winsvc.SERVICE_STOP)
 
   if schService == nil then
-    logging.error('OpenService failed', winsvcaux.GetErrorString(err))
+    logging.errorf('OpenService failed, %s', winsvcaux.GetErrorString(err))
     winsvc.CloseServiceHandle(schSCManager)
     return
   end
@@ -192,14 +196,9 @@ exports.SvcStop = function(svcname)
   -- Stop the Service
   local success, status, err = winsvc.ControlService(schService, winsvc.SERVICE_CONTROL_STOP, nil)
   if not success then
-    logging.error('ControlService stop failed', winsvcaux.GetErrorString(err))
+    logging.errorf('ControlService stop failed, %s', winsvcaux.GetErrorString(err))
   else
-    local i, v, fstatus
-    fstatus = {}
-    for i, v in pairs(status) do
-      table.insert(fstatus, i .. ': ' .. v)
-    end
-    logging.info('ControlService stop succeeded, status:', table.concat(fstatus, ', '))
+    logging.infof('ControlService stop succeeded, status: %s', jsonStringify(status))
   end
 
   winsvc.CloseServiceHandle(schService)
@@ -239,11 +238,13 @@ exports.tryRunAsService = function(svcname, runfunc)
     svcStatus.dwServiceSpecificExitCode = 0
 
     -- Report initial status to the SCM
-
-    ReportSvcStatus(svcStatusHandle, svcStatus, winsvc.SERVICE_START_PENDING, winsvc.NO_ERROR, 3000)
+    ReportSvcStatus(svcStatusHandle, svcStatus, winsvc.SERVICE_START_PENDING, winsvc.NO_ERROR, 15000)
 
     -- Setup Service Work To Be done
     runfunc()
+
+    -- Report runnings
+    ReportSvcStatus(svcStatusHandle, svcStatus, winsvc.SERVICE_RUNNING, winsvc.NO_ERROR, 0)
 
     -- Wait to end  
     local timer = uv.new_timer()
@@ -267,20 +268,17 @@ exports.tryRunAsService = function(svcname, runfunc)
     if success then
       logging.info('Service Control Dispatcher returned after threads exited ok')
     else
-      logging.info('Service Control Dispatcher returned with err', winsvcaux.GetErrorString(err))
+      logging.infof('Service Control Dispatcher returned with err, %s', winsvcaux.GetErrorString(err))
       logging.info('Running outside service manager')
       runfunc()
     end
   end, function(err)
-    logging.error('A Service function returned with err', err)
+    logging.errorf('A Service function returned with err', err)
   end)
 
   if ret then
     logging.info('SpawnServiceCtrlDispatcher Succeeded')
   else
-    logging.error('SpawnServiceCtrlDispatcher Failed', winsvcaux.GetErrorString(err))
+    logging.errorf('SpawnServiceCtrlDispatcher Failed, %s', winsvcaux.GetErrorString(err))
   end
 end
-
-
-return exports

@@ -13,17 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+local los = require('los')
+local path = require('path')
 
 local function start(...)
   local async = require('async')
   local fs = require('fs')
   local logging = require('logging')
-  local los = require('los')
   local uv = require('uv')
 
   local MonitoringAgent = require('./agent').Agent
   local Setup = require('./setup').Setup
-  local los = require('los')
   local WinSvcWrap = require('./winsvcwrap')
   local timer = require('timer')
   local agentClient = require('./client/virgo_client')
@@ -32,7 +32,6 @@ local function start(...)
   local constants = require('./constants')
   local protocolConnection = require('./protocol/virgo_connection')
   local upgrade = require('virgo/client/upgrade')
-  local path = require('path')
 
   local log_level
 
@@ -95,7 +94,7 @@ local function start(...)
   if argv.args.w then
     -- set up windows service 
     if argv.args.w == 'install' then
-      WinSvcWrap.SvcInstall(virgo.pkg_name, "Rackspace Monitoring Service", "Monitors this host")
+      WinSvcWrap.SvcInstall(virgo.pkg_name, "Rackspace Monitoring Service", "Monitors this host", {args = {'-l', "\"" .. path.join(virgo_paths.VIRGO_PATH_PERSISTENT_DIR, "agent.log") .. "\""}})
     elseif argv.args.w == 'delete' then
       WinSvcWrap.SvcDelete(virgo.pkg_name)
     elseif argv.args.w == 'start' then
@@ -120,7 +119,7 @@ local function start(...)
 
   local options = {}
   options.configFile = argv.args.c or constants:get('DEFAULT_CONFIG_PATH')
-  p(options.configFile)
+  logging.log(logging.INFO, string.format("Using config file: %s", options.configFile))
   if argv.args.p then
     options.pidFile = argv.args.p
   end
@@ -219,11 +218,11 @@ return require('luvit')(function(...)
     options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
     options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
   else
-    local winpaths = require('util/win_paths')
-    options.paths.persistent_dir = path.join(win_paths.GetKnownFolderPath(win_paths.FOLDERID_ProgramData), options.creator_name)
+    local winpaths = require('virgo/util/win_paths')
+    options.paths.persistent_dir = path.join(winpaths.GetKnownFolderPath(winpaths.FOLDERID_ProgramData), options.creator_name)
     options.paths.exe_dir = path.join(options.paths.persistent_dir, "exe")
     options.paths.config_dir = path.join(options.paths.persistent_dir, "config")
-    options.paths.library_dir = path.join(win_paths.GetKnownFolderPath(win_paths.FOLDERID_ProgramFiles), options.creator_name)
+    options.paths.library_dir = path.join(winpaths.GetKnownFolderPath(winpaths.FOLDERID_ProgramFiles), options.creator_name)
     options.paths.runtime_dir = options.paths.persistent_dir
   end
   options.paths.current_exe = args[0]
