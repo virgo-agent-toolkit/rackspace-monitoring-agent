@@ -254,7 +254,7 @@ exports.tryRunAsService = function(svcname, runfunc)
       else
         uv.timer_stop(timer)
         uv.close(timer)
-        ReportSvcStatus(winsvc.SERVICE_STOPPED, winsvc.NO_ERROR, 0);
+        ReportSvcStatus(svcStatusHandle, svcStatus, winsvc.SERVICE_STOPPED, winsvc.NO_ERROR, 0);
         winsvc.EndService(context)
       end
     end)
