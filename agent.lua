@@ -390,32 +390,4 @@ function Agent:_getSystemId()
   return nil
 end
 
-function Agent:_getPersistentFilename(variable)
-  return path.join(constants:get('DEFAULT_PERSISTENT_VARIABLE_PATH'), variable .. '.txt')
-end
-
-function Agent:_savePersistentVariable(variable, data, callback)
-  local filename = self:_getPersistentFilename(variable)
-  fsutil.mkdirp(constants:get('DEFAULT_PERSISTENT_VARIABLE_PATH'), "0755", function(err)
-    if err and err.code ~= 'EEXIST' then
-      callback(err)
-      return
-    end
-    fs.writeFile(filename, data, function(err)
-      callback(err, filename)
-    end)
-  end)
-end
-
-function Agent:_getPersistentVariable(variable, callback)
-  local filename = self:_getPersistentFilename(variable)
-  fs.readFile(filename, function(err, data)
-    if err then
-      callback(err)
-      return
-    end
-    callback(nil, misc.trim(data))
-  end)
-end
-
 return { Agent = Agent }
