@@ -1,6 +1,7 @@
 local msg = require('./virgo_messages')
 local hostInfo = require('../hostinfo')
 local check = require('../check')
+local logging = require('logging')
 local JSON = require('json')
 
 local AgentProtocolConnection = require('virgo/protocol/connection')

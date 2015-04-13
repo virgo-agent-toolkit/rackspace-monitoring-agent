@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local us  = require('virgo/util/underscore')
 local Emitter = require('core').Emitter
 local JSON = require('json')
 local LineEmitter = require('line-emitter').LineEmitter
@@ -23,11 +22,13 @@ local childprocess = require('childprocess')
 local env = require('env')
 local fmt = require('string').format
 local logging = require('logging')
+local path = require('path')
 local table = require('table')
 local timer = require('timer')
-local vutils = require('virgo/utils')
+local us  = require('virgo/util/underscore')
 local utils = require('utils')
-local path = require('path')
+local uv = require('uv')
+local vutils = require('virgo/utils')
 
 local async = require('async')
 
@@ -247,13 +248,6 @@ function ChildCheck:initialize(params)
     params.details = {}
   end
   self._params = params
-  self._lines = {}
-  self:_resetLines()
-end
-
-function ChildCheck:_resetLines()
-  self._lines.stdout = {}
-  self._lines.stderr = {}
 end
 
 --[[
@@ -291,14 +285,6 @@ function ChildCheck:_addMetric(runCtx, checkResult, metricName, metricDimension,
     self._log(logging.DEBUG, fmt('Metric added (dimension=%s, name=%s, type=%s, value=%s, unit=%s)',
                tostring(metricDimension), metricName, metricType, metricValue, tostring(metricUnit)))
   end
-end
-
-function ChildCheck:_addStdoutLine(line)
-  table.insert(self._lines.stdout, line)
-end
-
-function ChildCheck:_addStderrLine(line)
-  table.insert(self._lines.stderr, line)
 end
 
 --[[
@@ -422,18 +408,14 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local checkResult = CheckResult:new(self, {})
   local killed = false
   local stdoutLineEmitter = LineEmitter:new()
-  local stderrLineEmitter = LineEmitter:new()
   -- Context for _handleLine to store stuff between output lines
   local runCtx = {}
 
   callback = fireOnce(callback)
 
   self._log(logging.DEBUG, fmt("%s: starting process", exePath))
-  self:_resetLines()
 
-  local child = childprocess.spawn(exePath,
-                                   exeArgs,
-                                   { env = environ })
+  local child = childprocess.spawn(exePath, exeArgs, { env = self:_childEnv() })
 
   local pluginTimeout = timer.setTimeout(self._timeout, function()
     local timeoutSeconds = (self._timeout / 1000)
@@ -448,12 +430,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   end)
 
   stdoutLineEmitter:on('data', function(line)
-    self:_addStdoutLine(line)
     self:_handleLine(runCtx, checkResult, line)
-  end)
-
-  stderrLineEmitter:on('data', function(line)
-    self:_addStderrLine(line)
   end)
 
   child.stdout:on('data', function(chunk)
@@ -461,7 +438,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   end)
 
   child.stderr:on('data', function(chunk)
-    stderrLineEmitter:write(chunk)
+    self._log(logging.INFO, fmt("%s: stderr: ", exePath, chunk))
   end)
 
   local function waitForIO(callback)
@@ -515,7 +492,6 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
         checkResult:setError(checkStatus)
       end
 
-      self:_resetLines()
 
       self._lastResult = checkResult
       callback(checkResult)
@@ -572,17 +548,12 @@ function SubProcCheck:run(callback)
     '-o',
     '-e',
     'check_runner',
-    '--zip',
-    virgo.loaded_zip_path,
     '-x',
     self:getType()
   }
   local cenv = self:_childEnv()
-  local child = self:_runChild(process.execPath, args, cenv, callback)
-
-  if child.stdin._closed ~= true then
-    child.stdin:close()
-  end
+  local child = self:_runChild(uv.exepath(), args, cenv, callback)
+  child.stdin:destroy()
 end
 
 

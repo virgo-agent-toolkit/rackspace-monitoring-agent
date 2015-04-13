@@ -40,7 +40,6 @@ function Info:run(callback)
       callback()
       return
     end
-    local line
     for line in stdout_data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
       local a, b, key, value = line:find("(.*)%s(.*)")
