@@ -67,7 +67,6 @@ end
 function Confd:_getFileList(callback)
   self.logger(logging.INFO, fmt('reading files in %s', self.dir))
   fs.readdir(self.dir, function(err, files)
-    local _, fil
     local count = 0
     if err then
       if err.code == 'ENOENT' then
@@ -132,7 +131,6 @@ function Confd:_sendFiles(conn, entity, callback)
       self.logger(logging.INFO,
                   fmt('config_file post overall %s',
                       (response.result.success and "success" or "failure")))
-      local _, indivres
       for _, indivres in ipairs(response.result.values) do
         if indivres.success then
           self.logger(logging.INFO,

@@ -1,4 +1,5 @@
 local msg = require('virgo/protocol/messages')
+local sigar = require('sigar')
 
 --[[ Manifest.get ]]--
 local Manifest = msg.Request:extend()

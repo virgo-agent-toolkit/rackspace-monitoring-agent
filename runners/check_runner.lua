@@ -86,7 +86,7 @@ end
 function CheckRunner:report(callback)
   local out = self._cr:serializeAsPluginOutput()
   process.stdout:write(out)
-  callback()
+  process.nextTick(callback)
 end
 
 local function run(argv)
@@ -104,11 +104,11 @@ local function run(argv)
   function (err)
     if err then
       cr:reportError(err, function ()
-        process.exit(1)
+        process:exit(1)
       end)
     else
       cr:report(function ()
-        process.exit(0)
+        process:exit(0)
       end)
     end
   end)
