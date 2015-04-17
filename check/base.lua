@@ -541,7 +541,7 @@ function SubProcCheck:run(callback)
   exepath = path.basename(exepath)
   if exepath == 'luvi' or exepath == 'luvi.exe' then
     table.insert(args, 1, '--')
-    table.insert(args, 1, '.')
+    table.insert(args, 1, '.') -- TODO get the luvit path from luvi
   end
   local cenv = self:_childEnv()
   local child = self:_runChild(uv.exepath(), args, cenv, callback)
