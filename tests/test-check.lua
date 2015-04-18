@@ -35,7 +35,7 @@ local NetworkCheck = require('../check/network').NetworkCheck
 local PluginCheck = require('../check/plugin').PluginCheck
 
 _G.TEST_DIR = 'tests/tmpdir'
-constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', TEST_DIR)
+constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', _G.TEST_DIR)
 
 require('../tap')(function(test)
   test('test check base', function(expect)
