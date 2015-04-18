@@ -3,8 +3,8 @@ return {
   version = "1.9.7",
   dependencies = {
     "rphillips/options@0.0.5",
-    "virgo-agent-toolkit/rackspace-monitoring-client@0.3.4",
-    "virgo-agent-toolkit/virgo@0.13.0",
+    "virgo-agent-toolkit/rackspace-monitoring-client@0.3",
+    "virgo-agent-toolkit/virgo@0.13",
   },
   files = {
     "**.lua",
