@@ -1,4 +1,6 @@
-language: erlang
+language: c
+
+sudo: false
 
 script:
   - make
