@@ -29,6 +29,7 @@ local us  = require('virgo/util/underscore')
 local utils = require('utils')
 local uv = require('uv')
 local vutils = require('virgo/utils')
+local bundle = require('luvi').bundle
 
 local async = require('async')
 
@@ -541,7 +542,7 @@ function SubProcCheck:run(callback)
   exepath = path.basename(exepath)
   if exepath == 'luvi' or exepath == 'luvi.exe' then
     table.insert(args, 1, '--')
-    table.insert(args, 1, '.') -- TODO get the luvit path from luvi
+    table.insert(args, 1, bundle.paths[1])
   end
   local cenv = self:_childEnv()
   local child = self:_runChild(uv.exepath(), args, cenv, callback)

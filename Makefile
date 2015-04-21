@@ -1,5 +1,5 @@
 APP_FILES=$(shell find . -type f -name '*.lua')
-LIT_VERSION=1.1.3
+LIT_VERSION=1.1.4
 TARGET=rackspace-monitoring-agent
 
 all: $(TARGET)
