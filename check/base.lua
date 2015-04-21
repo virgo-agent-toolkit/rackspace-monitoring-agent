@@ -544,7 +544,6 @@ function SubProcCheck:run(callback)
     table.insert(args, 1, '--')
     table.insert(args, 1, bundle.paths[1])
   end
-  p(uv.exepath, args)
   local cenv = self:_childEnv()
   local child = self:_runChild(uv.exepath(), args, cenv, callback)
   child.stdin:destroy()
