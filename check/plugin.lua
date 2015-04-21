@@ -162,7 +162,4 @@ function PluginCheck:run(callback)
   end
 end
 
-
-local exports = {}
 exports.PluginCheck = PluginCheck
-return exports
