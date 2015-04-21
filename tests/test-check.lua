@@ -533,14 +533,13 @@ require('../tap')(function(test)
     }, expect)
   end)
 
-  --is powershell supported as a plugin?
-  --test('test custom plugin powershell', function(expect)
-  --  if los.type() ~= 'win32' then p('skipped') ; return end
-  --  plugin_test('windows2.ps1', 'Test plugin is OK', 'available', {
-  --    cb = expect(function(metrics)
-  --      assert(metrics['none']['metric1'].t == 'int64')
-  --      assert(metrics['none']['metric2'].v == '100')
-  --    end)
-  --  }, expect)
-  --end)
+  test('test custom plugin powershell', function(expect)
+    if los.type() ~= 'win32' then p('skipped') ; return end
+    plugin_test('windows2.ps1', 'Test plugin is OK', 'available', {
+      cb = expect(function(metrics)
+        assert(metrics['none']['metric1'].t == 'int64')
+        assert(metrics['none']['metric2'].v == '100')
+      end)
+    }, expect)
+  end)
 end)
