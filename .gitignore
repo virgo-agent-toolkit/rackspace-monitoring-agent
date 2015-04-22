@@ -2,3 +2,4 @@ build
 lit
 luvi
 rackspace-monitoring-agent
+tests/tmpdir

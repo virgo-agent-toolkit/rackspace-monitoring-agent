@@ -6,7 +6,7 @@ IF NOT "x%1" == "x" GOTO :%1
 ECHO "Building agent"
 IF NOT EXIST lit.exe CALL Make.bat lit
 IF NOT EXIST libs\sigar.dll CALL Make.bat sigar
-lit.exe make
+CALL lit.exe make
 GOTO :end
 
 :sigar
@@ -21,18 +21,16 @@ GOTO :end
 
 :lit
 ECHO "Building lit"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/1.0.3/get-lit.ps1'))"
-copy lit.exe luvi.exe
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/1.1.4/get-lit.ps1'))"
 GOTO :end
 
 :test
 CALL Make.bat rackspace-monitoring-agent
 CALL lit.exe install
-set LUVI_MAIN=tests\run.lua 
-set LUVI_APP=.
-lit
-set LUVI_MAIN=
-set LUVI_APP=
+IF EXIST tests\tmpdir RMDIR /S /Q tests\tmpdir
+CALL mkdir tests\tmpdir
+CALL luvi.exe . -m tests\run.lua
+exit /b %errorlevel%
 GOTO :end
 
 :package

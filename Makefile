@@ -1,4 +1,5 @@
 APP_FILES=$(shell find . -type f -name '*.lua')
+LIT_VERSION=1.1.4
 TARGET=rackspace-monitoring-agent
 
 all: $(TARGET)
@@ -7,14 +8,15 @@ $(TARGET): lit $(APP_FILES)
 	./lit make
 
 test: lit
+	rm -rf tests/tmpdir && mkdir tests/tmpdir
 	./lit install
-	LUVI_MAIN=tests/run.lua LUVI_APP=. ./lit
+	./luvi . -m tests/run.lua
 
 clean:
-	rm -rf $(TARGET) lit
+	rm -rf $(TARGET) lit luvi
 
 lit:
-	curl -L https://github.com/luvit/lit/raw/1.0.3/get-lit.sh | sh
+	curl -L https://github.com/luvit/lit/raw/${LIT_VERSION}/get-lit.sh | sh
 
 lint:
 	find . ! -path './deps/**' -name '*.lua' | xargs luacheck

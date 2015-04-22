@@ -23,8 +23,6 @@ local MySQLCheck = Check.MySQLCheck
 local function setupTest(tcName)
   env.set('VIRGO_SUBPROC_MOCK', uv.cwd() .. '/tests/mysql')
   env.set('VIRGO_SUBPROC_TESTCASE', tcName)
-  env.set('LUVI_APP', '.')
-  env.unset('LUVI_MAIN')
 end
 
 require('../tap')(function(test)

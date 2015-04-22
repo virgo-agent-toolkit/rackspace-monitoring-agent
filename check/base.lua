@@ -29,6 +29,7 @@ local us  = require('virgo/util/underscore')
 local utils = require('utils')
 local uv = require('uv')
 local vutils = require('virgo/utils')
+local bundle = require('luvi').bundle
 
 local async = require('async')
 
@@ -182,6 +183,7 @@ function BaseCheck:_runCheck()
     cr:setStatus('Timeout in Run Check')
     emitCompleted(cr)
   end)
+  timeoutTimer:unref()
 
   local status, err = pcall(function()
     self:run(function(checkResult)
@@ -421,7 +423,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     local timeoutSeconds = (self._timeout / 1000)
 
     self._log(logging.DEBUG, fmt("%s: Plugin didn't finish in %s seconds, killing it...", exePath, timeoutSeconds))
-    child:kill(9)
+    child:kill('sigkill')
     killed = true
 
     checkResult:setError(fmt("Plugin didn't finish in %s seconds", timeoutSeconds))
@@ -444,6 +446,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   local function waitForIO(callback)
     callback = fireOnce(callback)
     child.stdout:on('end', callback)
+    child.stdout:on('error', callback)
   end
 
   local code = 0
@@ -467,31 +470,15 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     process.nextTick(function()
       -- Callback is called on the next tick so any pending line processing can
       -- happen before calling a callback.
-      local checkStatus
-
-      self._log(logging.DEBUG, fmt("%s: done (code=%s)", exePath, code))
-
+      self._log(logging.INFO, fmt("%s: done (code=%s)", exePath, code))
       if code ~= 0 then
         -- If a status is provided use it instead of using the default one
-        checkStatus = checkResult:getStatus()
-
-        for _, v in ipairs(self._lines.stdout) do
-          v = trim(v)
-          self._log(logging.DEBUG, fmt("stdout: %s", v))
-        end
-
-        for _, v in ipairs(self._lines.stderr) do
-          v = trim(v)
-          self._log(logging.DEBUG, fmt("stderr: %s", v))
-        end
-
+        local checkStatus = checkResult:getStatus()
         if not checkStatus or checkStatus == DEFAULT_STATUS then
           checkStatus = fmt('Plugin exited with non-zero status code (code=%s)', (code))
         end
-
         checkResult:setError(checkStatus)
       end
-
 
       self._lastResult = checkResult
       callback(checkResult)
@@ -551,6 +538,12 @@ function SubProcCheck:run(callback)
     '-x',
     self:getType()
   }
+  local exepath = uv.exepath()
+  exepath = path.basename(exepath)
+  if exepath == 'luvi' or exepath == 'luvi.exe' then
+    table.insert(args, 1, '--')
+    table.insert(args, 1, bundle.paths[1])
+  end
   local cenv = self:_childEnv()
   local child = self:_runChild(uv.exepath(), args, cenv, callback)
   child.stdin:destroy()
