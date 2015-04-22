@@ -25,6 +25,7 @@ local debugger = require('virgo_debugger')
 local debugm = require('debug')
 local fmt = require('string').format
 local logging = require('logging')
+local misc = require('/base/util/misc')
 local protocolConnection = require('/protocol/virgo_connection')
 local upgrade = require('/base/client/upgrade')
 local vutils = require('virgo_utils')
@@ -106,6 +107,10 @@ function Agent.run()
   virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
   virgo.config['insecure'] = virgo.config['monitoring_insecure']
   virgo.config['debug'] = virgo.config['monitoring_debug']
+
+  -- trim options
+  virgo.config['token'] = misc.trim(virgo.config['token'])
+  virgo.config['id'] = misc.trim(virgo.config['id'])
 
   if argv.args.d or virgo.config['debug'] == 'true' then
     logging.set_level(logging.EVERYTHING)
