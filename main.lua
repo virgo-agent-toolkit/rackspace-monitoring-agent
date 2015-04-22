@@ -120,7 +120,6 @@ local function start(...)
 
   if not argv.args.x then
     virgo.config = readConfig(options.configFile) or {}
-    virgo.config['token'] = virgo.config['monitoring_token']
     options.config = virgo.config
   end
 
@@ -128,6 +127,7 @@ local function start(...)
   options.tls.rejectUnauthorized = true
   options.tls.ca = certs.caCerts
 
+  virgo.config['token'] = virgo.config['monitoring_token']
   virgo.config['endpoints'] = virgo.config['monitoring_endpoints']
   virgo.config['upgrade'] = virgo.config['monitoring_upgrade']
   virgo.config['id'] = virgo.config['monitoring_id']

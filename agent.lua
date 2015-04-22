@@ -247,6 +247,8 @@ function Agent:_preConfig(callback)
 
   -- Regen GUID
   self._config['guid'] = self:_getSystemId()
+  self._config['token'] = misc.trim(self._config['token'])
+  self._config['id'] = misc.trim(self._config['id'])
 
   async.series({
     -- retrieve xen id
