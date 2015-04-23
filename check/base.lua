@@ -183,7 +183,6 @@ function BaseCheck:_runCheck()
     cr:setStatus('Timeout in Run Check')
     emitCompleted(cr)
   end)
-  timeoutTimer:unref()
 
   local status, err = pcall(function()
     self:run(function(checkResult)
@@ -214,11 +213,14 @@ function BaseCheck:schedule()
   end
 
   local timeout = self.period * 1000
-  if self._firstRun then
-    self._firstRun = false
-    timeout = math.floor(timeout * math.random())
-  else
-    timeout = timeout + math.random(1, CHECK_SCHEDULE_JITTER)
+  local testsRunning = constants:get('TESTS_ACTIVE')
+  if not testsRunning then
+    if self._firstRun then
+      self._firstRun = false
+      timeout = math.floor(timeout * math.random())
+    else
+      timeout = timeout + math.random(1, CHECK_SCHEDULE_JITTER)
+    end
   end
 
   self._log(logging.INFO, fmt('%s scheduled for %ss', self:toString(), self.period))
@@ -227,9 +229,7 @@ end
 
 function BaseCheck:clearSchedule()
   self._cleared = true
-  if not self._timer then
-    return
-  end
+  if not self._timer then return end
   timer.clearTimer(self._timer)
   self._timer = nil
 end

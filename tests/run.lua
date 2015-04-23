@@ -7,6 +7,8 @@ options.paths = {}
 
 require('luvit')(function(...)
   require('virgo')(options, function(...)
+    local constants = require('../constants')
+    constants:setGlobal('TESTS_ACTIVE', true)
     local req = uv.fs_scandir("tests")
     repeat
       local ent = uv.fs_scandir_next(req)
