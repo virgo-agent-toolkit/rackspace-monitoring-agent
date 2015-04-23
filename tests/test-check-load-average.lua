@@ -1,6 +1,6 @@
 local los = require('los')
 local LoadAverageCheck = require('../check').LoadAverageCheck
-require('../tap')(function(test)
+require('tap')(function(test)
   test('test check load average', function(expect)
     local check = LoadAverageCheck:new({id='foo',period=30})
     assert(not check._lastResult)

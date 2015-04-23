@@ -4,7 +4,7 @@ local async = require('async')
 local fs = require('fs')
 local testUtil = require('virgo/util/test')
 
-require('../tap')(function(test)
+require('tap')(function(test)
   test('check apache', function(expect)
     local HOST, PORT = '127.0.0.1', 32500
     local url = string.format('http://%s:%s/server-status?auto', HOST, PORT)

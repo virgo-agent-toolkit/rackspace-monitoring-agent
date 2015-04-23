@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-require('../tap')(function(test)
+require('tap')(function(test)
   local async = require('async')
   local Agent = require('../agent').Agent
 

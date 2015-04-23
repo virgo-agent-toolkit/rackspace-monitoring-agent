@@ -18,7 +18,7 @@ local AgentProtocolConnection = require('virgo/protocol/connection')
 local loggingUtil = require ('virgo/util/logging')
 local stream = require('stream')
 
-require('../tap')(function(test)
+require('tap')(function(test)
   test('test completion key', function()
     local sock = stream.Readable:new()
     sock._read = function() end

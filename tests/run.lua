@@ -1,12 +1,11 @@
-local tap = require("../tap")
-local uv = require('uv')
-
 local options = {}
 options.version = require('../package').version
 options.paths = {}
 
 require('luvit')(function(...)
   require('virgo')(options, function(...)
+    local tap = require("tap")
+    local uv = require('uv')
     local constants = require('../constants')
     constants:setGlobal('TESTS_ACTIVE', true)
     local req = uv.fs_scandir("tests")
