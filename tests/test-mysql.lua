@@ -25,7 +25,7 @@ local function setupTest(tcName)
   env.set('VIRGO_SUBPROC_TESTCASE', tcName)
 end
 
-require('../tap')(function(test)
+require('tap')(function(test)
   test('test mysql check failed init', function(expect)
     if los.type() == 'win32' then p('skipping') ; return end
     setupTest('failed_init')

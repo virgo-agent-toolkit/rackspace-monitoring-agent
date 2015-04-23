@@ -29,7 +29,7 @@ local NullCheck = require('../check/null').NullCheck
 local PluginCheck = require('../check/plugin').PluginCheck
 local Scheduler = require('../schedule').Scheduler
 
-require('../tap')(function(test)
+require('tap')(function(test)
 
   local function make_check(...)
     local args = unpack({...})

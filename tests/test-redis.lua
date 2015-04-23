@@ -6,7 +6,7 @@ local RedisCheck = require('../check').RedisCheck
 local fixtures = require('./fixtures').checks
 local testUtil = require('virgo/util/test')
 
-require('../tap')(function(test)
+require('tap')(function(test)
   test('test redis 2.4 success result parsing', function(expect)
     local check = RedisCheck:new({id='foo', period=30, details={host='127.0.0.1', port=8585}})
     local commandMap = {}

@@ -1,7 +1,7 @@
 local los = require('los')
 local FileSystemCheck = require('../check').FileSystemCheck
 
-require('../tap')(function(test)
+require('tap')(function(test)
   test('check filesystem valid', function(expect)
     local fs_target = '/'
     if los.type() == "win32" then fs_target = 'C:\\' end
