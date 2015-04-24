@@ -13,16 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+local los = require('los')
+local path = require('path')
 
 local function start(...)
   local async = require('async')
   local fs = require('fs')
   local logging = require('logging')
-  local los = require('los')
   local uv = require('uv')
 
   local MonitoringAgent = require('./agent').Agent
   local Setup = require('./setup').Setup
+  local WinSvcWrap = require('./winsvcwrap')
+  local timer = require('timer')
   local agentClient = require('./client/virgo_client')
   local certs = require('./certs')
   local connectionStream = require('./client/virgo_connection_stream')
@@ -43,7 +46,6 @@ local function start(...)
 
   local argv = require('options')
     .describe("i", "use insecure tls cert")
-    .describe("l", "log file path")
     .describe("e", "entry module")
     .describe("x", "runner params (eg. check or hostinfo to run)")
     .describe("s", "state directory path")
@@ -53,7 +55,9 @@ local function start(...)
     .describe("z", "lock file path")
     .describe("o", "skip automatic upgrade")
     .describe("d", "enable debug logging")
-    .describe("l", "log file")
+    .describe("l", "log file path")
+    .describe("w", "windows service command: install, delete, start, stop, status")
+    .alias({['w'] = 'winsvc'})
     .alias({['o'] = 'no-upgrade'})
     .alias({['p'] = 'pidfile'})
     .alias({['j'] = 'confd'})
@@ -66,12 +70,12 @@ local function start(...)
     .alias({['U'] = 'username'})
     .describe("K", "apikey")
     .alias({['K'] = 'apikey'})
-    .argv("idonhl:U:K:e:x:p:c:j:s:n:k:uz:")
+    .argv("idonhl:U:K:e:x:p:c:j:s:n:k:ul:z:w:")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 
   if argv.args.h then
-    argv.showUsage("idonhU:K:e:x:p:c:j:s:n:k:ul:z:")
+    argv.showUsage("idonhU:K:e:x:p:c:j:s:n:k:ul:z:w:")
     process:exit(0)
   end
 
@@ -87,6 +91,26 @@ local function start(...)
     return config
   end
 
+  if argv.args.w then
+    -- set up windows service 
+    if not WinSvcWrap then
+      logging.log(logging.ERROR, "windows service module not loaded")
+      process:exit(1)
+    end
+    if argv.args.w == 'install' then
+      WinSvcWrap.SvcInstall(virgo.pkg_name, "Rackspace Monitoring Service", "Monitors this host", {args = {'-l', "\"" .. path.join(virgo_paths.VIRGO_PATH_PERSISTENT_DIR, "agent.log") .. "\""}})
+    elseif argv.args.w == 'delete' then
+      WinSvcWrap.SvcDelete(virgo.pkg_name)
+    elseif argv.args.w == 'start' then
+      WinSvcWrap.SvcStart(virgo.pkg_name)
+    elseif argv.args.w == 'stop' then
+      WinSvcWrap.SvcStop(virgo.pkg_name)
+    else
+      -- write something here....
+    end
+    return
+  end
+
   if argv.args.d or argv.args.u then
     log_level = logging.LEVELS['everything']
   end
@@ -99,7 +123,6 @@ local function start(...)
 
   local options = {}
   options.configFile = argv.args.c or constants:get('DEFAULT_CONFIG_PATH')
-
   if argv.args.p then
     options.pidFile = argv.args.p
   end
@@ -112,6 +135,8 @@ local function start(...)
     local mod = require('./runners/' .. argv.args.e)
     return mod.run(argv.args)
   end
+
+  logging.log(logging.INFO, string.format("Using config file: %s", options.configFile))
 
   local types = {}
   types.ProtocolConnection = protocolConnection
@@ -171,7 +196,13 @@ local function start(...)
       if argv.args.u then
         Setup:new(argv, options.configFile, agent):run()
       else
-        agent:start(options)
+        if los.type() == 'win32' then
+          WinSvcWrap.tryRunAsService(virgo.pkg_name, function()
+            agent:start(options)
+          end) 
+        else
+          agent:start(options)
+        end 
       end
       callback()
     end
@@ -182,12 +213,23 @@ return require('luvit')(function(...)
   local options = {}
   options.version = require('./package').version
   options.pkg_name = "rackspace-monitoring-agent"
+  options.creator_name = "Rackspace Monitoring"
+  options.long_pkg_name = options.creator_name .. " Agent"
   options.paths = {}
-  options.paths.persistent_dir = "/var/lib/rackspace-monitoring-agent"
-  options.paths.exe_dir = "/var/lib/rackspace-monitoring-agent/exe"
-  options.paths.config_dir = "/etc"
-  options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
-  options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
+  if los.type() ~= 'win32' then
+    options.paths.persistent_dir = "/var/lib/rackspace-monitoring-agent"
+    options.paths.exe_dir = options.paths.persistent_dir .. "/exe"
+    options.paths.config_dir = "/etc"
+    options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
+    options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
+  else
+    local winpaths = require('virgo/util/win_paths')
+    options.paths.persistent_dir = path.join(winpaths.GetKnownFolderPath(winpaths.FOLDERID_ProgramData), options.creator_name)
+    options.paths.exe_dir = path.join(options.paths.persistent_dir, "exe")
+    options.paths.config_dir = path.join(options.paths.persistent_dir, "config")
+    options.paths.library_dir = path.join(winpaths.GetKnownFolderPath(winpaths.FOLDERID_ProgramFiles), options.creator_name)
+    options.paths.runtime_dir = options.paths.persistent_dir
+  end
   options.paths.current_exe = args[0]
   require('virgo')(options, start)
 end)
