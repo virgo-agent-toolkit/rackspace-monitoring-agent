@@ -93,6 +93,10 @@ local function start(...)
 
   if argv.args.w then
     -- set up windows service 
+    if not WinSvcWrap then
+      logging.log(logging.ERROR, "windows service module not loaded")
+      process:exit(1)
+    end
     if argv.args.w == 'install' then
       WinSvcWrap.SvcInstall(virgo.pkg_name, "Rackspace Monitoring Service", "Monitors this host", {args = {'-l', "\"" .. path.join(virgo_paths.VIRGO_PATH_PERSISTENT_DIR, "agent.log") .. "\""}})
     elseif argv.args.w == 'delete' then
@@ -119,7 +123,6 @@ local function start(...)
 
   local options = {}
   options.configFile = argv.args.c or constants:get('DEFAULT_CONFIG_PATH')
-  logging.log(logging.INFO, string.format("Using config file: %s", options.configFile))
   if argv.args.p then
     options.pidFile = argv.args.p
   end
@@ -132,6 +135,8 @@ local function start(...)
     local mod = require('./runners/' .. argv.args.e)
     return mod.run(argv.args)
   end
+
+  logging.log(logging.INFO, string.format("Using config file: %s", options.configFile))
 
   local types = {}
   types.ProtocolConnection = protocolConnection

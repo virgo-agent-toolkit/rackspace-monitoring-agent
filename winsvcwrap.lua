@@ -14,12 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local jsonStringify = require('json').stringify
+local logging = require('logging')
+local los = require('los')
 local table = require('table')
+local uv = require('uv')
+
+if los.type() ~= 'win32' then return end
+
 local winsvc = require('winsvc')
 local winsvcaux = require('winsvcaux')
-local uv = require('uv')
-local logging = require('logging')
-local jsonStringify = require('json').stringify
 
 local function ReportSvcStatus(svcStatusHandle, svcStatus, dwCurrentState, dwWin32ExitCode, dwWaitHint)
   local dwCheckPoint = 1
