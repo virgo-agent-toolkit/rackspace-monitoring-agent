@@ -6,8 +6,8 @@ local logging = require('logging')
 local fmt = require('string').format
 
 local VirgoConnectionStream = ConnectionStream:extend()
-function VirgoConnectionStream:initialize(id, token, guid, upgradeEnabled, options, features, types)
-  ConnectionStream.initialize(self, id, token, guid, upgradeEnabled, options, features, types)
+function VirgoConnectionStream:initialize(id, token, guid, upgradeEnabled, options, features, types, codeCert)
+  ConnectionStream.initialize(self, id, token, guid, upgradeEnabled, options, features, types, codeCert)
   self._log = loggingUtil.makeLogger('agent')
   self._scheduler = Scheduler:new()
   self._scheduler:on('check.completed', function(check, checkResult)

@@ -35,6 +35,8 @@ local hostname = require('./hostname')
 local logging = require('logging')
 local misc = require('virgo/util/misc')
 local ffi = require('ffi')
+local certs = require('./certs')
+local isStaging = require('./staging').isStaging
 
 local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
 local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
@@ -154,13 +156,15 @@ function Agent:connect(callback)
   logging.info(fmt('Upgrades are %s', self._upgradesEnabled and 'enabled' or 'disabled'))
 
   local connectionStreamType = self._types.ConnectionStream or ConnectionStream
+  local codeCert = isStaging() and certs.test or certs.production
   self._streams = connectionStreamType:new(self._config['id'],
                                        self._config['token'],
                                        self._config['guid'],
                                        self._upgradesEnabled,
                                        self._options,
                                        self._types,
-                                       self._features)
+                                       self._features,
+                                       codeCert)
   self._streams:on('error', function(err)
     logging.error(JSON.stringify(err))
   end)
