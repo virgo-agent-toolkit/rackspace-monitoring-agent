@@ -3,6 +3,7 @@ After=network.target
 
 [Service]
 ExecStart=/usr/bin/@APP_NAME@ -l /var/log/@APP_NAME@.log --production --exit-on-upgrade
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
