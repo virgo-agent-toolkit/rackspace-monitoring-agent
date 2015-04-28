@@ -202,7 +202,7 @@ return require('luvit')(function(...)
     options.paths.exe_dir = options.paths.persistent_dir .. "/exe"
     options.paths.config_dir = "/etc"
     options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
-    options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
+    options.paths.runtime_dir = "/tmp"
   else
     local winpaths = require('virgo/util/win_paths')
     options.paths.persistent_dir = path.join(winpaths.GetKnownFolderPath(winpaths.FOLDERID_ProgramData), options.creator_name)
