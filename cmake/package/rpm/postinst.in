@@ -1,4 +1,3 @@
-
 # This adds the proper /etc/rc*.d links for the script
 /sbin/chkconfig --add @APP_NAME@
 
@@ -6,9 +5,14 @@ mkdir -p /var/lib/@APP_NAME@
 
 # Restart agent on upgrade
 if [ "$1" = "2" ] ; then
-    /sbin/service @APP_NAME@ stop  >/dev/null 2>&1 || :
-    /sbin/service @APP_NAME@ start >/dev/null 2>&1 || :
+    if [ -x "/bin/systemctl" ] ; then
+      /bin/systemctl reload @APP_NAME@.service >/dev/null 2>&1 || true
+      /bin/systemctl enable @APP_NAME@.service >/dev/null 2>&1 || true
+      if [ -f "/etc/rackspace-monitoring-agent.cfg" ] ; then
+        /bin/systemctl restart @APP_NAME@.service >/dev/null 2>&1 || true
+      fi
+    else
+      /sbin/service @APP_NAME@ stop  >/dev/null 2>&1 || :
+      /sbin/service @APP_NAME@ start >/dev/null 2>&1 || :
+    fi
 fi
-
-mkdir -p /var/lib/@APP_NAME@
-mkdir -p /etc/@APP_NAME@.conf.d
