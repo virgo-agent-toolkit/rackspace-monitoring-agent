@@ -1,23 +1,41 @@
 #!/bin/sh
-update-rc.d @APP_NAME@ defaults 91 09
+
+if [ -f /etc/init.d/@APP_NAME@ ] ; then
+  update-rc.d @APP_NAME@ defaults 91 09
+fi
 
 mkdir -p /var/lib/@APP_NAME@
 mkdir -p /etc/@APP_NAME@.conf.d
 
+legacy_start() {
+  /etc/init.d/@APP_NAME@ stop || :
+
+  # Cleanup init's mess if it fails to stop
+  PIDFILE=/var/run/@APP_NAME@.pid
+  start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE --name rackspace-monit --signal KILL
+
+  # Start only if we find a config file in place
+  if [ -f /etc/@APP_NAME@.cfg ]; then
+    /etc/init.d/@APP_NAME@ start || :
+  fi
+
+  exit $?
+}
+
 case "$1" in
     configure)
-         /etc/init.d/@APP_NAME@ stop || :
-
-         # Cleanup init's mess if it fails to stop
-         PIDFILE=/var/run/@APP_NAME@.pid
-         start-stop-daemon --stop --retry 5 --quiet --pidfile $PIDFILE --name rackspace-monit --signal KILL
-
-         # Start only if we find a config file in place
-         if [ -f /etc/@APP_NAME@.cfg ]; then
-              /etc/init.d/@APP_NAME@ start || :
-         fi
-        ;;
+      if [ -x "/etc/init.d/@APP_NAME@" ] || [ -e "/etc/init/@APP_NAME@.conf" ]; then
+        legacy_start
+      fi
+      if [ -x "/bin/systemctl"  ]; then
+        /bin/systemctl reload @APP_NAME@.service >/dev/null 2>&1 || true
+        /bin/systemctl enable @APP_NAME@.service >/dev/null 2>&1 || true
+        if [ -f "/etc/rackspace-monitoring-agent.cfg" ] ; then
+          /bin/systemctl restart @APP_NAME@.service >/dev/null 2>&1 || true
+        fi
+      fi
+      ;;
     *)
-        echo "Unrecognized postinst argument '$1'"
-        ;;
+      echo "Unrecognized postinst argument '$1'"
+      ;;
 esac

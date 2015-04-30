@@ -13,16 +13,12 @@ else()
   set(APP_NAME_INSTALL  "${APP_NAME}")
 endif()
 
-set(ENV{LUVI_APP} ".")
-set(ENV{LUVI_MAIN} "contrib/printversion.lua")
 execute_process(
-  COMMAND lit
+  COMMAND ./luvi ${CMAKE_CURRENT_SOURCE_DIR}/contrib/printversion
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   OUTPUT_VARIABLE VERSION_SHORT
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-set(ENV{LUVI_MAIN} "")
-set(ENV{LUVI_APP} "")
 
 message("Packaging ${APP_NAME} ${VERSION_SHORT}")
 
@@ -52,13 +48,13 @@ install(PROGRAMS ${APP_NAME_INSTALL} DESTINATION bin)
 install(FILES ${LICENSE_FILE} DESTINATION share/${APP_NAME})
 
 if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
-  if (${SPECIFIC_SYSTEM_PREFERED_CPACK_GENERATOR} MATCHES "RPM")
-    ### logrotate
-    set(LOGROTATE_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/logrotate/${APP_NAME})
-    message("Generating Log Rotate Script ${LOGROTATE_SCRIPT}")
-    configure_file(${PACKAGE_SCRIPTS}/logrotate/script.in ${LOGROTATE_SCRIPT})
-    install(PROGRAMS ${LOGROTATE_SCRIPT} DESTINATION /etc/logrotate.d)
+  ### logrotate
+  set(LOGROTATE_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/logrotate/${APP_NAME})
+  message("Generating Log Rotate Script ${LOGROTATE_SCRIPT}")
+  configure_file(${PACKAGE_SCRIPTS}/logrotate/script.in ${LOGROTATE_SCRIPT})
+  install(PROGRAMS ${LOGROTATE_SCRIPT} DESTINATION /etc/logrotate.d)
 
+  if (${SPECIFIC_SYSTEM_PREFERED_CPACK_GENERATOR} MATCHES "RPM")
     ### systemd init script
     set(SYSTEMD_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/systemd/${APP_NAME}.service)
     message("Generating systemd script ${SYSTEMD_SCRIPT}")
@@ -97,6 +93,12 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     configure_file(${PACKAGE_SCRIPTS}/debian/postinst.in ${DEB_PRERM})
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${DEB_POSTRM} ${DEB_POSTINST}
       ${DEB_PRERM})
+
+    ### systemd init script
+    set(SYSTEMD_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/systemd/${APP_NAME}.service)
+    message("Generating systemd script ${SYSTEMD_SCRIPT}")
+    configure_file(${PACKAGE_SCRIPTS}/systemd/service.in ${SYSTEMD_SCRIPT})
+    install(FILES ${SYSTEMD_SCRIPT} DESTINATION /etc/systemd/system)
 
     ### SysV
     set(DEB_SYSV ${GENERATED_PACKAGE_SCRIPTS}/debian/rackspace-monitoring-agent)

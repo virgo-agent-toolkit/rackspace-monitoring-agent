@@ -25,7 +25,6 @@ local function start(...)
   local MonitoringAgent = require('./agent').Agent
   local Setup = require('./setup').Setup
   local WinSvcWrap = require('./winsvcwrap')
-  local timer = require('timer')
   local agentClient = require('./client/virgo_client')
   local certs = require('./certs')
   local connectionStream = require('./client/virgo_connection_stream')
@@ -177,36 +176,18 @@ local function start(...)
     options.upgrades_enabled = false
   end
 
-  async.series({
-    function(callback)
-      if los.type() ~= 'win32' then
-        upgrade.attempt({ skip = options.upgrades_enabled == false }, function(err)
-          if err then
-            logging.log(logging.ERROR, string.format("Error upgrading: %s", tostring(err)))
-          end
-          callback()
-        end)
-      else
-        --on windows the upgrade occurs right after the download as an external process
-        callback()
-      end
-    end,
-    function(callback)
-      local agent = MonitoringAgent:new(options, types)
-      if argv.args.u then
-        Setup:new(argv, options.configFile, agent):run()
-      else
-        if los.type() == 'win32' then
-          WinSvcWrap.tryRunAsService(virgo.pkg_name, function()
-            agent:start(options)
-          end) 
-        else
-          agent:start(options)
-        end 
-      end
-      callback()
-    end
-  })
+  local agent = MonitoringAgent:new(options, types)
+  if argv.args.u then
+    Setup:new(argv, options.configFile, agent):run()
+  else
+    if los.type() == 'win32' then
+      WinSvcWrap.tryRunAsService(virgo.pkg_name, function()
+        agent:start(options)
+      end) 
+    else
+      agent:start(options)
+    end 
+  end
 end
 
 return require('luvit')(function(...)
@@ -221,7 +202,7 @@ return require('luvit')(function(...)
     options.paths.exe_dir = options.paths.persistent_dir .. "/exe"
     options.paths.config_dir = "/etc"
     options.paths.library_dir = "/usr/lib/rackspace-monitoring-agent"
-    options.paths.runtime_dir = "/var/run/rackspace-monitoring-agent"
+    options.paths.runtime_dir = "/tmp"
   else
     local winpaths = require('virgo/util/win_paths')
     options.paths.persistent_dir = path.join(winpaths.GetKnownFolderPath(winpaths.FOLDERID_ProgramData), options.creator_name)
