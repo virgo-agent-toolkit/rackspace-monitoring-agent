@@ -94,6 +94,12 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${DEB_POSTRM} ${DEB_POSTINST}
       ${DEB_PRERM})
 
+    ### systemd init script
+    set(SYSTEMD_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/systemd/${APP_NAME}.service)
+    message("Generating systemd script ${SYSTEMD_SCRIPT}")
+    configure_file(${PACKAGE_SCRIPTS}/systemd/service.in ${SYSTEMD_SCRIPT})
+    install(FILES ${SYSTEMD_SCRIPT} DESTINATION /etc/systemd/system)
+
     ### SysV
     set(DEB_SYSV ${GENERATED_PACKAGE_SCRIPTS}/debian/rackspace-monitoring-agent)
     configure_file(${PACKAGE_SCRIPTS}/debian/service.init.in ${DEB_SYSV})
