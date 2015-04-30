@@ -13,16 +13,12 @@ else()
   set(APP_NAME_INSTALL  "${APP_NAME}")
 endif()
 
-set(ENV{LUVI_APP} ".")
-set(ENV{LUVI_MAIN} "contrib/printversion.lua")
 execute_process(
-  COMMAND lit
+  COMMAND ./luvi ${CMAKE_CURRENT_SOURCE_DIR}/contrib/printversion
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   OUTPUT_VARIABLE VERSION_SHORT
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-set(ENV{LUVI_MAIN} "")
-set(ENV{LUVI_APP} "")
 
 message("Packaging ${APP_NAME} ${VERSION_SHORT}")
 
