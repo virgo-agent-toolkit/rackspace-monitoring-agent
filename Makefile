@@ -19,7 +19,7 @@ lit:
 	curl -L https://github.com/luvit/lit/raw/${LIT_VERSION}/get-lit.sh | sh
 
 lint:
-	find . ! -path './deps/**' -name '*.lua' | xargs luacheck
+	find . ! -path './deps/**' ! -path './tests/**' -name '*.lua' | xargs luacheck
 
 package:
 	cmake -H. -Bbuild

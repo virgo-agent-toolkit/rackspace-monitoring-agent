@@ -147,16 +147,11 @@ function PluginCheck:getTargets(callback)
 end
 
 function PluginCheck:run(callback)
-  local exePath
-  local exeArgs 
-  local closeStdin
-
-  exePath, exeArgs, closeStdin = windowsConvertCmd(self._pluginPath, self._pluginArgs)
-
+  local exePath, exeArgs, _ = windowsConvertCmd(self._pluginPath, self._pluginArgs)
   local cenv = self:_childEnv()
   -- Ruby 1.9.1p0 crashes when stdin is closed, so we let luvit take care of
   -- closing the pipe after the process runs.
-  local child = self:_runChild(exePath, exeArgs, cenv, callback)
+  self:_runChild(exePath, exeArgs, cenv, callback)
 end
 
 exports.PluginCheck = PluginCheck

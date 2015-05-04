@@ -42,7 +42,7 @@ function Info:run(callback)
     end
     for line in stdout_data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
-      local a, b, key, value = line:find("(.*)%s(.*)")
+      local _, _, key, value = line:find("(.*)%s(.*)")
       if key ~= nil then
         local obj = {}
         obj[key] = value
@@ -54,9 +54,9 @@ function Info:run(callback)
 
   local sysinfo = sctx:sysinfo()
   local vendor = sysinfo.vendor:lower()
-  local command = ''
-  local args = {}
-  local options = {}
+  local command
+  local args
+  local options
 
   if vendor == 'ubuntu' or vendor == 'debian' then
     command = 'dpkg-query'

@@ -40,7 +40,6 @@ local toString = require('virgo/util/misc').toString
 local lastIndexOf = require('virgo/util/misc').lastIndexOf
 local split = require('virgo/util/misc').split
 local fireOnce = require('virgo/util/misc').fireOnce
-local trim = require('virgo/util/misc').trim
 local deepCopyTable = require('virgo/util/misc').deepCopyTable
 local tableToString = require('virgo/util/misc').tableToString
 local randstr = require('virgo/util/misc').randstr

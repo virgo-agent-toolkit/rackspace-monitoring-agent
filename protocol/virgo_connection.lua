@@ -3,6 +3,7 @@ local hostInfo = require('../hostinfo')
 local check = require('../check')
 local logging = require('logging')
 local JSON = require('json')
+local fmt = require('string').format
 
 local AgentProtocolConnection = require('virgo/protocol/connection')
 

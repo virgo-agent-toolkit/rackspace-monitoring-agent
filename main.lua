@@ -17,7 +17,6 @@ local los = require('los')
 local path = require('path')
 
 local function start(...)
-  local async = require('async')
   local fs = require('fs')
   local logging = require('logging')
   local uv = require('uv')
@@ -30,7 +29,6 @@ local function start(...)
   local connectionStream = require('./client/virgo_connection_stream')
   local constants = require('./constants')
   local protocolConnection = require('./protocol/virgo_connection')
-  local upgrade = require('virgo/client/upgrade')
 
   local log_level
 
@@ -104,8 +102,6 @@ local function start(...)
       WinSvcWrap.SvcStart(virgo.pkg_name)
     elseif argv.args.w == 'stop' then
       WinSvcWrap.SvcStop(virgo.pkg_name)
-    else
-      -- write something here....
     end
     return
   end

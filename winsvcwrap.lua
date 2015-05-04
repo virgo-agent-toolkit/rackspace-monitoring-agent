@@ -56,6 +56,8 @@ end
 
 exports.SvcInstall = function(svcName, longName, desc, params)
   local svcPath, err = winsvcaux.GetModuleFileName()
+  local schService, schSCManager
+  local _
   if svcPath == nil then
     logging.errorf('Cannot install service, service path unobtainable, %s', winsvcaux.GetErrorString(err))
     return
@@ -66,14 +68,14 @@ exports.SvcInstall = function(svcName, longName, desc, params)
   end
 
   -- Get a handle to the SCM database
-  local schSCManager, err = winsvc.OpenSCManager(nil, nil, winsvc.SC_MANAGER_ALL_ACCESS)
+  schSCManager, err = winsvc.OpenSCManager(nil, nil, winsvc.SC_MANAGER_ALL_ACCESS)
   if schSCManager == nil then
     logging.errorf('OpenSCManager failed, %s', winsvcaux.GetErrorString(err))
     return
   end
 
   -- Create the Service
-  local schService, tagid, err = winsvc.CreateService(
+  schService, _, err = winsvc.CreateService(
     schSCManager,
     svcName,
     longName,
@@ -117,8 +119,10 @@ exports.SvcDelete = function(svcname)
     return
   end
 
+  local schService, delsuccess
+
   -- Open the Service
-  local schService, err = winsvc.OpenService(
+  schService, err = winsvc.OpenService(
     schSCManager,
     svcname,
     winsvc.DELETE)
@@ -129,7 +133,7 @@ exports.SvcDelete = function(svcname)
     return
   end
 
-  local delsuccess, err = winsvc.DeleteService(schService)
+  delsuccess, err = winsvc.DeleteService(schService)
   if not delsuccess then
     logging.errorf('DeleteService failed, %s', winsvcaux.GetErrorString(err))
   else
@@ -151,8 +155,10 @@ exports.SvcStart = function(svcname)
     return
   end
 
+  local schService, startsuccess
+
   -- Open the Service
-  local schService, err = winsvc.OpenService(
+  schService, err = winsvc.OpenService(
     schSCManager,
     svcname,
     winsvc.SERVICE_START)
@@ -163,7 +169,7 @@ exports.SvcStart = function(svcname)
     return
   end
 
-  local startsuccess, err = winsvc.StartService(schService, nil)
+  startsuccess, err = winsvc.StartService(schService, nil)
   if not startsuccess then
     logging.errorf('StartService failed, %s', winsvcaux.GetErrorString(err))
   else
@@ -185,8 +191,10 @@ exports.SvcStop = function(svcname)
     return
   end
 
+  local schService, success, status
+
   -- Open the Service
-  local schService, err = winsvc.OpenService(
+  schService, err = winsvc.OpenService(
     schSCManager,
     svcname,
     winsvc.SERVICE_STOP)
@@ -198,7 +206,7 @@ exports.SvcStop = function(svcname)
   end
 
   -- Stop the Service
-  local success, status, err = winsvc.ControlService(schService, winsvc.SERVICE_CONTROL_STOP, nil)
+  success, status, err = winsvc.ControlService(schService, winsvc.SERVICE_CONTROL_STOP, nil)
   if not success then
     logging.errorf('ControlService stop failed, %s', winsvcaux.GetErrorString(err))
   else
