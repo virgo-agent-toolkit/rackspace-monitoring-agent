@@ -12,6 +12,7 @@ if(EXISTS ${_SIGNATURE_KEY_PATH})
     COMMAND cp -f ${_SIGNATURE_EXE_RAW} ${SIGNATURE_EXE}
   )
   add_custom_target(siggenupload
+    COMMAND rclone mkdir ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
     COMMAND rclone copy ${SIGNATURE_EXE} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
     COMMAND rclone copy ${SIGNATURE_SIG} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
   )

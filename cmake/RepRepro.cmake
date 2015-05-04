@@ -6,5 +6,6 @@ add_custom_target(packagerepo
   COMMAND reprepro -b ${REPO_PATH} includedeb ${REPO_RPM_NAME} *.deb
 )
 add_custom_target(packagerepoupload
+  COMMAND rclone mkdir ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}/${REPO_NAME}
   COMMAND rclone copy ${REPO_PATH} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}/${REPO_NAME}
 )

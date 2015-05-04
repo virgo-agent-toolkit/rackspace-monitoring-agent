@@ -7,5 +7,6 @@ add_custom_target(packagerepo
   COMMAND createrepo ${REPO_PATH}
 )
 add_custom_target(packagerepoupload
+  COMMAND rclone mkdir ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}/${REPO_NAME}
   COMMAND rclone copy ${REPO_PATH} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}/${REPO_NAME}
 )
