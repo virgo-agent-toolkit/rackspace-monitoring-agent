@@ -1,6 +1,6 @@
 return {
   name = "rackspace-monitoring-agent",
-  version = "1.9.7",
+  version = "1.10.0",
   luvi = {
     version = "2.0.3",
     flavor = "regular",
