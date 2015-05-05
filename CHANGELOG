@@ -1,3 +1,30 @@
+## rackspace-monitoring-agent-1.1.0-81
+
+- Debian 8 (Jessie) support
+
+## rackspace-monitoring-agent-1.1.0-80
+
+- Trim the Monitoring ID and Monitoring Token config variables to ensure
+correctness
+- Fix the Xen Server 6 package repo
+
+## rackspace-monitoring-agent-1.1.0-77
+
+- machine enumeration on newer Windows instances that lack the xenstore.exe
+binary
+
+## rackspace-monitoring-agent-1.1.0-73
+
+- CPU Check memory usage tweak
+
+## rackspace-monitoring-agent-1.1.0-54
+
+- OpenSSL options tuning (compression and buffers)
+
+## rackspace-monitoring-agent-1.1.0-53
+
+- Memory leak fix with new connections
+
 ## rackspace-monitoring-agent-1.1.0-41
 
 - Close the mysql connection gracefully
