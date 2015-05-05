@@ -7,6 +7,10 @@ set(APP_VENDOR  "Rackspace")
 set(APP_SUMMARY "Rackspace Monitoring Agent")
 set(APP_CONTACT "monitoring@rackspace.com")
 
+if ($ENV{FORCE_REPO_NAME})
+  set(FORCE_REPO_NAME $ENV{FORCE_REPO_NAME})
+endif()
+
 if (WIN32)
   set(APP_NAME_INSTALL  "${APP_NAME}.exe")
 else()

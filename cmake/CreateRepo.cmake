@@ -1,4 +1,8 @@
-set(REPO_NAME ${LINUX_NAME_LOWER}-${LINUX_VER}-${CMAKE_SYSTEM_PROCESSOR})
+if (FORCE_REPO_NAME)
+  set(REPO_NAME ${FORCE_REPO_NAME})
+else()
+  set(REPO_NAME ${LINUX_NAME_LOWER}-${LINUX_VER}-${CMAKE_SYSTEM_PROCESSOR})
+endif()
 set(REPO_PATH ${CMAKE_BINARY_DIR}/${REPO_NAME})
 message("Making repository ${REPO_NAME}")
 add_custom_target(packagerepo
