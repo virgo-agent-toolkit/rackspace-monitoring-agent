@@ -101,14 +101,14 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     install(FILES ${SYSTEMD_SCRIPT} DESTINATION /etc/systemd/system)
 
     ### SysV
-    set(DEB_SYSV ${GENERATED_PACKAGE_SCRIPTS}/debian/rackspace-monitoring-agent)
+    set(DEB_SYSV ${GENERATED_PACKAGE_SCRIPTS}/debian/${APP_NAME})
     configure_file(${PACKAGE_SCRIPTS}/debian/service.init.in ${DEB_SYSV})
     install(PROGRAMS ${DEB_SYSV} DESTINATION /etc/init.d)
 
     ### Upstart
-    set(DEB_UPSTART ${GENERATED_PACKAGE_SCRIPTS}/debian/service.upstart)
+    set(DEB_UPSTART ${GENERATED_PACKAGE_SCRIPTS}/debian/${APP_NAME}.conf)
     configure_file(${PACKAGE_SCRIPTS}/debian/service.upstart.in ${DEB_UPSTART})
-    install(FILES ${DEB_UPSTART} DESTINATION /etc/init/${APP_NAME}.conf)
+    install(FILES ${DEB_UPSTART} DESTINATION /etc/init)
 
     include(RepRepro)
   endif()
