@@ -106,6 +106,10 @@ local function start(...)
     return
   end
 
+  if argv.args['restart-sysv-on-upgrade'] then
+    virgo.restart_on_upgrade = true
+  end
+
   if argv.args.d or argv.args.u then
     log_level = logging.LEVELS['everything']
   end

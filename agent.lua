@@ -24,6 +24,7 @@ local Emitter = require('core').Emitter
 local sigar = require('sigar')
 local uuid = require('virgo/util/uuid')
 local async = require('async')
+local spawn = require('childprocess').spawn
 
 local Confd = require('./confd')
 local ConnectionStream = require('virgo/client/connection_stream').ConnectionStream
@@ -167,7 +168,7 @@ function Agent:connect(callback)
   end)
   self._streams:on('upgrade.success', function()
     local shutdownType = constants:get('SHUTDOWN_UPGRADE')
-    if virgo.restart_on_upgrade == 'true' then
+    if virgo.restart_on_upgrade then
       shutdownType = constants:get('SHUTDOWN_RESTART')
     end
     self:_onShutdown(shutdownType)
@@ -183,15 +184,17 @@ function Agent:connect(callback)
   self._streams:createConnections(endpoints, callback)
 end
 
+function Agent:_restartSystemFive()
+  spawn('/etc/init.d/rackspace-monitoring-agent', { 'restart' }, { detached = true })
+end
+
 function Agent:_shutdown(msg, timeout, exit_code, shutdownType)
   if shutdownType == constants:get('SHUTDOWN_RESTART') then
-    virgo.perform_restart_on_upgrade()
+    self:_restartSystemFive()
   else
     -- Sleep to keep from busy restarting on upstart/systemd/etc
     timer.setTimeout(timeout, function()
-      if msg then
-        logging.info(msg)
-      end
+      if msg then logging.info(msg) end
       process:exit(exit_code)
     end)
   end
