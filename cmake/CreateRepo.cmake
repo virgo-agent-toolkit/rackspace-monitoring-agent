@@ -8,6 +8,7 @@ message("Making repository ${REPO_NAME}")
 add_custom_target(packagerepo
   COMMAND mkdir -p ${REPO_PATH}
   COMMAND cp ${CMAKE_BINARY_DIR}/*.rpm ${REPO_PATH}
+  COMMAND rpm --addsign ${REPO_PATH}/*.rpm
   COMMAND createrepo ${REPO_PATH}
   COMMAND gpg --detach-sign --armor ${REPO_PATH}/repodata/repomd.xml
 )
