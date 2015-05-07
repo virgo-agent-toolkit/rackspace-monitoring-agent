@@ -1,4 +1,2 @@
-%_short_description %(echo $SHORT_DESCRIPTION)
 %_signature gpg
-%_gpg_name %{_short_description} Package Repo
-%__gpg /usr/bin/gpg
+%_gpg_name Rackspace Cloud Monitoring Agent Package Repo
