@@ -9,6 +9,7 @@ add_custom_target(packagerepo
   COMMAND mkdir -p ${REPO_PATH}
   COMMAND cp ${CMAKE_BINARY_DIR}/*.rpm ${REPO_PATH}
   COMMAND createrepo ${REPO_PATH}
+  COMMAND gpg --detach-sign --armor ${REPO_PATH}/repodata/repomd.xml
 )
 add_custom_target(packagerepoupload
   COMMAND rclone mkdir ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}/${REPO_NAME}
