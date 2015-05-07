@@ -84,13 +84,14 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE ${RPM_PREUN})
 
     set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
+      /usr
+      /usr/bin
       /usr/share
       /etc
       /etc/logrotate.d
       /etc/systemd
       /etc/systemd/system
       /etc/init.d
-      /usr/bin
     )
 
     ### Do not Strip RPM
