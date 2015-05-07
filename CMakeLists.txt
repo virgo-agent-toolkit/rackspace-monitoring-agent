@@ -83,6 +83,8 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     configure_file(${PACKAGE_SCRIPTS}/rpm/preun.in ${RPM_PREUN})
     set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE ${RPM_PREUN})
 
+    set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST /etc/logrotate.d /etc/systemd /etc/init.d /usr/bin)
+
     ### Do not Strip RPM
     set(CPACK_RPM_SPEC_INSTALL_POST "/bin/true")
 
