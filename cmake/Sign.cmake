@@ -15,9 +15,9 @@ if(EXISTS ${_SIGNATURE_KEY_PATH})
     COMMAND cp -f ${_SIGNATURE_EXE_RAW} ${SIGNATURE_EXE}
   )
   add_custom_target(siggenupload
-    COMMAND rclone mkdir ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
-    COMMAND rclone copy ${SIGNATURE_EXE} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
-    COMMAND rclone copy ${SIGNATURE_SIG} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
+    COMMAND rclone --transfers=1 --checkers=2 mkdir ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
+    COMMAND rclone --transfers=1 --checkers=2 copy ${SIGNATURE_EXE} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
+    COMMAND rclone --transfers=1 --checkers=2 copy ${SIGNATURE_SIG} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
   )
 else()
   add_custom_target(siggen echo no ~/server.key found)
