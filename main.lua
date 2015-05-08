@@ -54,6 +54,7 @@ local function start(...)
     .describe("d", "enable debug logging")
     .describe("l", "log file path")
     .describe("w", "windows service command: install, delete, start, stop, status")
+    .describe("v", "version")
     .alias({['w'] = 'winsvc'})
     .alias({['o'] = 'no-upgrade'})
     .alias({['p'] = 'pidfile'})
@@ -65,6 +66,8 @@ local function start(...)
     .alias({['u'] = 'setup'})
     .describe("U", "username")
     .alias({['U'] = 'username'})
+    .describe("v", "version")
+    .alias({['v'] = 'version'})
     .describe("K", "apikey")
     .alias({['K'] = 'apikey'})
     .argv("idonhl:U:K:e:x:p:c:j:s:n:k:ul:z:w:")
@@ -72,7 +75,7 @@ local function start(...)
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 
   if argv.args.h then
-    argv.showUsage("idonhU:K:e:x:p:c:j:s:n:k:ul:z:w:")
+    argv.showUsage("idonhU:K:e:x:p:c:j:s:n:k:ul:z:w:v")
     process:exit(0)
   end
 
@@ -86,6 +89,11 @@ local function start(...)
       config[key] = value
     end
     return config
+  end
+
+  if argv.args.v then
+    print(require('./package').version)
+    return
   end
 
   if argv.args.w then
