@@ -1,8 +1,7 @@
 #!/bin/sh
 #
-# Startup script for $SHORT_DESCRIPTION
-#
 # chkconfig: 345 85 15     - start or stop process definition within the boot process
+# description: @APP_DESCRIPTION@
 # processname: @APP_NAME@
 # pidfile: /var/run/@APP_NAME@.pid
 

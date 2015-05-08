@@ -6,6 +6,7 @@ set(APP_NAME    "rackspace-monitoring-agent")
 set(APP_VENDOR  "Rackspace")
 set(APP_SUMMARY "Rackspace Monitoring Agent")
 set(APP_CONTACT "monitoring@rackspace.com")
+set(APP_DESCRIPTION ${APP_SUMMARY})
 
 if (DEFINED ENV{FORCE_REPO_NAME})
   set(FORCE_REPO_NAME $ENV{FORCE_REPO_NAME})
