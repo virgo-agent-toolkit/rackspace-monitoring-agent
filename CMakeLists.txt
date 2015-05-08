@@ -12,11 +12,22 @@ if (DEFINED ENV{FORCE_REPO_NAME})
   set(FORCE_REPO_NAME $ENV{FORCE_REPO_NAME})
 endif()
 
+if (DEFINED ENV{FORCE_VERSION})
+  set(FORCE_VERSION $ENV{FORCE_VERSION})
+endif()
+
 if (WIN32)
   set(APP_NAME_INSTALL  "${APP_NAME}.exe")
 else()
   set(APP_NAME_INSTALL  "${APP_NAME}")
 endif()
+
+if (${FORCE_VERSION} MATCHES (^[0-9]+.[0-9]+.[0-9]+$))
+  FILE(READ ${CMAKE_CURRENT_SOURCE_DIR}/package.lua FILE_CONTENT)
+  STRING(REGEX REPLACE "version = \"[0-9]+.[0-9]+.[0-9]+\"" "version = \"${FORCE_VERSION}\""
+    MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
+  FILE(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/package.lua "${MODIFIED_FILE_CONTENT}")
+endif()  
 
 execute_process(
   COMMAND ./luvi ${CMAKE_CURRENT_SOURCE_DIR}/contrib/printversion
