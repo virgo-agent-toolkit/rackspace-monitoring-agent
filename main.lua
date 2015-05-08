@@ -36,6 +36,18 @@ local function start(...)
   uv.prepare_start(gcCollect, function() collectgarbage('step') end)
   uv.unref(gcCollect)
 
+  local function detach()
+    local spawn_exe = uv.exepath()
+    local spawn_args = {}
+    for i=1, #args do
+      if args[i] ~= '-D' then
+        table.insert(spawn_args, args[i])
+      end
+    end
+    uv.spawn(spawn_exe, { args = spawn_args, detached = true }, function() end)
+    os.exit(0)
+  end
+
   process:on('sighup', function()
     logging.info('Received SIGHUP. Rotating logs.')
     logging.rotate()
@@ -52,6 +64,7 @@ local function start(...)
     .describe("z", "lock file path")
     .describe("o", "skip automatic upgrade")
     .describe("d", "enable debug logging")
+    .describe("D", "detach")
     .describe("l", "log file path")
     .describe("w", "windows service command: install, delete, start, stop, status")
     .describe("v", "version")
@@ -70,7 +83,9 @@ local function start(...)
     .alias({['v'] = 'version'})
     .describe("K", "apikey")
     .alias({['K'] = 'apikey'})
-    .argv("idonhl:U:K:e:x:p:c:j:s:n:k:ul:z:w:")
+    .describe("D", "detach")
+    .alias({['D'] = 'detach'})
+    .argv("idDonhl:U:K:e:x:p:c:j:s:n:k:ul:z:w:")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 
@@ -94,6 +109,10 @@ local function start(...)
   if argv.args.v then
     print(require('./package').version)
     return
+  end
+
+  if argv.args.D then
+    return detach()
   end
 
   if argv.args.w then
