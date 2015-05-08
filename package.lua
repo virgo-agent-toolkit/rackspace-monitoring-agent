@@ -13,20 +13,5 @@ return {
   files = {
     "**.lua",
     "libs/$OS-$ARCH/*",
-    "!*.ico",
-    "!CHANGELOG",
-    "!Dockerfile",
-    "!LICENSE*",
-    "!Makefile",
-    "!README*",
-    "!contrib",
-    "!examples",
-    "!lit",
-    "!lit-*",
-    "!luvi",
-    "!static",
-    "!tests",
-    "!lua-sigar",
-    "!rackspace-monitoring-agent",
   }
 }
