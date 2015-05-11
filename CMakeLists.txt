@@ -22,7 +22,7 @@ else()
   set(APP_NAME_INSTALL  "${APP_NAME}")
 endif()
 
-if (${FORCE_VERSION} MATCHES (^[0-9]+.[0-9]+.[0-9]+$))
+if (${FORCE_VERSION} MATCHES "^[0-9]+.[0-9]+.[0-9]+$")
   FILE(READ ${CMAKE_CURRENT_SOURCE_DIR}/package.lua FILE_CONTENT)
   STRING(REGEX REPLACE "version = \"[0-9]+.[0-9]+.[0-9]+\"" "version = \"${FORCE_VERSION}\""
     MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
