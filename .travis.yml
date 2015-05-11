@@ -1,7 +1,5 @@
 language: c
 
-sudo: false
-
 before_script:
   - sudo add-apt-repository --yes ppa:kalakris/cmake
   - sudo apt-get update -qq
