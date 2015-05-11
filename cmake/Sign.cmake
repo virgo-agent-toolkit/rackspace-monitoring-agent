@@ -8,6 +8,7 @@ set(_SIGNATURE_NAME ${REPO_NAME}-${APP_NAME}-${VERSION_SHORT})
 set(_SIGNATURE_EXE_RAW ${CMAKE_BINARY_DIR}/${APP_NAME})
 set(SIGNATURE_EXE ${CMAKE_BINARY_DIR}/${_SIGNATURE_NAME})
 set(SIGNATURE_SIG ${CMAKE_BINARY_DIR}/${_SIGNATURE_NAME}.sig)
+file(WRITE ${CMAKE_BINARY_DIR}/VERSION "${VERSION_SHORT}\n")
 get_filename_component(_SIGNATURE_KEY_PATH ${SIGNATURE_KEY} ABSOLUTE)
 if(EXISTS ${_SIGNATURE_KEY_PATH})
   add_custom_target(siggen
@@ -15,9 +16,10 @@ if(EXISTS ${_SIGNATURE_KEY_PATH})
     COMMAND cp -f ${_SIGNATURE_EXE_RAW} ${SIGNATURE_EXE}
   )
   add_custom_target(siggenupload
-    COMMAND rclone --transfers=1 --checkers=2 mkdir ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
-    COMMAND rclone --transfers=1 --checkers=2 copy ${SIGNATURE_EXE} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
-    COMMAND rclone --transfers=1 --checkers=2 copy ${SIGNATURE_SIG} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
+    COMMAND rclone mkdir ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
+    COMMAND rclone copy ${SIGNATURE_EXE} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
+    COMMAND rclone copy ${SIGNATURE_SIG} ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
+    COMMAND rclone copy ${CMAKE_BINARY_DIR}/VERSION ${REPO_UPLOAD_CLOUD}:${VERSION_SHORT}
   )
 else()
   add_custom_target(siggen echo no ~/server.key found)
