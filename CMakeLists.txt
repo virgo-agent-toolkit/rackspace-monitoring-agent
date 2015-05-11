@@ -29,6 +29,8 @@ if (${FORCE_VERSION} MATCHES "^[0-9]+.[0-9]+.[0-9]+$")
   FILE(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/package.lua "${MODIFIED_FILE_CONTENT}")
 endif()  
 
+include(ExternalProject)
+
 execute_process(
   COMMAND ./luvi ${CMAKE_CURRENT_SOURCE_DIR}/contrib/printversion
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -36,8 +38,15 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-message("Packaging ${APP_NAME} ${VERSION_SHORT}")
+ExternalProject_Add(agent
+  CONFIGURE_COMMAND ""
+  BINARY_DIR ${CMAKE_BINARY_DIR}
+  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+  BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/lit make ${CMAKE_CURRENT_SOURCE_DIR}
+  INSTALL_COMMAND ""
+  )
 
+message("Packaging ${APP_NAME} ${VERSION_SHORT}")
 ###############################################################################
 ## Enumerate System
 ###############################################################################
@@ -60,7 +69,7 @@ set(REPO_RPM_NAME "cloudmonitoring")
 set(REPO_UPLOAD_CLOUD "rackspace")
 set(SIGNATURE_KEY "~/server.key")
 
-install(PROGRAMS ${APP_NAME_INSTALL} DESTINATION bin)
+install(PROGRAMS ${CMAKE_BINARY_DIR}/${APP_NAME_INSTALL} DESTINATION bin)
 install(FILES ${LICENSE_FILE} DESTINATION share/${APP_NAME})
 
 if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")

@@ -1,10 +1,6 @@
 return {
   name = "rackspace-monitoring-agent",
   version = "1.10.16",
-  luvi = {
-    version = "2.0.5",
-    flavor = "regular",
-  },
   dependencies = {
     "rphillips/options@0.0.5",
     "virgo-agent-toolkit/rackspace-monitoring-client@0.3",

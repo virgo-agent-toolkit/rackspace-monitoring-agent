@@ -7,7 +7,8 @@ LIT?=./lit
 all: $(TARGET)
 
 $(TARGET): lit $(APP_FILES)
-	$(LIT) make
+	cmake -H. -Bbuild
+	cmake --build build
 
 test: lit
 	rm -rf tests/tmpdir && mkdir tests/tmpdir
