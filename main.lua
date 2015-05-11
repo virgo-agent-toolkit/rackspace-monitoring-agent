@@ -29,6 +29,8 @@ local function start(...)
   local connectionStream = require('./client/virgo_connection_stream')
   local constants = require('./constants')
   local protocolConnection = require('./protocol/virgo_connection')
+  local luvi = require('luvi')
+  local openssl = require('openssl')
 
   local log_level
 
@@ -162,6 +164,12 @@ local function start(...)
     return mod.run(argv.args)
   end
 
+  local _, _, opensslVersion = openssl.version()
+
+  logging.log(logging.INFO, string.format("%s: %s", virgo.pkg_name, virgo.bundle_version))
+  logging.log(logging.INFO, string.format("  Luvi %s", luvi.version))
+  logging.log(logging.INFO, string.format("  %s", opensslVersion))
+  logging.log(logging.INFO, string.format("  libuv %s", uv.version_string()))
   logging.log(logging.INFO, string.format("Using config file: %s", options.configFile))
 
   local types = {}
