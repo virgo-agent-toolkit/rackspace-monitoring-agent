@@ -6,7 +6,8 @@ IF NOT "x%1" == "x" GOTO :%1
 ECHO "Building agent"
 IF NOT EXIST lit.exe CALL Make.bat lit
 IF NOT EXIST libs\sigar.dll CALL Make.bat sigar
-CALL lit.exe make
+CALL cmake -H. -Bbuild
+CALL cmake --build build
 GOTO :end
 
 :sigar
@@ -35,7 +36,6 @@ GOTO :end
 
 :package
 IF NOT EXIST rackspace-monitoring-agent.exe CALL Make.bat rackspace-monitoring-agent
-cmake -H. -Bbuild
 cmake --build build --target package
 GOTO :end
 
@@ -47,3 +47,4 @@ IF EXIST luvi.exe DEL /F /Q luvi.exe
 IF EXIST luvi-binaries RMDIR /S /Q luvi-binaries
 
 :end
+
