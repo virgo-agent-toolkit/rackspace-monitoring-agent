@@ -35,6 +35,10 @@ case "$1" in
         fi
       fi
       ;;
+    remove)
+      service @APP_NAME@ stop || :
+      rm -f /var/run/@APP_NAME@.pid
+      ;;
     *)
       echo "Unrecognized postinst argument '$1'"
       ;;
