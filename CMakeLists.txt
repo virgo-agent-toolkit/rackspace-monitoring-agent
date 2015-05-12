@@ -127,8 +127,7 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     configure_file(${PACKAGE_SCRIPTS}/debian/postinst.in ${DEB_POSTINST})
     set(DEB_PRERM ${GENERATED_PACKAGE_SCRIPTS}/debian/prerm)
     configure_file(${PACKAGE_SCRIPTS}/debian/postinst.in ${DEB_PRERM})
-    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA ${DEB_POSTRM} ${DEB_POSTINST}
-      ${DEB_PRERM})
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${DEB_POSTRM};${DEB_POSTINST};${DEB_PRERM}")
 
     ### systemd init script
     set(SYSTEMD_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/systemd/${APP_NAME}.service)
