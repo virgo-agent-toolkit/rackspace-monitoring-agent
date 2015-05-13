@@ -151,13 +151,8 @@ local function start(...)
 
   local options = {}
   options.configFile = argv.args.c or constants:get('DEFAULT_CONFIG_PATH')
-  if argv.args.p then
-    options.pidFile = argv.args.p
-  end
-
-  if argv.args.z then
-    options.lockFile = argv.args.z
-  end
+  options.pidFile = argv.args.p
+  options.lockFile = argv.args.z
 
   if argv.args.e then
     local mod = require('./runners/' .. argv.args.e)
@@ -167,9 +162,9 @@ local function start(...)
   local _, _, opensslVersion = openssl.version()
 
   logging.log(logging.INFO, string.format("%s: %s", virgo.pkg_name, virgo.bundle_version))
-  logging.log(logging.INFO, string.format("  Luvi %s", luvi.version))
-  logging.log(logging.INFO, string.format("  %s", opensslVersion))
+  logging.log(logging.INFO, string.format("  luvi %s", luvi.version))
   logging.log(logging.INFO, string.format("  libuv %s", uv.version_string()))
+  logging.log(logging.INFO, string.format("  %s", opensslVersion))
   logging.log(logging.INFO, string.format("Using config file: %s", options.configFile))
 
   local types = {}

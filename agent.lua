@@ -71,8 +71,7 @@ end
 
 function Agent:start(options)
   if self:getConfig() == nil then
-    logging.error("config missing or invalid")
-    process:exit(1)
+    return logging.error("config missing or invalid")
   end
 
   async.series({
@@ -95,8 +94,7 @@ function Agent:start(options)
       -- get the lock
       fs.open(options.lockFile, 'w', function(err, fd)
         if err then
-          logging.error(fmt('Agent lock file open error (path: %s): %s', options.lockFile, tostring(err)))
-          process:exit(3)
+          return logging.error(fmt('Agent lock file open error (path: %s): %s', options.lockFile, tostring(err)))
         end
         local rv = ffi.C.flock(fd, 6) -- LOCK_EX 2 | LOCK_NB 4
         if rv < 0 then
@@ -105,8 +103,7 @@ function Agent:start(options)
           pcall(function()
             pid = fs.readFileSync(options.pidFile)
           end)
-          logging.error(fmt('Agent in use (pid: %s, path: %s)', tostring(pid), options.pidFile))
-          process:exit(3)
+          return logging.error(fmt('Agent in use (pid: %s, path: %s)', tostring(pid), options.pidFile))
         end
 
         fs.writeFileSync(options.pidFile, tostring(process.pid))
@@ -245,8 +242,7 @@ end
 
 function Agent:_preConfig(callback)
   if self._config['token'] == nil then
-    logging.error("'monitoring_token' is missing from 'config'")
-    process:exit(1)
+    return logging.error("'monitoring_token' is missing from 'config'")
   end
 
   -- Regen GUID
@@ -282,8 +278,7 @@ function Agent:_preConfig(callback)
     -- log
     function(callback)
       if self._config['id'] == nil then
-        logging.error("Agent ID not configured, and could not automatically detect an ID")
-        process:exit(1)
+        return logging.error("Agent ID not configured, and could not automatically detect an ID")
       end
       logging.infof('Starting agent %s (guid=%s, version=%s, bundle_version=%s)',
                       self._config['id'],
@@ -308,8 +303,7 @@ function Agent:loadEndpoints(callback)
     for _, ep in pairs(endpoints) do
       if not ep.srv_query then
         if not ep.host or not ep.port then
-          logging.errorf("Invalid endpoint: %s, %s", ep.host or "", ep.port or  "")
-          process:exit(1)
+          return logging.errorf("Invalid endpoint: %s, %s", ep.host or "", ep.port or  "")
         end
       end
     end
@@ -322,8 +316,7 @@ function Agent:loadEndpoints(callback)
   end
 
   if (snetregion and queries) or (snetregion and endpoints) or (queries and endpoints) then
-    logging.errorf("Invalid configuration: only one of snet_region, queries, and endpoints can be set.")
-    process:exit(1)
+    return logging.errorf("Invalid configuration: only one of snet_region, queries, and endpoints can be set.")
   end
 
   if snetregion then
@@ -334,8 +327,7 @@ function Agent:loadEndpoints(callback)
     end
 
     if not misc.tableContains(matcher, constants:get('VALID_SNET_REGION_NAMES')) then
-      logging.errorf("Invalid configuration: snet_region '%s' is not supported.", snetregion)
-      process:exit(1)
+      return logging.errorf("Invalid configuration: snet_region '%s' is not supported.", snetregion)
     end
 
     logging.info(fmt('Using ServiceNet endpoints in %s region', snetregion))
@@ -360,8 +352,7 @@ function Agent:loadEndpoints(callback)
   endpoints = misc.split(endpoints, '[^,]+')
 
   if #endpoints == 0 then
-    logging.error("at least one endpoint needs to be specified")
-    process:exit(1)
+    return logging.error("at least one endpoint needs to be specified")
   end
 
   local new_endpoints = {}
