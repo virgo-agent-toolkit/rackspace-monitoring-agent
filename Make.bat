@@ -1,4 +1,5 @@
 @ECHO off
+@SET LIT_VERSION=1.2.6
 
 IF NOT "x%1" == "x" GOTO :%1
 
@@ -22,7 +23,7 @@ GOTO :end
 
 :lit
 ECHO "Building lit"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/1.2.5/get-lit.ps1'))"
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/%LIT_VERSION%/get-lit.ps1'))"
 GOTO :end
 
 :test
