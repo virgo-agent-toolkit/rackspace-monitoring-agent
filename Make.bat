@@ -9,6 +9,7 @@ IF NOT EXIST lit.exe CALL Make.bat lit
 IF NOT EXIST libs\sigar.dll CALL Make.bat sigar
 CALL cmake -H. -Bbuild
 CALL cmake --build build
+CALL cmake --build build --target SignExe
 GOTO :end
 
 :sigar
@@ -37,7 +38,8 @@ GOTO :end
 
 :package
 IF NOT EXIST rackspace-monitoring-agent.exe CALL Make.bat rackspace-monitoring-agent
-cmake --build build --target package
+CALL cmake --build build --target package
+CALL cmake --build build --target SignPackage
 GOTO :end
 
 :clean
