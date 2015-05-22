@@ -38,13 +38,13 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-ExternalProject_Add(agent
-  CONFIGURE_COMMAND ""
-  BINARY_DIR ${CMAKE_BINARY_DIR}
-  SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-  BUILD_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/lit make ..
-  INSTALL_COMMAND ""
-  )
+file(GLOB_RECURSE LUA_FILES "*.lua")
+add_custom_command(
+  OUTPUT ${APP_NAME_INSTALL}
+  DEPENDS ${LUA_FILES}
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/lit make ..
+)
+add_custom_target(agent ALL DEPENDS ${APP_NAME_INSTALL})
 
 message("Packaging ${APP_NAME} ${VERSION_SHORT}")
 ###############################################################################
