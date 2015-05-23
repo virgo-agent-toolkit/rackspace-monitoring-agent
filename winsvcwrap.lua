@@ -115,7 +115,7 @@ exports.SvcDelete = function(svcname)
   -- Get a handle to the SCM database
   local schSCManager, err = winsvc.OpenSCManager(nil, nil, winsvc.SC_MANAGER_ALL_ACCESS)
   if schSCManager == nil then
-    logging.error('OpenSCManager failed, %s', winsvcaux.GetErrorString(err))
+    logging.errorf('OpenSCManager failed, %s', winsvcaux.GetErrorString(err))
     return
   end
 
@@ -241,7 +241,6 @@ exports.tryRunAsService = function(svcname, runfunc)
     end
   end
 
-
   local function SvcMain(args, context)
     svcStatusHandle = winsvc.GetStatusHandleFromContext(context)
     -- These SERVICE_STATUS members remain as set here
@@ -285,7 +284,7 @@ exports.tryRunAsService = function(svcname, runfunc)
       runfunc()
     end
   end, function(err)
-    logging.errorf('A Service function returned with err', err)
+    logging.errorf('A Service function returned with err %s', err)
   end)
 
   if ret then
