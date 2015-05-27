@@ -1,24 +1,14 @@
 @ECHO off
-@SET LIT_VERSION=1.2.9
+@SET LIT_VERSION=1.2.13
 
 IF NOT "x%1" == "x" GOTO :%1
 
 :rackspace-monitoring-agent
 ECHO "Building agent"
 IF NOT EXIST lit.exe CALL Make.bat lit
-IF NOT EXIST libs\sigar.dll CALL Make.bat sigar
 CALL cmake -H. -Bbuild
 CALL cmake --build build
-GOTO :end
-
-:sigar
-git clone --recursive https://github.com/virgo-agent-toolkit/lua-sigar
-IF NOT EXIST libs CALL mkdir libs
-pushd lua-sigar
-call cmake -G"Visual Studio 12 Win64" .
-call make.bat
-copy sigar.dll ..\libs
-popd
+CALL cmake --build build --target SignExe
 GOTO :end
 
 :lit
@@ -37,7 +27,8 @@ GOTO :end
 
 :package
 IF NOT EXIST rackspace-monitoring-agent.exe CALL Make.bat rackspace-monitoring-agent
-cmake --build build --target package
+CALL cmake --build build --target package
+CALL cmake --build build --target SignPackage
 GOTO :end
 
 :clean

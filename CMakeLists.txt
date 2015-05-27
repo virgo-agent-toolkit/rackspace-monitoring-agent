@@ -4,7 +4,8 @@ project(rackspace-monitoring-agent NONE)
 
 set(APP_NAME    "rackspace-monitoring-agent")
 set(APP_VENDOR  "Rackspace")
-set(APP_SUMMARY "Rackspace Monitoring Agent")
+set(APP_CREATOR "${APP_VENDOR} Monitoring")
+set(APP_SUMMARY "${APP_CREATOR} Agent")
 set(APP_CONTACT "monitoring@rackspace.com")
 set(APP_DESCRIPTION ${APP_SUMMARY})
 
@@ -69,10 +70,10 @@ set(REPO_RPM_NAME "cloudmonitoring")
 set(REPO_UPLOAD_CLOUD "rackspace")
 set(SIGNATURE_KEY "~/server.key")
 
-install(PROGRAMS ${CMAKE_BINARY_DIR}/${APP_NAME_INSTALL} DESTINATION bin)
-install(FILES ${LICENSE_FILE} DESTINATION share/${APP_NAME})
-
 if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/${APP_NAME_INSTALL} DESTINATION bin)
+  install(FILES ${LICENSE_FILE} DESTINATION share/${APP_NAME})
+
   ### logrotate
   set(LOGROTATE_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/logrotate/${APP_NAME})
   message("Generating Log Rotate Script ${LOGROTATE_SCRIPT}")
@@ -150,6 +151,17 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
   include(Sign)
 endif()
 
+if (WIN32)
+  # Force 64 bit packages only
+  set(CPACK_WIX_SIZEOF_VOID_P 8)
+  set(CPACK_WIX_EXTENSIONS WixUtilExtension)
+  set(CPACK_WIX_TEMPLATE "${PACKAGE_SCRIPTS}/windows/virgo.wxs")
+  set(PFILESDIR "ProgramFiles64Folder")
+  set(PRODUCTEXE ${CMAKE_BINARY_DIR}/${APP_NAME_INSTALL})
+  set(APP_ICO "${CMAKE_CURRENT_SOURCE_DIR}/agent.ico")
+  set(LONG_DESCRIPTION "Rackspace Monitoring Agent Service")
+endif()
+
 ###############################################################################
 ## Packaging
 ###############################################################################
@@ -165,9 +177,26 @@ set(CPACK_PACKAGE_NAME ${APP_NAME})
 set(CPACK_PACKAGE_VENDOR ${APP_VENDOR})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${APP_SUMMARY})
 set(CPACK_PACKAGE_VERSION ${VERSION_SHORT})
-set(CPACK_PACKAGE_INSTALL_DIRECTORY ${APP_NAME})
+if (WIN32)
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY ${APP_CREATOR})
+  set(CPACK_WIX_CANDLE_EXTRA_FLAGS
+    "-dCPACK_PACKAGE_INSTALL_DIRECTORY=${CPACK_PACKAGE_INSTALL_DIRECTORY}" 
+    "-dCPACK_PACKAGE_DESCRIPTION_SUMMARY=${CPACK_PACKAGE_DESCRIPTION_SUMMARY}"
+    "-dLONG_DESCRIPTION=${LONG_DESCRIPTION}"
+    "-dAPP_CREATOR=${APP_CREATOR}"
+    "-dPRODUCTEXE=${PRODUCTEXE}"
+    "-dPFILESDIR=${PFILESDIR}"
+    "-dAPP_ICO=${APP_ICO}"
+    )
+else(WIN32)
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY ${APP_NAME})
+endif(WIN32)
 set(CPACK_PACKAGE_CONTACT ${APP_CONTACT})
 set(CPACK_GENERATOR ${SPECIFIC_SYSTEM_PREFERED_CPACK_GENERATOR})
-set(CPACK_NSIS_MODIFY_PATH ON)
+set(CPACK_WIX_UPGRADE_GUID "826873C9-1A63-4A05-98F4-95D8D8EF3507")
 
 include (CPack)
+message ("CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME}")
+if (WIN32)
+  include (WinSign)
+endif(WIN32)
