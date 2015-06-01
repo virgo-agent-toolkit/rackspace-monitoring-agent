@@ -170,11 +170,13 @@ local function start(...)
 
     local _, _, opensslVersion = openssl.version()
 
-    logging.logf(logging.INFO, "%s (%s)", names.long_pkg_name, virgo.bundle_version)
-    logging.logf(logging.INFO, "  luvi %s", luvi.version)
-    logging.logf(logging.INFO, "  libuv %s", uv.version_string())
-    logging.logf(logging.INFO, "  %s", opensslVersion)
-    logging.logf(logging.INFO, "Using config file: %s", options.configFile)
+    if not argv.args.u then -- skip version output on setup
+      logging.logf(logging.INFO, "%s (%s)", names.long_pkg_name, virgo.bundle_version)
+      logging.logf(logging.INFO, "  luvi %s", luvi.version)
+      logging.logf(logging.INFO, "  libuv %s", uv.version_string())
+      logging.logf(logging.INFO, "  %s", opensslVersion)
+      logging.logf(logging.INFO, "Using config file: %s", options.configFile)
+    end
 
     local types = {}
     types.ProtocolConnection = protocolConnection
