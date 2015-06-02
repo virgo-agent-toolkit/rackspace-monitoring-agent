@@ -31,6 +31,14 @@ CALL cmake --build build --target package
 CALL cmake --build build --target SignPackage
 GOTO :end
 
+:packagerepo
+call cmake --build build --target packagerepo
+GOTO :end
+
+:packagerepoupload
+call cmake --build build --target packagerepoupload
+GOTO :end
+
 :clean
 IF EXIST rackspace-monitoring-agent.exe DEL /F /Q rackspace-monitoring-agent.exe
 IF EXIST lit.exe DEL /F /Q lit.exe
