@@ -35,12 +35,8 @@ CALL cmake --build build --target package
 CALL cmake --build build --target SignPackage
 GOTO :end
 
-:packagerepo
-call cmake --build build --target packagerepo
-GOTO :end
-
-:packagerepoupload
-call cmake --build build --target packagerepoupload
+:packageupload
+call cmake --build build --target packageupload
 GOTO :end
 
 :clean
