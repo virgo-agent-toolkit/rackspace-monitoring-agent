@@ -100,6 +100,10 @@ flag set to tests.
 
     make test
 
+You can also run an individual test module:
+
+    TEST_MODULE=net make test
+
 Configuration File Parameters
 =============================
 
