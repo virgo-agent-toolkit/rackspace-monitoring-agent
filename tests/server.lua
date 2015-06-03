@@ -192,7 +192,7 @@ function Server:_onLineProtocol(client, line)
     return
   end
 
-  local response = JSON.parse(fixtures[payload.method .. '.response'])
+  local response = JSON.parse(fixtures[payload.method .. '.response.json'])
 
   -- Handle rate limit logic
   local destroy = false

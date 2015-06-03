@@ -20,8 +20,10 @@ require('tap')(function(test)
   local Endpoint = require('virgo/client/endpoint').Endpoint
   local ConnectionStream = require('virgo/client/connection_stream').ConnectionStream
   local async = require('async')
-  local los = require('los')
   local constants = require('../constants')
+  local los = require('los')
+  local misc = require('virgo/util/misc')
+  local timer = require('timer')
 
   -----------------------------------------------------------------------------
 
@@ -67,6 +69,49 @@ require('tap')(function(test)
     }, function()
       AEP:close()
       client:shutdown()
+    end)
+  end)
+
+  test('test reconnects', function()
+    local options = {
+      datacenter = 'test',
+      tls = { rejectUnauthorized = false }
+    }
+    local client = ConnectionStream:new('id', 'token', 'guid', false, options)
+    local clientEnd = 0
+    local reconnect = 0
+
+    client:on('client_end', function(err)
+      clientEnd = clientEnd + 1
+    end)
+
+    client:on('reconnect', function(err)
+      reconnect = reconnect + 1
+    end)
+
+    local endpoints = { Endpoint:new('127.0.0.1:4444')}
+    local AEP = server.Server:new({ includeTimeouts = false })
+    AEP:listen(4444, '127.0.0.1')
+
+    async.series({
+      function(callback)
+        client:once('handshake_success', callback)
+        client:createConnections(endpoints, function() end)
+      end,
+      function(callback)
+        AEP:close()
+        timer.setImmediate(function()
+          AEP = server.Server:new({ includeTimeouts = false })
+          AEP:listen(4444, '127.0.0.1')
+        end)
+        client:once('reconnect', callback)
+      end,
+      function(callback)
+        client:once('handshake_success', callback)
+      end,
+    }, function()
+      client:shutdown()
+      AEP:close()
     end)
   end)
 end)
