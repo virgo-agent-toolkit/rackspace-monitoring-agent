@@ -48,16 +48,10 @@ require('tap')(function(test)
   -----------------------------------------------------------------------------
 
   test('test handshake timeout', function()
-    if los.type() == "win32" then
-      p('Skip test_handshake_timeout until a suitable SIGUSR1 replacement is used in runner.py')
-      return
-    end
-
     local options = {
       datacenter = 'test',
-      tls = { rejectUnauthorized = false },
+      tls = { rejectUnauthorized = false }
     }
-
     local client = ConnectionStream:new('id', 'token', 'guid', false, options)
     local endpoints = { Endpoint:new('127.0.0.1:4444') }
     local AEP = TimeoutServer:new({ includeTimeouts = false })
