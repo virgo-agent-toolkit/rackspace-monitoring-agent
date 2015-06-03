@@ -23,6 +23,8 @@ require('tap')(function(test)
   local los = require('los')
   local constants = require('../constants')
 
+  -----------------------------------------------------------------------------
+
   local TimeoutServer = server.Server:extend()
   function TimeoutServer:initialize(options)
     server.Server.initialize(self, options)
@@ -31,6 +33,8 @@ require('tap')(function(test)
   function TimeoutServer:_onLineProtocol(client, line)
     -- Timeout All Requests
   end
+
+  -----------------------------------------------------------------------------
 
   server.opts.destroy_connection_base = 200
   server.opts.destroy_connection_jitter = 200
@@ -44,25 +48,23 @@ require('tap')(function(test)
   -----------------------------------------------------------------------------
 
   test('test handshake timeout', function()
-    local options, client
-
     if los.type() == "win32" then
       p('Skip test_handshake_timeout until a suitable SIGUSR1 replacement is used in runner.py')
       return
     end
 
-    options = {
+    local options = {
       datacenter = 'test',
       tls = { rejectUnauthorized = false },
     }
 
+    local client = ConnectionStream:new('id', 'token', 'guid', false, options)
     local endpoints = { Endpoint:new('127.0.0.1:4444') }
     local AEP = TimeoutServer:new({ includeTimeouts = false })
     AEP:listen(4444, '127.0.0.1')
 
     async.series({
       function(callback)
-        client = ConnectionStream:new('id', 'token', 'guid', false, options)
         client:createConnections(endpoints, callback)
       end,
       function(callback)
