@@ -22,8 +22,6 @@ add_custom_target(
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
-set(MSI_OUTPUT "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-AMD64.msi")
-
 add_custom_target(
   SignPackage
   COMMAND "${SIGNTOOL_PATH}\\signtool.exe" sign /d ${APP_NAME_INSTALL} /v /f ${CODESIGNING_KEYFILE} ${MSI_OUTPUT}

@@ -1,12 +1,16 @@
-@ECHO off
-@SET LIT_VERSION=1.2.13
+REM @ECHO off
+@SET LIT_VERSION=1.2.15
 
 IF NOT "x%1" == "x" GOTO :%1
 
 :rackspace-monitoring-agent
 ECHO "Building agent"
 IF NOT EXIST lit.exe CALL Make.bat lit
-CALL cmake -H. -Bbuild
+IF NOT "x%CMAKE_GENERATOR%" == "x" (
+  CALL cmake -H. -Bbuild -G "%CMAKE_GENERATOR%"
+) ELSE (
+  CALL cmake -H. -Bbuild
+)
 CALL cmake --build build
 CALL cmake --build build --target SignExe
 GOTO :end
@@ -31,12 +35,8 @@ CALL cmake --build build --target package
 CALL cmake --build build --target SignPackage
 GOTO :end
 
-:packagerepo
-call cmake --build build --target packagerepo
-GOTO :end
-
-:packagerepoupload
-call cmake --build build --target packagerepoupload
+:packageupload
+call cmake --build build --target packageupload
 GOTO :end
 
 :clean
