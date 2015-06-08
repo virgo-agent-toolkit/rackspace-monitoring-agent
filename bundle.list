@@ -97,6 +97,7 @@
 ./hostinfo/base.lua
 ./hostinfo/cpu.lua
 ./hostinfo/disk.lua
+./hostinfo/filepermissions.lua
 ./hostinfo/filesystem.lua
 ./hostinfo/init.lua
 ./hostinfo/login.lua
