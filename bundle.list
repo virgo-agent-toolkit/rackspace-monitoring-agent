@@ -90,6 +90,7 @@
 ./code_cert.prod.lua
 ./crashreport.lua
 ./endpoint.lua
+./entity.lua
 ./init.lua
 ./lib/agent.lua
 ./hostinfo_runner.lua
