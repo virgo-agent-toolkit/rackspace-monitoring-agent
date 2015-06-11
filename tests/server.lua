@@ -6,13 +6,11 @@ local string = require('string')
 local math = require('math')
 local table = require('table')
 local http = require("http")
-local url = require('url')
 local utils = require('utils')
-local misc = require('/base/util/misc')
+local misc = require('virgo/util/misc')
 local fs = require('fs')
 local path = require('path')
 local fmt = require('string').format
-local os = require('os')
 local Emitter = require('core').Emitter
 
 local fixtures = require('./fixtures')
@@ -194,7 +192,7 @@ function Server:_onLineProtocol(client, line)
     return
   end
 
-  local response = JSON.parse(fixtures[payload.method .. '.response'])
+  local response = JSON.parse(fixtures[payload.method .. '.response.json'])
 
   -- Handle rate limit logic
   local destroy = false
@@ -307,8 +305,7 @@ local function run()
     end)
   end
 end
---
-local exports = {}
+
+exports.opts = opts
 exports.run = run
 exports.Server = Server
-return exports
