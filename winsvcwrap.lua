@@ -285,6 +285,7 @@ exports.tryRunAsService = function(svcname, runfunc)
     end
   end, function(err)
     logging.errorf('A Service function returned with err %s', err)
+    process:exit(1)
   end)
 
   if ret then
