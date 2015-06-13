@@ -18,7 +18,7 @@ local Emitter = require('core').Emitter
 local JSON = require('json')
 local LineEmitter = require('line-emitter').LineEmitter
 local Object = require('core').Object
-local childprocess = require('childprocess')
+local virgochild = require('../virgochild')
 local env = require('env')
 local fmt = require('string').format
 local logging = require('logging')
@@ -416,7 +416,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
 
   self._log(logging.DEBUG, fmt("%s: starting process", exePath))
 
-  local child = childprocess.spawn(exePath, exeArgs, { env = self:_childEnv() })
+  local child = virgochild.spawn(exePath, exeArgs, { env = self:_childEnv() })
 
   local pluginTimeout = timer.setTimeout(self._timeout, function()
     local timeoutSeconds = (self._timeout / 1000)
