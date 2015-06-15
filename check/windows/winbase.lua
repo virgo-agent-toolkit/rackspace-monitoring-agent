@@ -139,7 +139,7 @@ function WindowsPowershellCmdletCheck:run(callback)
     local options = {}
     local wrapper = self.screen_settings .. self:getPowershellCmd() .. self.error_output
     local child = spawn('powershell.exe', {wrapper}, options)
-    child.stdin:close() -- NEEDED for Powershell 2.0 to exit
+    child.stdin:destroy() -- NEEDED for Powershell 2.0 to exit
     child.stdout:on('data', function(chunk)
       -- aggregate the output
       table.insert(block_data_table, chunk)
