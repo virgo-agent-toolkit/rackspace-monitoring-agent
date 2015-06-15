@@ -75,10 +75,11 @@ function WindowsPowershellCmdletCheck:run(callback)
   -- Set up
   callback = fireOnce(callback)
   local checkResult = CheckResult:new(self, {})
-  local block_data = ''
+  local block_data_table = {}
 
   local function handle_data(exit_code)
     -- Build Dataset from Block Data
+	local block_data = table.concat(block_data_table)
     local data_lines = lines(block_data)
     local count = 0
     local headings = {}
@@ -141,7 +142,7 @@ function WindowsPowershellCmdletCheck:run(callback)
     child.stdin:close() -- NEEDED for Powershell 2.0 to exit
     child.stdout:on('data', function(chunk)
       -- aggregate the output
-      block_data = block_data .. chunk
+      table.insert(block_data_table, chunk)
     end)
     child:on('exit', handle_data)
     child:on('error', function(err)
@@ -152,7 +153,7 @@ function WindowsPowershellCmdletCheck:run(callback)
       callback(checkResult)
     end)
   else
-    block_data = self:getPowershellCSVFixture()
+    table.insert(block_data_table, self:getPowershellCSVFixture())
     handle_data(0)
   end
 end
