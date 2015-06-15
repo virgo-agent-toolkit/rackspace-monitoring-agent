@@ -278,6 +278,7 @@ exports.tryRunAsService = function(svcname, runfunc)
   local ret, err = winsvc.SpawnServiceCtrlDispatcher(DispatchTable, function(success, err)
     if success then
       logging.info('Service Control Dispatcher returned after threads exited ok')
+      process:exit(0)
     else
       logging.infof('Service Control Dispatcher returned with err, %s', winsvcaux.GetErrorString(err))
       logging.info('Running outside service manager')
