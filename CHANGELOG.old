@@ -1,0 +1,188 @@
+## rackspace-monitoring-agent-1.1.0-41
+
+- Close the mysql connection gracefully
+
+## rackspace-monitoring-agent-1.1.0-34
+
+- An OpenSSL bump to 1.0.1L
+
+## rackspace-monitoring-agent-1.1.0-31
+
+- A fix for automatic upgrade logging post update
+
+## rackspace-monitoring-agent-1.1.0-30
+
+- A new metric on Linux whether a networking link is up/down
+- Fix for automatic upgrades
+
+## rackspace-monitoring-agent-1.1.0-27
+
+# Luvit memory leak fix
+
+## rackspace-monitoring-agent-1.1.0-18
+
+- This is a minor release to the monitoring agent with a fix for a connection
+memory leak and Fedora 21 support.
+
+## rackspace-monitoring-agent-1.1.0-15
+
+- Memory fix within luvit
+
+## rackspace-monitoring-agent-1.1.0-14
+
+- Correct behavior for configuring properties with service net
+- Fix log rotation permissions for Redhat based systems
+
+## rackspace-monitoring-agent-1.1.0-5
+
+- Targets for agent.plugins
+	- Returns the list of plugins
+- Memory leak fix in FS_CALL
+- Config: Fix for custom endpoints
+- Windows: Fix for powershell parameter expansion
+- Initial upgrade support
+
+## rackspace-monitoring-agent-1.0.2-1
+
+- Host info for Waldo 
+- New host info types message and host info for sysctl and date/time
+
+## rackspace-monitoring-agent-1.0.1-25
+
+- New host info type runner
+- Fixes for various integration tests (xenserver)
+
+## rackspace-monitoring-agent-1.0.1-18
+
+- Fix systemd for Centos7
+
+## rackspace-monitoring-agent-1.0.1-8
+
+- RNG Seed Fix
+
+## rackspace-monitoring-agent-1.0.1-5
+
+- Fix crash in Windows log
+- Fix reconnects on handshake timeouts
+
+## rackspace-monitoring-agent-1.0.0-53
+
+- Fix Cloud-Init MachineIdentity for default values
+
+## rackspace-monitoring-agent-1.0.0-45
+
+- Bump libuv for spawn bugfix
+
+## rackspace-monitoring-agent-1.0.0-39
+
+- ** Upgrade OpenSSL to 1.0.1h
+
+## rackspace-monitoring-agent-0.1.9-4
+
+- Prevent agent crash when checking plugin targets 
+  (James Buchan <james.buchan@rackspace.com>)
+
+## rackspace-monitoring-agent-0.1.9-0
+
+- Default MachineIdentity to on
+- --setup fixes for MachineIdentity
+
+## rackspace-monitoring-agent-0.1.8-86
+
+- Retrieve xenstore ID (Ryan Phillips)
+- Dockerfile for development environment (Ryan Phillips)
+- Fix rescheduling of custom plugin checks (Ryan Phillips)
+- Gyp upgrade (Ryan Phillips, Song Gao, Rob Emanuele)
+- --setup fix for commandline args (Ryan Phillips)
+- Windows fixes (Rob Emanuele)
+- Package tweaks and refactor (Song Gao)
+- Documentation Tweaks (cloudnull <kevin.carter@rackspace.com>)
+
+## rackspace-monitoring-agent-0.1.8
+
+- Refactored to use zirgo/birgo forks
+- many bug fixes and improvements
+
+## rackspace-monitoring-agent-0.1.7
+
+- Add support for units on outgoing metrics
+
+## rackspace-monitoring-agent-0.1.6-5
+
+- Fix --setup crashing
+- Fix commandline argument for --production (crashes will get reported)
+
+## rackspace-monitoring-agent-0.1.6
+
+- Fix crash dumps
+- Fix GUID within protocol
+
+## rackspace-monitoring-agent-0.1.5
+
+- Remove dimension from agent.network
+- Fix scheduling problem with checks
+- Fix problem with custom plugins running only once
+
+## rackspace-monitoring-agent-0.1.4
+
+- Improve logic around stopping agent on deb install
+
+## rackspace-monitoring-agent-0.1.3-90
+
+- Automatic restart on package upgrade for deb/rpm
+- Bind agent to entity during setup
+- CPU metrics are now doubles
+- Remove cpu name min/max metrics from CPU
+- Setup shows agent id instead of "hostname"
+- Filter out non-block devices from disk checks
+- Disable auto upgrades
+
+## rackspace-monitoring-agent-0.1.3-13
+
+- Fixes the status problem with checks
+
+## rackspace-monitoring-agent-0.1.3-7
+
+- Fix bug when using API key in setup
+
+## rackspace-monitoring-agent-0.1.3-6
+
+- UK Auth is now supported
+
+## rackspace-monitoring-agent-0.1.3-5
+
+- Add Fedora 16 and Fedora 17
+- Sign RHEL5 packages with a compatible key
+
+## rackspace-monitoring-agent-0.1.2-115
+
+- New Scheduler: Fixes for time related issues
+
+## rackspace-monitoring-agent-0.1.2-109
+
+- Support RHEL5, RHEL6, CentOS 5, CentOS 6 support
+- Include lua information in crash reports
+
+## rackspace-monitoring-agent-0.1.2-102
+
+- Mysql fixes
+- Apache fixes
+- Swap Info fixes
+- Added debugger
+- Targets Support
+
+## rackspace-monitoring-agent-0.1.2-79
+
+- target support for networks, disk
+- Fix a bug in gathering swapinfo for memory host_info
+- target discovery support for checks
+- add timestamp field to host_info body returns
+- bump sigar
+
+## rackspace-monitoring-agent-0.1.2-51
+
+- fix multiple reconnects
+- remove percent metrics from filesystem and memory checks
+- delete a number of metrics from host_info
+- add target to filesystem check
+- add swapinfo to memory checks
