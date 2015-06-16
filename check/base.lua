@@ -606,8 +606,9 @@ function CheckResult:initialize(check, options)
   self._state = DEFAULT_STATE
   self._status = DEFAULT_STATUS
   self._check = check
-  self:setTimestamp(self._options.timestamp)
   self._timestamp = vutils.gmtNow()
+  self:addMetric('max_period', nil, 'uint64', check.period * 1000 + CHECK_SCHEDULE_JITTER)
+  self:setTimestamp(self._options.timestamp)
 end
 
 function CheckResult:getTimestamp()
