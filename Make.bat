@@ -1,5 +1,5 @@
 REM @ECHO off
-@SET LIT_VERSION=1.2.15
+@SET LIT_VERSION=2.0.3
 
 IF NOT "x%1" == "x" GOTO :%1
 
