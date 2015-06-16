@@ -48,7 +48,7 @@ local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 local Metric = Object:extend()
 
-local CHECK_SCHEDULE_JITTER = 15000 -- milliseconds
+exports.CHECK_SCHEDULE_JITTER = 15000 -- milliseconds
 
 local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
 
@@ -218,7 +218,7 @@ function BaseCheck:schedule()
       self._firstRun = false
       timeout = math.floor(timeout * math.random())
     else
-      timeout = timeout + math.random(1, CHECK_SCHEDULE_JITTER)
+      timeout = timeout + math.random(1, exports.CHECK_SCHEDULE_JITTER)
     end
   end
 
@@ -607,7 +607,6 @@ function CheckResult:initialize(check, options)
   self._status = DEFAULT_STATUS
   self._check = check
   self._timestamp = vutils.gmtNow()
-  self:addMetric('max_period', nil, 'uint64', check.period * 1000 + CHECK_SCHEDULE_JITTER)
   self:setTimestamp(self._options.timestamp)
 end
 
