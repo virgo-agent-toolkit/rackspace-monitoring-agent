@@ -1,5 +1,6 @@
 local msg = require('virgo/protocol/messages')
 local sigar = require('sigar')
+local checkBase = require('../check/base')
 
 --[[ Manifest.get ]]--
 local Manifest = msg.Request:extend()
@@ -60,6 +61,7 @@ function MetricsRequest:serialize(msgId)
   self.params.status = self.checkResult:getStatus()
   self.params.metrics = self.checkResult:serialize()
   self.params.timestamp = self.checkResult:getTimestamp()
+  self.params.check_max_period = self.check.period * 1000 + checkBase.CHECK_SCHEDULE_JITTER
   self.params.check_id = self.check.id
   self.params.check_type = self.check.getType()
   return msg.Request.serialize(self, msgId)
