@@ -60,6 +60,7 @@ function MetricsRequest:serialize(msgId)
   self.params.status = self.checkResult:getStatus()
   self.params.metrics = self.checkResult:serialize()
   self.params.timestamp = self.checkResult:getTimestamp()
+  self.params.min_check_period = self.checkResult:getMinimumCheckPeriod()
   self.params.check_id = self.check.id
   self.params.check_type = self.check.getType()
   return msg.Request.serialize(self, msgId)

@@ -11,6 +11,9 @@ function VirgoConnectionStream:initialize(id, token, guid, upgradeEnabled, optio
   self._log = loggingUtil.makeLogger('agent')
   self._scheduler = Scheduler:new()
   self._scheduler:on('check.completed', function(check, checkResult)
+    -- Add the minimum check period
+    checkResult:setMinimumCheckPeriod(self._scheduler:getMinimumCheckPeriod())
+    -- Send the metrics
     self:_sendMetrics(check, checkResult)
   end)
   self._scheduler:on('check.deleted', function(check)

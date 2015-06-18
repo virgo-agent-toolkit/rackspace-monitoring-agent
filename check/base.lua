@@ -48,7 +48,7 @@ local BaseCheck = Emitter:extend()
 local CheckResult = Object:extend()
 local Metric = Object:extend()
 
-local CHECK_SCHEDULE_JITTER = 15000 -- milliseconds
+local CHECK_SCHEDULE_JITTER = constants:get('CHECK_SCHEDULE_JITTER')
 
 local VALID_METRIC_TYPES = {'string', 'gauge', 'int32', 'uint32', 'int64', 'uint64', 'double'}
 
@@ -599,6 +599,7 @@ function SubProcCheck:_findLibrary(lexact, paths, osexts)
 end
 
 local METRIC_STATUS_MAX_LENGTH = constants:get('METRIC_STATUS_MAX_LENGTH')
+local MAX_CHECK_PERIOD = constants:get('MAX_CHECK_PERIOD')
 
 function CheckResult:initialize(check, options)
   self._options = options or {}
@@ -606,8 +607,17 @@ function CheckResult:initialize(check, options)
   self._state = DEFAULT_STATE
   self._status = DEFAULT_STATUS
   self._check = check
+  self._minimumCheckPeriod = MAX_CHECK_PERIOD
   self:setTimestamp(self._options.timestamp)
   self._timestamp = vutils.gmtNow()
+end
+
+function CheckResult:setMinimumCheckPeriod(period)
+  self._minimumCheckPeriod = period
+end
+
+function CheckResult:getMinimumCheckPeriod()
+  return self._minimumCheckPeriod
 end
 
 function CheckResult:getTimestamp()
