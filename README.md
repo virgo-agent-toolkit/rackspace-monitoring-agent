@@ -88,9 +88,6 @@ rough meaning of each of these parts are:
 - patch version numbers will change everytime a new bundle is released.
   It has no semantic meaning to the versioning.
 
-The zip file bundle and the binary shipped in an rpm/deb/msi will be
-identical. If the binary is 1.4.2 then the bundle will be 1.4.2.
-
 Running tests
 =============
 
