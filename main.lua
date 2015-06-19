@@ -110,13 +110,15 @@ local function start(...)
     end)
 
     process:on('sigusr2', function()
+      local logLevel
       if logging.instance:getLogLevel() == logging.LEVELS['everything'] then
-        logging.info('Received SIGUSR1. Setting info log level.')
-        logging.instance:setLogLevel(logging.LEVELS['info'])
+        logging.info('Received SIGUSR2. Setting info log level.')
+        logLevel = logging.LEVELS['info']
       else
-        logging.info('Received SIGUSR1. Setting debug log level.')
-        logging.instance:setLogLevel(logging.LEVELS['everything'])
+        logging.info('Received SIGUSR2. Setting debug log level.')
+        logLevel = logging.LEVELS['everything']
       end
+      logging.instance:setLogLevel(logLevel)
     end)
   end
 
