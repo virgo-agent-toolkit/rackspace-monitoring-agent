@@ -256,7 +256,7 @@ local function start(...)
 
   if err then
     logging.errorf("Start Error: %s\n%s", err, debug.traceback())
-    process.exit(255)
+    process:exit(255)
   end
 end
 
