@@ -96,10 +96,26 @@ local function start(...)
     log_level = log_level,
     path = argv.args.l
   }))
-  
+
   process:on('sighup', function()
     logging.info('Received SIGHUP. Rotating logs.')
     logging.rotate()
+  end)
+
+  process:on('sigusr1', function()
+    logging.info('Received SIGUSR1. Forcing GC.')
+    collectgarbage()
+    collectgarbage()
+  end)
+
+  process:on('sigusr2', function()
+    if logging.instance:getLogLevel() == logging.LEVELS['everything'] then
+      logging.info('Received SIGUSR1. Setting info log level.')
+      logging.instance:setLogLevel(logging.LEVELS['info'])
+    else
+      logging.info('Received SIGUSR1. Setting debug log level.')
+      logging.instance:setLogLevel(logging.LEVELS['everything'])
+    end
   end)
 
   local status, err = pcall(function()
