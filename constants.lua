@@ -64,4 +64,7 @@ constants:setGlobal('SNET_MONITORING_TEMPLATE_SRV_QUERIES', {
 
 constants:setGlobal('METRIC_STATUS_MAX_LENGTH', 256)
 
+constants:setGlobal('MAX_CHECK_PERIOD', 1800000) -- 30 minute check period (milliseconds)
+constants:setGlobal('CHECK_SCHEDULE_JITTER', 15000) -- milliseconds
+
 return constants

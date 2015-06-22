@@ -20,8 +20,9 @@ local Emitter = require('core').Emitter
 
 local logging = require('logging')
 local loggingUtil = require('virgo/util/logging')
-
+local math = require('math')
 local fmt = require('string').format
+local constants = require('../constants')
 
 local Scheduler = Emitter:extend()
 
@@ -33,6 +34,7 @@ function Scheduler:initialize(checks)
   self._checkMap = {}
   self._checks = {}
   self._runCount = 0
+  self._minCheckPeriod = constants:get('MAX_CHECK_PERIOD')
   self:rebuild(checks or {})
 end
 
@@ -97,16 +99,24 @@ function Scheduler:getCheck(id)
   return self._checkMap[id]
 end
 
+function Scheduler:getMinimumCheckPeriod()
+  return self._minCheckPeriod
+end
+
 -- We can rebuid it.  We have the technology.  Better.. faster.. stronger..
 -- checks: a table of BaseChecks
 -- callback: function called after the state file is written
 function Scheduler:rebuild(checks)
   local newCheckMap = {}
 
+  self._minCheckPeriod = constants:get('MAX_CHECK_PERIOD')
+
   for _, check in ipairs(checks) do
     local oldCheck = self:getCheck(check.id)
+    local checkScheduleJitter = constants:get('CHECK_SCHEDULE_JITTER')
 
     newCheckMap[check.id] = check
+    self._minCheckPeriod = math.min(check.period * 1000 + checkScheduleJitter, self._minCheckPeriod)
 
     if oldCheck == nil then
       -- new check
