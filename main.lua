@@ -25,8 +25,10 @@ names.long_pkg_name = names.creator_name .. " Agent"
 local function start(...)
   local logging = require('logging')
   local uv = require('uv')
+  local openssl = require('openssl')
 
   local log_level
+  local _, _, opensslVersion = openssl.version()
 
   local gcCollect = uv.new_prepare()
   uv.prepare_start(gcCollect, function() collectgarbage('step') end)
@@ -133,7 +135,7 @@ local function start(...)
     local constants = require('./constants')
     local protocolConnection = require('./protocol/virgo_connection')
     local luvi = require('luvi')
-    local openssl = require('openssl')
+    local fmt = require('string').format
 
     local function readConfig(path)
       local config, data, err
@@ -148,7 +150,9 @@ local function start(...)
     end
 
     if argv.args.v then
-      print(require('./package').version)
+      print(fmt("%s (luvi %s, libuv %s, %s)",
+        virgo.bundle_version, luvi.version, uv.version_string(),
+        opensslVersion))
       return
     end
 
@@ -190,8 +194,6 @@ local function start(...)
 
     -- Load Unix Signals
     if los.type() ~= 'win32' then loadUnixSignals() end
-
-    local _, _, opensslVersion = openssl.version()
 
     if not argv.args.u then -- skip version output on setup
       logging.logf(logging.INFO, "%s (%s)", names.long_pkg_name, virgo.bundle_version)
