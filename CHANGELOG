@@ -1,3 +1,8 @@
+## rackspace-monitoring-agent-1.9.11
+
+- change version string to be more descriptive
+- add -A to --setup to allow for autocreating entities
+
 ## rackspace-monitoring-agent-1.9.10
 
 - (unix) Add SIGUSR1 and SIGUSR2 support for unix
