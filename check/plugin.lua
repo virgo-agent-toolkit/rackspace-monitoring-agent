@@ -25,6 +25,7 @@ format defined bellow:
 status <status string>
 metric <name 1> <type> <value> [<unit>]
 metric <name 2> <type> <value> [<unit>]
+timestamp <timestamp>
 metric <name 3> <type> <value> [<unit>]
 
 * <status string> - A status string which includes a summary of the results.
@@ -38,6 +39,9 @@ metric <name 3> <type> <value> [<unit>]
 * [<unit>] - Metric unit, optional. A string representing the units of the metric
   measurement. Units may only be provided on non-string metrics, and may not
   contain any spaces. Examples: 'bytes', 'milliseconds', 'percent'.
+* <timestamp> - By default, all metrics are timestamped with the time when the
+  plugin is run, but you can override with a timestamp line. The value is
+  milliseconds since Jan. 01 1970 (UTC).
 --]]
 
 local table = require('table')
@@ -112,11 +116,7 @@ function PluginCheck:getTargets(callback)
       if los.type() == 'win32' then
         table.insert(targets, file)
       else
-        local executable = bit.bor(
-        bit.band(s.mode, octal(1)),
-        bit.band(s.mode, octal(10)),
-        bit.band(s.mode, octal(100))
-        )
+        local executable = bit.band(s.mode, octal(111))
         if executable ~= 0 then
           table.insert(targets, file)
         end

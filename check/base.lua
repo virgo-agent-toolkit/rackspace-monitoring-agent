@@ -293,7 +293,8 @@ Parse a line output by a plugin and mutate CheckResult object (set status
 or add a metric).
 --]]
 function ChildCheck:_handleLine(runCtx, checkResult, line)
-  local stateEndIndex, statusEndIndex, metricEndIndex, splitString, value, state
+  local stateEndIndex, statusEndIndex, metricEndIndex, timestampEndIndex
+  local splitString, value, state
   local metricName, metricType, metricValue, metricUnit, dotIndex
   local msg, partsCount, _
   local status, metricDimension
@@ -307,6 +308,7 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
   _, statusEndIndex = line:find('^status')
   _, stateEndIndex = line:find('^state')
   _, metricEndIndex = line:find('^metric')
+  _, timestampEndIndex = line:find('^timestamp')
 
   if statusEndIndex then
     if runCtx.gotStatusLine then
@@ -397,7 +399,16 @@ function ChildCheck:_handleLine(runCtx, checkResult, line)
     end
 
     self:_addMetric(runCtx, checkResult, metricName, metricDimension, metricType, metricValue, metricUnit)
-
+  elseif timestampEndIndex then
+    local timestampOverride = line:match("^timestamp ([%d]+)")
+    if not timestampOverride then
+      msg = 'Timestamp line not in the following format: timestamp <timestamp>'
+      self._log(logging.WARNING, fmt('Invalid timestamp line (line=%s) - %s', line, msg))
+      self:_setError(runCtx, checkResult, msg)
+      return
+    end
+    timestampOverride = assert(tonumber(timestampOverride))
+    checkResult:setTimestamp(timestampOverride)
   else
     msg = fmt('Unrecognized line "%s"', line)
     self._log(logging.WARNING, msg)
@@ -609,7 +620,6 @@ function CheckResult:initialize(check, options)
   self._check = check
   self._minimumCheckPeriod = MAX_CHECK_PERIOD
   self:setTimestamp(self._options.timestamp)
-  self._timestamp = vutils.gmtNow()
 end
 
 function CheckResult:setMinimumCheckPeriod(period)
