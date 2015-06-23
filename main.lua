@@ -80,7 +80,9 @@ local function start(...)
     .alias({['K'] = 'apikey'})
     .describe("D", "detach")
     .alias({['D'] = 'detach'})
-    .argv("idDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
+    .describe("A", "auto create entity within setup")
+    .alias({['A'] = 'auto-create-entity'})
+    .argv("AidDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 

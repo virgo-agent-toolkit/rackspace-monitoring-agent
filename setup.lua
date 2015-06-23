@@ -37,6 +37,7 @@ function Setup:initialize(argv, configFile, agent)
   self._receivedPromotion = false
   self._username = argv.args.U
   self._apikey = argv.args.K
+  self._autoCreateEntity = argv.args.A
   self._agent:on('promote', function()
     self._receivedPromotion = true
   end)
@@ -189,7 +190,7 @@ function Setup:run(callback)
       end)
     end,
     function(callback)
-      if agentId == nil then
+      if not agentId then
         agentId = hostname()
         writeAgentId = true
       end
@@ -367,10 +368,9 @@ function Setup:run(callback)
           end
 
           for i, entity in ipairs(entities.values) do
-            if (entity.agent_id == agentId) then
+            if entity.agent_id == agentId then
               self:_out(fmt('Agent already associated Entity with id=%s and label=%s', entity.id, entity.label))
-              callback(nil)
-              return
+              return callback()
             end
             if self:_isLocalEntity(agentId, entity) then
               table.insert(localEntities, entity)
@@ -378,6 +378,21 @@ function Setup:run(callback)
           end
 
           local function entitySelection()
+
+            local function createEntity(callback)
+              local function onCreate(err, entity)
+                if err then return callback(err) end
+                self:_out('')
+                self:_out(fmt('New Entity Created: %s', entity))
+                callback(nil, entity)
+              end
+              client.entities.create(self:_buildLocalEntity(agentId), onCreate)
+            end
+
+            if self._autoCreateEntity then
+              return createEntity(callback)
+            end
+
             self:_out('Please select the Entity that corresponds to this server:')
             displayEntities()
             self:_out(fmt('  %i. Create a new Entity for this server (Entities can be viewed within Rackspace Intelligence - https://intelligence.rackspace.com)', #localEntities + 1))
@@ -386,21 +401,11 @@ function Setup:run(callback)
 
             ask('Select Option (e.g., 1, 2):', function(err, index)
               if err then
-                callback(err)
-                return
+                return callback(err)
               end
-
               local validatedIndex = tonumber(index)
               if validatedIndex == #localEntities + 1 then
-                client.entities.create(self:_buildLocalEntity(agentId), function(err, entity)
-                  if err then
-                    callback(err)
-                    return
-                  end
-                  self:_out('')
-                  self:_out(fmt('New Entity Created: %s', entity))
-                  callback(nil, entity)
-                end)
+                createEntity(callback)
               elseif validatedIndex == #localEntities + 2 then
                 callback()
               elseif validatedIndex >= 1 and validatedIndex <= #localEntities then
@@ -442,7 +447,9 @@ function Setup:run(callback)
       self:_out('')
       self:_out('')
     end
-    process:exit(0)
+    process.nextTick(function()
+      process:exit(0)
+    end)
   end)
 
 end
