@@ -106,7 +106,7 @@ function NetworkCheck:getLinkState(callback)
   local cfname = '/sys/class/net/' .. self.interface_name .. '/carrier'
 
   -- Linux
-  if los.type() == 'Linux' then
+  if los.type() == 'linux' then
     fs.readFile(cfname, function(err, cstate)
       if not err then
         local tcstate = misc.trim(cstate)

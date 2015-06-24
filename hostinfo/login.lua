@@ -18,7 +18,7 @@ local HostInfo = require('./base').HostInfo
 local fs = require('fs');
 local string = require('string')
 local table = require('table')
-local os = require('os')
+local los = require('los')
 
 --[[ Login ]]--
 local Info = HostInfo:extend()
@@ -28,7 +28,7 @@ end
 
 function Info:run(callback)
   
-  if os.type() ~= 'Linux' then
+  if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for Login Definitions'
     callback()
     return
