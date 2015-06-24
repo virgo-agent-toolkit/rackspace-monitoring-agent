@@ -16,7 +16,7 @@ limitations under the License.
 local HostInfo = require('./base').HostInfo
 
 local fmt = require('string').format
-local os = require('os')
+local los = require('los')
 local sctx = require('sigar').ctx
 local table = require('table')
 local execFileToBuffers = require('./misc').execFileToBuffers
@@ -28,7 +28,7 @@ function Info:initialize()
 end
 
 function Info:run(callback)
-  if os.type() ~= 'Linux' then
+  if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for Packages'
     callback()
     return

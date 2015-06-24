@@ -17,7 +17,7 @@ local HostInfo = require('./base').HostInfo
 
 local fmt = require('string').format
 local table = require('table')
-local os = require('os')
+local los = require('los')
 local spawn = require('childprocess').spawn
 
 --[[ Sysctl Variables ]]--
@@ -27,7 +27,7 @@ function Info:initialize()
 end
 
 function Info:run(callback)
-  if os.type() ~= 'Linux' then
+  if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for sysctl'
     callback()
     return
