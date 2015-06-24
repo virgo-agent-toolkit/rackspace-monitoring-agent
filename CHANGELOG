@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-1.9.14
+
+- Build with openssl 1.0.2b
+
 ## rackspace-monitoring-agent-1.9.13
 
 - Fix Linux check for network check and hostinfo
