@@ -152,8 +152,8 @@ local function start(...)
     end
 
     if argv.args.v then
-      print(fmt("%s (luvi %s, libuv %s, %s)",
-        virgo.bundle_version, luvi.version, uv.version_string(),
+      print(fmt("%s (virgo %s, luvi %s, libuv %s, %s)",
+        virgo.bundle_version, virgo.virgo_version, luvi.version, uv.version_string(),
         opensslVersion))
       return
     end
@@ -199,6 +199,7 @@ local function start(...)
 
     if not argv.args.u then -- skip version output on setup
       logging.logf(logging.INFO, "%s (%s)", names.long_pkg_name, virgo.bundle_version)
+      logging.logf(logging.INFO, "  virgo %s", virgo.virgo_version)
       logging.logf(logging.INFO, "  luvi %s", luvi.version)
       logging.logf(logging.INFO, "  libuv %s", uv.version_string())
       logging.logf(logging.INFO, "  %s", opensslVersion)
