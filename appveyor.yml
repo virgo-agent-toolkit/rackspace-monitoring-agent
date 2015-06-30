@@ -12,3 +12,7 @@ test_script:
 notifications:
     email: true
     irc: "irc.freenode.org#virgo"
+
+services:
+    - mssql2008r2sp2
+    - mssql2012sp1
