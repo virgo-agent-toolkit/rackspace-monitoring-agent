@@ -46,6 +46,7 @@ require('tap')(function(test)
     assert(check._lastResult == nil)
     --p(check)
     check:run(expect(function(result)
+      p(check)
       assert(result ~= nil)
       assert(check._lastResult ~= nil)
 
