@@ -33,11 +33,6 @@ require('tap')(function(test)
         serverinstance = '\\MSSQL$SQL2008R2SP2',
         username = 'sa',
         password = 'Password12!'
-      },
-      sql2012 = {
-        serverinstance = '\\MSSQL$SQL2012SP1',
-        username = 'sa',
-        password = 'Password12!'
       }
     }
   end
