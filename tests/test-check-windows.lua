@@ -29,6 +29,11 @@ require('tap')(function(test)
   local service_configs
   if on_appveyor then
     service_configs = {
+      sql2008 = {
+        serverinstance = '\\MSSQL$SQL2008R2SP2',
+        username = 'sa',
+        password = 'Password12!'
+      },
       sql2012 = {
         serverinstance = '\\MSSQL$SQL2012SP1',
         username = 'sa',
