@@ -1,5 +1,9 @@
 ## rackspace-monitoring-agent-1.9.25
 
+- Luvi{,t} bump
+
+## rackspace-monitoring-agent-1.9.25
+
 - Luvi bump
 - Include sigar.so for x86 builds
 
