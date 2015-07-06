@@ -7,6 +7,7 @@ build_script:
     - Make.bat
 
 test_script:
+    - timeout /t 30
     - Make.bat test
 
 notifications:
@@ -15,3 +16,4 @@ notifications:
 
 services:
     - mssql2008r2sp2
+    - mssql2012sp1
