@@ -3,12 +3,16 @@ LIT_VERSION=2.1.5
 TARGET=rackspace-monitoring-agent
 LUVI?=./luvi
 LIT?=./lit
+PREFIX?=/usr/bin
 
 all: $(TARGET)
 
 $(TARGET): lit $(APP_FILES)
 	cmake -H. -Bbuild
 	cmake --build build
+
+install: $(TARGET)
+	install -m 777 build/$(TARGET) $(PREFIX)/
 
 test: lit
 	rm -rf tests/tmpdir && mkdir tests/tmpdir
@@ -40,4 +44,4 @@ siggen:
 siggenupload:
 	cmake --build build -- siggenupload
 
-.PHONY: clean lint package packagerepo
+.PHONY: clean lint package packagerepo packagerepoupload siggen siggenupload install

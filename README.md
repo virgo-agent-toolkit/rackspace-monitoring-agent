@@ -12,10 +12,13 @@ The monitoring agent is the first agent to use the infrastructure provided by
 Installing The Agent
 ====================
 
-Make sure you have the required packages to build things on your system. EG.
-`build-essential`. Please note, if you don't want to compile things and or don't
-have too, you can install using the normal "Package" method as outlined
-[here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent).
+Make sure you have the required packages to build things on your system. The
+`Dockerfile` will contain the development dependencies.
+
+Please note, we provide binaries for many platforms. Check out the article
+[here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent)
+for instructions.
+
 Otherwise, continue reading this section.
 
 First get the source 
@@ -48,15 +51,6 @@ The Monitoring Agent is distributed under the [Apache License 2.0][apache].
 [apache]: http://www.apache.org/licenses/LICENSE-2.0.html
 
 
-Bundles
-=======
-
-The Lua files in this repository are not used directly (nor will they run under
-Luvit).  Instead, they must first be bundled into a zip archive which virgo
-undertands.  Virgo makes this process easy by taking a flag to configure,
---bundle, which should be set to the directory this repo lives in.  See Virgo
-for more information on bundles.
-
 Building for Rackspace Cloud Monitoring
 =======================================
 
@@ -65,8 +59,7 @@ Cloud Monitoring agent. Feel free to build your own copy from this
 source.
 
 But! Please don't contact Rackspace Support about issues you encounter
-with your custom build. We can't support every change people may make
-and master might not be fully tested.
+with your custom build.
 
 Versioning
 ==========
