@@ -113,8 +113,7 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
 
     # With the first RPM packages we accidently installed the configuration file as
     # an RPM owned "%file" but didn't mark it as a "%config" file. Now we can't
-    # really go back on that. So, install an empty config file which will cause the
-    # agent to complain about a missing monitoring_id on start
+    # really go back on that.
     set(CPACK_RPM_USER_FILELIST
         "%config(noreplace) /etc/${APP_NAME}.cfg"
         "%config(noreplace) /etc/${APP_NAME}.conf.d")
