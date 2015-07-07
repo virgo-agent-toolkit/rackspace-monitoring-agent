@@ -102,6 +102,7 @@ dhU2Sz3Q60DwJEL1VenQHiVYlWWtqXBThe9ggqRPnCfsCRTP8qifKkjk45zWPcpN
 ]]
 }
 
+-- Production Code Signing Public Key
 exports.production = [[
 -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8ukqi4scF5NcB5UMSseS
@@ -114,6 +115,7 @@ vQIDAQAB
 -----END PUBLIC KEY-----
 ]]
 
+-- Test Code Signing Public Key
 exports.test = [[
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAmmCdKFi6X1mpk5AU6EEH
