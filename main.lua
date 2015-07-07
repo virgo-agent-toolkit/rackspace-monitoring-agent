@@ -130,7 +130,7 @@ local function start(...)
     local fs = require('fs')
     local MonitoringAgent = require('./agent').Agent
     local Setup = require('./setup').Setup
-    local WinSvcWrap = require('./winsvcwrap')
+    local WinSvcWrap = require('virgo/winsvcwrap')
     local agentClient = require('./client/virgo_client')
     local certs = require('./certs')
     local connectionStream = require('./client/virgo_connection_stream')
