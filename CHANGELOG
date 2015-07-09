@@ -1,7 +1,8 @@
-## rackspace-monitoring-agent-2.0.4
+## rackspace-monitoring-agent-2.0.5
 
 - Bump luvit for fs error handling fix
 - Fix for conf.d paths for windows
+- Fix for TLS socket EPIPE
 
 ## rackspace-monitoring-agent-2.0.2
 
