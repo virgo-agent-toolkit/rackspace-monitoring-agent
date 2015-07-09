@@ -28,7 +28,7 @@ local SNET_REGIONS = {
 
 local constants = const.ConstantsCtx:new()
 constants:setGlobal('CHECK_SCHEDULE_JITTER', 15000) -- milliseconds
-constants:setGlobal('DEFAULT_CONFD_PATH', '/etc/rackspace-monitoring-agent.conf.d')
+constants:setGlobal('DEFAULT_CONFD_PATH', path.join(const.CONFIG_DIR, 'rackspace-monitoring-agent.conf.d'))
 constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', path.join(const.LIBRARY_DIR, 'plugins'))
 constants:setGlobal('DEFAULT_LOCK_FILE_PATH', '/var/run/rackspace-monitoring-agent.lock')
 constants:setGlobal('DEFAULT_PID_FILE_PATH', '/var/run/rackspace-monitoring-agent.pid')
