@@ -2,7 +2,7 @@
 
 start on stopped rc RUNLEVEL=[2345]
 stop on runlevel [!2345]
-env TMPDIR=/var/run
+env TMPDIR=/var/lib
 
 respawn
 exec @APP_NAME@ --exit-on-upgrade --production -l /var/log/@APP_NAME@.log 2>&1
