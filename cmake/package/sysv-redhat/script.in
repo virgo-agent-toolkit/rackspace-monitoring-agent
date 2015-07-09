@@ -9,6 +9,7 @@ NAME=@APP_NAME@
 DAEMON=/usr/bin/@APP_NAME@
 PIDFILE=/var/run/@APP_NAME@.pid
 LOG=/var/log/@APP_NAME@.log
+TMPDIR=/var/run
 
 # Source function library.      This creates the operating environment for the process to be started
 . /etc/init.d/functions
