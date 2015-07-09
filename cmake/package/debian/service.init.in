@@ -11,6 +11,7 @@ NAME=@APP_NAME@
 DAEMON=/usr/bin/@APP_NAME@
 PIDFILE=/var/run/@APP_NAME@.pid
 LOG=/var/log/@APP_NAME@.log
+export TMPDIR=/var/lib
 
 [ -r /etc/default/@APP_NAME@ ] && . /etc/default/@APP_NAME@
 test -f $DAEMON || exit 0
