@@ -16,7 +16,7 @@ LOG=/var/log/@APP_NAME@.log
 case "$1" in
   start)
         echo -n "Starting $DAEMON: "
-        daemon $DAEMON -D -p $PIDFILE -l $LOG --production --restart-sysv-on-upgrade
+        daemon $DAEMON -- -D -p $PIDFILE -l $LOG --production --restart-sysv-on-upgrade
         echo
         touch /var/lock/subsys/process-name
         ;;
