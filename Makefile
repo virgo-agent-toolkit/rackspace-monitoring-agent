@@ -1,6 +1,6 @@
 APP_FILES=$(shell find . -type f -name '*.lua')
-LIT_VERSION=2.1.6
-TARGET=rackspace-monitoring-agent
+LIT_VERSION=2.1.8
+TARGET=build/rackspace-monitoring-agent
 LUVI?=./luvi
 LIT?=./lit
 PREFIX?=/usr/bin
@@ -17,7 +17,8 @@ install: $(TARGET)
 test: lit
 	rm -rf tests/tmpdir && mkdir tests/tmpdir
 	$(LIT) install
-	$(LUVI) . -m tests/run.lua
+	$(LIT) get-luvi -o luvi-sigar
+	./luvi-sigar . -m tests/run.lua
 
 clean:
 	rm -rf $(TARGET) lit luvi build

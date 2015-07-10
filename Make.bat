@@ -1,5 +1,5 @@
 REM @ECHO off
-@SET LIT_VERSION=2.1.6
+@SET LIT_VERSION=2.1.8
 
 IF NOT "x%1" == "x" GOTO :%1
 
@@ -29,10 +29,11 @@ GOTO :end
 CALL Make.bat rackspace-monitoring-agent
 if %errorlevel% neq 0 goto error
 CALL lit.exe install
+CALL lit.exe get-luvi -o luvi-sigar.exe
 if %errorlevel% neq 0 goto error
 IF EXIST tests\tmpdir RMDIR /S /Q tests\tmpdir
 CALL mkdir tests\tmpdir
-CALL luvi.exe . -m tests\run.lua
+CALL luvi-sigar.exe . -m tests\run.lua
 if %errorlevel% neq 0 goto error
 GOTO :end
 

@@ -550,7 +550,7 @@ function SubProcCheck:run(callback)
   }
   local exepath = uv.exepath()
   exepath = path.basename(exepath)
-  if exepath == 'luvi' or exepath == 'luvi.exe' then
+  if exepath:match('^luvi') then
     table.insert(args, 1, '--')
     table.insert(args, 1, bundle.paths[1])
   end
