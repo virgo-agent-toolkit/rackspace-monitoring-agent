@@ -62,6 +62,7 @@ IF EXIST rackspace-monitoring-agent.exe DEL /F /Q rackspace-monitoring-agent.exe
 IF EXIST lit.exe DEL /F /Q lit.exe
 IF EXIST lit RMDIR /S /Q lit
 IF EXIST luvi.exe DEL /F /Q luvi.exe
+IF EXIST luvi-sigar.exe DEL /F /Q luvi-sigar.exe
 IF EXIST luvi-binaries RMDIR /S /Q luvi-binaries
 GOTO :end
 
