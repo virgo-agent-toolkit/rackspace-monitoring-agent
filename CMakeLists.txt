@@ -21,8 +21,10 @@ endif()
 
 if (WIN32)
   set(APP_NAME_INSTALL  "${APP_NAME}.exe")
+  set(LUVI_EXE "luvi-sigar.exe")
 else()
   set(APP_NAME_INSTALL  "${APP_NAME}")
+  set(LUVI_EXE "luvi-sigar")
 endif()
 
 if (${FORCE_VERSION} MATCHES "^[0-9]+.[0-9]+.[0-9]+$")
@@ -35,7 +37,7 @@ endif()
 include(ExternalProject)
 
 execute_process(
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/luvi contrib/printversion
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/${LUVI_EXE} contrib/printversion
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   OUTPUT_VARIABLE VERSION_SHORT
   OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -45,7 +47,7 @@ file(GLOB_RECURSE LUA_FILES "*.lua")
 add_custom_command(
   OUTPUT ${APP_NAME_INSTALL}
   DEPENDS ${LUA_FILES}
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/lit make .. ${APP_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/luvi-sigar
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/lit make .. ${APP_NAME} ../${LUVI_EXE}
 )
 add_custom_target(agent ALL DEPENDS ${APP_NAME_INSTALL})
 
