@@ -3,21 +3,24 @@ LIT_VERSION=2.1.8
 TARGET=build/rackspace-monitoring-agent
 LUVI?=./luvi
 LIT?=./lit
+LUVISIGAR?=luvi-sigar
 PREFIX?=/usr/bin
 
 all: $(TARGET)
 
-$(TARGET): lit $(APP_FILES)
+$(LUVISIGAR):
+	[ ! -x luvi-sigar ] && $(LIT) get-luvi -o luvi-sigar || exit 0
+
+$(TARGET):  lit $(LUVISIGAR) $(APP_FILES)
 	cmake -H. -Bbuild
 	cmake --build build
 
 install: $(TARGET)
 	install -m 777 build/$(TARGET) $(PREFIX)/
 
-test: lit
+test: lit $(LUVISIGAR)
 	rm -rf tests/tmpdir && mkdir tests/tmpdir
 	$(LIT) install
-	$(LIT) get-luvi -o luvi-sigar
 	./luvi-sigar . -m tests/run.lua
 
 clean:

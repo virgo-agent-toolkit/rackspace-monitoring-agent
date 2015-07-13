@@ -45,7 +45,7 @@ file(GLOB_RECURSE LUA_FILES "*.lua")
 add_custom_command(
   OUTPUT ${APP_NAME_INSTALL}
   DEPENDS ${LUA_FILES}
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/lit make ..
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/lit make .. ${APP_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/luvi-sigar
 )
 add_custom_target(agent ALL DEPENDS ${APP_NAME_INSTALL})
 
