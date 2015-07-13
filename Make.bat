@@ -7,6 +7,8 @@ IF NOT "x%1" == "x" GOTO :%1
 ECHO "Building agent"
 IF NOT EXIST lit.exe CALL Make.bat lit
 if %errorlevel% neq 0 goto error
+IF NOT EXIST luvi-sigar.exe CALL Make.bat luvi-sigar
+if %errorlevel% neq 0 goto error
 IF NOT "x%CMAKE_GENERATOR%" == "x" (
   CALL cmake -H. -Bbuild -G "%CMAKE_GENERATOR%"
 ) ELSE (
@@ -16,6 +18,12 @@ if %errorlevel% neq 0 goto error
 CALL cmake --build build
 if %errorlevel% neq 0 goto error
 CALL cmake --build build --target SignExe
+if %errorlevel% neq 0 goto error
+GOTO :end
+
+:luvi-sigar
+ECHO "Fetching Luvi Sigar"
+CALL lit get-luvi-o luvi-sigar.exe
 if %errorlevel% neq 0 goto error
 GOTO :end
 
@@ -29,7 +37,6 @@ GOTO :end
 CALL Make.bat rackspace-monitoring-agent
 if %errorlevel% neq 0 goto error
 CALL lit.exe install
-CALL lit.exe get-luvi -o luvi-sigar.exe
 if %errorlevel% neq 0 goto error
 IF EXIST tests\tmpdir RMDIR /S /Q tests\tmpdir
 CALL mkdir tests\tmpdir
