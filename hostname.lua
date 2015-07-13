@@ -15,19 +15,23 @@ limitations under the License.
 --]]
 
 local ffi = require('ffi')
+local los = require('los')
 
 ffi.cdef [[
   int gethostname(char *name, unsigned int namelen);
 ]]
 
---[[
-  Return the hostname
-  @param maxlen{integer,optional} defaults to 255
---]]
+local lib
+if los.type() == 'win32' then
+  lib = ffi.load('ws2_32')
+else
+  lib = ffi.C
+end
+
 return function(maxlen)
   maxlen = maxlen or 255
   local buf = ffi.new("uint8_t[?]", maxlen)
-  local res = ffi.C.gethostname(buf, maxlen)
+  local res = lib.gethostname(buf, maxlen)
   assert(res == 0)
   return ffi.string(buf)
 end

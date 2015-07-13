@@ -1,0 +1,8 @@
+require('tap')(function(test)
+  test('test hostname', function()
+    local hostname = require('../hostname')
+    local name = hostname()
+    p(name)
+    assert(#name > 0)
+  end)
+end)
