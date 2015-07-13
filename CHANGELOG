@@ -1,7 +1,8 @@
-## rackspace-monitoring-agent-2.1.1
+## rackspace-monitoring-agent-2.1.2
 
 * Use static sigar library
 * Machine Identity race fix
+* Hostname fix for windows
 
 ## rackspace-monitoring-agent-2.0.6
 
