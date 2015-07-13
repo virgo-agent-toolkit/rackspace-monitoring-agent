@@ -1,5 +1,6 @@
 build
 lit
 luvi
+luvi-sigar
 rackspace-monitoring-agent
 tests/tmpdir
