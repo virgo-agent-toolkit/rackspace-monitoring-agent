@@ -23,7 +23,7 @@ GOTO :end
 
 :luvi-sigar
 ECHO "Fetching Luvi Sigar"
-CALL lit get-luvi-o luvi-sigar.exe
+CALL lit.exe get-luvi -o luvi-sigar.exe
 if %errorlevel% neq 0 goto error
 GOTO :end
 
