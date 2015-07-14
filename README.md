@@ -21,11 +21,20 @@ for instructions.
 
 Otherwise, continue reading this section.
 
-First get the source 
+Satisfy pre-requisites:
+
+If you're on windows you may have to either install or find and add certain utilities to your path beforehand. 
+These are:
+
+ - cmake    - Downloadable from cmake gnu site
+ - nmake    - Included in Visual studio/VC/bin but may need to be inserted into your path
+ - signtool - Included in Microsoft SDKs/windows/v7.1a/bin but may need to be inserted into your path
+
+Get the source: 
 
     git clone https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent
 
-Go into the directory that you just created 
+Go into the directory that you just created:
 
     cd rackspace-monitoring-agent
 
@@ -33,7 +42,7 @@ Build:
 
     make 
 
-Now simply install the virgo client by running this last and final command.
+Now simply install the virgo client by running this last and final command:
 
     make install
 
