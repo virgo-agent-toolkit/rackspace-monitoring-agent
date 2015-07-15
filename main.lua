@@ -91,6 +91,7 @@ local function start(...)
     process:exit(0)
   end
 
+  -- Set debug logging based on the command line
   if argv.args.d or argv.args.u then
     log_level = logging.LEVELS['everything']
   end
@@ -230,6 +231,11 @@ local function start(...)
     virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
     virgo.config['insecure'] = virgo.config['monitoring_insecure']
     virgo.config['debug'] = virgo.config['monitoring_debug']
+
+    -- Set debug logging based on the config file
+    if virgo.config['debug'] == 'true' then
+      logging.instance:setLogLevel(logging.LEVELS['everything'])
+    end
 
     if argv.args.i or virgo.config['insecure'] == 'true' then
       options.tls.ca = certs.caCertsDebug
