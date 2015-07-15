@@ -16,7 +16,7 @@ $(TARGET):  lit $(LUVISIGAR) $(APP_FILES)
 	cmake --build build
 
 install: $(TARGET)
-	install -m 777 build/$(TARGET) $(PREFIX)/
+	install -m 777 $(TARGET) $(PREFIX)/
 
 test: lit $(LUVISIGAR)
 	rm -rf tests/tmpdir && mkdir tests/tmpdir
