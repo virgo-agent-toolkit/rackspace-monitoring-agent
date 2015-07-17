@@ -46,7 +46,7 @@ Now simply install the virgo client by running this last and final command:
 
     make install
 
-Post installation you will have a new Binary on your system,
+After installing on unix systems, there is a new binary called
 `rackspace-monitoring-agent`.  To get the client running on your system please
 follow the setup procedure as found
 [here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup)
