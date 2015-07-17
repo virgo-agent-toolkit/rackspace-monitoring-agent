@@ -13,6 +13,7 @@ return {
   },
   files = {
     "**.lua",
-    "libs/$OS-$ARCH/*",
+    "!tests",
+    "!contrib",
   }
 }
