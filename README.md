@@ -51,6 +51,32 @@ After installing on unix systems, there is a new binary called
 follow the setup procedure as found
 [here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup)
 
+Host Info Runner
+================
+
+The agent has a built in host information runner (similar to OHAI).
+
+```sh
+rackspace-monitoring-agent -e hostinfo_runner -x [type]
+```
+
+The following hostinfo types currently exist:
+
+```
+  CPU
+  DATE
+  DISK
+  FILESYSTEM
+  LOGIN
+  MEMORY
+  NETWORK
+  PACKAGES
+  PROCS
+  SSHD
+  SYSCTL
+  SYSTEM
+  WHO
+```
 
 License
 =======
