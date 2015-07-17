@@ -45,14 +45,13 @@ function NilInfo:initialize()
 end
 
 --[[ Factory ]]--
-local function create(infoType)
+local function create(infoType, params)
   local klass = HOST_INFO_MAP[infoType]
   if klass then
     if klass.Info then
-      return klass.Info:new()
-    else
-      return klass:new()
+      return klass.Info:new(params)
     end
+    return klass:new(params)
   end
   return NilInfo:new()
 end
@@ -151,7 +150,6 @@ local function debugInfoAllSize(callback)
 end
 
 --[[ Exports ]]--
-local exports = {}
 exports.create = create
 exports.classes = classes
 exports.getTypes = getTypes
@@ -162,4 +160,3 @@ exports.debugInfoAllToFile = debugInfoAllToFile
 exports.debugInfoAllToFolder = debugInfoAllToFolder
 exports.debugInfoAllTime = debugInfoAllTime
 exports.debugInfoAllSize = debugInfoAllSize
-return exports

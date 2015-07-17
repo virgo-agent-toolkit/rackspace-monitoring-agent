@@ -21,8 +21,8 @@ local Object = require('core').Object
 -------------------------------------------------------------------------------
 
 local HostInfo = Object:extend()
-function HostInfo:initialize()
-  self._params = {}
+function HostInfo:initialize(params)
+  self._params = params or {}
   self._error = nil
 end
 

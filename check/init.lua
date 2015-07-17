@@ -21,6 +21,7 @@ local ApacheCheck = require('./apache').ApacheCheck
 local CpuCheck = require('./cpu').CpuCheck
 local DiskCheck = require('./disk').DiskCheck
 local FileSystemCheck = require('./filesystem').FileSystemCheck
+local HostInfoCheck = require('./hostinfo').HostInfoCheck
 local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
 local MySQLCheck = require('./mysql').MySQLCheck
@@ -39,18 +40,20 @@ local Error = require('core').Error
 local merge = require('virgo/util/misc').merge
 
 local check_classes = {
+  ApacheCheck = ApacheCheck,
   CpuCheck = CpuCheck,
   DiskCheck = DiskCheck,
   FileSystemCheck = FileSystemCheck,
+  HostInfoCheck = HostInfoCheck,
+  LoadAverageCheck = LoadAverageCheck,
   MemoryCheck = MemoryCheck,
-  NetworkCheck = NetworkCheck,
   MySQLCheck = MySQLCheck,
+  NetworkCheck = NetworkCheck,
   PluginCheck = PluginCheck,
   RaxxenCheck = RaxxenCheck,
   RedisCheck = RedisCheck,
-  LoadAverageCheck = LoadAverageCheck,
-  ApacheCheck = ApacheCheck,
-  NullCheck = NullCheck}
+  NullCheck = NullCheck
+}
 check_classes = merge(check_classes, Windows.checks)
 
 local function create_map()
