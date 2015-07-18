@@ -2,6 +2,7 @@
 /sbin/chkconfig --add @APP_NAME@
 
 mkdir -p /var/lib/@APP_NAME@
+mkdir -p /usr/lib/@APP_NAME@/plugins
 
 # Restart agent on upgrade
 if [ "$1" = "2" ] ; then

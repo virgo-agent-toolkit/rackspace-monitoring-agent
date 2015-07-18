@@ -6,6 +6,7 @@ fi
 
 mkdir -p /var/lib/@APP_NAME@
 mkdir -p /etc/@APP_NAME@.conf.d
+mkdir -p /usr/lib/@APP_NAME@/plugins
 
 legacy_start() {
   /etc/init.d/@APP_NAME@ stop || :
