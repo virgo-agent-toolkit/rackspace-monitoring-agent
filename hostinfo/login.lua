@@ -15,10 +15,9 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local fs = require('fs');
-local string = require('string')
 local table = require('table')
 local los = require('los')
+local readCast = require('./misc').readCast
 
 --[[ Login ]]--
 local Info = HostInfo:extend()
@@ -27,51 +26,30 @@ function Info:initialize()
 end
 
 function Info:run(callback)
-  
+
   if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for Login Definitions'
     callback()
     return
   end
-  
-  local obj = {}
+
   local filename = "/etc/login.defs"
-    
-  obj['login.defs'] = {}
-  
-  -- open /etc/login.defs
-  fs.readFile(filename, function (err, data)
-    if (err) then
-      return
-    end
+  local outTable = {}
 
-    -- split and assign key/values
-    for line in data:gmatch("[^\r\n]+") do
-      local iscomment = string.match(line, '^#')
-      local isblank = string.len(line:gsub("%s+", "")) <= 0
+  local function casterFunc(iter, obj)
+    local key = iter()
+    local val = iter()
+    obj[key] = val
+  end
 
-      -- find defs
-      if not iscomment and not isblank then
-        local items = {}
-        local i = 0
-        
-        -- split and assign key/values
-        for item in line:gmatch("%S+") do
-          i = i + 1
-          items[i] = item;
-        end
-        
-        local key = items[1]
-        local value = items[2]
+  local function cb()
+    table.insert(self._params, {
+      ['login_defs'] = outTable[1]
+    })
+    return callback()
+  end
 
-        -- add def
-        obj['login.defs'][key] = value
-      end
-    end
-    
-    table.insert(self._params, obj)
-    callback()
-  end)
+  readCast(filename, self._error, outTable, casterFunc, cb)
 end
 
 function Info:getType()
