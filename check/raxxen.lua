@@ -28,7 +28,7 @@ local CONFIG_FILE = '/opt/rackspace/host.conf'
 local OVS_PID = '/var/run/openvswitch/ovs-vswitchd.pid'
 
 local function parseIni(filename)
-  local t = { ['DEFAULT'] = {} }
+  local t = { DEFAULT = {} }
   local section = 'DEFAULT'
   local data, err = fs.readFileSync(filename)
   if err then return nil, err end
