@@ -18,6 +18,8 @@ local table = require('table')
 local misc = require('virgo/util/misc')
 local async = require('async')
 local childProcess = require('childprocess')
+local string = require('string')
+local fs = require('fs')
 
 local function execFileToBuffers(command, args, options, callback)
   local child, stdout, stderr, exitCode
@@ -55,5 +57,45 @@ local function execFileToBuffers(command, args, options, callback)
   end)
 end
 
+local function readCast(filePath, errHandler, outTable, casterFunc, callback)
+  local obj = {}
+  fs.exists(filePath, function(err, file)
 
-return {execFileToBuffers=execFileToBuffers}
+    if err then
+      table.insert(errHandler, string.format('fs.exists in fstab.lua erred: %s', err))
+      return callback()
+    end
+    if file then
+      fs.readFile(filePath, function(err, data)
+
+        if err then
+          table.insert(errHandler, string.format('fs.readline erred: %s', err))
+          return callback()
+        end
+
+        for line in data:gmatch("[^\r\n]+") do
+          local iscomment = string.match(line, '^#')
+          local isblank = string.len(line:gsub("%s+", "")) <= 0
+
+          if not iscomment and not isblank then
+            -- split the line and assign key vals
+            local iter = line:gmatch("%S+")
+            casterFunc(iter, obj)
+          end
+        end
+
+        -- Flatten single entry objects
+        if #obj == 1 then obj = obj[1] end
+        table.insert(outTable, obj)
+        return callback()
+
+      end)
+    else
+      table.insert(errHandler, 'file not found')
+      return callback()
+    end
+
+  end)
+end
+
+return {execFileToBuffers=execFileToBuffers, readCast=readCast}

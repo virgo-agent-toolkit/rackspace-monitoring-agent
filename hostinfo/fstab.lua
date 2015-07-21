@@ -13,10 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ]]--
-local table = require('table')
 local los = require('los')
-local fs = require('fs')
-local string = require('string')
+local readCast = require('./misc').readCast
 
 --[[ Check fstab ]]--
 local HostInfo = require('./base').HostInfo
@@ -26,60 +24,20 @@ function Info:initialize()
 end
 
 function Info:run(callback)
-  local fstab = {}
-  local types = {'file_system', 'mount_point', 'type', 'options', 'pass' }
+  local function casterFunc(iter, obj)
+    local types = {'file_system', 'mount_point', 'type', 'options', 'pass' }
+    for i = 1, #types do
+      obj[types[i]] = iter()
+    end
+  end
 
   if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for file permissions'
     return callback()
   end
 
-  fs.exists('/etc/fstab', function(err, file)
-    if err then
-      self._error = string.format('fs.exists in fstab.lua erred: %s', err)
-      return callback()
-    end
-    if file then
-      fs.readFile('/etc/fstab', function(err, data)
-        if err then
-          self._error = string.format('fs.readline in fstab.lua erred: %s', err)
-          return callback()
-        end
-
-        for line in data:gmatch("[^\r\n]+") do
-          local iscomment = string.match(line, '^#')
-          local isblank = string.len(line:gsub("%s+", "")) <= 0
-
-          if not iscomment and not isblank then
-            local obj = {}
-
-            -- split the line and assign key vals
-            local iter = line:gmatch("%S+")
-            for i = 1, #types do
-              obj[types[i]] = iter()
-            end
-
-            table.insert(fstab, obj)
-          end
-        end
-        -- fstab usually only has one line, flatten it
-        if #fstab == 1 then
-          fstab = fstab[1]
-        end
-
-        table.insert(self._params, {fstab=fstab})
-        return callback()
-      end)
-
-    else
-      self._error = 'fstab not found'
-      return callback()
-    end
-
-  end)
-
+  readCast('/etc/fstab', self._error, self._params, casterFunc, callback)
 end
-
 
 function Info:getType()
   return 'FSTAB'
