@@ -22,7 +22,7 @@ function HostInfoCheck:initialize(params)
   SubProcCheck.initialize(self, params)
   self.details = params.details or {}
   self.type = self.details.type
-  self.params = self.details.params
+  self.args = self.details.args
   self.multi_prefix = self.details.multi_prefix or 'multi_'
 end
 
@@ -31,7 +31,7 @@ function HostInfoCheck:getType()
 end
 
 function HostInfoCheck:_runCheckInChild(callback)
-  local info = hostinfoCreate(self.type, self.params)
+  local info = hostinfoCreate(self.type, self.args)
   local function onInfo()
     local cr = CheckResult:new(self, {})
     cr:setAvailable()
