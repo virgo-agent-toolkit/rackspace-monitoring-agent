@@ -17,7 +17,7 @@ local HostInfo = require('./base').HostInfo
 
 local fmt = require('string').format
 local los = require('los')
-local sctx = require('sigar').ctx
+local sigar = require('sigar')
 local table = require('table')
 local execFileToBuffers = require('./misc').execFileToBuffers
 
@@ -52,11 +52,8 @@ function Info:run(callback)
     callback()
   end
 
-  local sysinfo = sctx:sysinfo()
-  local vendor = sysinfo.vendor:lower()
-  local command
-  local args
-  local options
+  local command, args, options, vendor
+  vendor = sigar:new():sysinfo().vendor:lower()
 
   if vendor == 'ubuntu' or vendor == 'debian' then
     command = 'dpkg-query'
