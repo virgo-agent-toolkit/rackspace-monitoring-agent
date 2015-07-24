@@ -17,6 +17,7 @@ limitations under the License.
 return {
   require('./pam'),
   require('./cron'),
+  require('./kernel_modules'),
   require('./cpu'),
   require('./disk'),
   require('./filesystem'),
