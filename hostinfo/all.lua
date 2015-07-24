@@ -33,5 +33,6 @@ return {
   require('./sysctl'),
   require('./sshd'),
   require('./fstab'),
-  require('./fileperms')
+  require('./fileperms'),
+  require('./services')
 }
