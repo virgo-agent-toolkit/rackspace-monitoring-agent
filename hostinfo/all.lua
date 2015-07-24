@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 return {
+  require('./cron'),
   require('./cpu'),
   require('./disk'),
   require('./filesystem'),
