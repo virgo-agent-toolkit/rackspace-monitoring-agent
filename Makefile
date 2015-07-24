@@ -24,7 +24,7 @@ test: lit $(LUVISIGAR)
 	./luvi-sigar . -m tests/run.lua
 
 clean:
-	rm -rf $(TARGET) lit luvi luvi-sigar build
+	rm -rf lit luvi luvi-sigar build
 
 lit:
 	curl -L https://github.com/luvit/lit/raw/${LIT_VERSION}/get-lit.sh | sh
