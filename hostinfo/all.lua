@@ -31,5 +31,6 @@ return {
   require('./date'),
   require('./sysctl'),
   require('./sshd'),
-  require('./fstab')
+  require('./fstab'),
+  require('./fileperms')
 }
