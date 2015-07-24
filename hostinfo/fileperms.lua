@@ -55,18 +55,19 @@ function Info:run(callback)
     '/var/run/php-fpm.sock'
   }
   local obj = {}
+  local errTable = {}
 
   async.forEachLimit(fileList, 5, function(file, cb)
     exists(file, function(err, data)
       if err then
         --[[This error may occasionally warn us of missing files, we can ignore it or use it upstream]]--
-        self._error = fmt('fs.exists in fileperms.lua erred: %s', err)
+        table.insert(errTable, fmt('fs.exists in fileperms.lua erred: %s', err))
         return cb()
       end
       if data then
         stat(file, function(err, fstat)
           if err then
-            self._error = fmt('fs.stat in fileperms.lua erred: %s', err)
+            table.insert(errTable, fmt('fs.stat in fileperms.lua erred: %s', err))
             return cb()
           end
           if fstat then
@@ -82,7 +83,7 @@ function Info:run(callback)
             return cb()
           else
             --[[This error should not fire, ever, stat should always return data for files that exist]]--
-            self._error = 'fs.stat returned no data or false'
+            table.insert(errTable, 'fs.stat returned no data or false')
             return cb()
           end
         end)
@@ -91,7 +92,14 @@ function Info:run(callback)
       end
     end)
   end, function()
-    table.insert(self._params, obj)
+    if obj ~= nil then
+      table.insert(self._params, {
+        data = obj,
+        warnings = errTable
+      })
+    else
+      self._error = errTable
+    end
     return callback()
   end)
 

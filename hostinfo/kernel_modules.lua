@@ -33,6 +33,7 @@ function Info:run(callback)
   end
 
   local filename = "/proc/modules"
+  local errTable = {}
 
   local function casterFunc(iter, obj)
     local name = iter()
@@ -51,7 +52,14 @@ function Info:run(callback)
     }
   end
 
-  readCast(filename, self._error, self._params, casterFunc, callback)
+  local function cb()
+    if self._params == nil then
+      self._error = errTable
+    end
+    return callback()
+  end
+
+  readCast(filename, errTable, self._params, casterFunc, callback)
 end
 
 function Info:getType()
