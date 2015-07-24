@@ -30,5 +30,6 @@ return {
   require('./who'),
   require('./date'),
   require('./sysctl'),
-  require('./sshd')
+  require('./sshd'),
+  require('./fstab')
 }
