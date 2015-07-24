@@ -18,8 +18,6 @@ local table = require('table')
 local los = require('los')
 local fs = require('fs')
 local async = require('async')
-local string = require('string')
-local execFileToBuffers = require('./misc').execFileToBuffers
 
 --[[ Installed services info ]]--
 local Info = HostInfo:extend()
@@ -33,7 +31,6 @@ function Info:run(callback)
     return callback()
   end
 
-  local errTable = {}
   local init, initd, system, systemv, systemd
   init = '/etc/init/'
   initd = '/etc/init.d'
@@ -46,10 +43,7 @@ function Info:run(callback)
 
   local function scanDir(path, key, cb)
     fs.readdir(path, function(err, data)
-      if err then
-        table.insert(errTable, string.format('Error reading services directory: %s', err))
-        return cb()
-      end
+      if err then return cb() end
       table.insert(self._params, {
         [key] = data
       })
@@ -77,7 +71,6 @@ function Info:run(callback)
       scanDir(systemd[2], 'systemd', cb)
     end
   }, function()
-    self._error  = errTable
     return callback()
   end)
 end

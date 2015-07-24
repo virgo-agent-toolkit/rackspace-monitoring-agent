@@ -43,7 +43,7 @@ function Info:run(callback)
     callback()
   end
 
-  local command = 'sshd'
+  local command = '/usr/sbin/sshd'
   local args = {'-T'}
   local options = {}
 
