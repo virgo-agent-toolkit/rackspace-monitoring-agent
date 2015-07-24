@@ -18,6 +18,7 @@ local table = require('table')
 local los = require('los')
 local fs = require('fs')
 local async = require('async')
+local fmt = require('string').format
 
 --[[ Installed services info ]]--
 local Info = HostInfo:extend()
@@ -31,7 +32,7 @@ function Info:run(callback)
     return callback()
   end
 
-  local init, initd, system, systemv, systemd
+  local init, initd, system, systemv, systemd, errTable
   init = '/etc/init/'
   initd = '/etc/init.d'
   system = '/usr/lib/systemd/system'
@@ -40,10 +41,14 @@ function Info:run(callback)
     '/etc/systemd/system/basic.target.wants/'
   }
   systemv = '/etc/rc3.d'
+  errTable = {}
 
   local function scanDir(path, key, cb)
     fs.readdir(path, function(err, data)
-      if err then return cb() end
+      if err then
+        table.insert(errTable, fmt('Error reading services directory: %s . You can probably ignore this error', err))
+        return cb()
+      end
       table.insert(self._params, {
         [key] = data
       })
@@ -71,6 +76,13 @@ function Info:run(callback)
       scanDir(systemd[2], 'systemd', cb)
     end
   }, function()
+    if self._params ~= nil then
+      table.insert(self._params, {
+        warnings = errTable
+      })
+    else
+      self._error = errTable
+    end
     return callback()
   end)
 end

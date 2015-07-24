@@ -36,7 +36,17 @@ function Info:run(callback)
     end
   end
 
-  readCast('/etc/fstab', self._error, self._params, casterFunc, callback)
+  local function cb()
+    if self._params == nil then
+      self._error = errTable
+    end
+    return callback()
+  end
+
+  local errTable = {}
+
+
+  readCast('/etc/fstab', errTable, self._params, casterFunc, cb)
 end
 
 function Info:getType()

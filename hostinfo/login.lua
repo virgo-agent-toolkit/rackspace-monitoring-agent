@@ -29,12 +29,12 @@ function Info:run(callback)
 
   if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for Login Definitions'
-    callback()
-    return
+    return callback()
   end
 
   local filename = "/etc/login.defs"
   local outTable = {}
+  local errTable = {}
 
   local function casterFunc(iter, obj)
     local key = iter()
@@ -43,13 +43,17 @@ function Info:run(callback)
   end
 
   local function cb()
-    table.insert(self._params, {
-      ['login_defs'] = outTable[1]
-    })
+    if outTable == nil then
+      self._error = errTable
+    else
+      table.insert(self._params, {
+        ['login_defs'] = outTable[1]
+      })
+    end
     return callback()
   end
 
-  readCast(filename, self._error, outTable, casterFunc, cb)
+  readCast(filename, errTable, outTable, casterFunc, cb)
 end
 
 function Info:getType()
