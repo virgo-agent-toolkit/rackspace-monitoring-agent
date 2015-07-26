@@ -71,12 +71,15 @@ function Info:run(callback)
       })
     end
   end
-
+  local errTable = {}
   local pamPath = '/etc/pam.d'
   local filesList = fs.readdirSync(pamPath)
   async.forEachLimit(filesList, 5, function(file, cb)
-    readCast(path.join(pamPath, file), self._error, self._params, casterFunc, cb)
-  end, callback)
+    readCast(path.join(pamPath, file), errTable, self._params, casterFunc, cb)
+  end, function()
+    if self._params == nil then self._error = errTable end
+    return callback()
+  end)
 end
 
 function Info:getType()

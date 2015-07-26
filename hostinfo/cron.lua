@@ -34,9 +34,9 @@ function Info:run(callback)
     return callback()
   end
 
-  local cdir, vendor
+  local cdir, vendor, errTable
   vendor = sigar:new():sysinfo().vendor:lower()
-
+  errTable = {}
   if vendor == 'ubuntu' or vendor == 'debian' then
     cdir = '/var/spool/cron/crontabs'
   elseif vendor == 'rhel' or vendor == 'centos' then
@@ -73,8 +73,17 @@ function Info:run(callback)
       return callback()
     end
     async.forEachLimit(files, 5, function(file, cb)
-      readCast(path.join(cdir, file), self._error, self._params, parseLine, cb)
-    end, callback)
+      readCast(path.join(cdir, file), errTable, self._params, parseLine, cb)
+    end, function()
+      if self._params ~= nil then
+        table.insert(self._params, {
+          warnings = errTable
+        })
+      else
+        self._error = errTable
+      end
+      return callback()
+    end)
   end)
 end
 
