@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 local HostInfo = require('../hostinfo')
 local json = require('json')
+local upper = require('string').upper
 
 local function run(...)
   local argv, typeName, klass
@@ -28,7 +29,7 @@ local function run(...)
     process:exit(0)
   end
 
-  typeName = argv.args.x
+  typeName = upper(argv.args.x)
   klass = HostInfo.create(typeName)
   klass:run(function(err, callback)
     if err then
