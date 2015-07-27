@@ -16,6 +16,7 @@ limitations under the License.
 local SubProcCheck = require('./base').SubProcCheck
 local CheckResult = require('./base').CheckResult
 local hostinfoCreate = require('../hostinfo').create
+local hostinfoGetTypes = require('../hostinfo').getTypes
 
 local HostInfoCheck = SubProcCheck:extend()
 function HostInfoCheck:initialize(params)
@@ -23,17 +24,38 @@ function HostInfoCheck:initialize(params)
   self.details = params.details or {}
   self.type = self.details.type
   self.args = self.details.args
-  self.multi_prefix = self.details.multi_prefix or 'multi_'
+  self.multi_prefix = self.details.multi_prefix or self.type:lower() .. '_'
 end
 
 function HostInfoCheck:getType()
   return 'agent.hostinfo'
 end
 
+function HostInfoCheck:getTargets(callback)
+  callback(hostinfoGetTypes())
+end
+
+local function recursiveSerializeMetric(t, i, prefix, cr, valuePrefix)
+  for k, v in pairs(t) do
+    if type(v) == 'table' then
+      recursiveSerializeMetric(t, cr, valuePrefix .. '_' .. k)
+    else
+      if #v > 0 then
+        cr:addMetric(prefix .. i .. '_' .. valuePrefix .. '_' .. k, nil, nil, v)
+      end
+    end
+  end
+end
+
 function HostInfoCheck:_runCheckInChild(callback)
   local info = hostinfoCreate(self.type, self.args)
   local function onInfo()
-    local cr = CheckResult:new(self, {})
+    local cr = CheckResult:new(self)
+    if info._error then
+      cr:setUnavailable()
+      cr:setError(info._error)
+      return callback(cr)
+    end
     cr:setAvailable()
     if #info._params == 0 then -- flat
       for k, v in pairs(info._params) do
@@ -42,7 +64,13 @@ function HostInfoCheck:_runCheckInChild(callback)
     else -- multiple
       for i, param in ipairs(info._params) do
         for k, v in pairs(param) do
-          cr:addMetric(self.multi_prefix .. i .. '_' .. k, nil, nil, v)
+          if type(v) == 'table' then
+            recursiveSerializeMetric(v, i, self.multi_prefix, cr, k or '')
+          else
+            if (type(v) == 'string' and #v > 0) or type(v) == 'number' then
+              cr:addMetric(self.multi_prefix .. i .. '_' .. k, nil, nil, v)
+            end
+          end
         end
       end
     end

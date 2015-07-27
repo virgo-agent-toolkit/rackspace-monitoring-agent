@@ -27,8 +27,8 @@ local function create_class_info()
   local types = {}
   for x, klass in pairs(classes) do
     if klass.Info then klass = klass.Info end
-    map[klass.getType()] = klass
-    table.insert(types, klass.getType())
+    map[klass.getType():upper()] = klass
+    table.insert(types, klass.getType():upper())
   end
   return {map = map, types = types}
 end
@@ -46,7 +46,7 @@ end
 
 --[[ Factory ]]--
 local function create(infoType, params)
-  local klass = HOST_INFO_MAP[infoType]
+  local klass = HOST_INFO_MAP[infoType:upper()]
   if klass then
     if klass.Info then
       return klass.Info:new(params)
