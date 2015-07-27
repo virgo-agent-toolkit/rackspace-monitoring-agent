@@ -4,3 +4,7 @@ luvi
 luvi-sigar
 rackspace-monitoring-agent
 tests/tmpdir
+deps
+GPATH
+GRTAGS
+GTAGS
