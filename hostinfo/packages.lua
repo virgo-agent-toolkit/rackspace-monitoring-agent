@@ -44,9 +44,10 @@ function Info:run(callback)
       line = line:gsub("^%s*(.-)%s*$", "%1")
       local _, _, key, value = line:find("(.*)%s(.*)")
       if key ~= nil then
-        local obj = {}
-        obj[key] = value
-        table.insert(self._params, obj)
+        table.insert(self._params, {
+          name = key,
+          version = value
+        })
       end
     end
     callback()
