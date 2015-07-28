@@ -17,6 +17,7 @@ local HostInfo = require('./base').HostInfo
 
 local table = require('table')
 local execFileToBuffers = require('./misc').execFileToBuffers
+local los = require('los')
 
 --[[ SSHd Variables ]]--
 local Info = HostInfo:extend()
@@ -25,6 +26,10 @@ function Info:initialize()
 end
 
 function Info:run(callback)
+  if los.type() == 'win32' then
+    self._error = 'Unsupported OS for sshd'
+    return callback()
+  end
 
   local function execCb(err, exitcode, stdout_data, stderr_data)
     self._error = err
