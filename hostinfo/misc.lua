@@ -97,9 +97,10 @@ local function readCast(filePath, errHandler, outTable, casterFunc, callback)
 
         -- Flatten single entry objects
         if #obj == 1 then obj = obj[1] end
-        table.insert(outTable, obj)
-        return callback()
+        -- Dont insert empty objects into the outTable
+        if next(obj) then table.insert(outTable, obj) end
 
+        return callback()
       end)
     else
       table.insert(errHandler, 'file not found')
