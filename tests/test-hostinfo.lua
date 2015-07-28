@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,26 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local Object = require('core').Object
-local vutils = require('virgo/utils')
-
---[[ HostInfo ]]--
-local HostInfo = Object:extend()
-function HostInfo:initialize()
-  self._params = {}
-  self._error = nil
-end
-
-function HostInfo:serialize()
-  return {
-    error = self._error,
-    metrics = self._params,
-    timestamp = vutils.gmtNow()
-  }
-end
-
-function HostInfo:run(callback)
-  callback()
-end
-
-exports.HostInfo = HostInfo
+require('tap')(function(test)
+  local hostinfo = require('../hostinfo')
+  for _, type in pairs(hostinfo.getTypes()) do
+    test('test ' .. type, function()
+      local info = hostinfo.create(type)
+      info:run(p)
+    end)
+  end
+end)
