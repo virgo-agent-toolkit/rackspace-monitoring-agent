@@ -15,7 +15,6 @@ limitations under the License.
 --]]
 
 local table = require('table')
-local misc = require('virgo/util/misc')
 local async = require('async')
 local childProcess = require('childprocess')
 local string = require('string')
@@ -26,7 +25,6 @@ local function execFileToBuffers(command, args, options, callback)
 
   stdout = {}
   stderr = {}
-  callback = misc.fireOnce(callback)
 
   child = childProcess.spawn(command, args, options)
   child.stdout:on('data', function (chunk)
@@ -57,30 +55,25 @@ local function execFileToBuffers(command, args, options, callback)
   end)
 end
 
-local function readCast(filePath, errHandler, outTable, casterFunc, callback)
+local function readCast(filePath, errTable, outTable, casterFunc, callback)
   -- Sanity checks
   if (type(filePath) ~= 'string') then filePath = '' end
-  if (type(errHandler) ~= 'table') then errHandler = {} end
+  if (type(errTable) ~= 'table') then errTable = {} end
   if (type(outTable) ~= 'table') then outTable = {} end
-  if (type(casterFunc) ~= 'function') then
-    function casterFunc(...) end
-  end
-  if (type(callback) ~= 'function') then
-    function callback(...) end
-  end
+  if (type(casterFunc) ~= 'function') then function casterFunc(iter, obj, line) end end
+  if (type(callback) ~= 'function') then function callback() end end
 
   local obj = {}
   fs.exists(filePath, function(err, file)
-
     if err then
-      table.insert(errHandler, string.format('fs.exists in fstab.lua erred: %s', err))
+      table.insert(errTable, string.format('File not found : { fs.exists erred: %s }', err))
       return callback()
     end
     if file then
       fs.readFile(filePath, function(err, data)
 
         if err then
-          table.insert(errHandler, string.format('fs.readline erred: %s', err))
+          table.insert(errTable, string.format('File couldnt be read : { fs.readline erred: %s }', err))
           return callback()
         end
 
@@ -103,11 +96,41 @@ local function readCast(filePath, errHandler, outTable, casterFunc, callback)
         return callback()
       end)
     else
-      table.insert(errHandler, 'file not found')
+      table.insert(errTable, 'file not found')
       return callback()
     end
 
   end)
 end
 
-return {execFileToBuffers=execFileToBuffers, readCast=readCast}
+local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
+  -- Sanity checks
+  if type(dataArr) ~= 'table' then
+    if dataArr ~= nil then
+      local obj = {}
+      table.insert(obj, dataArr)
+      dataArr = obj
+      return
+    end
+    dataArr = {}
+  end
+  if type(spawnFunc) ~= 'function' then function spawnFunc(datum) return '', {} end end
+  if type(successFunc) ~= 'function' then function successFunc(data, emptyObj, datum) end end
+  if type(finalCb) ~= 'function' then function finalCb(obj, errdata) end end
+
+  -- Asynchronous spawn cps & gather data
+  local obj = {}
+  async.forEachLimit(dataArr, 5, function(datum, cb)
+    local function _successFunc(err, exitcode, data, stderr)
+      successFunc(data, obj, datum, exitcode)
+      return cb()
+    end
+    local cmd, args = spawnFunc(datum)
+    return execFileToBuffers(cmd, args, opts, _successFunc)
+  end, function()
+    return finalCb(obj, errdata)
+  end)
+end
+
+
+return {execFileToBuffers=execFileToBuffers, readCast=readCast, asyncSpawn=asyncSpawn}
