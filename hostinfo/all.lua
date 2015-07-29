@@ -36,5 +36,6 @@ return {
   require('./fstab'),
   require('./fileperms'),
   require('./services'),
-  require('./deleted_libs')
+  require('./deleted_libs'),
+  require('./cve')
 }
