@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 return {
+  require('./passwd'),
   require('./pam'),
   require('./cron'),
   require('./kernel_modules'),
