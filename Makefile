@@ -14,6 +14,7 @@ $(LUVISIGAR):
 $(TARGET):  lit $(LUVISIGAR) $(APP_FILES)
 	cmake -H. -Bbuild
 	cmake --build build
+	build/rackspace-monitoring-agent -v
 
 install: $(TARGET)
 	install -m 777 $(TARGET) $(PREFIX)/
