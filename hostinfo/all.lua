@@ -35,5 +35,6 @@ return {
   require('./sshd'),
   require('./fstab'),
   require('./fileperms'),
-  require('./services')
+  require('./services'),
+  require('./deleted_libs')
 }
