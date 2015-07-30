@@ -37,5 +37,6 @@ return {
   require('./fileperms'),
   require('./services'),
   require('./deleted_libs'),
-  require('./cve')
+  require('./cve'),
+  require('./last_logins')
 }
