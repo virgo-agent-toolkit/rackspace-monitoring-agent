@@ -18,7 +18,7 @@ local HostInfo = require('./base').HostInfo
 local fmt = require('string').format
 local table = require('table')
 local los = require('los')
-local spawn = require('childprocess').spawn
+local execFileToBuffers = require('./misc').execFileToBuffers
 
 --[[ Sysctl Variables ]]--
 local Info = HostInfo:extend()
@@ -29,39 +29,33 @@ end
 function Info:run(callback)
   if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for sysctl'
-    callback()
-    return
+    return callback()
   end
 
-  local child = spawn('sysctl', {'-A'}, {})
-  local data = ''
-
-  child.stdout:on('data', function(chunk)
-    data = data .. chunk
-  end)
-
-  child:on('exit', function(exit_code)
-    if exit_code ~= 0 then
-      self._error = fmt("sysctl exited with a %d exit_code", exit_code)
-      callback()
-      return
+  local function execCb(err, exitcode, data, stderr_data)
+    if exitcode ~= 0 then
+      self._error = fmt("sysctl exited with a %d exit_code", exitcode)
+      return callback()
     end
     for line in data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
       local _, _, key, value = line:find("([^=^%s]+)%s*=%s*([^=]*)")
       if key ~= nil then
-        local obj = {}
-        obj[key] = value
-        table.insert(self._params, obj)
+        table.insert(self._params, {[key] = value})
       end
     end
-    callback()
+    return callback()
+  end
+
+  execFileToBuffers('which', {'sysctl'}, {}, function(err, exitcode, data, stderr)
+    if exitcode ~= 0 then
+      self._error = fmt("sysctl exited with a %d exit_code", exitcode)
+      return callback()
+    end
+    -- Remove /n at the end of data returned from which and call
+    return execFileToBuffers(data:sub(1, data:len()-1), {'-A'}, {}, execCb)
   end)
 
-  child:on('error', function(err)
-    self._error = err
-    callback()
-  end)
 end
 
 function Info:getType()
