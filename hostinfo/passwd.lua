@@ -19,6 +19,7 @@ local fs = require('fs')
 local los = require('los')
 local table = require('table')
 local misc = require('./misc')
+local logWarn = require('./misc').logWarn
 
 --[[ Passwordstatus Variables ]]--
 local Info = HostInfo:extend()
@@ -52,34 +53,29 @@ function Info:run(callback)
     end
 
     local function successFunc(data, obj, datum)
-      if data ~= nil and data ~= '' then
+      if data and #data > 0 then
         data = data:gsub('[\n|"]','')
         local iter = data:gmatch("%S+")
-        obj[iter()] = {
+        table.insert(self._params, {
+          user_name = iter(),
           status = iter(),
           last_changed = iter(),
           minimum_age = iter(),
           warning_period = iter(),
           inactivity_period = iter()
-        }
-        return
+        })
       end
     end
 
-    local function finalCb(obj, errData)
-      if obj ~= nil then
-        table.insert(self._params, obj)
-        if errData ~= nil then
-          table.insert(self._params, {
-            warnings = errData
-          })
+    local function finalCb(obj, errTable)
+      if errTable and next(errTable) then
+        if not self._params or not next(self._params) then
+          self._error = errTable
+        else
+          logWarn(errTable)
         end
-        return callback()
-      else
-        if errData == nil then errData = '' end
-        table.insert(self._error, errData)
-        return callback()
       end
+      return callback()
     end
 
     return misc.asyncSpawn(users, spawnFunc, successFunc, finalCb)

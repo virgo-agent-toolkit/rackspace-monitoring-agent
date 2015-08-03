@@ -19,6 +19,7 @@ local los = require('los')
 local fs = require('fs')
 local async = require('async')
 local fmt = require('string').format
+local logWarn = require('./misc').logWarn
 
 --[[ Installed services info ]]--
 local Info = HostInfo:extend()
@@ -49,8 +50,17 @@ function Info:run(callback)
         table.insert(errTable, fmt('Error reading services directory: %s . You can probably ignore this error', err))
         return cb()
       end
+      -- remove readmes from the list
+      for i=0, #data do
+        local file = data[i]
+        if file == 'README' then
+          table.remove(data, i)
+        end
+      end
+
       table.insert(self._params, {
-        [key] = data
+        name = key,
+        files = data
       })
       return cb()
     end)
@@ -76,12 +86,12 @@ function Info:run(callback)
       scanDir(systemd[2], 'systemd', cb)
     end
   }, function()
-    if self._params ~= nil then
-      table.insert(self._params, {
-        warnings = errTable
-      })
-    else
-      self._error = errTable
+    if errTable and next(errTable) then
+      if not self._params or not next(self._params) then
+        self._error = errTable
+      else
+        logWarn(errTable)
+      end
     end
     return callback()
   end)

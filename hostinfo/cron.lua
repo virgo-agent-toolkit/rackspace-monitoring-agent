@@ -21,6 +21,7 @@ local async = require('async')
 local fs = require('fs')
 local path = require('path')
 local sigar = require('sigar')
+local logWarn = require('./misc').logWarn
 
 --[[ Pluggable auth modules ]]--
 local Info = HostInfo:extend()
@@ -75,12 +76,12 @@ function Info:run(callback)
     async.forEachLimit(files, 5, function(file, cb)
       readCast(path.join(cdir, file), errTable, self._params, parseLine, cb)
     end, function()
-      if self._params ~= nil then
-        table.insert(self._params, {
-          warnings = errTable
-        })
-      else
-        self._error = errTable
+      if errTable and next(errTable) then
+        if not self._params or not next(self._params) then
+          self._error = errTable
+        else
+          logWarn(errTable)
+        end
       end
       return callback()
     end)

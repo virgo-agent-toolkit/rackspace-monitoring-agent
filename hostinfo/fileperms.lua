@@ -20,6 +20,7 @@ local exists = require('fs').exists
 local stat = require('fs').stat
 local band = bit.band
 local fmt = require('string').format
+local logWarn = require('./misc').logWarn
 
 --[[ Check file permissions ]]--
 local HostInfo = require('./base').HostInfo
@@ -54,9 +55,7 @@ function Info:run(callback)
     '/etc/login.defs',
     '/var/run/php-fpm.sock'
   }
-  local obj = {}
   local errTable = {}
-
   async.forEachLimit(fileList, 5, function(file, cb)
     exists(file, function(err, data)
       if err then
@@ -71,15 +70,17 @@ function Info:run(callback)
             return cb()
           end
           if fstat then
-            obj[file] = {}
+            local obj = {}
+            obj['name'] = file
             --[[Check file permissions, octal: 0777]]--
-            obj[file]['octalFilePerms'] = band(fstat.mode, 511)
+            obj['octalFilePerms'] = band(fstat.mode, 511)
             --[[Check if the file has a sticky id, octal: 01000]]--
-            obj[file]['stickyBit'] = band(fstat.mode, 512) ~= 0
+            obj['stickyBit'] = band(fstat.mode, 512) ~= 0
             --[[Check if file has a set group id, octal: 02000]]--
-            obj[file]['setgid'] = (band(fstat.mode, 1024) ~= 0)
+            obj['setgid'] = (band(fstat.mode, 1024) ~= 0)
             --[[Check if the file has a set user id, octal: 04000]]--
-            obj[file]['setuid'] = (band(fstat.mode, 2048) ~= 0)
+            obj['setuid'] = (band(fstat.mode, 2048) ~= 0)
+            table.insert(self._params, obj)
             return cb()
           else
             --[[This error should not fire, ever, stat should always return data for files that exist]]--
@@ -92,13 +93,12 @@ function Info:run(callback)
       end
     end)
   end, function()
-    if obj ~= nil then
-      table.insert(self._params, {
-        data = obj,
-        warnings = errTable
-      })
-    else
-      self._error = errTable
+    if errTable and next(errTable) then
+      if not self._params or not next(self._params) then
+        self._error = errTable
+      else
+        logWarn(errTable)
+      end
     end
     return callback()
   end)
