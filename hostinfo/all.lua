@@ -17,6 +17,7 @@ limitations under the License.
 return {
   require('./iptables'),
   require('./ip6tables'),
+  require('./autoupdates'),
   require('./passwd'),
   require('./pam'),
   require('./cron'),

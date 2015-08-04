@@ -21,7 +21,7 @@ local sigar = require('sigar')
 local table = require('table')
 local execFileToBuffers = require('./misc').execFileToBuffers
 
---[[ Packages Variables ]]--
+--[[ Are autoupdates enabled? ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
@@ -33,45 +33,53 @@ function Info:run(callback)
     return callback()
   end
 
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("Packages exited with a %d exitcode", exitcode)
-      return callback()
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      line = line:gsub("^%s*(.-)%s*$", "%1")
-      local _, _, key, value = line:find("(.*)%s(.*)")
-      if key ~= nil then
-        table.insert(self._params, {
-          name = key,
-          version = value
-        })
-      end
-    end
-    return callback()
-  end
-
-  local command, args, options, vendor
+  local vendor, statcmd, statargs, method, options, status, errTable
   vendor = sigar:new():sysinfo().vendor:lower()
+  errTable = {}
 
   if vendor == 'ubuntu' or vendor == 'debian' then
-    command = 'dpkg-query'
-    args = {'-W'}
+    statcmd = 'apt-config'
+    statargs = {'dump' }
+    method = 'unattended_upgrades'
     options = {}
   elseif vendor == 'rhel' or vendor == 'centos' then
-    command = 'rpm'
-    args = {"-qa", '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n'}
+    statcmd = 'service'
+    statargs = {'yum-cron', 'status' }
+    method = 'yum_cron'
     options = {}
   else
-    self._error = 'Could not determine OS for Packages'
+    self._error = 'Could not determine linux distro for autoupdates'
     return callback()
   end
 
-  return execFileToBuffers(command, args, options, execCb)
+  local function statExecCb(err, exitcode, stdout_data, stderr_data)
+    status = 'disabled'
+    if exitcode ~= 0 then
+      self._error = fmt("Autoupdates check exited with a %d exitcode", exitcode)
+      return callback()
+    end
+    if vendor == 'rhel' or vender == 'centos' then
+      status = 'enabled'
+    elseif vendor == 'ubuntu' or vendor == 'debian' then
+      for line in stdout_data:gmatch("[^\r\n]+") do
+        local _, _, key, value = line:find("(.*)%s(.*)")
+        value, _ = value:gsub('"', ''):gsub(';', '')
+        if key == 'APT::Periodic::Unattended-Upgrade' and value ~= 0 then
+          status = 'enabled'
+        end
+      end
+    end
+    table.insert(self._params, {
+      update_method = method,
+      status = status
+    })
+    return callback()
+  end
+  return execFileToBuffers(statcmd, statargs, options, statExecCb)
 end
 
 function Info:getType()
-  return 'PACKAGES'
+  return 'AUTOUPDATES'
 end
 
 return Info
