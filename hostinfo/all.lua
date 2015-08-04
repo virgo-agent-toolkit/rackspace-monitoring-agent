@@ -38,5 +38,6 @@ return {
   require('./services'),
   require('./deleted_libs'),
   require('./cve'),
-  require('./last_logins')
+  require('./last_logins'),
+  require('./remote_services')
 }
