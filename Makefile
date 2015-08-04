@@ -1,5 +1,5 @@
 APP_FILES=$(shell find . -type f -name '*.lua')
-LIT_VERSION=2.2.2
+LIT_VERSION=2.2.3
 TARGET=build/rackspace-monitoring-agent
 LUVI?=./luvi
 LIT?=./lit
