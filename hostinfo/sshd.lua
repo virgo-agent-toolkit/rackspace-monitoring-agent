@@ -32,10 +32,10 @@ function Info:run(callback)
   end
 
   local function execCb(err, exitcode, stdout_data, stderr_data)
-    self._error = err
-
-    --p({err=err, exitcode=exitcode, stdout=stdout_data, stderr=stderr_data})
-
+    if exitcode ~= 0 then
+      self._error = fmt("SSHD exited with a %d exitcode", exitcode)
+      return callback()
+    end
     for line in stdout_data:gmatch("[^\r\n]+") do
       line = line:gsub("^%s*(.-)%s*$", "%1")
       local _, _, key, value = line:find("(.*)%s(.*)")
