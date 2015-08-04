@@ -105,11 +105,12 @@ function PluginCheck:getTargets(callback)
 
   local function executeCheck(file, callback)
     stat(path.join(root, file), function(err, s)
+
       if err then
         return callback()
       end
 
-      if not s.is_file or not s.mode then
+      if s.type ~= 'file' or not s.mode then
         return callback()
       end
 
