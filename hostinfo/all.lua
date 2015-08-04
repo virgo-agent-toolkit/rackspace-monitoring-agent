@@ -42,5 +42,7 @@ return {
   require('./deleted_libs'),
   require('./cve'),
   require('./last_logins'),
-  require('./remote_services')
+  require('./remote_services'),
+  require('./ip4routes'),
+  require('./ip6routes')
 }
