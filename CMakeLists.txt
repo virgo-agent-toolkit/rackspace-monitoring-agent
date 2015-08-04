@@ -82,7 +82,7 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
   set(LOGROTATE_SCRIPT ${GENERATED_PACKAGE_SCRIPTS}/logrotate/${APP_NAME})
   message("Generating Log Rotate Script ${LOGROTATE_SCRIPT}")
   configure_file(${PACKAGE_SCRIPTS}/logrotate/script.in ${LOGROTATE_SCRIPT})
-  install(PROGRAMS ${LOGROTATE_SCRIPT} DESTINATION /etc/logrotate.d)
+  install(FILES ${LOGROTATE_SCRIPT} DESTINATION /etc/logrotate.d)
 
   if (${SPECIFIC_SYSTEM_PREFERED_CPACK_GENERATOR} MATCHES "RPM")
     ### systemd init script
