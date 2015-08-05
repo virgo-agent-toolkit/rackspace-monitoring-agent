@@ -16,12 +16,14 @@ limitations under the License.
 
 local Object = require('core').Object
 local vutils = require('virgo/utils')
+local virgo_misc_utils = require('virgo/util/misc')
 
 --[[ HostInfo ]]--
 local HostInfo = Object:extend()
 function HostInfo:initialize()
   self._params = {}
   self._error = nil
+  self._util = virgo_misc_utils
 end
 
 function HostInfo:serialize()
