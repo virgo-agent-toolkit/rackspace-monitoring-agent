@@ -13,69 +13,64 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local HostInfo = require('./base').HostInfo
 
-local fmt = require('string').format
-local los = require('los')
+local HostInfoStdoutSubProc = require('./base').HostInfoStdoutSubProc
+local MetricsHandler = require('./base').MetricsHandler
 local sigar = require('sigar')
 local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
-
 --[[ Are autoupdates enabled? ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
-end
+
+local Handler = MetricsHandler:extend()
+local Info = HostInfoStdoutSubProc:extend()
 
 function Info:run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Packages'
-    return callback()
-  end
+  if self:isRestrictedPlatform() then return callback() end
 
-  local vendor, statcmd, statargs, method, options, status, errTable
+  local vendor, statcmd, statargs, method, options, errTable, handler
   vendor = sigar:new():sysinfo().vendor:lower()
-  errTable = {}
+  errTable, options = {}, {}
 
   if vendor == 'ubuntu' or vendor == 'debian' then
     statcmd = 'apt-config'
     statargs = {'dump' }
     method = 'unattended_upgrades'
-    options = {}
   elseif vendor == 'rhel' or vendor == 'centos' then
     statcmd = 'service'
     statargs = {'yum-cron', 'status' }
     method = 'yum_cron'
-    options = {}
   else
-    self._error = 'Could not determine linux distro for autoupdates'
+    self._error = 'Unsupported OS vendor for ' .. self:getType()
     return callback()
   end
 
-  local function statExecCb(err, exitcode, stdout_data, stderr_data)
-    status = 'disabled'
-    if exitcode ~= 0 then
-      self._error = fmt("Autoupdates check exited with a %d exitcode", exitcode)
-      return callback()
-    end
+  -- Define handler input transformer
+  local status = 'disabled'
+  function Handler:_transform(line, callback)
     if vendor == 'rhel' or vender == 'centos' then
       status = 'enabled'
     elseif vendor == 'ubuntu' or vendor == 'debian' then
-      for line in stdout_data:gmatch("[^\r\n]+") do
-        local _, _, key, value = line:find("(.*)%s(.*)")
-        value, _ = value:gsub('"', ''):gsub(';', '')
-        if key == 'APT::Periodic::Unattended-Upgrade' and value ~= 0 then
-          status = 'enabled'
-        end
+      local _, _, key, value = line:find("(.*)%s(.*)")
+      value, _ = value:gsub('"', ''):gsub(';', '')
+      if key == 'APT::Periodic::Unattended-Upgrade' and value ~= 0 then
+        status = 'enabled'
       end
     end
-    table.insert(self._params, {
+    return callback()
+  end
+  handler = Handler:new()
+  handler:on('end', function()
+    self:pushParams({
       update_method = method,
       status = status
     })
-    return callback()
-  end
-  return execFileToBuffers(statcmd, statargs, options, statExecCb)
+  end)
+
+  HostInfoStdoutSubProc:configure(statcmd, statargs, handler)
+  HostInfoStdoutSubProc:run(callback)
+end
+
+function Info:getRestrictedPlatforms()
+  return {'win32'}
 end
 
 function Info:getType()

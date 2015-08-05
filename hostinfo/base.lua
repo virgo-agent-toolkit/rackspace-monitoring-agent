@@ -21,7 +21,7 @@ local execFileToStreams = require('./misc').execFileToStreams
 local gmtNow = require('virgo/utils').gmtNow
 local los = require('los')
 local tableToString = require('virgo/util/misc').tableToString
-
+local table = require('table')
 -------------------------------------------------------------------------------
 
 local HostInfo = Object:extend()
@@ -57,6 +57,7 @@ function HostInfo:isRestrictedPlatform()
   return false
 end
 
+
 function HostInfo:pushParams(obj, err)
   if not obj or not next(obj) then
     if type(err) == 'string' then
@@ -74,11 +75,15 @@ exports.HostInfo = HostInfo
 -------------------------------------------------------------------------------
 
 local HostInfoStdoutSubProc = HostInfo:extend()
-function HostInfoStdoutSubProc:initialize(command, args, metricsHandler)
+function HostInfoStdoutSubProc:initialize()
   HostInfo.initialize(self)
+end
+
+function HostInfoStdoutSubProc:configure(command, args, metricsHandler, callback)
   self.command = command
   self.args = args
   self.metricsHandler = metricsHandler
+  self.done = callback and callback or nil
   assert(self.command)
   assert(self.args)
   assert(self.metricsHandler)
@@ -94,7 +99,8 @@ function HostInfoStdoutSubProc:_execute(callback)
       if exitCode ~= 0 then
         self._error = 'Process exited with exit code ' .. exitCode
       end
-      callback()
+      if self.done then self.done() end
+      return callback()
     end
   end
   local function onClose(_exitCode)
@@ -111,11 +117,7 @@ function HostInfoStdoutSubProc:_execute(callback)
 end
 
 function HostInfoStdoutSubProc:run(callback)
-  if not self:isRestrictedPlatform() then
-    self:_execute(callback)
-  else
-    callback()
-  end
+  return self:_execute(callback)
 end
 
 exports.HostInfoStdoutSubProc = HostInfoStdoutSubProc
