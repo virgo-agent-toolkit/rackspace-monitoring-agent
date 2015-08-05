@@ -79,11 +79,10 @@ function HostInfoStdoutSubProc:initialize()
   HostInfo.initialize(self)
 end
 
-function HostInfoStdoutSubProc:configure(command, args, metricsHandler, callback)
+function HostInfoStdoutSubProc:configure(command, args, metricsHandler)
   self.command = command
   self.args = args
   self.metricsHandler = metricsHandler
-  self.done = callback and callback or nil
   assert(self.command)
   assert(self.args)
   assert(self.metricsHandler)
@@ -99,7 +98,6 @@ function HostInfoStdoutSubProc:_execute(callback)
       if exitCode ~= 0 then
         self._error = 'Process exited with exit code ' .. exitCode
       end
-      if self.done then self.done() end
       return callback()
     end
   end
