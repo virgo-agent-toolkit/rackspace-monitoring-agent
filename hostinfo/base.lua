@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local los = require('los')
+
 local Object = require('core').Object
 local Transform = require('stream').Transform
-local env = require('env')
 local execFileToStreams = require('./misc').execFileToStreams
 local gmtNow = require('virgo/utils').gmtNow
-local los = require('los')
 local tableToString = require('virgo/util/misc').tableToString
 local table = require('table')
 -------------------------------------------------------------------------------
