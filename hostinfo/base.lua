@@ -20,6 +20,7 @@ local env = require('env')
 local execFileToStreams = require('./misc').execFileToStreams
 local gmtNow = require('virgo/utils').gmtNow
 local los = require('los')
+local tableToString = require('virgo/util/misc').tableToString
 
 -------------------------------------------------------------------------------
 
@@ -54,6 +55,18 @@ function HostInfo:isRestrictedPlatform()
     end
   end
   return false
+end
+
+function HostInfo:pushParams(obj, err)
+  if not obj or not next(obj) then
+    if type(err) == 'string' then
+      self._error = err
+    else
+      self._error = tableToString(err)
+    end
+  else
+    self._params = obj
+  end
 end
 
 exports.HostInfo = HostInfo
