@@ -45,8 +45,7 @@ end
 
 local Info = HostInfoStdoutSubProc:extend()
 function Info:initialize()
-  HostInfoStdoutSubProc.initialize(self,
-                                   'iptables', {'-S'},
+  HostInfoStdoutSubProc.initialize(self, 'iptables', {'-S'},
                                    Handler:new())
 end
 
