@@ -19,6 +19,7 @@ local async = require('async')
 local childProcess = require('childprocess')
 local string = require('string')
 local fs = require('fs')
+local LineEmitter = require('line-emitter').LineEmitter
 
 local function execFileToBuffers(command, args, options, callback)
   local child, stdout, stderr, exitCode
@@ -132,5 +133,15 @@ local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
   end)
 end
 
+local function execFileToStreams(command, args, options, callback)
+  local stdout, stderr = LineEmitter:new(), LineEmitter:new()
+  local child = childProcess.spawn(command, args, options)
+  child.stdout:pipe(stdout)
+  child.stderr:pipe(stderr)
+  return child, stdout, stderr
+end
 
-return {execFileToBuffers=execFileToBuffers, readCast=readCast, asyncSpawn=asyncSpawn}
+exports.execFileToBuffers = execFileToBuffers
+exports.execFileToStreams = execFileToStreams
+exports.readCast = readCast
+exports.asyncSpawn = asyncSpawn
