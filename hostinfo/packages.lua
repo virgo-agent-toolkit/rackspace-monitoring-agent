@@ -54,8 +54,8 @@ function Info:initialize()
   local name = sysinfo.name:lower()
   local handler = Handler:new()
   local commands = {
-    ubuntu = { command = 'pkg-query', args = {'-W'} },
-    debian = { command = 'pkg-query', args = {'-W'} },
+    ubuntu = { command = 'dpkg-query', args = {'-W'} },
+    debian = { command = 'dpkg-query', args = {'-W'} },
     rhel   = { command = 'rpm', args = { '-qa', '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n', } },
     centos = { command = 'rpm', args = { '-qa', '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n', } },
     macosx = { command = 'brew', args = {'leaves'}, handler = HomeBrewHandler:new() },
