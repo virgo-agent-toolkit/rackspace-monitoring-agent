@@ -41,6 +41,21 @@ function HostInfo:run(callback)
   callback()
 end
 
+function HostInfo:getRestrictedPlatforms()
+  return {}
+end
+
+function HostInfo:isRestrictedPlatform()
+  local currentPlatform = los.type()
+  for _, platform in pairs(self:getRestrictedPlatforms()) do
+    if platform == currentPlatform then
+      self._error = 'unsupported operating system for ' .. self:getType()
+      return true
+    end
+  end
+  return false
+end
+
 exports.HostInfo = HostInfo
 
 -------------------------------------------------------------------------------
@@ -54,10 +69,6 @@ function HostInfoStdoutSubProc:initialize(command, args, metricsHandler)
   assert(self.command)
   assert(self.args)
   assert(self.metricsHandler)
-end
-
-function HostInfoStdoutSubProc:getRestrictedPlatforms()
-  return {}
 end
 
 function HostInfoStdoutSubProc:_execute(callback)
@@ -87,14 +98,11 @@ function HostInfoStdoutSubProc:_execute(callback)
 end
 
 function HostInfoStdoutSubProc:run(callback)
-  local currentPlatform = los.type()
-  for _, platform in pairs(self:getRestrictedPlatforms()) do
-    if platform == currentPlatform then
-      self._error = 'unsupported operating system for ' .. self:getType()
-      return callback()
-    end
+  if not self:isRestrictedPlatform() then
+    self:_execute(callback)
+  else
+    callback()
   end
-  self:_execute(callback)
 end
 
 exports.HostInfoStdoutSubProc = HostInfoStdoutSubProc
