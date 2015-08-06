@@ -14,21 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local HostInfoStdoutSubProc = require('./base').HostInfoStdoutSubProc
-local MetricsHandler = require('./base').MetricsHandler
+local HostInfo = require('./base').HostInfo
+local streamingSpawn = require('./misc').streamingSpawn
 local sigar = require('sigar')
-local table = require('table')
---[[ Are autoupdates enabled? ]]--
 
-local Handler = MetricsHandler:extend()
-local Info = HostInfoStdoutSubProc:extend()
+--[[ Are autoupdates enabled? ]]--
+local Info = HostInfo:extend()
 
 function Info:run(callback)
   if self:isRestrictedPlatform() then return callback() end
 
-  local vendor, statcmd, statargs, method, options, errTable, handler
+  local vendor, statcmd, statargs, method, options, errTable, outTable
   vendor = sigar:new():sysinfo().vendor:lower()
-  errTable, options = {}, {}
+  outTable, errTable, options = {} ,{}, {}
 
   if vendor == 'ubuntu' or vendor == 'debian' then
     statcmd = 'apt-config'
@@ -43,9 +41,9 @@ function Info:run(callback)
     return callback()
   end
 
-  -- Define handler input transformer
   local status = 'disabled'
-  function Handler:_transform(line, callback)
+  -- Define how we handle lines
+  local function casterFunc(line, callback)
     if vendor == 'rhel' or vender == 'centos' then
       status = 'enabled'
     elseif vendor == 'ubuntu' or vendor == 'debian' then
@@ -57,16 +55,16 @@ function Info:run(callback)
     end
     return callback()
   end
-  handler = Handler:new()
-  handler:on('end', function()
+
+  local function finalCb()
     self:pushParams({
       update_method = method,
       status = status
-    })
-  end)
+    }, errTable)
+    return callback()
+  end
 
-  HostInfoStdoutSubProc:configure(statcmd, statargs, handler)
-  HostInfoStdoutSubProc:run(callback)
+  streamingSpawn(statcmd, statargs, options, outTable, errTable, casterFunc, finalCb)
 end
 
 function Info:getRestrictedPlatforms()

@@ -17,11 +17,9 @@ limitations under the License.
 local los = require('los')
 
 local Object = require('core').Object
-local Transform = require('stream').Transform
-local execFileToStreams = require('./misc').execFileToStreams
 local gmtNow = require('virgo/utils').gmtNow
 local tableToString = require('virgo/util/misc').tableToString
-local table = require('table')
+
 -------------------------------------------------------------------------------
 
 local HostInfo = Object:extend()
@@ -71,74 +69,3 @@ function HostInfo:pushParams(obj, err)
 end
 
 exports.HostInfo = HostInfo
-
--------------------------------------------------------------------------------
-
-local HostInfoStdoutSubProc = HostInfo:extend()
-function HostInfoStdoutSubProc:initialize()
-  HostInfo.initialize(self)
-end
-
-function HostInfoStdoutSubProc:configure(command, args, metricsHandler)
-  self.command = command
-  self.args = args
-  self.metricsHandler = metricsHandler
-  assert(self.command)
-  assert(self.args)
-  assert(self.metricsHandler)
-end
-
-function HostInfoStdoutSubProc:_execute(callback)
-  local exitCode
-  local called = 2
-  local options = { env = process.env }
-  local function done()
-    called = called - 1
-    if called == 0 then
-      if exitCode ~= 0 then
-        self._error = 'Process exited with exit code ' .. exitCode
-      end
-      return callback()
-    end
-  end
-  local function onClose(_exitCode)
-    exitCode = _exitCode
-    done()
-  end
-  self.child, self.stdout, self.stderr = execFileToStreams(self.command, self.args, options)
-  self.child:once('close', onClose)
-  self.stdout:pipe(self.metricsHandler)
-    :on('data', function(obj)
-      table.insert(self._params, obj)
-    end)
-    :once('end', done)
-end
-
-function HostInfoStdoutSubProc:run(callback)
-  return self:_execute(callback)
-end
-
-exports.HostInfoStdoutSubProc = HostInfoStdoutSubProc
-
--------------------------------------------------------------------------------
-
-local MetricsHandler = Transform:extend()
-
-function MetricsHandler:initialize()
-  Transform.initialize(self, {objectMode = true})
-  self._params = {}
-end
-
-function MetricsHandler:_transform(line, callback)
-  assert(false, '_transform needs to be implemented in child class')
-end
-
-function MetricsHandler:setError(err)
-  self._params = {}
-end
-
-function MetricsHandler:getParams()
-  return self._params
-end
-
-exports.MetricsHandler = MetricsHandler

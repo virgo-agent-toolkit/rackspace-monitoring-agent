@@ -20,6 +20,7 @@ local childProcess = require('childprocess')
 local string = require('string')
 local fs = require('fs')
 local LineEmitter = require('line-emitter').LineEmitter
+local Transform = require('stream').Transform
 
 local function execFileToBuffers(command, args, options, callback)
   local child, stdout, stderr, exitCode
@@ -129,6 +130,47 @@ local function execFileToStreams(command, args, options, callback)
   return child, stdout, stderr
 end
 
+local function streamingSpawn(cmd, args, opts, outTable, errTable, casterFunc, callback)
+  -- Configure the stream handler
+  local MetricsHandler = Transform:extend()
+  function MetricsHandler:initialize()
+    Transform.initialize(self, {objectMode = true})
+    self._params = {}
+  end
+  function MetricsHandler:_transform(line, callback)
+    casterFunc(line, callback)
+  end
+  local handler = MetricsHandler:new()
+
+  -- configure the child processes ending symphony
+  local exitCode, called, child, stdout, stderr
+  called = 2
+  if not next(opts) or not opts.env then table.insert(opts, { env = process.env }) end
+  local function done()
+    called = called - 1
+    if called == 0 then
+      if exitCode ~= 0 then
+        table.insert(errTable, 'Process exited with exit code ' .. exitCode)
+      end
+      return callback()
+    end
+  end
+  local function onClose(_exitCode)
+    exitCode = _exitCode
+    done()
+  end
+
+  -- let 'er rip
+  child, stdout, stderr = execFileToStreams(cmd, args, opts)
+  child:once('close', onClose)
+  stdout:pipe(handler)
+    :on('data', function(obj)
+      table.insert(outTable, obj)
+    end)
+    :once('end', done)
+end
+
+exports.streamingSpawn = streamingSpawn
 exports.execFileToBuffers = execFileToBuffers
 exports.execFileToStreams = execFileToStreams
 exports.readCast = readCast
