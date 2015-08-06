@@ -1,7 +1,9 @@
 local uv = require('uv')
 
 local modules = {
-  tcp = require('./tcp')
+  tcp = require('./tcp'),
+  http = require('./http'),
+  ping = require('./ping'),
 }
 
 return function (attributes, config, callback)

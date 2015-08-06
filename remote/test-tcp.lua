@@ -1,13 +1,12 @@
 local runCheck = require('./index')
 require('tap')(function (test)
-
   test("TCP port 80", function (expect)
     runCheck({
       id = 42,
       target = "howtonode.org",
       family = "inet4",
       module = "tcp",
-      timeout = 1000,
+      timeout = 10000,
     }, {
       port = 80,
       send_body = "GET / HTTP/1.0\r\n" ..
@@ -35,7 +34,7 @@ require('tap')(function (test)
       family = "inet4",
       -- family = "inet6", -- Need ISP with ipv6 to test
       module = "tcp",
-      timeout = 1000,
+      timeout = 10000,
     }, {
       port = 443,
       ssl = true,
