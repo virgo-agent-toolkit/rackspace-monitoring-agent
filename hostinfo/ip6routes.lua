@@ -20,7 +20,7 @@ local misc = require('./misc')
 -------------------------------------------------------------------------------
 
 local Info = HostInfoStdoutSubProc:extend()
-function Info:initialize(command, arsg)
+function Info:initialize(command, args)
   HostInfoStdoutSubProc.initialize(self, command, args)
 end
 
