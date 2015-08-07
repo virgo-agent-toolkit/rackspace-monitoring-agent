@@ -18,7 +18,7 @@ local HostInfoStdoutSubProc = require('./base').HostInfoStdoutSubProc
 
 local Info = HostInfoStdoutSubProc:extend()
 function Info:initialize()
-  HostInfoStdoutSubProc.initialize(self, 'ip6tables', {'-S'}, Handler)
+  HostInfoStdoutSubProc.initialize(self, 'ip6tables', {'-S'})°
 end
 
 function Info:_transform(line, callback)
