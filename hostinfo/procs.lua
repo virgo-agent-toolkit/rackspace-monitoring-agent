@@ -21,6 +21,9 @@ local table = require('table')
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
+end
+
+function Info:run(callback)
   local ctx, procs
   ctx = sigar:new()
   procs = ctx:procs()
@@ -86,6 +89,7 @@ function Info:initialize()
 
     table.insert(self._params, obj)
   end
+  callback()
 end
 
 function Info:getType()

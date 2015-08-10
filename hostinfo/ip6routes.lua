@@ -13,69 +13,60 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local HostInfo = require('./base').HostInfo
 
-local fmt = require('string').format
-local los = require('los')
-local sigar = require('sigar')
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
+local HostInfoStdoutSubProc = require('./base').HostInfoStdoutSubProc
+local misc = require('./misc')
 
---[[ IP v4 routes check]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+-------------------------------------------------------------------------------
+
+local Info = HostInfoStdoutSubProc:extend()
+function Info:initialize(command, arsg)
+  HostInfoStdoutSubProc.initialize(self, command, args)
 end
 
-function Info:run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for routs'
-    return callback()
+function Info:_transform(line, callback)
+  local iter = line:gmatch("%S+")
+  local firstw = iter()
+  if firstw ~= 'Destination' and firstw ~= 'Kernel' then
+    self:push({
+      destination = firstw,
+      next_hop = iter(),
+      flags = iter(),
+      metric = iter(),
+      ref = iter(),
+      use = iter(),
+      iface = iter()
+    })
   end
+  callback()
+end
 
-  local vendor, cmd, args, method, opts
-  vendor = sigar:new():sysinfo().vendor:lower()
-  opts = {}
-  cmd = 'netstat'
-
-  if vendor == 'ubuntu' or vendor == 'debian' then
-    args = {'-nr6'}
-  elseif vendor == 'rhel' or vendor == 'centos' then
-    args = {'--inet6', '-nr'}
-  else
-    self._error = 'Could not determine linux distro for ipv4 routes check'
-    return callback()
-  end
-
-  local function execCB(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("netstat exited with a %d exitcode", exitcode)
-      return callback()
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      local iter = line:gmatch("%S+")
-      local firstw = iter()
-      if firstw == 'Destination' or firstw == 'Kernel' then
-        -- Do nothing
-      else
-        table.insert(self._params, {
-          destination = firstw,
-          next_hop = iter(),
-          flags = iter(),
-          metric = iter(),
-          ref = iter(),
-          use = iter(),
-          iface = iter()
-        })
-      end
-    end
-    return callback()
-  end
-  return execFileToBuffers(cmd, args, opts, execCB)
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'IP6ROUTES'
 end
 
-return Info
+-------------------------------------------------------------------------------
+
+local DebInfo = Info:extend()
+function DebInfo:initialize()
+  Info.initialize(self, 'netstat', {'-nr6'})
+end
+
+-------------------------------------------------------------------------------
+
+local RpmInfo = Info:extend()
+function RpmInfo:initialize()
+  Info.initialize(self, 'netstat', {'-nr', '--ipv6'})
+end
+
+return misc.getInfoByVendor({
+  centos = RpmInfo,
+  rhel   = RpmInfo,
+  ubuntu = DebInfo,
+  debian = DebInfo,
+  default = DebInfo
+})

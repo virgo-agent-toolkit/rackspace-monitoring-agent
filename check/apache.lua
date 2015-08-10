@@ -31,7 +31,6 @@ function ApacheCheck:initialize(params)
 
   self._url = params.details.url and params.details.url or 'http://127.0.0.1/server-status?auto'
   self._timeout = params.details.timeout and params.details.timeout or constants:get('DEFAULT_PLUGIN_TIMEOUT')
-
   -- setup default port
   local parsed = url.parse(self._url)
   if not parsed.port then
@@ -43,7 +42,7 @@ function ApacheCheck:initialize(params)
   end
 
   self._parsed = parsed
-  self._parsed.path = '/server-status?auto'
+  self._parsed.path = parsed.path and parsed.path or '/server-status?auto'
 end
 
 function ApacheCheck:getType()
