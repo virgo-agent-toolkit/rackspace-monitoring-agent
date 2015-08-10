@@ -43,7 +43,7 @@ function ApacheCheck:initialize(params)
   end
 
   self._parsed = parsed
-  self._parsed.path = '/server-status?auto'
+  self._parsed.path = parsed.path ~= '/' and parsed.path or '/server-status?auto'
 end
 
 function ApacheCheck:getType()
