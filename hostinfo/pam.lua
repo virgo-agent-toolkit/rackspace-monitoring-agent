@@ -26,8 +26,9 @@ local PAM_PATH = '/etc/pam.d'
 local CONCURRENCY = 5
 
 local Reader = Transform:extend()
-function Reader:initialize()
+function Reader:initialize(name)
   Transform.initialize(self, {objectMode = true})
+  self.name = name
 end
 
 function Reader:_transform(line, callback)
@@ -59,7 +60,8 @@ function Reader:_transform(line, callback)
     module_interface = module_interface,
     control_flags = control_flags,
     module_name = module_name,
-    module_arguments = module_arguments or ''
+    module_arguments = module_arguments or '',
+    name = self.name
   })
   callback()
 end
@@ -78,34 +80,14 @@ function Info:run(callback)
     end
     local function iter(file, callback)
       local stream = fs.createReadStream(path.join(PAM_PATH, file))
-      local reader = Reader:new()
-      local params = {}
+      local reader = Reader:new(file)
       stream:pipe(LineEmitter:new()):pipe(reader)
+      reader:once('end', callback)
       reader:on('data', function(param)
-        table.insert(params, param)
-      end)
-      reader:once('end', function()
-        if params and next(params) then
-          table.foreach(params, function(_, obj)
-            obj.file = file
-          end)
-          table.insert(self._params, params)
-        end
-        callback()
+        table.insert(self._params, param)
       end)
     end
-    local function finalCb()
-      local outTable = {}
-      table.foreach(self._params, function(_, list)
-        if #list == 0 then return table.insert(outTable, list) end
-        table.foreach(list, function(_, obj)
-          return table.insert(outTable, obj)
-        end)
-      end)
-      self._params = outTable
-      return callback()
-    end
-    async.forEachLimit(files, CONCURRENCY, iter, finalCb)
+    async.forEachLimit(files, CONCURRENCY, iter, callback)
   end
   fs.readdir(PAM_PATH, onReadDir)
 end
