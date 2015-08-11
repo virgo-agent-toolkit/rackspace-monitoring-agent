@@ -85,11 +85,27 @@ function Info:run(callback)
         table.insert(params, param)
       end)
       reader:once('end', function()
-        table.insert(self._params, { file = file, params = params })
+        if params and next(params) then
+          table.foreach(params, function(_, obj)
+            obj.file = file
+          end)
+          table.insert(self._params, params)
+        end
         callback()
       end)
     end
-    async.forEachLimit(files, CONCURRENCY, iter, callback)
+    local function finalCb()
+      local outTable = {}
+      table.foreach(self._params, function(_, list)
+        if #list == 0 then return table.insert(outTable, list) end
+        table.foreach(list, function(_, obj)
+          return table.insert(outTable, obj)
+        end)
+      end)
+      self._params = outTable
+      return callback()
+    end
+    async.forEachLimit(files, CONCURRENCY, iter, finalCb)
   end
   fs.readdir(PAM_PATH, onReadDir)
 end
