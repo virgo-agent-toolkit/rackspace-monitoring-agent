@@ -20,13 +20,17 @@ local async = require('async')
 local fs = require('fs')
 local los = require('los')
 local path = require('path')
+local Transform = require('stream').Transform
 
 local PAM_PATH = '/etc/pam.d'
 local CONCURRENCY = 5
 
-local Info = HostInfo:extend()
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+end
 
-function Info:_transform(line, callback)
+function Reader:_transform(line, callback)
   local keywords = {
     password = true,
     auth = true,
@@ -36,30 +40,31 @@ function Info:_transform(line, callback)
   if line:sub(1, 1) == '#' then return callback() end
   local iter = line:gmatch('%S+')
   local module_interface = iter()
-  if keywords[module_interface] then
-    local _, soEnd = line:find('%.so')
-    local control_flags, module_name, module_arguments
-    -- sometimes the pam files have many control flags
-    if line:find('%]') then
-      control_flags = line:sub(line:find('%[')+1, line:find('%]')-1)
-      module_name = line:sub(line:find('%]')+2, soEnd)
-    else
-      control_flags = iter()
-      module_name = iter()
-    end
-    -- They also like to have variable numbers of module args
-    if line:len() ~= soEnd and soEnd ~= nil then
-      module_arguments = line:sub(soEnd+2, line:len())
-    end
-    table.insert(self._params, {
-      module_interface = module_interface,
-      control_flags = control_flags,
-      module_name = module_name,
-      module_arguments = module_arguments or ''
-    })
+  if not keywords[module_interface] then return callback() end
+  local _, soEnd = line:find('%.so')
+  local control_flags, module_name, module_arguments
+  -- sometimes the pam files have many control flags
+  if line:find('%]') then
+    control_flags = line:sub(line:find('%[')+1, line:find('%]')-1)
+    module_name = line:sub(line:find('%]')+2, soEnd)
+  else
+    control_flags = iter()
+    module_name = iter()
   end
+  -- They also like to have variable numbers of module args
+  if line:len() ~= soEnd and soEnd ~= nil then
+    module_arguments = line:sub(soEnd+2, line:len())
+  end
+  self:push({
+    module_interface = module_interface,
+    control_flags = control_flags,
+    module_name = module_name,
+    module_arguments = module_arguments or ''
+  })
   callback()
 end
+
+local Info = HostInfo:extend()
 
 function Info:run(callback)
   if los.type() == 'win32' then
@@ -73,9 +78,16 @@ function Info:run(callback)
     end
     local function iter(file, callback)
       local stream = fs.createReadStream(path.join(PAM_PATH, file))
-      stream:pipe(LineEmitter:new()):pipe(self)
-      stream:on('end', callback)
-      stream:on('error', callback)
+      local reader = Reader:new(file)
+      local params = {}
+      stream:pipe(LineEmitter:new()):pipe(reader)
+      reader:on('data', function(param)
+        table.insert(params, param)
+      end)
+      reader:once('end', function()
+        table.insert(self._params, { file = file, params = params })
+        callback()
+      end)
     end
     async.forEachLimit(files, CONCURRENCY, iter, callback)
   end
