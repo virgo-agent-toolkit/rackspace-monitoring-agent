@@ -19,14 +19,14 @@ local sigar = require('sigar')
 --[[ Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
-  local ctx , swapinfo, data, data_fields, swap_metrics
-
   HostInfo.initialize(self)
+end
 
-  ctx = sigar:new()
-  swapinfo = ctx:swap()
-  data = ctx:mem()
-  data_fields = {
+function Info:run(callback)
+  local ctx = sigar:new()
+  local swapinfo = ctx:swap()
+  local data = ctx:mem()
+  local data_fields = {
     'actual_free',
     'actual_used',
     'free',
@@ -36,7 +36,7 @@ function Info:initialize()
     'used',
     'used_percent'
   }
-  swap_metrics = {
+  local swap_metrics = {
     'total',
     'used',
     'free',
@@ -53,6 +53,7 @@ function Info:initialize()
       self._params['swap_' .. k] = swapinfo[k]
     end
   end
+  callback()
 end
 
 function Info:getType()

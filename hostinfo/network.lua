@@ -22,6 +22,9 @@ local table = require('table')
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
+end
+
+function Info:run(callback)
   local ctx = sigar:new()
   local netifs = ctx:netifs()
   for i=1,#netifs do
@@ -69,6 +72,7 @@ function Info:initialize()
     obj['name'] = name
     table.insert(self._params, obj)
   end
+  callback()
 end
 
 function Info:getType()

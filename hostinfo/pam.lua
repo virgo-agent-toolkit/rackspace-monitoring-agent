@@ -13,73 +13,101 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local HostInfo = require('./base').HostInfo
 
-local table = require('table')
-local los = require('los')
-local readCast = require('./misc').readCast
+local HostInfo = require('./base').HostInfo
+local LineEmitter = require('line-emitter').LineEmitter
 local async = require('async')
 local fs = require('fs')
+local los = require('los')
 local path = require('path')
+local Transform = require('stream').Transform
 
---[[ Pluggable auth modules ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+local PAM_PATH = '/etc/pam.d'
+local CONCURRENCY = 5
+
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
 end
 
+function Reader:_transform(line, callback)
+  local keywords = {
+    password = true,
+    auth = true,
+    account = true,
+    session = true
+  }
+  if line:sub(1, 1) == '#' then return callback() end
+  local iter = line:gmatch('%S+')
+  local module_interface = iter()
+  if not keywords[module_interface] then return callback() end
+  local _, soEnd = line:find('%.so')
+  local control_flags, module_name, module_arguments
+  -- sometimes the pam files have many control flags
+  if line:find('%]') then
+    control_flags = line:sub(line:find('%[')+1, line:find('%]')-1)
+    module_name = line:sub(line:find('%]')+2, soEnd)
+  else
+    control_flags = iter()
+    module_name = iter()
+  end
+  -- They also like to have variable numbers of module args
+  if line:len() ~= soEnd and soEnd ~= nil then
+    module_arguments = line:sub(soEnd+2, line:len())
+  end
+  self:push({
+    module_interface = module_interface,
+    control_flags = control_flags,
+    module_name = module_name,
+    module_arguments = module_arguments or ''
+  })
+  callback()
+end
+
+local Info = HostInfo:extend()
+
 function Info:run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for pluggable auth module definitions'
+  if los.type() == 'win32' then
+    self._error = 'unsupported operating system'
     return callback()
   end
-
-  local function casterFunc(iter, obj, line)
-    local keywords = {
-      password = true,
-      auth = true,
-      account = true,
-      session = true
-    }
-    local module_interface, control_flags, module_name, module_arguments, soStart, soEnd
-    if line:find('%\t') then
-      iter = line:gmatch('%\t')
+  local function onReadDir(err, files)
+    if err then
+      self._error = err.message
+      return callback()
     end
-
-    module_interface = iter()
-    if keywords[module_interface] then
-      soStart, soEnd = line:find('%.so')
-      -- sometimes the pam files have many control flags
-      if line:find('%]') then
-        control_flags = line:sub(line:find('%[')+1, line:find('%]')-1)
-        module_name = line:sub(line:find('%]')+2, soEnd)
-      else
-        control_flags = iter()
-        module_name = iter()
-      end
-      -- They also like to have variable numbers of module args
-      if line:len() ~= soEnd and soEnd ~= nil then
-        module_arguments = line:sub(soEnd+2, line:len())
-      else
-        module_arguments = ''
-      end
-      table.insert(obj, {
-        module_interface = module_interface,
-        control_flags = control_flags,
-        module_name = module_name,
-        module_arguments = module_arguments
-      })
+    local function iter(file, callback)
+      local stream = fs.createReadStream(path.join(PAM_PATH, file))
+      local reader = Reader:new()
+      local params = {}
+      stream:pipe(LineEmitter:new()):pipe(reader)
+      reader:on('data', function(param)
+        table.insert(params, param)
+      end)
+      reader:once('end', function()
+        if params and next(params) then
+          table.foreach(params, function(_, obj)
+            obj.file = file
+          end)
+          table.insert(self._params, params)
+        end
+        callback()
+      end)
     end
+    local function finalCb()
+      local outTable = {}
+      table.foreach(self._params, function(_, list)
+        if #list == 0 then return table.insert(outTable, list) end
+        table.foreach(list, function(_, obj)
+          return table.insert(outTable, obj)
+        end)
+      end)
+      self._params = outTable
+      return callback()
+    end
+    async.forEachLimit(files, CONCURRENCY, iter, finalCb)
   end
-  local errTable = {}
-  local pamPath = '/etc/pam.d'
-  local filesList = fs.readdirSync(pamPath)
-  async.forEachLimit(filesList, 5, function(file, cb)
-    readCast(path.join(pamPath, file), errTable, self._params, casterFunc, cb)
-  end, function()
-    if self._params == nil then self._error = errTable end
-    return callback()
-  end)
+  fs.readdir(PAM_PATH, onReadDir)
 end
 
 function Info:getType()

@@ -21,9 +21,11 @@ local table = require('table')
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
-  local ctx, who
-  ctx = sigar:new()
-  who = ctx:who()
+end
+
+function Info:run(callback)
+  local ctx = sigar:new()
+  local who = ctx:who()
   for i=1, #who do
     local obj = {}
     for _, v in pairs({'user', 'device', 'time', 'host'}) do
@@ -31,6 +33,7 @@ function Info:initialize()
     end
     table.insert(self._params, obj)
   end
+  callback()
 end
 
 function Info:getType()

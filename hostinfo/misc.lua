@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local table = require('table')
+local LineEmitter = require('line-emitter').LineEmitter
 local async = require('async')
 local childProcess = require('childprocess')
-local string = require('string')
 local fs = require('fs')
+local sigar = require('sigar')
+local string = require('string')
+local table = require('table')
 
 local function execFileToBuffers(command, args, options, callback)
   local child, stdout, stderr, exitCode
@@ -63,44 +65,32 @@ local function readCast(filePath, errTable, outTable, casterFunc, callback)
   if (type(casterFunc) ~= 'function') then function casterFunc(iter, obj, line) end end
   if (type(callback) ~= 'function') then function callback() end end
 
-  local obj = {}
-  fs.exists(filePath, function(err, file)
+  local function onExists(err, file)
     if err then
       table.insert(errTable, string.format('File not found : { fs.exists erred: %s }', err))
       return callback()
     end
-    if file then
-      fs.readFile(filePath, function(err, data)
-
-        if err then
-          table.insert(errTable, string.format('File couldnt be read : { fs.readline erred: %s }', err))
-          return callback()
-        end
-
-        for line in data:gmatch("[^\r\n]+") do
-          local iscomment = string.match(line, '^#')
-          local isblank = string.len(line:gsub("%s+", "")) <= 0
-
-          if not iscomment and not isblank then
-            -- split the line and assign key vals
-            local iter = line:gmatch("%S+")
-            casterFunc(iter, obj, line)
-          end
-        end
-
-        -- Flatten single entry objects
-        if #obj == 1 then obj = obj[1] end
-        -- Dont insert empty objects into the outTable
-        if next(obj) then table.insert(outTable, obj) end
-
-        return callback()
-      end)
-    else
-      table.insert(errTable, 'file not found')
+    local obj = {}
+    local stream = fs.createReadStream(filePath)
+    local le = LineEmitter:new()
+    le:on('data', function(line)
+      local iscomment = string.match(line, '^#')
+      local isblank = string.len(line:gsub("%s+", "")) <= 0
+      if not iscomment and not isblank then
+        -- split the line and assign key vals
+        local iter = line:gmatch("%S+")
+        casterFunc(iter, obj, line)
+      end
+    end)
+    stream:pipe(le):once('end', function()
+      -- Flatten single entry objects
+      if #obj == 1 then obj = obj[1] end
+      -- Dont insert empty objects into the outTable
+      if next(obj) then table.insert(outTable, obj) end
       return callback()
-    end
-
-  end)
+    end)
+  end
+  fs.exists(filePath, onExists)
 end
 
 local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
@@ -132,5 +122,27 @@ local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
   end)
 end
 
+local function execFileToStreams(command, args, options, callback)
+  local stdout, stderr = LineEmitter:new(), LineEmitter:new()
+  local child = childProcess.spawn(command, args, options)
+  child.stdout:pipe(stdout)
+  child.stderr:pipe(stderr)
+  return child, stdout, stderr
+end
 
-return {execFileToBuffers=execFileToBuffers, readCast=readCast, asyncSpawn=asyncSpawn}
+local function getInfoByVendor(options)
+  local sysinfo = sigar:new():sysinfo()
+  local vendor = sysinfo.vendor:lower()
+  local name = sysinfo.name:lower()
+  if options[vendor] then return options[vendor] end
+  if options[name] then return options[name] end
+  if options.default then return options.default end
+  local NilInfo = require('./nil')
+  return NilInfo
+end
+
+exports.execFileToBuffers = execFileToBuffers
+exports.execFileToStreams = execFileToStreams
+exports.getInfoByVendor = getInfoByVendor
+exports.readCast = readCast
+exports.asyncSpawn = asyncSpawn

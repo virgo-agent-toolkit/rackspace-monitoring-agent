@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,65 +13,64 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local HostInfo = require('./base').HostInfo
 
-local fmt = require('string').format
-local los = require('los')
-local sigar = require('sigar')
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
+local HostInfoStdoutSubProc = require('./base').HostInfoStdoutSubProc
+local misc = require('./misc')
 
---[[ Packages Variables ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+-------------------------------------------------------------------------------
+
+local Info = HostInfoStdoutSubProc:extend()
+function Info:initialize(command, args)
+  HostInfoStdoutSubProc.initialize(self, command, args)
 end
 
-function Info:run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Packages'
-    return callback()
-  end
-
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("Packages exited with a %d exitcode", exitcode)
-      return callback()
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      line = line:gsub("^%s*(.-)%s*$", "%1")
-      local _, _, key, value = line:find("(.*)%s(.*)")
-      if key ~= nil then
-        table.insert(self._params, {
-          name = key,
-          version = value
-        })
-      end
-    end
-    return callback()
-  end
-
-  local command, args, options, vendor
-  vendor = sigar:new():sysinfo().vendor:lower()
-
-  if vendor == 'ubuntu' or vendor == 'debian' then
-    command = 'dpkg-query'
-    args = {'-W'}
-    options = {}
-  elseif vendor == 'rhel' or vendor == 'centos' then
-    command = 'rpm'
-    args = {"-qa", '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n'}
-    options = {}
-  else
-    self._error = 'Could not determine OS for Packages'
-    return callback()
-  end
-
-  return execFileToBuffers(command, args, options, execCb)
+function Info:getPlatforms()
+  return {'linux', 'darwin'}
 end
 
 function Info:getType()
   return 'PACKAGES'
 end
 
-return Info
+function Info:_transform(line, callback)
+  line = line:gsub("^%s*(.-)%s*$", "%1")
+  local _, _, key, value = line:find("(.*)%s(.*)")
+  if key then self:push({ name = key, version = value }) end
+  callback()
+end
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+local DebInfo = Info:extend()
+function DebInfo:initialize()
+  Info.initialize(self, 'dpkg-query', {'-W'})
+end
+
+-------------------------------------------------------------------------------
+
+local RpmInfo = Info:extend()
+function RpmInfo:initialize()
+  Info.initialize(self, 'rpm', {'-qa', '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n' })
+end
+
+-------------------------------------------------------------------------------
+
+local BrewInfo = Info:extend()
+function BrewInfo:initialize()
+  Info.initialize(self, 'brew', {'leaves'})
+end
+
+function BrewInfo:_transform(line, callback)
+  self:push({ name = line, version = 'unknown' })
+  callback()
+end
+
+return misc.getInfoByVendor({
+  centos = RpmInfo,
+  rhel   = RpmInfo,
+  ubuntu = DebInfo,
+  debian = DebInfo,
+  macosx = BrewInfo,
+})
