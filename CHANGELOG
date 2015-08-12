@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.1.11
+
+* Fix IPv6 SRV lookups within luvit
+
 ## rackspace-monitoring-agent-2.1.10
 
 * Fix socket timeout in virgo-base
