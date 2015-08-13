@@ -16,9 +16,8 @@ limitations under the License.
 
 local Transform = require('stream').Transform
 local execFileToStreams = require('./misc').execFileToStreams
-local vutils = require('virgo/utils')
-local gmtNow = vutils.gmtNow
-local tableToString = vutils.tableToString
+local gmtNow = require('virgo/utils').gmtNow
+local tableToString = require('virgo/util/misc').tableToString
 local los = require('los')
 -------------------------------------------------------------------------------
 
