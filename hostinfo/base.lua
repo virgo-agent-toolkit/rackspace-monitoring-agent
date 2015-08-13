@@ -41,7 +41,7 @@ end
 function HostInfo:isValidPlatform()
   local currentPlatform = los.type()
   -- All platforms are valid if getplatforms isnt defined
-  if not self:getPlatforms() or not next(self:getPlatforms()) then
+  if not self:getPlatforms() or #self:getPlatforms() == 0 then
     return true
   end
   for _, platform in pairs(self:getPlatforms()) do
@@ -51,7 +51,7 @@ function HostInfo:isValidPlatform()
   end
 end
 
-function HostInfo:pushParams(err, data)
+function HostInfo:_pushParams(err, data)
   if not data or not next(data) then
     if not err or not #err > 0 then
       err = 'No error specified, but no data retrieved'

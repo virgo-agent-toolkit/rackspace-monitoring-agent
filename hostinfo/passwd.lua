@@ -57,7 +57,7 @@ function Info:run(callback)
   end
 
   local function finalCb(errData)
-    self:pushParams(errData, object)
+    self:_pushParams(errData, object)
     return callback()
   end
 
