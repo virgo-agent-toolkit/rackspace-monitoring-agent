@@ -68,7 +68,7 @@ function HostInfo:_pushParams(err, data)
     if type(data) == 'table' then
       if #data == 1 then data = data[1] end
     end
-    table.insert(self._params, data)
+    self._params = data
   end
 end
 
