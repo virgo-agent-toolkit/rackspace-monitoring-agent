@@ -15,45 +15,27 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local table = require('table')
-local los = require('los')
 local readCast = require('./misc').readCast
 
 --[[ Login ]]--
 local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
-end
 
 function Info:run(callback)
-
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Login Definitions'
-    return callback()
-  end
-
   local filename = "/etc/login.defs"
-  local outTable = {}
-  local errTable = {}
+  local obj = {}
 
-  local function casterFunc(iter, obj)
+  local function casterFunc(iter, line)
     local key = iter()
     local val = iter()
     obj[key] = val
   end
 
-  local function cb()
-    if outTable == nil then
-      self._error = errTable
-    else
-      table.insert(self._params, {
-        ['login_defs'] = outTable[1]
-      })
-    end
+  local function cb(err)
+    self:_pushParams(err, obj)
     return callback()
   end
 
-  readCast(filename, errTable, outTable, casterFunc, cb)
+  readCast(filename, casterFunc, cb)
 end
 
 function Info:getType()
