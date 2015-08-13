@@ -21,6 +21,8 @@ local gmtNow = vutils.gmtNow
 local tableToString = vutils.tableToString
 local los = require('los')
 local async = require('async')
+local fs = require('fs')
+local LineEmitter = require('line-emitter').LineEmitter
 -------------------------------------------------------------------------------
 
 local HostInfo = Transform:extend()
@@ -75,6 +77,10 @@ function HostInfo:run(callback)
   callback()
 end
 
+function HostInfo:getPlatforms()
+  return {}
+end
+
 exports.HostInfo = HostInfo
 
 -------------------------------------------------------------------------------
@@ -84,10 +90,6 @@ function HostInfoStdoutSubProc:initialize(command, args)
   HostInfo.initialize(self)
   self.command = command
   self.args = args or {}
-end
-
-function HostInfoStdoutSubProc:getPlatforms()
-  return {}
 end
 
 function HostInfoStdoutSubProc:_execute(callback)
@@ -133,3 +135,90 @@ end
 exports.HostInfoStdoutSubProc = HostInfoStdoutSubProc
 
 -------------------------------------------------------------------------------
+
+local HostInfoFs = HostInfo:extend()
+--local stat = fs.stat
+local exists = fs.exists
+local createReadStream = fs.createReadStream
+
+function HostInfoFs:initialize(filepath)
+  HostInfo.initialize(self)
+  self.filepath = filepath
+end
+
+function HostInfoFs:exists(cb)
+  exists(self.filepath, cb)
+end
+
+function HostInfoFs:stat(cb)
+  self:exists(self.filepath, function(err, data)
+    if err or not data then
+      self._error = string.format('File %s doesnt exit: %s', self.filepath, err)
+      return cb()
+    end
+    self:_stat(cb)
+  end)
+end
+
+function HostInfoFs:_stat(cb)
+  stat(self.filepath, function(err, fstat)
+    if err then
+      self._error = string.format('fstat erred out on file %s with err %s', self.filepath, err)
+      return cb()
+    end
+    return cb(fstat)
+  end)
+end
+
+function HostInfoFs:readCast(callback)
+  self:exists(function(err, data)
+    if err or not data then
+      self._error = string.format('File %s doesnt exit: %s', self.filepath, err)
+      return callback()
+    end
+    self:_readCast(callback)
+  end)
+end
+
+function HostInfoFs:_transform()
+  assert(false, 'Implement me in the child class')
+end
+
+function HostInfoFs:_readCast(callback)
+  self.obj = {}
+  local stream = createReadStream(self.filepath)
+  local le = LineEmitter:new()
+  le:on('data', function(line)
+    local iscomment = string.match(line, '^#')
+    local isblank = string.len(line:gsub("%s+", "")) <= 0
+    if not iscomment and not isblank then
+      return line
+    end
+  end)
+  stream:pipe(LineEmitter:new()):pipe(self)
+    :once('end', function()
+    -- Flatten single entry objects
+    if #self.obj == 1 then self.obj = self.obj[1] end
+    -- Dont insert empty objects into the outTable
+    if next(self.obj) then table.insert(self._params, self.obj) end
+    return callback()
+  end)
+end
+
+function HostInfoFs:_execute(callback)
+  self:readCast(callback)
+end
+
+function HostInfoFs:run(callback)
+  if not self:isValidPlatform() then
+    self._error = 'unsupported operating system for ' .. self:getType()
+    return callback()
+  end
+  if not self.filepath then
+    self._error = string.format('Filepath not specified. err in hostinfo check: %s', self:getType())
+    return callback()
+  end
+  self:_execute(callback)
+end
+
+exports.HostInfoFs = HostInfoFs
