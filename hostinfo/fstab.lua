@@ -38,6 +38,10 @@ function Info:run(callback)
   readCast(filename, casterFunc, cb)
 end
 
+function Info:getPlatforms()
+  return {'linux'}
+end
+
 function Info:getType()
   return 'FSTAB'
 end
