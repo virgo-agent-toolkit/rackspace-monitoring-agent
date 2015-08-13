@@ -58,8 +58,15 @@ end
 
 function HostInfo:_pushParams(err, data)
   if not data or not next(data) then
-    if not err or not #err > 0 then
-      err = 'No error specified, but no data retrieved'
+    local undefinederr = 'No error specified, but no data retrieved'
+    if not err then
+      if type(err) ~= 'boolean' then
+        if not #err > 0 then
+          err = undefinederr
+        end
+      else
+        err = undefinederr
+      end
     end
     if type(err) == 'table' then err = tableToString(err) end
     self._error = err
@@ -112,14 +119,14 @@ function HostInfoStdoutSubProc:_execute(callback)
     done()
   end
   self.child, self.stdout, self.stderr = execFileToStreams(self.command,
-                                                           self.args,
-                                                           { env = process.env })
+    self.args,
+    { env = process.env })
   self.child:once('close', onClose)
   self.stdout:pipe(self)
-    :on('data', function(obj)
-      table.insert(self._params, obj)
-    end)
-    :once('end', done)
+  :on('data', function(obj)
+    table.insert(self._params, obj)
+  end)
+  :once('end', done)
 end
 
 function HostInfoStdoutSubProc:run(callback)
