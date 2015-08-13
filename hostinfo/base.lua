@@ -20,7 +20,6 @@ local vutils = require('virgo/utils')
 local gmtNow = vutils.gmtNow
 local tableToString = vutils.tableToString
 local los = require('los')
-local async = require('async')
 -------------------------------------------------------------------------------
 
 local HostInfo = Transform:extend()
@@ -38,14 +37,16 @@ function HostInfo:serialize()
   }
 end
 
-function HostInfo:isValidPlatform()
+function HostInfo:getPlatforms()
+  return nil
+end
+
+function HostInfo:_isValidPlatform()
   local currentPlatform = los.type()
   -- All platforms are valid if getplatforms isnt defined
-  if self:getPlatforms then
-    if #self:getPlatforms() == 0 then
-      return true
-    end
-  else
+  if not self:getPlatforms then
+    return true
+  elseif #self:getPlatforms() == 0 then
     return true
   end
   for _, platform in pairs(self:getPlatforms()) do
@@ -72,7 +73,7 @@ function HostInfo:_pushParams(err, data)
 end
 
 function HostInfo:run(callback)
-  if not self:isValidPlatform() then
+  if not self:_isValidPlatform() then
     self._error = 'unsupported operating system for ' .. self:getType()
     return callback()
   end
@@ -122,7 +123,7 @@ function HostInfoStdoutSubProc:_execute(callback)
 end
 
 function HostInfoStdoutSubProc:run(callback)
-  if not self:isValidPlatform() then
+  if not self:_isValidPlatform() then
     self._error = 'unsupported operating system for ' .. self:getType()
     return callback()
   end
