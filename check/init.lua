@@ -25,6 +25,7 @@ local MemoryCheck = require('./memory').MemoryCheck
 local NetworkCheck = require('./network').NetworkCheck
 local MySQLCheck = require('./mysql').MySQLCheck
 local RedisCheck = require('./redis').RedisCheck
+local RaxxenCheck = require('./raxxen').RaxxenCheck
 local NullCheck = require('./null').NullCheck
 local LoadAverageCheck = require('./load_average').LoadAverageCheck
 local PluginCheck = require('./plugin').PluginCheck
@@ -45,6 +46,7 @@ local check_classes = {
   NetworkCheck = NetworkCheck,
   MySQLCheck = MySQLCheck,
   PluginCheck = PluginCheck,
+  RaxxenCheck = RaxxenCheck,
   RedisCheck = RedisCheck,
   LoadAverageCheck = LoadAverageCheck,
   ApacheCheck = ApacheCheck,
@@ -115,7 +117,6 @@ local function targets(checkType, callback)
   end
 end
 
-local exports = {}
 exports.BaseCheck = BaseCheck
 exports.CheckResult = CheckResult
 
@@ -124,4 +125,3 @@ exports = merge(exports, check_classes)
 exports.create = create
 exports.test = test
 exports.targets = targets
-return exports
