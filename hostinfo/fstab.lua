@@ -16,6 +16,7 @@ limitations under the License.
 
 --[[ Check fstab ]]--
 local HostInfoFs = require('./base').HostInfoFs
+
 local Info = HostInfoFs:extend()
 
 function Info:initialize()
@@ -31,10 +32,6 @@ function Info:_transform(line, cb)
   cb()
 end
 
-function Info:_execute(callback)
-  self:readCast(callback)
-end
-
 function Info:getPlatforms()
   return {'linux'}
 end
@@ -42,6 +39,5 @@ end
 function Info:getType()
   return 'FSTAB'
 end
-
 
 return Info

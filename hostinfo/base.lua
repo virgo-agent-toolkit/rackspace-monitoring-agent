@@ -20,7 +20,6 @@ local vutils = require('virgo/utils')
 local gmtNow = vutils.gmtNow
 local tableToString = vutils.tableToString
 local los = require('los')
-local async = require('async')
 local fs = require('fs')
 local LineEmitter = require('line-emitter').LineEmitter
 -------------------------------------------------------------------------------
@@ -197,10 +196,7 @@ function HostInfoFs:_readCast(callback)
   end)
   stream:pipe(LineEmitter:new()):pipe(self)
     :once('end', function()
-    -- Flatten single entry objects
-    if #self.obj == 1 then self.obj = self.obj[1] end
-    -- Dont insert empty objects into the outTable
-    if next(self.obj) then table.insert(self._params, self.obj) end
+    self:pushParams(nil, self.obj)
     return callback()
   end)
 end
