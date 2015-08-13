@@ -16,9 +16,11 @@ limitations under the License.
 
 local Transform = require('stream').Transform
 local execFileToStreams = require('./misc').execFileToStreams
-local gmtNow = require('virgo/utils').gmtNow
+local vutils = require('virgo/utils')
+local gmtNow = vutils.gmtNow
+local tableToString = vutils.tableToString
 local los = require('los')
-
+local async = require('async')
 -------------------------------------------------------------------------------
 
 local HostInfo = Transform:extend()
@@ -36,7 +38,40 @@ function HostInfo:serialize()
   }
 end
 
+function HostInfo:isValidPlatform()
+  local currentPlatform = los.type()
+  -- All platforms are valid if getplatforms isnt defined
+  if not self:getPlatforms() or not next(self:getPlatforms()) then
+    return true
+  end
+  for _, platform in pairs(self:getPlatforms()) do
+    if platform == currentPlatform then
+      return true
+    end
+  end
+end
+
+function HostInfo:pushParams(err, data)
+  if not data or not next(data) then
+    if not err or not #err > 0 then
+      err = 'No error specified, but no data retrieved'
+    end
+    if type(err) == 'table' then err = tableToString(err) end
+    self._error = err
+  else
+    -- flatten single entry objects
+    if type(data) == 'table' then
+      if #data == 1 then data = data[1] end
+    end
+    table.insert(self._params, data)
+  end
+end
+
 function HostInfo:run(callback)
+  if not self:isValidPlatform() then
+    self._error = 'unsupported operating system for ' .. self:getType()
+    return callback()
+  end
   callback()
 end
 
@@ -83,15 +118,7 @@ function HostInfoStdoutSubProc:_execute(callback)
 end
 
 function HostInfoStdoutSubProc:run(callback)
-  local currentPlatform = los.type()
-  local found = false
-  for _, platform in pairs(self:getPlatforms()) do
-    if platform == currentPlatform then
-      found = true
-      break
-    end
-  end
-  if not found then
+  if not self:isValidPlatform() then
     self._error = 'unsupported operating system for ' .. self:getType()
     return callback()
   end
@@ -104,3 +131,5 @@ function HostInfoStdoutSubProc:run(callback)
 end
 
 exports.HostInfoStdoutSubProc = HostInfoStdoutSubProc
+
+-------------------------------------------------------------------------------

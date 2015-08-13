@@ -79,7 +79,7 @@ local function readCast(filePath, errTable, outTable, casterFunc, callback)
       if not iscomment and not isblank then
         -- split the line and assign key vals
         local iter = line:gmatch("%S+")
-        casterFunc(iter, obj, line)
+        casterFunc(iter, line)
       end
     end)
     stream:pipe(le):once('end', function()
@@ -93,8 +93,20 @@ local function readCast(filePath, errTable, outTable, casterFunc, callback)
   fs.exists(filePath, onExists)
 end
 
+local function execFileToStreams(command, args, options, callback)
+  local stdout, stderr = LineEmitter:new(), LineEmitter:new()
+  local child = childProcess.spawn(command, args, options)
+  child.stdout:pipe(stdout)
+  child.stderr:pipe(stderr)
+  return child, stdout, stderr
+end
+
 local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
   -- Sanity checks
+  assert(dataArr, 'Parameter missing: (dataArr) Data array to loop over not specified')
+  assert(spawnFunc, 'Parameter missing: (spawnFunc) function to generate args for spawner not specified')
+  assert(successFunc, 'Parameter missing: (successFunc) Function to call per line to process data not specified')
+  assert(finalCb, 'Parameter missing: (finalCb) final returning callback')
   if type(dataArr) ~= 'table' then
     if dataArr ~= nil then
       local obj = {}
@@ -105,30 +117,44 @@ local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
     dataArr = {}
   end
   if type(spawnFunc) ~= 'function' then function spawnFunc(datum) return '', {} end end
-  if type(successFunc) ~= 'function' then function successFunc(data, emptyObj, datum) end end
-  if type(finalCb) ~= 'function' then function finalCb(obj, errdata) end end
+  if type(successFunc) ~= 'function' then function successFunc(data, datum) end end
+  if type(finalCb) ~= 'function' then function finalCb(errdata) end end
+  local errTable = {}
 
   -- Asynchronous spawn cps & gather data
-  local obj = {}
   async.forEachLimit(dataArr, 5, function(datum, cb)
-    local function _successFunc(err, exitcode, data, stderr)
-      successFunc(data, obj, datum, exitcode)
-      return cb()
+    local child, stdout, stderr, cmd, args, exitCode, called
+    called = 2
+    local function done()
+      called = called - 1
+      if called == 0 then
+        if exitCode ~= 0 then
+          table.insert(errTable, 'Process exited with exit code ' .. exitCode)
+        end
+        cb()
+      end
     end
-    local cmd, args = spawnFunc(datum)
-    return execFileToBuffers(cmd, args, opts, _successFunc)
+    local function onClose(_exitCode)
+      exitCode = _exitCode
+      done()
+    end
+
+    cmd, args = spawnFunc(datum)
+    child, stdout, stderr = execFileToStreams(cmd,
+      args,
+      { env = process.env })
+    child:once('close', onClose)
+    stdout
+    :on('data', function(data)
+      successFunc(data, datum)
+    end)
+    :once('end', done)
+    --return execFileToBuffers(cmd, args, opts, _successFunc)
   end, function()
-    return finalCb(obj, errdata)
+    return finalCb(err)
   end)
 end
 
-local function execFileToStreams(command, args, options, callback)
-  local stdout, stderr = LineEmitter:new(), LineEmitter:new()
-  local child = childProcess.spawn(command, args, options)
-  child.stdout:pipe(stdout)
-  child.stderr:pipe(stderr)
-  return child, stdout, stderr
-end
 
 local function getInfoByVendor(options)
   local sysinfo = sigar:new():sysinfo()
@@ -140,6 +166,7 @@ local function getInfoByVendor(options)
   local NilInfo = require('./nil')
   return NilInfo
 end
+
 
 exports.execFileToBuffers = execFileToBuffers
 exports.execFileToStreams = execFileToStreams
