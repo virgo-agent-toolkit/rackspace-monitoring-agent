@@ -41,7 +41,11 @@ end
 function HostInfo:isValidPlatform()
   local currentPlatform = los.type()
   -- All platforms are valid if getplatforms isnt defined
-  if not self:getPlatforms() or #self:getPlatforms() == 0 then
+  if self:getPlatforms() then
+    if #self:getPlatforms() == 0 then
+      return true
+    end
+  else
     return true
   end
   for _, platform in pairs(self:getPlatforms()) do
