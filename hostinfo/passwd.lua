@@ -17,15 +17,20 @@ limitations under the License.
 local HostInfo = require('./base').HostInfo
 local fs = require('fs')
 local misc = require('./misc')
+local filename = '/etc/passwd'
+local tts = require('virgo/util/misc').tableToString
 
 --[[ Passwordstatus Variables ]]--
 local Info = HostInfo:extend()
 
+-- Hostinfo check
 function Info:run(callback)
   local data, err, object, users
   object, users = {}, {}
 
-  data, err = fs.readFileSync('/etc/passwd')
+  -- Create list of users we want to retrieve passwd info for
+  data, err = fs.readFileSync(filename)
+
   if err then
     self._error = "Couldn't read /etc/passwd"
     return callback()
@@ -35,13 +40,16 @@ function Info:run(callback)
     table.insert(users, name)
   end
 
+  ---- Utility funcs
   local function spawnFunc(datum)
     local cmd = 'passwd'
     local args = {'-S', datum}
     return cmd, args
   end
+  exports.spawnFunc = spawnFunc
 
-  local function successFunc(data, datum)
+  local function onLineFunc(data, datum)
+    -- data is current line, datum is entry in the list were on
     if data ~= nil and data ~= '' then
       data = data:gsub('[\n|"]','')
       local iter = data:gmatch("%S+")
@@ -55,13 +63,14 @@ function Info:run(callback)
       })
     end
   end
+  exports.onLineFunc = onLineFunc
 
   local function finalCb(errData)
     self:_pushParams(errData, object)
     return callback()
   end
 
-  return misc.asyncSpawn(users, spawnFunc, successFunc, finalCb)
+  return misc.asyncSpawn(users, spawnFunc, onLineFunc, finalCb)
 end
 
 function Info:getPlatforms()
@@ -72,4 +81,4 @@ function Info:getType()
   return 'PASSWD'
 end
 
-return Info
+exports.Info = Info
