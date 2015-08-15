@@ -13,40 +13,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ]]--
-local los = require('los')
-local readCast = require('./misc').readCast
 
 --[[ Check fstab ]]--
-local HostInfo = require('./base').HostInfo
-local Info = HostInfo:extend()
+local HostInfoFs = require('./base').HostInfoFs
+
+local Info = HostInfoFs:extend()
+
 function Info:initialize()
-  HostInfo.initialize(self)
+  HostInfoFs.initialize(self, '/etc/fstab')
 end
 
-function Info:run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for fstab'
-    return callback()
+function Info:_transform(line, cb)
+  local iter = line:gmatch("%S+")
+  local types = {'file_system', 'mount_point', 'type', 'options', 'pass' }
+  for i = 1, #types do
+    self.obj[types[i]] = iter()
   end
+  cb()
+end
 
-  local function casterFunc(iter, obj)
-    local types = {'file_system', 'mount_point', 'type', 'options', 'pass' }
-    for i = 1, #types do
-      obj[types[i]] = iter()
-    end
-  end
-
-  local function cb()
-    if self._params == nil then
-      self._error = errTable
-    end
-    return callback()
-  end
-
-  local errTable = {}
-
-
-  readCast('/etc/fstab', errTable, self._params, casterFunc, cb)
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
