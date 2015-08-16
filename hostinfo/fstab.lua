@@ -15,6 +15,7 @@ limitations under the License.
 ]]--
 local los = require('los')
 local readCast = require('./misc').readCast
+local logWarn = require('./misc').logWarn
 
 --[[ Check fstab ]]--
 local HostInfo = require('./base').HostInfo
@@ -37,15 +38,17 @@ function Info:run(callback)
   end
 
   local function cb()
-    if self._params == nil then
-      self._error = errTable
+    if errTable and next(errTable) then
+      if not self._params or not next(self._params) then
+        self._error = errTable
+      else
+        logWarn(errTable)
+      end
     end
     return callback()
   end
 
   local errTable = {}
-
-
   readCast('/etc/fstab', errTable, self._params, casterFunc, cb)
 end
 

@@ -21,6 +21,7 @@ local readCast = require('./misc').readCast
 local async = require('async')
 local fs = require('fs')
 local path = require('path')
+local logWarn = require('./misc').logWarn
 
 --[[ Pluggable auth modules ]]--
 local Info = HostInfo:extend()
@@ -77,7 +78,24 @@ function Info:run(callback)
   async.forEachLimit(filesList, 5, function(file, cb)
     readCast(path.join(pamPath, file), errTable, self._params, casterFunc, cb)
   end, function()
-    if self._params == nil then self._error = errTable end
+    if errTable and next(errTable) then
+      if not self._params or not next(self._params) then
+        self._error = errTable
+      else
+        logWarn(errTable)
+      end
+    end
+    -- flatten list of lists of objects into a single list
+    local outTable = {}
+    table.foreach(self._params, function(_, list)
+      -- Handle one off case of a file with only a single entry
+      if #list == 0 then return table.insert(outTable, list) end
+      table.foreach(list, function(_, obj)
+        return table.insert(outTable, obj)
+      end)
+    end)
+
+    self._params = outTable
     return callback()
   end)
 end

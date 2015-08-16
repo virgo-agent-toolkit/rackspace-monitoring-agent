@@ -17,6 +17,7 @@ local HostInfo = require('./base').HostInfo
 
 local table = require('table')
 local los = require('los')
+local logWarn = require('./misc').logWarn
 local readCast = require('./misc').readCast
 
 --[[ Kernel modules ]]--
@@ -26,7 +27,6 @@ function Info:initialize()
 end
 
 function Info:run(callback)
-
   if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for Kernel modules'
     return callback()
@@ -36,30 +36,37 @@ function Info:run(callback)
   local errTable = {}
 
   local function casterFunc(iter, obj)
-    local name = iter()
-    local mem_size = iter()
-    local instanceCount = iter()
-    local dependencies = iter()
-    local state = iter()
-    local memOffset = iter()
-    local dependsArr = {}
-    for word in dependencies:gmatch('([^,]+)') do
-      table.insert(dependsArr, word)
+    local function getDeps(dependencies)
+      local dependsArr = {}
+      for word in dependencies:gmatch('([^,]+)') do
+        table.insert(dependsArr, word)
+      end
+      return dependsArr
     end
-    obj[name] = {
-      state = state,
-      depends = dependsArr
-    }
+
+    table.insert(obj, {
+      name = iter(),
+      mem_size = iter(),
+      instanceCount = iter(),
+      dependencies = getDeps(iter()),
+      state = iter(),
+      memOffset = iter(),
+      depends = iter()
+    })
   end
 
   local function cb()
-    if self._params == nil then
-      self._error = errTable
+    if errTable and next(errTable) then
+      if not self._params or not next(self._params) then
+        self._error = errTable
+      else
+        logWarn(errTable)
+      end
     end
     return callback()
   end
 
-  readCast(filename, errTable, self._params, casterFunc, callback)
+  readCast(filename, errTable, self._params, casterFunc, cb)
 end
 
 function Info:getType()

@@ -19,6 +19,9 @@ local async = require('async')
 local childProcess = require('childprocess')
 local string = require('string')
 local fs = require('fs')
+local logging = require('logging')
+local los = require('los')
+local join = require('path').join
 
 local function execFileToBuffers(command, args, options, callback)
   local child, stdout, stderr, exitCode
@@ -132,5 +135,24 @@ local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
   end)
 end
 
+local function logWarn(errTable)
+  local logpath
+  if los.type() ~= 'linux' then
+    -- TODO: properly implement logging in windows
+    logpath = './'
+  else
+    logpath = '/var/log'
+  end
+  logpath = join(logpath, 'rackspace-monitoring-agent-hostinfo.log')
+  logging.init(logging.StdoutFileLogger:new({
+    path = logpath
+  }))
+  logging.warning(table.concat(errTable, '/n'))
+end
 
-return {execFileToBuffers=execFileToBuffers, readCast=readCast, asyncSpawn=asyncSpawn}
+return {
+  execFileToBuffers=execFileToBuffers,
+  readCast=readCast,
+  asyncSpawn=asyncSpawn,
+  logWarn=logWarn
+}
