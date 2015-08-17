@@ -13,47 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local HostInfo = require('./base').HostInfo
 
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
-local los = require('los')
+local HostInfoStdoutSubProc = require('./base').HostInfoStdoutSubProc
 
---[[ SSHd Variables ]]--
-local Info = HostInfo:extend()
+local Info = HostInfoStdoutSubProc:extend()
 function Info:initialize()
-  HostInfo.initialize(self)
+  HostInfoStdoutSubProc.initialize(self, 'sshd', {'-T'})
 end
 
-function Info:run(callback)
-  if los.type() == 'win32' then
-    self._error = 'Unsupported OS for sshd'
-    return callback()
-  end
+function Info:_transform(line, callback)
+  line = line:gsub("^%s*(.-)%s*$", "%1")
+  local _, _, key, value = line:find("(.*)%s(.*)")
+  if key then self:push( { [key] = value } ) end
+  callback()
+end
 
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("SSHD exited with a %d exitcode", exitcode)
-      return callback()
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      line = line:gsub("^%s*(.-)%s*$", "%1")
-      local _, _, key, value = line:find("(.*)%s(.*)")
-      if key ~= nil then
-        local obj = {}
-        obj[key] = value
-        table.insert(self._params, obj)
-      end
-    end
-    callback()
-  end
-
-  local command = '/usr/sbin/sshd'
-  local args = {'-T'}
-  local options = {}
-
-  execFileToBuffers(command, args, options, execCb)
-
+function Info:getPlatforms()
+  return {'linux', 'darwin'}
 end
 
 function Info:getType()

@@ -14,52 +14,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
-local table = require('table')
-local los = require('los')
 local readCast = require('./misc').readCast
 
 --[[ Kernel modules ]]--
 local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
-end
 
 function Info:run(callback)
-
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Kernel modules'
-    return callback()
-  end
-
   local filename = "/proc/modules"
-  local errTable = {}
+  local obj = {}
 
-  local function casterFunc(iter, obj)
-    local name = iter()
-    local mem_size = iter()
-    local instanceCount = iter()
-    local dependencies = iter()
-    local state = iter()
-    local memOffset = iter()
-    local dependsArr = {}
-    for word in dependencies:gmatch('([^,]+)') do
-      table.insert(dependsArr, word)
+  local function casterFunc(iter, line)
+    local function getDeps(dependsArr)
+      local outobj = {}
+      for word in dependsArr:gmatch('([^,]+)') do
+        table.insert(outobj, word)
+      end
+      return outobj
     end
-    obj[name] = {
-      state = state,
-      depends = dependsArr
-    }
+
+    table.insert(obj, {
+      name = iter(),
+      mem_size = iter(),
+      instanceCount = iter(),
+      dependencies = getDeps(iter()),
+      state = iter(),
+      memOffset = iter(),
+    })
   end
 
-  local function cb()
-    if self._params == nil then
-      self._error = errTable
-    end
+  local function cb(err)
+    self:_pushParams(err, obj)
     return callback()
   end
 
-  readCast(filename, errTable, self._params, casterFunc, callback)
+  return readCast(filename, casterFunc, cb)
+end
+
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()

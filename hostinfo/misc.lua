@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local table = require('table')
+local LineEmitter = require('line-emitter').LineEmitter
 local async = require('async')
 local childProcess = require('childprocess')
-local string = require('string')
 local fs = require('fs')
+local sigar = require('sigar')
+local string = require('string')
+local table = require('table')
 
 local function execFileToBuffers(command, args, options, callback)
   local child, stdout, stderr, exitCode
@@ -55,56 +57,53 @@ local function execFileToBuffers(command, args, options, callback)
   end)
 end
 
-local function readCast(filePath, errTable, outTable, casterFunc, callback)
+local function readCast(filePath, casterFunc, callback)
   -- Sanity checks
+  assert(filePath, 'Parameter missing: (filePath) file to read undefined')
+  assert(casterFunc, 'Parameter missing: (casterFunc) Function to call per line to process data not specified')
+  assert(callback, 'Parameter missing: (callback) final returning callback')
   if (type(filePath) ~= 'string') then filePath = '' end
-  if (type(errTable) ~= 'table') then errTable = {} end
-  if (type(outTable) ~= 'table') then outTable = {} end
-  if (type(casterFunc) ~= 'function') then function casterFunc(iter, obj, line) end end
+  if (type(casterFunc) ~= 'function') then function casterFunc(iter, line) end end
   if (type(callback) ~= 'function') then function callback() end end
 
-  local obj = {}
-  fs.exists(filePath, function(err, file)
+  local errTable = {}
+  local function onExists(err, file)
     if err then
       table.insert(errTable, string.format('File not found : { fs.exists erred: %s }', err))
-      return callback()
+      return callback(errTable)
     end
-    if file then
-      fs.readFile(filePath, function(err, data)
+    local stream = fs.createReadStream(filePath)
+    local le = LineEmitter:new()
+    le:on('data', function(line)
+      local iscomment = string.match(line, '^#')
+      local isblank = string.len(line:gsub("%s+", "")) <= 0
+      if not iscomment and not isblank then
+        -- split the line and assign key vals
+        local iter = line:gmatch("%S+")
+        casterFunc(iter, line)
+      end
+    end)
+    stream:pipe(le):once('end', function()
+      return callback(errTable)
+    end)
+  end
+  fs.exists(filePath, onExists)
+end
 
-        if err then
-          table.insert(errTable, string.format('File couldnt be read : { fs.readline erred: %s }', err))
-          return callback()
-        end
-
-        for line in data:gmatch("[^\r\n]+") do
-          local iscomment = string.match(line, '^#')
-          local isblank = string.len(line:gsub("%s+", "")) <= 0
-
-          if not iscomment and not isblank then
-            -- split the line and assign key vals
-            local iter = line:gmatch("%S+")
-            casterFunc(iter, obj, line)
-          end
-        end
-
-        -- Flatten single entry objects
-        if #obj == 1 then obj = obj[1] end
-        -- Dont insert empty objects into the outTable
-        if next(obj) then table.insert(outTable, obj) end
-
-        return callback()
-      end)
-    else
-      table.insert(errTable, 'file not found')
-      return callback()
-    end
-
-  end)
+local function execFileToStreams(command, args, options, callback)
+  local stdout, stderr = LineEmitter:new(), LineEmitter:new()
+  local child = childProcess.spawn(command, args, options)
+  child.stdout:pipe(stdout)
+  child.stderr:pipe(stderr)
+  return child, stdout, stderr
 end
 
 local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
   -- Sanity checks
+  assert(dataArr, 'Parameter missing: (dataArr) Data array to loop over not specified')
+  assert(spawnFunc, 'Parameter missing: (spawnFunc) function to generate args for spawner not specified')
+  assert(successFunc, 'Parameter missing: (successFunc) Function to call per line to process data not specified')
+  assert(finalCb, 'Parameter missing: (finalCb) final returning callback')
   if type(dataArr) ~= 'table' then
     if dataArr ~= nil then
       local obj = {}
@@ -115,22 +114,59 @@ local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
     dataArr = {}
   end
   if type(spawnFunc) ~= 'function' then function spawnFunc(datum) return '', {} end end
-  if type(successFunc) ~= 'function' then function successFunc(data, emptyObj, datum) end end
-  if type(finalCb) ~= 'function' then function finalCb(obj, errdata) end end
+  if type(successFunc) ~= 'function' then function successFunc(data, datum) end end
+  if type(finalCb) ~= 'function' then function finalCb(errdata) end end
+  local errTable = {}
 
   -- Asynchronous spawn cps & gather data
-  local obj = {}
   async.forEachLimit(dataArr, 5, function(datum, cb)
-    local function _successFunc(err, exitcode, data, stderr)
-      successFunc(data, obj, datum, exitcode)
-      return cb()
+    local child, stdout, stderr, cmd, args, exitCode, called
+    called = 2
+    local function done()
+      called = called - 1
+      if called == 0 then
+        if exitCode ~= 0 then
+          table.insert(errTable, 'Process exited with exit code ' .. exitCode)
+        end
+        cb()
+      end
     end
-    local cmd, args = spawnFunc(datum)
-    return execFileToBuffers(cmd, args, opts, _successFunc)
+    local function onClose(_exitCode)
+      exitCode = _exitCode
+      done()
+    end
+
+    cmd, args = spawnFunc(datum)
+    child, stdout, stderr = execFileToStreams(cmd,
+      args,
+      { env = process.env })
+    child:once('close', onClose)
+    stdout
+    :on('data', function(data)
+      successFunc(data, datum)
+    end)
+    :once('end', done)
+    --return execFileToBuffers(cmd, args, opts, _successFunc)
   end, function()
-    return finalCb(obj, errdata)
+    return finalCb(err)
   end)
 end
 
 
-return {execFileToBuffers=execFileToBuffers, readCast=readCast, asyncSpawn=asyncSpawn}
+local function getInfoByVendor(options)
+  local sysinfo = sigar:new():sysinfo()
+  local vendor = sysinfo.vendor:lower()
+  local name = sysinfo.name:lower()
+  if options[vendor] then return options[vendor] end
+  if options[name] then return options[name] end
+  if options.default then return options.default end
+  local NilInfo = require('./nil')
+  return NilInfo
+end
+
+
+exports.execFileToBuffers = execFileToBuffers
+exports.execFileToStreams = execFileToStreams
+exports.getInfoByVendor = getInfoByVendor
+exports.readCast = readCast
+exports.asyncSpawn = asyncSpawn

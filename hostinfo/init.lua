@@ -26,6 +26,7 @@ local function create_class_info()
   local map = {}
   local types = {}
   for x, klass in pairs(classes) do
+    if klass.Info then klass = klass.Info end
     map[klass.getType()] = klass
     table.insert(types, klass.getType())
   end
@@ -47,7 +48,11 @@ end
 local function create(infoType)
   local klass = HOST_INFO_MAP[infoType]
   if klass then
-    return klass:new()
+    if klass.Info then
+      return klass.Info:new()
+    else
+      return klass:new()
+    end
   end
   return NilInfo:new()
 end
