@@ -13,26 +13,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ]]--
+
+--[[ Check file permissions ]]--
+local HostInfo = require('./base').HostInfo
 local table = require('table')
-local los = require('los')
 local async = require('async')
 local exists = require('fs').exists
 local stat = require('fs').stat
 local band = bit.band
 local fmt = require('string').format
 
---[[ Check file permissions ]]--
-local HostInfo = require('./base').HostInfo
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
 end
 
 function Info:run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for file permissions'
-    return callback()
-  end
+  if self:isRestrictedPlatform() then return callback() end
 
   local fileList = {
     '/etc/grub.conf',
@@ -54,8 +51,8 @@ function Info:run(callback)
     '/etc/login.defs',
     '/var/run/php-fpm.sock'
   }
-  local obj = {}
   local errTable = {}
+  local filePermsTable = {}
 
   async.forEachLimit(fileList, 5, function(file, cb)
     exists(file, function(err, data)
@@ -64,45 +61,34 @@ function Info:run(callback)
         table.insert(errTable, fmt('fs.exists in fileperms.lua erred: %s', err))
         return cb()
       end
-      if data then
-        stat(file, function(err, fstat)
-          if err then
-            table.insert(errTable, fmt('fs.stat in fileperms.lua erred: %s', err))
-            return cb()
-          end
-          if fstat then
-            obj[file] = {}
-            --[[Check file permissions, octal: 0777]]--
-            obj[file]['octalFilePerms'] = band(fstat.mode, 511)
-            --[[Check if the file has a sticky id, octal: 01000]]--
-            obj[file]['stickyBit'] = band(fstat.mode, 512) ~= 0
-            --[[Check if file has a set group id, octal: 02000]]--
-            obj[file]['setgid'] = (band(fstat.mode, 1024) ~= 0)
-            --[[Check if the file has a set user id, octal: 04000]]--
-            obj[file]['setuid'] = (band(fstat.mode, 2048) ~= 0)
-            return cb()
-          else
-            --[[This error should not fire, ever, stat should always return data for files that exist]]--
-            table.insert(errTable, 'fs.stat returned no data or false')
-            return cb()
-          end
-        end)
-      else
+      stat(file, function(err, fstat)
+        if err or not fstat then
+          table.insert(errTable, fmt('fs.stat in fileperms.lua erred: %s', err))
+          return cb()
+        end
+        local obj = {}
+        local mode = fstat.mode
+        obj['name'] = file
+        --[[Check file permissions, octal: 0777]]--
+        obj['octalFilePerms'] = band(mode, 511)
+        --[[Check if the file has a sticky id, octal: 01000]]--
+        obj['stickyBit'] = band(mode, 512) ~= 0
+        --[[Check if file has a set group id, octal: 02000]]--
+        obj['setgid'] = (band(mode, 1024) ~= 0)
+        --[[Check if the file has a set user id, octal: 04000]]--
+        obj['setuid'] = (band(mode, 2048) ~= 0)
+        table.insert(filePermsTable, obj)
         return cb()
-      end
+      end)
     end)
   end, function()
-    if obj ~= nil then
-      table.insert(self._params, {
-        data = obj,
-        warnings = errTable
-      })
-    else
-      self._error = errTable
-    end
+    self:pushParams(filePermsTable, errTable)
     return callback()
   end)
+end
 
+function Info:getRestrictedPlatforms()
+  return {'win32'}
 end
 
 function Info:getType()

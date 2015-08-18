@@ -19,6 +19,8 @@ local async = require('async')
 local childProcess = require('childprocess')
 local string = require('string')
 local fs = require('fs')
+local LineEmitter = require('line-emitter').LineEmitter
+local Transform = require('stream').Transform
 
 local function execFileToBuffers(command, args, options, callback)
   local child, stdout, stderr, exitCode
@@ -63,44 +65,32 @@ local function readCast(filePath, errTable, outTable, casterFunc, callback)
   if (type(casterFunc) ~= 'function') then function casterFunc(iter, obj, line) end end
   if (type(callback) ~= 'function') then function callback() end end
 
-  local obj = {}
-  fs.exists(filePath, function(err, file)
+  local function onExists(err, file)
     if err then
       table.insert(errTable, string.format('File not found : { fs.exists erred: %s }', err))
       return callback()
     end
-    if file then
-      fs.readFile(filePath, function(err, data)
-
-        if err then
-          table.insert(errTable, string.format('File couldnt be read : { fs.readline erred: %s }', err))
-          return callback()
-        end
-
-        for line in data:gmatch("[^\r\n]+") do
-          local iscomment = string.match(line, '^#')
-          local isblank = string.len(line:gsub("%s+", "")) <= 0
-
-          if not iscomment and not isblank then
-            -- split the line and assign key vals
-            local iter = line:gmatch("%S+")
-            casterFunc(iter, obj, line)
-          end
-        end
-
-        -- Flatten single entry objects
-        if #obj == 1 then obj = obj[1] end
-        -- Dont insert empty objects into the outTable
-        if next(obj) then table.insert(outTable, obj) end
-
-        return callback()
-      end)
-    else
-      table.insert(errTable, 'file not found')
+    local obj = {}
+    local stream = fs.createReadStream(filePath)
+    local le = LineEmitter:new()
+    le:on('data', function(line)
+      local iscomment = string.match(line, '^#')
+      local isblank = string.len(line:gsub("%s+", "")) <= 0
+      if not iscomment and not isblank then
+        -- split the line and assign key vals
+        local iter = line:gmatch("%S+")
+        casterFunc(iter, obj, line)
+      end
+    end)
+    stream:pipe(le):once('end', function()
+      -- Flatten single entry objects
+      if #obj == 1 then obj = obj[1] end
+      -- Dont insert empty objects into the outTable
+      if next(obj) then table.insert(outTable, obj) end
       return callback()
-    end
-
-  end)
+    end)
+  end
+  fs.exists(filePath, onExists)
 end
 
 local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
@@ -132,5 +122,56 @@ local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
   end)
 end
 
+local function execFileToStreams(command, args, options, callback)
+  local stdout, stderr = LineEmitter:new(), LineEmitter:new()
+  local child = childProcess.spawn(command, args, options)
+  child.stdout:pipe(stdout)
+  child.stderr:pipe(stderr)
+  return child, stdout, stderr
+end
 
-return {execFileToBuffers=execFileToBuffers, readCast=readCast, asyncSpawn=asyncSpawn}
+local function streamingSpawn(cmd, args, opts, outTable, errTable, casterFunc, callback)
+  -- Configure the stream handler
+  local MetricsHandler = Transform:extend()
+  function MetricsHandler:initialize()
+    Transform.initialize(self, {objectMode = true})
+    self._params = {}
+  end
+  function MetricsHandler:_transform(line, callback)
+    casterFunc(line, callback)
+  end
+  local handler = MetricsHandler:new()
+
+  -- configure the child processes ending symphony
+  local exitCode, called, child, stdout, stderr
+  called = 2
+  if not next(opts) or not opts.env then table.insert(opts, { env = process.env }) end
+  local function done()
+    called = called - 1
+    if called == 0 then
+      if exitCode ~= 0 then
+        table.insert(errTable, 'Process exited with exit code ' .. exitCode)
+      end
+      return callback()
+    end
+  end
+  local function onClose(_exitCode)
+    exitCode = _exitCode
+    done()
+  end
+
+  -- let 'er rip
+  child, stdout, stderr = execFileToStreams(cmd, args, opts)
+  child:once('close', onClose)
+  stdout:pipe(handler)
+    :on('data', function(obj)
+      table.insert(outTable, obj)
+    end)
+    :once('end', done)
+end
+
+exports.streamingSpawn = streamingSpawn
+exports.execFileToBuffers = execFileToBuffers
+exports.execFileToStreams = execFileToStreams
+exports.readCast = readCast
+exports.asyncSpawn = asyncSpawn

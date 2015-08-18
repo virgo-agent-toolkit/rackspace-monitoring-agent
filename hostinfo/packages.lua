@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,61 +13,70 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local HostInfo = require('./base').HostInfo
 
-local fmt = require('string').format
-local los = require('los')
+local HostInfoStdoutSubProc = require('./base').HostInfoStdoutSubProc
+local MetricsHandler = require('./base').MetricsHandler
 local sigar = require('sigar')
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
 
---[[ Packages Variables ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+-------------------------------------------------------------------------------
+
+local Handler = MetricsHandler:extend()
+function Handler:initialize()
+  MetricsHandler.initialize(self)
 end
 
-function Info:run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Packages'
-    return callback()
-  end
+function Handler:_transform(line, callback)
+  line = line:gsub("^%s*(.-)%s*$", "%1")
+  local _, _, key, value = line:find("(.*)%s(.*)")
+  if key then self:push({ name = key, version = value }) end
+  callback()
+end
 
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("Packages exited with a %d exitcode", exitcode)
-      return callback()
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      line = line:gsub("^%s*(.-)%s*$", "%1")
-      local _, _, key, value = line:find("(.*)%s(.*)")
-      if key ~= nil then
-        table.insert(self._params, {
-          name = key,
-          version = value
-        })
-      end
-    end
-    return callback()
-  end
+-------------------------------------------------------------------------------
 
-  local command, args, options, vendor
-  vendor = sigar:new():sysinfo().vendor:lower()
+local HomeBrewHandler = MetricsHandler:extend()
+function HomeBrewHandler:initialize()
+  MetricsHandler.initialize(self)
+end
 
-  if vendor == 'ubuntu' or vendor == 'debian' then
-    command = 'dpkg-query'
-    args = {'-W'}
-    options = {}
-  elseif vendor == 'rhel' or vendor == 'centos' then
-    command = 'rpm'
-    args = {"-qa", '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n'}
-    options = {}
+function HomeBrewHandler:_transform(line, callback)
+  self:push({ name = line, version = 'unknown' })
+  callback()
+end
+
+-------------------------------------------------------------------------------
+
+local Info = HostInfoStdoutSubProc:extend()
+function Info:initialize()
+  local command, args
+  local sysinfo = sigar:new():sysinfo()
+  local vendor = sysinfo.vendor:lower()
+  local name = sysinfo.name:lower()
+  local handler = Handler:new()
+  local commands = {
+    ubuntu = { command = 'dpkg-query', args = {'-W'} },
+    debian = { command = 'dpkg-query', args = {'-W'} },
+    rhel   = { command = 'rpm', args = { '-qa', '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n', } },
+    centos = { command = 'rpm', args = { '-qa', '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n', } },
+    macosx = { command = 'brew', args = {'leaves'}, handler = HomeBrewHandler:new() },
+  }
+  if commands[vendor] then
+    command = commands[vendor].command
+    args = commands[vendor].args
+    handler = commands[vendor].handler or handler
+  elseif commands[name] then
+    command = commands[name].command
+    args = commands[name].args
+    handler = commands[name].handler or handler
   else
-    self._error = 'Could not determine OS for Packages'
-    return callback()
+    command = ''
+    args = {}
   end
+  HostInfoStdoutSubProc.initialize(self, command, args, handler)
+end
 
-  return execFileToBuffers(command, args, options, execCb)
+function Info:getRestrictedPlatforms()
+  return {'win32'}
 end
 
 function Info:getType()
