@@ -28,7 +28,7 @@ function Info:initialize()
   HostInfo.initialize(self)
 end
 
-function Info:run(callback)
+function Info:_run(callback)
   if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for file permissions'
     return callback()
