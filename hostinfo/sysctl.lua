@@ -33,7 +33,7 @@ function Info:_run(callback)
     return
   end
 
-  local child = spawn('sysctl', {'-A'}, {})
+  local child = spawn('sysctl', {'-A'}, { env = process.env })
   local data = ''
 
   child.stdout:on('data', function(chunk)
