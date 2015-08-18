@@ -25,7 +25,7 @@ function Info:initialize()
   HostInfo.initialize(self)
 end
 
-function Info:run(callback)
+function Info:_run(callback)
   if los.type() == 'win32' then
     self._error = 'Unsupported OS for sshd'
     return callback()

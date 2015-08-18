@@ -26,14 +26,14 @@ function Info:initialize()
   HostInfo.initialize(self)
 end
 
-function Info:run(callback)
+function Info:_run(callback)
   if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for sysctl'
     callback()
     return
   end
 
-  local child = spawn('sysctl', {'-A'}, {})
+  local child = spawn('sysctl', {'-A'}, { env = process.env })
   local data = ''
 
   child.stdout:on('data', function(chunk)

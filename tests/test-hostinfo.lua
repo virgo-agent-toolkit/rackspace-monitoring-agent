@@ -17,9 +17,23 @@ limitations under the License.
 require('tap')(function(test)
   local hostinfo = require('../hostinfo')
   for _, type in pairs(hostinfo.getTypes()) do
-    test('test ' .. type, function()
+    test('test ' .. type, function(expect)
       local info = hostinfo.create(type)
-      info:run(p)
+      info:run(expect(function() assert(info._params) end))
     end)
   end
+
+  test('test for bad hostinfo', function(expect)
+    local info
+    local errMsg = 'this is an error'
+    local function onRun()
+      assert(info._error:find(errMsg))
+    end
+    info = hostinfo.create('nil')
+    info._run = function(self, callback)
+      error(errMsg)
+    end
+    info:run(expect(onRun))
+  end)
+
 end)

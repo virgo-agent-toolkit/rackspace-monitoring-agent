@@ -32,8 +32,19 @@ function HostInfo:serialize()
   }
 end
 
+function HostInfo:getType()
+  return 'HostInfo'
+end
+
 function HostInfo:run(callback)
-  callback()
+  local status, err = pcall(function()
+    if self._run then self:_run(callback) else callback() end
+  end)
+  if not status then
+    self._params = {}
+    self._error = err
+    callback()
+  end
 end
 
 exports.HostInfo = HostInfo
