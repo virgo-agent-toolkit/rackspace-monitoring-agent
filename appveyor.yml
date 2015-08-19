@@ -7,6 +7,7 @@ build_script:
     - Make.bat
 
 test_script:
+    - timeout /t 30
     - Make.bat test
 
 notifications:
