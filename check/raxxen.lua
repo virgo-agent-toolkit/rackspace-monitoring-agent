@@ -58,7 +58,6 @@ function Deputy:initialize()
 end
 
 function Deputy:run(cmd, args)
-  local code = 0
   local onError, onStdout, onStdoutEnd, onExit, onDone
   local callbackCount = 2
   local child = spawn(cmd, args)
@@ -69,8 +68,7 @@ function Deputy:run(cmd, args)
   function onError(err)
     self:emit('error', err)
   end
-  function onExit(_code)
-    code = _code
+  function onExit()
     callbackCount = callbackCount - 1
     onDone()
   end

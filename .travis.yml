@@ -7,11 +7,14 @@ addons:
     packages:
     - cmake
     - gdb
+    - luarocks
 
 sudo: false
 
 before_script:
   - ulimit -c unlimited -S
+  - luarocks install --local luacheck
+  - export PATH=~/.luarocks/bin:$PATH
 
 script:
   - RESULT=0

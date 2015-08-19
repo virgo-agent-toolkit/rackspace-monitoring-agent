@@ -19,7 +19,7 @@ $(TARGET):  lit $(LUVISIGAR) $(APP_FILES)
 install: $(TARGET)
 	install -m 777 $(TARGET) $(PREFIX)/
 
-test: lit $(LUVISIGAR)
+test: lint lit $(LUVISIGAR)
 	rm -rf tests/tmpdir && mkdir tests/tmpdir
 	$(LIT) install
 	./luvi-sigar . -m tests/run.lua
