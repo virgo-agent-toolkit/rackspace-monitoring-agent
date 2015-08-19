@@ -15,62 +15,83 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
-local los = require('los')
-local sigar = require('sigar')
-local fmt = require('string').format
+local misc = require('./misc')
+local run = misc.run
+local getInfoByVendor = misc.getInfoByVendor
+local Transform = require('stream').Transform
 
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
+
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+end
+
+function Reader:_transform(line, cb)
+  local cvestart, _ = line:find('CVE-')
+  local cvestr = line:sub(cvestart, cvestart+12)
+  -- we want unique cves only
+  self:push(cvestr)
+  cb()
+end
+--------------------------------------------------------------------------------------------------------------------
 --[[ Check CVE fixes ]]--
 local Info = HostInfo:extend()
+
 function Info:initialize()
   HostInfo.initialize(self)
 end
 
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for pluggable auth module definitions'
+  local errTable, outTable = {}, {}
+  local deb = {cmd = '/bin/sh', args = {'-c',  'zcat /usr/share/doc/*/changelog.Debian.gz | grep CVE-'} }
+  local rhel = {cmd = '/bin/sh', args = {'-c', 'rpm -qa --changelog | grep CVE-'} }
+
+  local options = {
+    ubuntu = deb,
+    debian = deb,
+    rhel = rhel,
+    centos = rhel,
+    default = nil
+  }
+
+  local spawnConfig = getInfoByVendor(options)
+  if not spawnConfig.cmd then
+    self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
+    return callback()
+  end
+  local cmd, args, opts = spawnConfig.cmd, spawnConfig.args, {}
+
+  local function finalCb()
+    -- Sort the cves
+    local tempTable = {}
+    for key, _ in pairs(outTable) do
+      table.insert(tempTable, key)
+    end
+    table.sort(tempTable)
+    self:_pushParams(errTable, tempTable)
     return callback()
   end
 
-  local vendor, cmd, args, opts, cves
+  local reader = Reader:new()
+  local child = run(cmd, args, opts)
+  child:pipe(reader)
+  reader:on('data', function(data)
+    outTable[data] = 1
+  end)
+  reader:on('error', function(data)
+    table.insert(errTable, data)
+  end)
+  reader:once('end', finalCb)
+end
 
-  vendor = sigar:new():sysinfo().vendor:lower()
-  cmd = 'sh'
-  if vendor == 'ubuntu' or vendor == 'debian' then
-    args = {'-c',  'zcat /usr/share/doc/*/changelog.Debian.gz | grep CVE-'}
-  elseif vendor == 'rhel' or vendor == 'centos' then
-    args = {'-c', 'rpm -qa --changelog | grep CVE-'}
-  else
-    self._error = 'Could not determine linux distro for Packages'
-    return callback()
-  end
-  opts = {}
-  cves = {}
-
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("Vulnerabilities check exited with a %d exitcode", exitcode)
-      return callback()
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      local cvestart, _ = line:find('CVE-')
-      local cvestr = line:sub(cvestart, cvestart+12)
-      -- we want unique cves only
-      cves[cvestr] = 1
-    end
-    for key, val in pairs(cves) do
-      table.insert(self._params, key)
-    end
-    table.sort(self._params)
-    return callback()
-  end
-
-  return execFileToBuffers(cmd, args, opts, execCb)
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'CVE'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

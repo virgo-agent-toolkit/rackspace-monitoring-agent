@@ -14,30 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('../hostinfo')
-local json = require('json')
 local upper = require('string').upper
+local json = require('json')
 
 local function run(...)
   local argv, typeName, klass
   argv = require("options")
     .usage('Usage: -x [Host Info Type]')
     .describe("x", "host info type to run")
-    .argv("x:")
+    .usage('Usage: -d [filename]')
+    .describe("d", "write debug info to file")
+    .argv("x:d:")
 
-  if not argv.args.x then
+  local args = argv.args
+  if args.d then
+    local filename = argv.args.d
+    return HostInfo.debugInfo(filename, print('Debug info written to file '..filename))
+  elseif args.x then
+    typeName = upper(argv.args.x)
+    klass = HostInfo.create(typeName)
+    return klass:run(function(err)
+      if err then
+        print(json.stringify({error = err}))
+      else
+        print(klass:serialize())
+      end
+    end)
+  else
     print(argv._usage)
-    process:exit(0)
+    return process:exit(0)
   end
-
-  typeName = upper(argv.args.x)
-  klass = HostInfo.create(typeName)
-  klass:run(function(err, callback)
-    if err then
-      print(json.stringify({error = err}))
-    else
-      print(json.stringify(klass:serialize()))
-    end
-  end)
 end
 
 return { run = run }

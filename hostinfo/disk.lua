@@ -17,12 +17,12 @@ local HostInfo = require('./base').HostInfo
 local sigar = require('sigar')
 local sigarutil = require('virgo/util/sigar')
 
-local table = require('table')
-
 --[[ Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
+end
+function Info:_run(callback)
   local ctx, disks, usage_fields
   ctx = sigar:new()
   disks = sigarutil.diskTargets(ctx)
@@ -47,6 +47,7 @@ function Info:initialize()
       table.insert(self._params, obj)
     end
   end
+  callback()
 end
 
 function Info:getType()

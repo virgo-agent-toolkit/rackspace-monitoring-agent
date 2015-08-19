@@ -1,0 +1,3 @@
+vm.dirty_writeback_centisecs = 500
+vm.lowmem_reserve_ratio = 256	256	32
+vm.lowmem_reserve_ratio = 256 256 32

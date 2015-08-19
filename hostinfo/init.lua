@@ -17,7 +17,8 @@ local table = require('table')
 
 local fs = require('fs')
 local misc = require('virgo/util/misc')
-local os = require('os')
+local los = require('los')
+local async = require('async')
 
 local HostInfo = require('./base').HostInfo
 local classes = require('./all')
@@ -26,6 +27,7 @@ local function create_class_info()
   local map = {}
   local types = {}
   for x, klass in pairs(classes) do
+    if klass.Info then klass = klass.Info end
     map[klass.getType()] = klass
     table.insert(types, klass.getType())
   end
@@ -47,7 +49,11 @@ end
 local function create(infoType)
   local klass = HOST_INFO_MAP[infoType]
   if klass then
-    return klass:new()
+    if klass.Info then
+      return klass.Info:new()
+    else
+      return klass:new()
+    end
   end
   return NilInfo:new()
 end
@@ -60,14 +66,18 @@ end
 -- Dump all the info objects to a file
 local function debugInfo(fileName, callback)
   local data = ''
-  for k, v in pairs(HOST_INFO_MAP) do
-    local info = create(v)
-    local obj = info:serialize().metrics
-    data = data .. '-- ' .. v .. '.' .. os.type() .. ' --\n\n'
-    data = data .. misc.toString(obj)
-    data = data .. '\n'
-  end
-  fs.writeFile(fileName, data, callback)
+  async.forEachLimit(HOST_INFO_TYPES, 5, function(v, cb)
+    local klass = create(v)
+    klass:run(function(err)
+      local obj = klass:serialize()
+      data = data .. '-- ' .. v .. '.' .. los.type() .. ' --\n\n'
+      data = data .. misc.toString(obj)
+      data = data .. '\n'
+      cb()
+    end)
+  end, function()
+    fs.writeFile(fileName, data, callback)
+  end)
 end
 
 --[[ Exports ]]--

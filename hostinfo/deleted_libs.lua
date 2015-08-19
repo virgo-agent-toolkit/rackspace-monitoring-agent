@@ -14,56 +14,62 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-local table = require('table')
-local los = require('los')
-local execFileToBuffers = require('./misc').execFileToBuffers
-local fmt = require('string').fmt
+local run = require('./misc').run
+local Transform = require('stream').Transform
 
---[[ Any services/processes using deleted libraries? ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
+
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
 end
 
+function Reader:_transform(line, cb)
+  local dataTable = {}
+  if line then
+    if #line > 0 then
+      line:gsub('%S+', function(word) table.insert(dataTable, word) end)
+    end
+  end
+  if dataTable[4] == 'DEL' then
+    self:push({
+      used_by_process = dataTable[1],
+      deleted_lib_name = dataTable[8]
+    })
+  end
+  cb()
+end
+--------------------------------------------------------------------------------------------------------------------
+--[[ Any services/processes using deleted libraries? ]]--
+local Info = HostInfo:extend()
+
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for deleted libraries check'
-    return callback()
-  end
-  local cmd = 'lsof'
-  local args = {'-nnP' }
-  local out = {}
+  local cmd, args, opts = 'lsof', {'-nnP' }, {}
+  local errTable, outTable = {}, {}
 
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("lsof -nnP exited with a %d exitcode", exitcode)
-      return callback()
+  local function finalCb()
+    if not outTable or not next(outTable) then
+      table.insert(outTable, 'No services using deleted libraries found')
     end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      local dataTable = {}
-      if line ~= nil and line ~= '' then
-        line:gsub('%S+', function(word) table.insert(dataTable, word) end)
-      end
-      if dataTable[4] == 'DEL' then
-        table.insert(out, {
-          used_by_process = dataTable[1],
-          deleted_lib_name = dataTable[8]
-        })
-      end
-    end
-    if not next(out) then
-      table.insert(self._params, 'No services using deleted libraries found')
-    else
-      table.insert(self._params, out)
-    end
+    self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  return execFileToBuffers(cmd, args, {}, execCb)
+  local child = run(cmd, args, opts)
+  local reader = Reader:new()
+  child:pipe(reader)
+  reader:on('data', function(data) table.insert(outTable, data) end)
+  reader:on('error', function(data) table.insert(errTable, data) end)
+  reader:once('end', finalCb)
 end
 
 function Info:getType()
   return 'DELETED_LIBS'
 end
 
-return Info
+function Info:getPlatforms()
+  return {'linux'}
+end
+
+exports.Info = Info
+exports.Reader = Reader

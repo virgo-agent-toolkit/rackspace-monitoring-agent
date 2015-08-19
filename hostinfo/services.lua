@@ -15,24 +15,16 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 local table = require('table')
-local los = require('los')
 local fs = require('fs')
 local async = require('async')
-local fmt = require('string').format
+local fmt = string.format
 
 --[[ Installed services info ]]--
 local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
-end
+
 
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for services'
-    return callback()
-  end
-
-  local init, initd, system, systemv, systemd, errTable
+  local init, initd, system, systemv, systemd, errTable, outTable
   init = '/etc/init/'
   initd = '/etc/init.d'
   system = '/usr/lib/systemd/system'
@@ -41,7 +33,7 @@ function Info:_run(callback)
     '/etc/systemd/system/basic.target.wants/'
   }
   systemv = '/etc/rc3.d'
-  errTable = {}
+  errTable, outTable = {}, {}
 
   local function scanDir(path, key, cb)
     fs.readdir(path, function(err, data)
@@ -49,9 +41,7 @@ function Info:_run(callback)
         table.insert(errTable, fmt('Error reading services directory: %s . You can probably ignore this error', err))
         return cb()
       end
-      table.insert(self._params, {
-        [key] = data
-      })
+      outTable[key] = data
       return cb()
     end)
   end
@@ -76,19 +66,17 @@ function Info:_run(callback)
       scanDir(systemd[2], 'systemd', cb)
     end
   }, function()
-    if self._params ~= nil then
-      table.insert(self._params, {
-        warnings = errTable
-      })
-    else
-      self._error = errTable
-    end
+    self:_pushParams(errTable, outTable)
     return callback()
   end)
 end
 
 function Info:getType()
   return 'SERVICES'
+end
+
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 return Info

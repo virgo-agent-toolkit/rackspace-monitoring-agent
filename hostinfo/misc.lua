@@ -14,109 +14,86 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local table = require('table')
-local async = require('async')
+local LineEmitter = require('line-emitter').LineEmitter
 local childProcess = require('childprocess')
-local string = require('string')
 local fs = require('fs')
+local sigar = require('sigar')
+local Stream = require('stream').Duplex
+local Transform = require('stream').Transform
 
-local function execFileToBuffers(command, args, options, callback)
-  local child, stdout, stderr, exitCode
-
-  stdout = {}
-  stderr = {}
-
-  child = childProcess.spawn(command, args, options)
-  child.stdout:on('data', function (chunk)
-    table.insert(stdout, chunk)
-  end)
-  child.stderr:on('data', function (chunk)
-    table.insert(stderr, chunk)
-  end)
-
-  async.parallel({
-    function(callback)
-      child.stdout:on('end', callback)
-    end,
-    function(callback)
-      child.stderr:on('end', callback)
-    end,
-    function(callback)
-      local onExit
-      function onExit(code)
-        exitCode = code
-        callback()
+local function read(filePath)
+  local Stream = Transform:extend()
+  function Stream:initialize()
+    Transform.initialize(self, {objectMode = true})
+  end
+  function Stream:_transform(line, cb)
+    if line then
+      local iscomment = string.match(line, '^#')
+      local isblank = string.len(line:gsub("%s+", "")) <= 0
+      if not iscomment and not isblank then
+        self:push(line)
       end
-
-      child:on('exit', onExit)
     end
-  }, function(err)
-    callback(err, exitCode, table.concat(stdout, ""), table.concat(stderr, ""))
-  end)
-end
+    cb()
+  end
 
-local function readCast(filePath, errTable, outTable, casterFunc, callback)
-  -- Sanity checks
-  if (type(filePath) ~= 'string') then filePath = '' end
-  if (type(errTable) ~= 'table') then errTable = {} end
-  if (type(outTable) ~= 'table') then outTable = {} end
-  if (type(casterFunc) ~= 'function') then function casterFunc(iter, obj, line) end end
-  if (type(callback) ~= 'function') then function callback() end end
-
-  local obj = {}
-  fs.exists(filePath, function(err, file)
-    if err then
-      table.insert(errTable, string.format('File not found : { fs.exists erred: %s }', err))
-      return callback()
-    end
-    if file then
-      fs.readFile(filePath, function(err, data)
-
-        if err then
-          table.insert(errTable, string.format('File couldnt be read : { fs.readline erred: %s }', err))
-          return callback()
-        end
-
-        for line in data:gmatch("[^\r\n]+") do
-          local iscomment = string.match(line, '^#')
-          local isblank = string.len(line:gsub("%s+", "")) <= 0
-
-          if not iscomment and not isblank then
-            -- split the line and assign key vals
-            local iter = line:gmatch("%S+")
-            casterFunc(iter, obj, line)
-          end
-        end
-
-        -- Flatten single entry objects
-        if #obj == 1 then obj = obj[1] end
-        -- Dont insert empty objects into the outTable
-        if next(obj) then table.insert(outTable, obj) end
-
-        return callback()
-      end)
-    else
-      table.insert(errTable, 'file not found')
-      return callback()
-    end
-
-  end)
-end
-
-local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
-  -- Asynchronous spawn cps & gather data
-  local obj = {}
-  async.forEachLimit(dataArr, 5, function(datum, cb)
-    local function _successFunc(err, exitcode, data, stderr)
-      successFunc(data, obj, datum, exitcode)
-      return cb()
-    end
-    local cmd, args = spawnFunc(datum)
-    return execFileToBuffers(cmd, args, { env = process.env }, _successFunc)
-  end, function()
-    return finalCb(obj)
-  end)
+  local outStream = Stream:new()
+  local readable = fs.createReadStream(filePath)
+  -- Prolly a file not found error at this stage, pump it out
+  readable:on('error', function(err) outStream:emit('error', err) end)
+  readable:pipe(LineEmitter:new()):pipe(outStream)
+  return outStream
 end
 
 
-return {execFileToBuffers=execFileToBuffers, readCast=readCast, asyncSpawn=asyncSpawn}
+local function _execFileToStreams(command, args, options)
+  local stdout, stderr = LineEmitter:new(), LineEmitter:new()
+  local child = childProcess.spawn(command, args, options)
+  child.stdout:pipe(stdout)
+  child.stderr:pipe(stderr)
+  return child, stdout, stderr
+end
+
+
+local function run(command, arguments, options)
+  local stream = Stream:new()
+  local called, exitCode
+  called = 2
+  local function done()
+    called = called - 1
+    if called == 0 then
+      if exitCode ~= 0 then
+        stream:emit('error', 'Process exited with exit code ' .. exitCode)
+      end
+      stream:emit('end')
+    end
+  end
+  local function onClose(_exitCode)
+    exitCode = _exitCode
+    done()
+  end
+
+  if not options.env then options.env = process.env end
+  local child, stdout, stderr = _execFileToStreams(command, arguments, options)
+  child:once('close', onClose)
+  stdout:on('data', function(data) stream:emit('data', data) end):once('end', done)
+  stderr:on('data', function(data) stream:emit('error', data) end)
+  return stream
+end
+
+
+local function getInfoByVendor(options)
+  local sysinfo = sigar:new():sysinfo()
+  local vendor = sysinfo.vendor:lower()
+  local name = sysinfo.name:lower()
+  if vendor == 'red hat' then vendor = 'rhel' end
+  if options[vendor] then return options[vendor] end
+  if options[name] then return options[name] end
+  if options.default then return options.default end
+  local NilInfo = require('./nil')
+  return NilInfo
+end
+
+exports.run = run
+exports.read = read
+exports.getInfoByVendor = getInfoByVendor

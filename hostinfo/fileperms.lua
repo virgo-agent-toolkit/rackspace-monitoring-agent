@@ -13,27 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ]]--
-local table = require('table')
-local los = require('los')
 local async = require('async')
-local exists = require('fs').exists
-local stat = require('fs').stat
+local fs = require('fs')
+local exists = fs.exists
+local stat = fs.stat
 local band = bit.band
-local fmt = require('string').format
+local fmt = string.format
 
 --[[ Check file permissions ]]--
 local HostInfo = require('./base').HostInfo
 local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
-end
+
 
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for file permissions'
-    return callback()
-  end
-
   local fileList = {
     '/etc/grub.conf',
     '/boot/grub/grub.cfg',
@@ -54,7 +46,7 @@ function Info:_run(callback)
     '/etc/login.defs',
     '/var/run/php-fpm.sock'
   }
-  local obj = {}
+  local outTable = {}
   local errTable = {}
 
   async.forEachLimit(fileList, 5, function(file, cb)
@@ -71,15 +63,17 @@ function Info:_run(callback)
             return cb()
           end
           if fstat then
-            obj[file] = {}
+            local obj = {}
+            obj.fileName = file
             --[[Check file permissions, octal: 0777]]--
-            obj[file]['octalFilePerms'] = band(fstat.mode, 511)
+            obj.octalFilePerms = band(fstat.mode, 511)
             --[[Check if the file has a sticky id, octal: 01000]]--
-            obj[file]['stickyBit'] = band(fstat.mode, 512) ~= 0
+            obj.stickyBit = band(fstat.mode, 512) ~= 0
             --[[Check if file has a set group id, octal: 02000]]--
-            obj[file]['setgid'] = (band(fstat.mode, 1024) ~= 0)
+            obj.setgid = (band(fstat.mode, 1024) ~= 0)
             --[[Check if the file has a set user id, octal: 04000]]--
-            obj[file]['setuid'] = (band(fstat.mode, 2048) ~= 0)
+            obj.setuid = (band(fstat.mode, 2048) ~= 0)
+            table.insert(outTable, obj)
             return cb()
           else
             --[[This error should not fire, ever, stat should always return data for files that exist]]--
@@ -92,17 +86,13 @@ function Info:_run(callback)
       end
     end)
   end, function()
-    if obj ~= nil then
-      table.insert(self._params, {
-        data = obj,
-        warnings = errTable
-      })
-    else
-      self._error = errTable
-    end
+    self:_pushParams(errTable, outTable)
     return callback()
   end)
+end
 
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()

@@ -15,12 +15,14 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 local sigar = require('sigar')
-local table = require('table')
 
 --[[ System Info ]]--
 local Info = HostInfo:extend()
+
 function Info:initialize()
   HostInfo.initialize(self)
+end
+function Info:_run(callback)
   local ctx, sysinfo
   ctx = sigar:new()
   sysinfo = ctx:sysinfo()
@@ -32,6 +34,7 @@ function Info:initialize()
     vendor_version = sysinfo.vendor_version,
     vendor_name = sysinfo.vendor_name or sysinfo.vendor_version
   })
+  callback()
 end
 
 function Info:getType()

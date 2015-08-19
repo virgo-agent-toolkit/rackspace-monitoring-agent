@@ -15,12 +15,13 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 local sigar = require('sigar')
-local table = require('table')
 
 --[[ Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
+end
+function Info:_run(callback)
   local ctx = sigar:new()
   local cpus = ctx:cpus()
   for i=1, #cpus do
@@ -57,6 +58,7 @@ function Info:initialize()
     obj['name'] = name
     table.insert(self._params, obj)
   end
+  callback()
 end
 
 function Info:getType()

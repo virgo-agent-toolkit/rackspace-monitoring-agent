@@ -14,12 +14,56 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
+local run = require('./misc').run
+local Transform = require('stream').Transform
 
-local fmt = require('string').format
-local los = require('los')
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
 
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+end
+
+function Reader:_transform(line, cb)
+  local begins, dataTable = {}, {}
+  local function getLoginTime(dataTable)
+    local str = {}
+    for i = 4, 7 do
+      table.insert(str, dataTable[i])
+    end
+    return table.concat(str, ' ')
+  end
+
+  line:gsub("%S+", function(c) table.insert(dataTable, c) end)
+
+  if dataTable[2] == 'system' and dataTable[3] == 'boot' then
+    self:push({bootups = {
+      type = dataTable[1],
+      kernel = dataTable[4]
+    }})
+  elseif dataTable[8] == 'still' then
+    self:push({logged_in = {
+      user = dataTable[1],
+      host = dataTable[3],
+      login_time = getLoginTime(dataTable)
+    }})
+  elseif dataTable[1] == 'wtmp' then
+    for i = 3, 7 do
+      table.insert(begins, dataTable[i])
+    end
+    self:push({data_collection_start = table.concat(begins, ' ')})
+  else
+    self:push({previous_logins = {
+      user = dataTable[1],
+      host = dataTable[3],
+      login_time = getLoginTime(dataTable),
+      logout_time = dataTable[9],
+      duration = dataTable[10]
+    }})
+  end
+  cb()
+end
+--------------------------------------------------------------------------------------------------------------------
 --[[ Last logins ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
@@ -27,70 +71,37 @@ function Info:initialize()
 end
 
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for last logins'
+  local outTable, errTable = {}, {}
+  local cmd, args, opts = 'last', {}, {}
+
+  local function finalCb()
+    self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("Command 'last' exited with a %d exitcode.", exitcode)
-      return callback()
-    end
-    local function getLoginTime(dataTable)
-      local str = {}
-      for i = 4, 7 do
-        table.insert(str, dataTable[i])
-      end
-      return table.concat(str, ' ')
-    end
-    local bootups = {}
-    local logged_in = {}
-    local previous_logins = {}
-    local begins = {}
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      local dataTable = {}
-      line:gsub("%S+", function(c) table.insert(dataTable, c) end)
-      if dataTable[2] == 'system' and dataTable[3] == 'boot' then
-        table.insert(bootups, {
-          type = dataTable[1],
-          kernel = dataTable[4]
-        })
-      elseif dataTable[8] == 'still' then
-        table.insert(logged_in, {
-          user = dataTable[1],
-          host = dataTable[3],
-          login_time = getLoginTime(dataTable)
-        })
-      elseif dataTable[1] == 'wtmp' then
-        for i = 3, 7 do
-          table.insert(begins, dataTable[i])
-        end
-        begins = table.concat(begins, ' ')
-      else
-        table.insert(previous_logins, {
-          user = dataTable[1],
-          host = dataTable[3],
-          login_time = getLoginTime(dataTable),
-          logout_time = dataTable[9],
-          duration = dataTable[10]
-        })
+  local child = run(cmd, args, opts)
+  local reader = Reader:new()
+  child:pipe(reader)
+  reader:on('data', function(data)
+    for k, v in pairs(data) do
+      if type(v) == 'string' then outTable[k] = v
+      elseif type(v) == 'table' then
+        if not outTable[k] then outTable[k] = {} end
+        table.insert(outTable[k], v)
       end
     end
-    table.insert(self._params, {
-      bootups = bootups,
-      logged_in = logged_in,
-      previous_logins = previous_logins,
-      data_collection_start = begins
-    })
-    return callback()
-  end
+  end)
+  reader:on('error', function(data) table.insert(errTable, data) end)
+  reader:once('end', finalCb)
+end
 
-  return execFileToBuffers('last', {}, {}, execCb)
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'LAST_LOGINS'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

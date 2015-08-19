@@ -15,49 +15,33 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local los = require('los')
-local readCast = require('./misc').readCast
+local misc = require('./misc')
+local getInfoByVendor = misc.getInfoByVendor
+local read = misc.read
 local async = require('async')
 local fs = require('fs')
 local path = require('path')
-local sigar = require('sigar')
+local Transform = require('stream').Transform
+local tableToString = require('virgo/util/misc').tableToString
 
---[[ Pluggable auth modules ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
 end
 
-function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for pluggable auth module definitions'
-    return callback()
-  end
-
-  local cdir, vendor, errTable
-  vendor = sigar:new():sysinfo().vendor:lower()
-  errTable = {}
-  if vendor == 'ubuntu' or vendor == 'debian' then
-    cdir = '/var/spool/cron/crontabs'
-  elseif vendor == 'rhel' or vendor == 'centos' then
-    cdir = '/var/spool/cron'
+function Reader:_transform(line, cb)
+  local time, cmd = line:match("(@%l+)%s+(.+)")
+  if time then
+    self:push({
+      time = time,
+      command = cmd
+    })
+    cb()
   else
-    self._error = 'Could not determine OS'
-    return callback()
-  end
-
-  local function parseLine(iter, obj, line)
-    local time, command = line:match("(@%l+)%s+(.+)")
-    if time then
-      return table.insert(obj, {
-        time = time,
-        command = command
-      })
-    end
-    local pattern = "(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(.+)"
-    local m,h, dom, mon, dow
-    m, h, dom, mon, dow, command = line:match(pattern)
-    return table.insert(obj, {
+    local m, h, dom, mon, dow, command =
+    line:match("(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(.+)")
+    self:push({
       time = time,
       m = m,
       h = h,
@@ -66,30 +50,79 @@ function Info:_run(callback)
       dow = dow,
       command = command
     })
+    cb()
+  end
+end
+--------------------------------------------------------------------------------------------------------------------
+
+--[[ Cron ]]--
+local Info = HostInfo:extend()
+function Info:initialize()
+  HostInfo.initialize(self)
+end
+
+function Info:_run(callback)
+  local errTable, outTable = {}, {}
+  local deb = {dir = '/var/spool/cron/crontabs' }
+  local rhel = {dir = '/var/spool/cron'}
+
+  local options = {
+    ubuntu = deb,
+    debian = deb,
+    rhel = rhel,
+    centos = rhel,
+    default = nil
+  }
+
+  local vendorInfo, dir
+  vendorInfo = getInfoByVendor(options)
+  if not vendorInfo.dir then
+    self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
+    return callback()
+  end
+  dir = vendorInfo.dir
+
+  local function finalCb()
+    -- We wanna be able to return empty sets for empty crontabs therefore we dont use self:_pushparams
+    if errTable then
+      if #errTable ~= 0 and not next(outTable) then
+        self._error = tableToString(errTable, ' ')
+      end
+    end
+
+    self._params = outTable
+    return callback()
   end
 
-  fs.readdir(cdir, function(err, files)
-    if err then
-      self._error = err
-      return callback()
+  local function onreadDir(err, files)
+    if err then table.insert(errTable, err) end
+    if not files or #files == 0 then
+      return finalCb()
     end
     async.forEachLimit(files, 5, function(file, cb)
-      readCast(path.join(cdir, file), errTable, self._params, parseLine, cb)
-    end, function()
-      if self._params ~= nil then
-        table.insert(self._params, {
-          warnings = errTable
-        })
-      else
-        self._error = errTable
-      end
-      return callback()
-    end)
-  end)
+      local readStream = read(path.join(dir, file))
+      local reader = Reader:new()
+      -- Catch no file found errors
+      readStream:on('error', function(err)
+        table.insert(errTable, err)
+        return cb()
+      end)
+      readStream:pipe(reader)
+      reader:on('data', function(data) table.insert(outTable, data) end)
+      reader:on('error', function(err) table.insert(errTable, err) end)
+      reader:once('end', cb)
+    end, finalCb)
+  end
+  fs.readdir(dir, onreadDir)
 end
 
 function Info:getType()
   return 'CRON'
 end
 
-return Info
+function Info:getPlatforms()
+  return {'linux'}
+end
+
+exports.Info = Info
+exports.Reader = Reader
