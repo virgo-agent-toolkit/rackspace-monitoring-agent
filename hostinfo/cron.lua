@@ -54,8 +54,9 @@ function Info:_run(callback)
         command = command
       })
     end
-    local m, h, dom, mon, dow, command =
-    line:match("(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(.+)")
+    local pattern = "(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(%S+)%s+(.+)"
+    local m,h, dom, mon, dow
+    m, h, dom, mon, dow, command = line:match(pattern)
     return table.insert(obj, {
       time = time,
       m = m,

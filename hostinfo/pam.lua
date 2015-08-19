@@ -41,14 +41,14 @@ function Info:_run(callback)
       account = true,
       session = true
     }
-    local module_interface, control_flags, module_name, module_arguments, soStart, soEnd
+    local module_interface, control_flags, module_name, module_arguments, soEnd, _
     if line:find('%\t') then
       iter = line:gmatch('%\t')
     end
 
     module_interface = iter()
     if keywords[module_interface] then
-      soStart, soEnd = line:find('%.so')
+      _, soEnd = line:find('%.so')
       -- sometimes the pam files have many control flags
       if line:find('%]') then
         control_flags = line:sub(line:find('%[')+1, line:find('%]')-1)

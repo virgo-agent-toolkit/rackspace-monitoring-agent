@@ -55,9 +55,7 @@ function Info:_run(callback)
     for line in stdout_data:gmatch("[^\r\n]+") do
       local iter = line:gmatch("%S+")
       local firstw = iter()
-      if firstw == '(Not' or firstw == 'Active' or firstw == 'Proto' or firstw == 'will' then
-        -- Do nothing
-      else
+      if firstw ~= '(Not' and firstw ~= 'Active' and firstw ~= 'Proto' and firstw ~= 'will' then
         local obj = {
           protocol = firstw,
           recvq = iter(),

@@ -39,8 +39,8 @@ function Info:_run(callback)
     end
 
     local chain, type, iter
+    local dataTable = {}
     for line in stdout_data:gmatch("[^\r\n]+") do
-      local dataTable = {}
       iter = line:gmatch("%S+")
       type = iter()
       if type == '-P' then

@@ -104,20 +104,6 @@ local function readCast(filePath, errTable, outTable, casterFunc, callback)
 end
 
 local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
-  -- Sanity checks
-  if type(dataArr) ~= 'table' then
-    if dataArr ~= nil then
-      local obj = {}
-      table.insert(obj, dataArr)
-      dataArr = obj
-      return
-    end
-    dataArr = {}
-  end
-  if type(spawnFunc) ~= 'function' then function spawnFunc(datum) return '', {} end end
-  if type(successFunc) ~= 'function' then function successFunc(data, emptyObj, datum) end end
-  if type(finalCb) ~= 'function' then function finalCb(obj, errdata) end end
-
   -- Asynchronous spawn cps & gather data
   local obj = {}
   async.forEachLimit(dataArr, 5, function(datum, cb)
@@ -126,9 +112,9 @@ local function asyncSpawn(dataArr, spawnFunc, successFunc, finalCb)
       return cb()
     end
     local cmd, args = spawnFunc(datum)
-    return execFileToBuffers(cmd, args, opts, _successFunc)
+    return execFileToBuffers(cmd, args, { env = process.env }, _successFunc)
   end, function()
-    return finalCb(obj, errdata)
+    return finalCb(obj)
   end)
 end
 

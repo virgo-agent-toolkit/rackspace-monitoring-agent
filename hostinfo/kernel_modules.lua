@@ -36,13 +36,14 @@ function Info:_run(callback)
   local errTable = {}
 
   local function casterFunc(iter, obj)
-    local name = iter()
-    local mem_size = iter()
-    local instanceCount = iter()
-    local dependencies = iter()
-    local state = iter()
-    local memOffset = iter()
-    local dependsArr = {}
+    local name, dependencies, state, dependsArr
+    name = iter()
+    iter()
+    iter()
+    dependencies = iter()
+    state = iter()
+    iter()
+    dependsArr = {}
     for word in dependencies:gmatch('([^,]+)') do
       table.insert(dependsArr, word)
     end
@@ -50,13 +51,6 @@ function Info:_run(callback)
       state = state,
       depends = dependsArr
     }
-  end
-
-  local function cb()
-    if self._params == nil then
-      self._error = errTable
-    end
-    return callback()
   end
 
   readCast(filename, errTable, self._params, casterFunc, callback)

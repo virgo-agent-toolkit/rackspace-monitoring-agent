@@ -33,9 +33,8 @@ function Info:_run(callback)
     return callback()
   end
 
-  local vendor, statcmd, statargs, method, options, status, errTable
+  local vendor, statcmd, statargs, method, options, status
   vendor = sigar:new():sysinfo().vendor:lower()
-  errTable = {}
 
   if vendor == 'ubuntu' or vendor == 'debian' then
     statcmd = 'apt-config'
@@ -58,7 +57,7 @@ function Info:_run(callback)
       self._error = fmt("Autoupdates check exited with a %d exitcode", exitcode)
       return callback()
     end
-    if vendor == 'rhel' or vender == 'centos' then
+    if vendor == 'rhel' or vendor == 'centos' then
       status = 'enabled'
     elseif vendor == 'ubuntu' or vendor == 'debian' then
       for line in stdout_data:gmatch("[^\r\n]+") do

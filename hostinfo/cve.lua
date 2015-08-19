@@ -54,7 +54,7 @@ function Info:_run(callback)
       return callback()
     end
     for line in stdout_data:gmatch("[^\r\n]+") do
-      local cvestart, cveend = line:find('CVE-')
+      local cvestart, _ = line:find('CVE-')
       local cvestr = line:sub(cvestart, cvestart+12)
       -- we want unique cves only
       cves[cvestr] = 1

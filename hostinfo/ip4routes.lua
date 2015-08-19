@@ -33,7 +33,7 @@ function Info:_run(callback)
     return callback()
   end
 
-  local vendor, cmd, args, method, opts
+  local vendor, cmd, args, opts
   vendor = sigar:new():sysinfo().vendor:lower()
   opts = {}
   cmd = 'netstat'
@@ -55,9 +55,7 @@ function Info:_run(callback)
     for line in stdout_data:gmatch("[^\r\n]+") do
       local iter = line:gmatch("%S+")
       local firstw = iter()
-      if firstw == 'Destination' or firstw == 'Kernel' then
-        -- Do nothing
-      else
+      if firstw ~= 'Destination' and firstw ~= 'Kernel' then
         table.insert(self._params, {
           destination = firstw,
           gateway = iter(),

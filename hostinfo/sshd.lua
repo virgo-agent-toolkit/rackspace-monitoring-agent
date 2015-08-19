@@ -18,6 +18,7 @@ local HostInfo = require('./base').HostInfo
 local table = require('table')
 local execFileToBuffers = require('./misc').execFileToBuffers
 local los = require('los')
+local string = require('string')
 
 --[[ SSHd Variables ]]--
 local Info = HostInfo:extend()
@@ -33,7 +34,7 @@ function Info:_run(callback)
 
   local function execCb(err, exitcode, stdout_data, stderr_data)
     if exitcode ~= 0 then
-      self._error = fmt("SSHD exited with a %d exitcode", exitcode)
+      self._error = string.format("SSHD exited with a %d exitcode", exitcode)
       return callback()
     end
     for line in stdout_data:gmatch("[^\r\n]+") do

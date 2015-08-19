@@ -24,6 +24,8 @@ function Info:initialize()
 end
 
 function Info:_run(callback)
+  local errTable = {}
+
   if los.type() ~= 'linux' then
     self._error = 'Unsupported OS for fstab'
     return callback()
@@ -42,9 +44,6 @@ function Info:_run(callback)
     end
     return callback()
   end
-
-  local errTable = {}
-
 
   readCast('/etc/fstab', errTable, self._params, casterFunc, cb)
 end
