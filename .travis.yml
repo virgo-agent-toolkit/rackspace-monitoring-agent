@@ -7,14 +7,18 @@ addons:
     packages:
     - cmake
     - gdb
+    - luarocks
 
 sudo: false
 
 before_script:
   - ulimit -c unlimited -S
+  - luarocks install --local luacheck
+  - export PATH=~/.luarocks/bin:$PATH
 
 script:
   - RESULT=0
+  - make lint
   - make
   - make test || RESULT=$?
   - for i in $(find ./ -maxdepth 1 -name 'core*' -print); do gdb $(pwd) core* -ex "thread apply all bt" -ex "set pagination 0" -batch; done
