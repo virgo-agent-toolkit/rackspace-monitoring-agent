@@ -231,6 +231,7 @@ local function start(...)
     virgo.config['proxy'] = virgo.config['monitoring_proxy_url']
     virgo.config['insecure'] = virgo.config['monitoring_insecure']
     virgo.config['debug'] = virgo.config['monitoring_debug']
+    virgo.config['health'] = virgo.config['monitoring_health']
 
     -- Set debug logging based on the config file
     if virgo.config['debug'] == 'true' then
