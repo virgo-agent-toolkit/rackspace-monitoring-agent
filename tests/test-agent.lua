@@ -109,4 +109,23 @@ require('tap')(function(test)
       end
     })
   end)
+
+  test('test features (get)', function()
+    local features = require('../features')
+    assert(#features.get() > 0)
+  end)
+
+  test('test features (disable)', function()
+    local features = require('../features')
+    features.disable('health')
+    assert(features.get('health').disabled)
+  end)
+
+  test('test features (disable+remove)', function()
+    local features = require('../features')
+    p('before', features.get())
+    features.disable('upgrades', true)
+    assert(not features.get('upgrades'))
+    p(features.get())
+  end)
 end)

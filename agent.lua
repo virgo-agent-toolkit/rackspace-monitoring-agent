@@ -30,7 +30,6 @@ local Confd = require('./confd')
 local ConnectionStream = require('virgo/client/connection_stream').ConnectionStream
 local MachineIdentity = require('virgo/machineidentity').MachineIdentity
 local constants = require('./constants')
-local deepCopyTable = require('virgo/util/misc').deepCopyTable
 local endpoint = require('./endpoint')
 local hostname = require('./hostname')
 local logging = require('logging')
@@ -38,14 +37,7 @@ local misc = require('virgo/util/misc')
 local ffi = require('ffi')
 local certs = require('./certs')
 local isStaging = require('./staging').isStaging
-
-local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
-local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
-
-local FEATURES = {
-  FEATURE_UPGRADES,
-  FEATURE_CONFD
-}
+local features = require('./features')
 
 local function loadFlock()
   -- do not load on windows
@@ -66,7 +58,7 @@ function Agent:initialize(options, types)
   self._upgradesEnabled = true
   self._types = types or {}
   self._confd = Confd:new(options.confdDir)
-  self._features = deepCopyTable(FEATURES)
+  self._features = features.get()
 end
 
 function Agent:start(options)
@@ -126,19 +118,6 @@ end
 
 function Agent:connect(callback)
   local endpoints = self._config['endpoints']
-  local upgradeStr = self._config['upgrade']
-  if upgradeStr then
-    upgradeStr = upgradeStr:lower()
-    if upgradeStr == 'false' or upgradeStr == 'disabled' then
-      self._upgradesEnabled = false
-      for i, v in ipairs(self._features) do
-        if v.name == FEATURE_UPGRADES.name then
-          table.remove(self._features, i)
-          break
-        end
-      end
-    end
-  end
 
   if #endpoints <= 0 then
     logging.error('no endpoints')
@@ -249,6 +228,11 @@ function Agent:_preConfig(callback)
   self._config['guid'] = self:_getSystemId()
   self._config['token'] = misc.trim(self._config['token'])
   self._config['id'] = misc.trim(self._config['id'])
+
+  -- Disable Features
+  features.disableWithOption(self._config['upgrade'], 'upgrades', true)
+  features.disableWithOption(self._config['health'], 'health')
+  self._features = features.get()
 
   async.series({
     -- retrieve xen id
