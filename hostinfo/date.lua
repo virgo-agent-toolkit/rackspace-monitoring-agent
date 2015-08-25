@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@ limitations under the License.
 
 local HostInfo = require('./base').HostInfo
 
-local table = require('table')
-local os = require('os')
-
 --[[ Date ]]--
-local Date = HostInfo:extend()
-function Date:initialize()
+local Info = HostInfo:extend()
+function Info:initialize()
   HostInfo.initialize(self)
+end
+function Info:_run(callback)
   local it = os.date('%H:%M:%S %Y %m %d %Z'):gmatch('%S+')
   local fields = {}
   fields.time = it()
@@ -32,11 +31,12 @@ function Date:initialize()
   fields.date.day = it()
   fields.timezone = it()
   table.insert(self._params, fields)
+  callback()
 end
 
-function Date:getType()
+function Info:getType()
   return 'DATE'
 end
 
-return Date
+return Info
 

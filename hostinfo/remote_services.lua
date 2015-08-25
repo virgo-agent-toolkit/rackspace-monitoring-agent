@@ -1,3 +1,4 @@
+
 --[[
 Copyright 2015 Rackspace
 
@@ -13,70 +14,71 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+
 local HostInfo = require('./base').HostInfo
+local run = require('./misc').run
+local Transform = require('stream').Transform
 
-local fmt = require('string').format
-local los = require('los')
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
 
---[[ remote services check]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
 end
 
+function Reader:_transform(line, cb)
+  local function getpidandpname(str)
+    if not str or #str == 1 then
+      return '-', '-'
+    else
+      return str:sub(1, str:find('%/')-1), str:sub(str:find('%/')+1)
+    end
+  end
+  local iter = line:gmatch("%S+")
+  local firstw = iter()
+  if firstw ~= '(Not' and firstw ~= 'Active' and firstw ~= 'Proto' and firstw ~= 'will' then
+    local obj = {
+      protocol = firstw,
+      recvq = iter(),
+      sendq = iter(),
+      local_addr = iter(),
+      foreign_addr = iter(),
+      state = iter(),
+      user = iter(),
+      inode = iter()
+    }
+    obj.pid, obj.proccess = getpidandpname(iter())
+    self:push(obj)
+  end
+  cb()
+end
+--------------------------------------------------------------------------------------------------------------------
+local Info = HostInfo:extend()
+
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for remote services'
+  local cmd, args, opts = 'netstat', {'-tlpen'}, {}
+  local outTable, errTable = {}, {}
+
+  local function finalCb()
+    self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  local cmd, args, opts
-  opts = {}
-  cmd = 'netstat'
-  args = {'-tlpen'}
+  local child = run(cmd, args, opts)
+  local reader = Reader:new()
+  child:pipe(reader)
+  reader:on('data', function(data) table.insert(outTable, data) end)
+  reader:on('error', function(data) table.insert(errTable, data) end)
+  reader:once('end', finalCb)
+end
 
-
-  local function execCB(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("netstat exited with a %d exitcode", exitcode)
-      return callback()
-    end
-
-    local function getpidandpname(str)
-      if not str or #str == 1 then
-        return '-', '-'
-      else
-        return str:sub(1, str:find('%/')-1), str:sub(str:find('%/')+1)
-      end
-
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      local iter = line:gmatch("%S+")
-      local firstw = iter()
-      if firstw ~= '(Not' and firstw ~= 'Active' and firstw ~= 'Proto' and firstw ~= 'will' then
-        local obj = {
-          protocol = firstw,
-          recvq = iter(),
-          sendq = iter(),
-          local_addr = iter(),
-          foreign_addr = iter(),
-          state = iter(),
-          user = iter(),
-          inode = iter()
-        }
-        obj.pid, obj.proccess = getpidandpname(iter())
-        table.insert(self._params, obj)
-      end
-    end
-    return callback()
-  end
-  return execFileToBuffers(cmd, args, opts, execCB)
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'REMOTE_SERVICES'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

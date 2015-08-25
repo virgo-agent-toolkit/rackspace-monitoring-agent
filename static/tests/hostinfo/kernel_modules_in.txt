@@ -1,0 +1,2 @@
+nf_conntrack_ipv4 16384 4 - Live 0xffffffffc02d9000
+x_tables 36864 6 xt_conntrack,xt_tcpudp,iptable_filter,ip_tables,ip6table_filter,ip6_tables, Live 0xffffffffc028b000

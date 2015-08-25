@@ -15,12 +15,13 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 local sigar = require('sigar')
-local table = require('table')
 
 --[[ Filesystem Info ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
+end
+function Info:_run(callback)
   local ctx = sigar:new()
   local fses = ctx:filesystems()
   for i=1, #fses do
@@ -56,6 +57,7 @@ function Info:initialize()
 
     table.insert(self._params, obj)
   end
+  callback()
 end
 
 function Info:getType()

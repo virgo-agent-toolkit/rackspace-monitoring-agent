@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,64 +14,81 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
+local misc = require('./misc')
+local getInfoByVendor = misc.getInfoByVendor
+local run = misc.run
+local Transform = require('stream').Transform
 
-local fmt = require('string').format
-local los = require('los')
-local sigar = require('sigar')
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
 
---[[ Packages Variables ]]--
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+end
+
+local LinuxReader = Reader:extend()
+function LinuxReader:_transform(line, cb)
+  line = line:gsub("^%s*(.-)%s*$", "%1")
+  local _, _, key, value = line:find("(.*)%s(.*)")
+  if key then self:push({ name = key, version = value }) end
+  cb()
+end
+
+local MacReader = Reader:extend()
+function MacReader:_transform(line, cb)
+  self:push({ name = line, version = 'unknown' })
+  cb()
+end
+
+--------------------------------------------------------------------------------------------------------------------
+--[[ Packages ]]--
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
 end
 
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Packages'
+  local errTable, outTable = {}, {}
+  local deb = {cmd = 'dpkg-query', args = {'-W'}}
+  local rhel =  {cmd = 'rpm', args = {'-qa', '--queryformat', '%{NAME} %{VERSION}-%{RELEASE}\n'}}
+
+  local options = {
+    ubuntu = deb,
+    debian = deb,
+    rhel = rhel,
+    centos = rhel,
+    macosx = {cmd = 'brew', args = {'leaves'}},
+    default = nil
+  }
+
+  local spawnConfig = getInfoByVendor(options)
+  if not spawnConfig.cmd then
+    self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
+    return callback()
+  end
+  local cmd, args, opts = spawnConfig.cmd, spawnConfig.args, {}
+
+  local function finalCb()
+    self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("Packages exited with a %d exitcode", exitcode)
-      return callback()
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      line = line:gsub("^%s*(.-)%s*$", "%1")
-      local _, _, key, value = line:find("(.*)%s(.*)")
-      if key ~= nil then
-        table.insert(self._params, {
-          name = key,
-          version = value
-        })
-      end
-    end
-    return callback()
-  end
+  local child = run(cmd, args, opts)
+  local reader = cmd == 'brew' and MacReader:new() or LinuxReader:new()
+  child:pipe(reader)
+  reader:on('data', function(data) table.insert(outTable, data) end)
+  reader:on('error', function(data) table.insert(errTable, data) end)
+  reader:once('end', finalCb)
+end
 
-  local command, args, options, vendor
-  vendor = sigar:new():sysinfo().vendor:lower()
-
-  if vendor == 'ubuntu' or vendor == 'debian' then
-    command = 'dpkg-query'
-    args = {'-W'}
-    options = {}
-  elseif vendor == 'rhel' or vendor == 'centos' then
-    command = 'rpm'
-    args = {"-qa", '--queryformat', '%{NAME}: %{VERSION}-%{RELEASE}\n'}
-    options = {}
-  else
-    self._error = 'Could not determine OS for Packages'
-    return callback()
-  end
-
-  return execFileToBuffers(command, args, options, execCb)
+function Info:getPlatforms()
+  return {'linux', 'darwin'}
 end
 
 function Info:getType()
   return 'PACKAGES'
 end
 
-return Info
+exports.Info = Info
+exports.MacReader = MacReader
+exports.LinuxReader = LinuxReader

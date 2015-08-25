@@ -13,68 +13,67 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+
 local HostInfo = require('./base').HostInfo
+local run = require('./misc').run
+local Transform = require('stream').Transform
 
-local fmt = require('string').format
-local los = require('los')
-local sigar = require('sigar')
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
 
---[[ IP v4 routes check]]--
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+end
+
+function Reader:_transform(line, cb)
+  local iter = line:gmatch("%S+")
+  local firstw = iter()
+  if firstw ~= 'Destination' and firstw ~= 'Kernel' then
+    self:push({
+      destination = firstw,
+      gateway = iter(),
+      genmask = iter(),
+      flags = iter(),
+      mss = iter(),
+      window = iter(),
+      irtt = iter(),
+      iface = iter()
+    })
+  end
+  cb()
+end
+
+--------------------------------------------------------------------------------------------------------------------
+
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
 end
 
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for routs'
+  local errTable, outTable = {}, {}
+  local cmd, args, opts = 'netstat', {'-nr4'}, {}
+
+  local function finalCb()
+    self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  local vendor, cmd, args, opts
-  vendor = sigar:new():sysinfo().vendor:lower()
-  opts = {}
-  cmd = 'netstat'
+  local child = run(cmd, args, opts)
+  local reader = Reader:new()
+  child:pipe(reader)
+  reader:on('data', function(data) table.insert(outTable, data) end)
+  reader:on('error', function(data) table.insert(errTable, data) end)
+  reader:once('end', finalCb)
+end
 
-  if vendor == 'ubuntu' or vendor == 'debian' then
-    args = {'-nr4'}
-  elseif vendor == 'rhel' or vendor == 'centos' then
-    args = {'-nr'}
-  else
-    self._error = 'Could not determine linux distro for ipv4 routes check'
-    return callback()
-  end
-
-  local function execCB(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = fmt("netstat exited with a %d exitcode", exitcode)
-      return callback()
-    end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      local iter = line:gmatch("%S+")
-      local firstw = iter()
-      if firstw ~= 'Destination' and firstw ~= 'Kernel' then
-        table.insert(self._params, {
-          destination = firstw,
-          gateway = iter(),
-          genmask = iter(),
-          flags = iter(),
-          mss = iter(),
-          window = iter(),
-          irtt = iter(),
-          iface = iter()
-        })
-      end
-    end
-    return callback()
-  end
-  return execFileToBuffers(cmd, args, opts, execCB)
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'IP4ROUTES'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

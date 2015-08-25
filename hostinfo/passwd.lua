@@ -14,25 +14,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
+local async = require('async')
 local fs = require('fs')
-local los = require('los')
-local table = require('table')
-local misc = require('./misc')
+local Transform = require('stream').Transform
+local run = require('./misc').run
 
+local PASSWD_PATH = '/etc/passwd'
+local CONCURRENCY = 5
 --[[ Passwordstatus Variables ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
 end
 
-function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for passwdstatus'
-    return callback()
+function Reader:_transform(data, callback)
+  if data and #data > 0 then
+    data = data:gsub('[\n|"]','')
+    local iter = data:gmatch("%S+")
+    self:push({
+      name = iter(),
+      status = iter(),
+      last_changed = iter(),
+      minimum_age = iter(),
+      warning_period = iter(),
+      inactivity_period = iter()
+    })
   end
+  return callback()
+end
+--------------------------------------------------------------------------------------------------------------------
+local Info = HostInfo:extend()
 
-  fs.readFile('/etc/passwd', function(err, data)
+function Info:_run(callback)
+  local errTable, outTable = {}, {}
+  fs.readFile(PASSWD_PATH, function(err, data)
     if err then
       self._error = "Couldn't read /etc/passwd"
       return callback()
@@ -45,44 +62,22 @@ function Info:_run(callback)
       table.insert(users, name)
     end
 
-    local function spawnFunc(datum)
-      local cmd = 'passwd'
-      local args = {'-S', datum}
-      return cmd, args
+    local function iter(datum, callback)
+      local cmd, args, opts = 'passwd', {'-S', datum}, {}
+      local child = run(cmd, args, opts)
+      local reader = Reader:new()
+      child:pipe(reader)
+      reader:on('data', function(data) table.insert(outTable, data) end)
+      reader:on('error', function(data) table.insert(errTable, data) end)
+      reader:once('end', callback)
     end
 
-    local function successFunc(data, obj, datum)
-      if data ~= nil and data ~= '' then
-        data = data:gsub('[\n|"]','')
-        local iter = data:gmatch("%S+")
-        obj[iter()] = {
-          status = iter(),
-          last_changed = iter(),
-          minimum_age = iter(),
-          warning_period = iter(),
-          inactivity_period = iter()
-        }
-        return
-      end
+    local function finalCb()
+      self:_pushParams(errTable, outTable)
+      return callback()
     end
 
-    local function finalCb(obj, errData)
-      if obj ~= nil then
-        table.insert(self._params, obj)
-        if errData ~= nil then
-          table.insert(self._params, {
-            warnings = errData
-          })
-        end
-        return callback()
-      else
-        if errData == nil then errData = '' end
-        table.insert(self._error, errData)
-        return callback()
-      end
-    end
-
-    return misc.asyncSpawn(users, spawnFunc, successFunc, finalCb)
+    async.forEachLimit(users, CONCURRENCY, iter, finalCb)
   end)
 end
 
@@ -90,4 +85,5 @@ function Info:getType()
   return 'PASSWD'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

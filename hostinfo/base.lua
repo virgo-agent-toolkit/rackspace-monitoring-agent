@@ -14,10 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
+local gmtNow = require('virgo/utils').gmtNow
+local tableToString = require('virgo/util/misc').tableToString
+local los = require('los')
+local json = require('json')
 local Object = require('core').Object
-local vutils = require('virgo/utils')
+-------------------------------------------------------------------------------
 
---[[ HostInfo ]]--
 local HostInfo = Object:extend()
 function HostInfo:initialize()
   self._params = {}
@@ -25,11 +28,11 @@ function HostInfo:initialize()
 end
 
 function HostInfo:serialize()
-  return {
+  return json.stringify({
     error = self._error,
     metrics = self._params,
-    timestamp = vutils.gmtNow()
-  }
+    timestamp = gmtNow()
+  })
 end
 
 function HostInfo:getType()
@@ -37,6 +40,10 @@ function HostInfo:getType()
 end
 
 function HostInfo:run(callback)
+  if not self:_isValidPlatform() then
+    self._error = 'unsupported operating system for ' .. self:getType()
+    return callback()
+  end
   local status, err = pcall(function()
     if self._run then self:_run(callback) else callback() end
   end)
@@ -46,5 +53,59 @@ function HostInfo:run(callback)
     callback()
   end
 end
+
+function HostInfo:getPlatforms()
+  return nil
+end
+
+function HostInfo:_isValidPlatform()
+  local currentPlatform = los.type()
+  -- All platforms are valid if getplatforms isnt defined
+  if not self:getPlatforms() then
+    return true
+  elseif #self:getPlatforms() == 0 then
+    return true
+  end
+  for _, platform in pairs(self:getPlatforms()) do
+    if platform == currentPlatform then
+      return true
+    end
+  end
+  return false
+end
+
+function HostInfo:_pushError(err)
+  local undeferr = 'No error specified but no data recieved'
+  if type(err) == 'nil' then
+    err = undeferr
+  elseif type(err) == 'string' then
+    if not #err > 0 then err = undeferr end
+  elseif type(err) == 'number' then
+    err = 'Error code:' .. err
+  elseif type(err) == 'table' then
+    if not next(err) then
+      err = undeferr
+    else
+      err = tableToString(err)
+    end
+  end
+  self._error = err
+end
+
+function HostInfo:_pushParams(err, data)
+  if not data then
+    self:_pushError(err)
+  elseif not next(data) then
+    self:_pushError(err)
+  else
+    -- flatten single entry objects
+    if type(data) == 'table' then
+      if #data == 1 then data = data[1] end
+    end
+    self._params = data
+    self._error = nil
+  end
+end
+
 
 exports.HostInfo = HostInfo

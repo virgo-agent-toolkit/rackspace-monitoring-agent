@@ -14,10 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
+local read = require('./misc').read
+local Transform = require('stream').Transform
 
-local table = require('table')
-local los = require('los')
-local readCast = require('./misc').readCast
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+end
+
+function Reader:_transform(line, cb)
+  local iter = line:gmatch("%S+")
+  local key = iter()
+  local val = iter()
+  self:push({[key] = val})
+  return cb()
+end
+--------------------------------------------------------------------------------------------------------------------
 
 --[[ Login ]]--
 local Info = HostInfo:extend()
@@ -26,38 +39,38 @@ function Info:initialize()
 end
 
 function Info:_run(callback)
-
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Login Definitions'
-    return callback()
-  end
-
   local filename = "/etc/login.defs"
-  local outTable = {}
-  local errTable = {}
+  local outTable, errTable = {}, {}
 
-  local function casterFunc(iter, obj)
-    local key = iter()
-    local val = iter()
-    obj[key] = val
-  end
-
-  local function cb()
-    if outTable == nil then
-      self._error = errTable
-    else
-      table.insert(self._params, {
-        ['login_defs'] = outTable[1]
-      })
-    end
+  local function finalCb()
+    self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  readCast(filename, errTable, outTable, casterFunc, cb)
+  local readStream = read(filename)
+  local reader = Reader:new()
+  -- Catch no file found errors
+  readStream:on('error', function(err)
+    table.insert(errTable, err)
+    return finalCb()
+  end)
+  readStream:pipe(reader)
+  reader:on('data', function(data)
+    for k, v in pairs(data) do
+      outTable[k] = v
+    end
+  end)
+  reader:on('error', function(err) table.insert(errTable, err) end)
+  reader:once('end', finalCb)
+end
+
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'LOGIN'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

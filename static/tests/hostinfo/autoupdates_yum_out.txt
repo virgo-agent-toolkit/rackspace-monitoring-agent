@@ -1,0 +1,1 @@
+[{"status":"enabled","update_method":"yum_cron"}]

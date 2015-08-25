@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,59 +13,55 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+
 local HostInfo = require('./base').HostInfo
+local run = require('./misc').run
+local Transform = require('stream').Transform
 
-local fmt = require('string').format
-local table = require('table')
-local los = require('los')
-local spawn = require('childprocess').spawn
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
 
---[[ Sysctl Variables ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
 end
 
+function Reader:_transform(line, cb)
+  line = line:gsub("^%s*(.-)%s*$", "%1")
+  local _, _, key, value = line:find("([^=^%s]+)%s*=%s*([^=]*)")
+  if key and value then self:push({[key] = value}) end
+  cb()
+end
+--------------------------------------------------------------------------------------------------------------------
+local Info = HostInfo:extend()
+
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for sysctl'
-    callback()
-    return
+  local outTable, errTable = {}, {}
+  local cmd, args, opts = 'sysctl', {'-A'}, {}
+
+  local function finalCb()
+    self:_pushParams(errTable, outTable)
+    return callback()
   end
 
-  local child = spawn('sysctl', {'-A'}, { env = process.env })
-  local data = ''
-
-  child.stdout:on('data', function(chunk)
-    data = data .. chunk
-  end)
-
-  child:on('exit', function(exit_code)
-    if exit_code ~= 0 then
-      self._error = fmt("sysctl exited with a %d exit_code", exit_code)
-      callback()
-      return
+  local child = run(cmd, args, opts)
+  local reader = Reader:new()
+  child:pipe(reader)
+  reader:on('data', function(data)
+    for k, v in pairs(data) do
+      outTable[k] = v
     end
-    for line in data:gmatch("[^\r\n]+") do
-      line = line:gsub("^%s*(.-)%s*$", "%1")
-      local _, _, key, value = line:find("([^=^%s]+)%s*=%s*([^=]*)")
-      if key ~= nil then
-        local obj = {}
-        obj[key] = value
-        table.insert(self._params, obj)
-      end
-    end
-    callback()
   end)
+  reader:on('error', function(data) table.insert(errTable, data) end)
+  reader:once('end', finalCb)
+end
 
-  child:on('error', function(err)
-    self._error = err
-    callback()
-  end)
+function Info:getPlatforms()
+  return {'linux', 'darwin', 'freebsd', 'openbsd', 'netbsd'}
 end
 
 function Info:getType()
   return 'SYSCTL'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader
