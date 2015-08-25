@@ -1,3 +1,8 @@
+## rackspace-monitoring-agent-2.1.14
+
+* Protect hostinfos with a wrapped pcall
+* Various improvements to Luvit
+
 ## rackspace-monitoring-agent-2.1.12
 
 * Fix service net reconnections
