@@ -1,7 +1,7 @@
 Rackspace Monitoring Agent
 =====
 
-[![Build status](https://ci.appveyor.com/api/projects/status/56kkuojwo5nxl5q2/branch/luvi-up?svg=true)](https://ci.appveyor.com/project/racker-buildbot/rackspace-monitoring-agent/branch/luvi-up)
+[![Build status](https://ci.appveyor.com/api/projects/status/56kkuojwo5nxl5q2/branch/master?svg=true)](https://ci.appveyor.com/project/racker-buildbot/rackspace-monitoring-agent/branch/master)
 [![Build Status](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent.png?branch=master)](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent) [![Stories in Ready](https://badge.waffle.io/virgo-agent-toolkit/rackspace-monitoring-agent.png?label=ready&title=Ready)](https://waffle.io/virgo-agent-toolkit/waffle-tracker)
 [![Throughput Graph](https://graphs.waffle.io/virgo-agent-toolkit/waffle-tracker/throughput.svg)](https://waffle.io/virgo-agent-toolkit/waffle-tracker/metrics)
 
@@ -23,14 +23,14 @@ Otherwise, continue reading this section.
 
 Satisfy pre-requisites:
 
-If you're on windows you may have to either install or find and add certain utilities to your path beforehand. 
+If you're on windows you may have to either install or find and add certain utilities to your path beforehand.
 These are:
 
  - cmake    - Downloadable from cmake gnu site
  - nmake    - Included in Visual studio/VC/bin but may need to be inserted into your path
  - signtool - Included in Microsoft SDKs/windows/v7.1a/bin but may need to be inserted into your path
 
-Get the source: 
+Get the source:
 
     git clone https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent
 
@@ -40,7 +40,7 @@ Go into the directory that you just created:
 
 Build:
 
-    make 
+    make
 
 Now simply install the virgo client by running this last and final command:
 
@@ -135,7 +135,7 @@ Configuration File Parameters
     monitoring_token [token]         - (required) The authentication token.
     monitoring_id [agent_id]         - (optional) The Agent's monitoring_id
                                        (default: Instance ID (Xen) or Cloud-Init ID)
-    monitoring_snet_region [region]  - (optional) Enable Service Net endpoints 
+    monitoring_snet_region [region]  - (optional) Enable Service Net endpoints
                                        (region: dfw, ord, lon, syd, hkg, iad)
     monitoring_endpoints             - (optional) Force IP and Port, comma
                                        delimited
