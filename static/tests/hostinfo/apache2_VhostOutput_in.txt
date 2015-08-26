@@ -1,0 +1,19 @@
+AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 2001:4800:7812:514:be76:4eff:fe05:678d. Set the 'ServerName' directive globally to suppress this message
+VirtualHost configuration:
+*:80                   is a NameVirtualHost
+         default server 2001:4800:7812:514:be76:4eff:fe05:678d (/etc/apache2/sites-enabled/000-default.conf:1)
+         port 80 namevhost 2001:4800:7812:514:be76:4eff:fe05:678d (/etc/apache2/sites-enabled/000-default.conf:1)
+         port 80 namevhost example.com (/etc/apache2/sites-enabled/example.com.conf:1)
+                 alias www.example.com
+         port 80 namevhost test.com (/etc/apache2/sites-enabled/test.com.conf:1)
+                 alias www.test.com
+ServerRoot: "/etc/apache2"
+Main DocumentRoot: "/var/www/html"
+Main ErrorLog: "/var/log/apache2/error.log"
+Mutex default: dir="/var/lock/apache2" mechanism=fcntl
+Mutex watchdog-callback: using_defaults
+PidFile: "/var/run/apache2/apache2.pid"
+Define: DUMP_VHOSTS
+Define: DUMP_RUN_CFG
+User: name="www-data" id=33
+Group: name="www-data" id=33
