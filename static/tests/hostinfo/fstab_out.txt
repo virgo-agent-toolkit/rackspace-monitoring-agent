@@ -1,0 +1,1 @@
+[{"mount_point":"/","options":"errors=remount-ro,noatime,barrier=0","file_system":"/dev/xvda1","pass":"0","type":"ext4"}]

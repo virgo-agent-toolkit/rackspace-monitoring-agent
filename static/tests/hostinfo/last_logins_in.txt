@@ -1,0 +1,4 @@
+root     pts/0        secure-bastion.d Mon Aug 24 22:07   still logged in
+root     pts/0        secure-bastion.d Mon Aug 24 19:47 - 20:23  (00:36)
+reboot   system boot  3.19.0-23-generi Thu Aug 13 02:58 - 22:25 (11+19:26)
+wtmp begins Thu Aug 13 02:58:41 2015

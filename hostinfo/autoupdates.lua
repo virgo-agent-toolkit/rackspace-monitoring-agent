@@ -14,71 +14,100 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
+local Transform = require('stream').Transform
+local misc = require('./misc')
+local run = misc.run
+local getInfoByVendor = misc.getInfoByVendor
 
-local fmt = require('string').format
-local los = require('los')
-local sigar = require('sigar')
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+  self._pushed = false
+end
+
+local AptReader = Reader:extend()
+function AptReader:_transform(line, cb)
+  local _, _, key, value = line:find("(.*)%s(.*)")
+  value, _ = value:gsub('"', ''):gsub(';', '')
+  if key == 'APT::Periodic::Unattended-Upgrade' and value ~= 0 and not self._pushed then
+    self._pushed = true
+    self:push({
+      update_method = 'unattended_upgrades',
+      status = 'enabled'
+    })
+  end
+  cb()
+end
+
+local YumReader = Reader:extend()
+function YumReader:_transform(line, cb)
+  if not self._pushed then
+    self._pushed = true
+    self:push({
+      update_method = 'yum_cron',
+      status = 'enabled'
+    })
+  end
+  cb()
+end
 
 --[[ Are autoupdates enabled? ]]--
 local Info = HostInfo:extend()
+
 function Info:initialize()
   HostInfo.initialize(self)
 end
 
 function Info:_run(callback)
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Packages'
+  local errTable, outTable = {}, {}
+  local deb = {cmd = '/usr/bin/apt-config', args = {'dump'}, method = 'unattended_upgrades' }
+  local rhel = {cmd = '/usr/sbin/service', args = {'yum-cron', 'status'}, method = 'yum_cron'}
+
+  local options = {
+    ubuntu = deb,
+    debian = deb,
+    rhel = rhel,
+    centos = rhel,
+    default = nil
+  }
+  local spawnConfig = getInfoByVendor(options)
+  if not spawnConfig.cmd then
+    self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
     return callback()
   end
 
-  local vendor, statcmd, statargs, method, options, status
-  vendor = sigar:new():sysinfo().vendor:lower()
+  local cmd, args, opts = spawnConfig.cmd, spawnConfig.args, {}
+  local method =  spawnConfig.method
 
-  if vendor == 'ubuntu' or vendor == 'debian' then
-    statcmd = 'apt-config'
-    statargs = {'dump' }
-    method = 'unattended_upgrades'
-    options = {}
-  elseif vendor == 'rhel' or vendor == 'centos' then
-    statcmd = 'service'
-    statargs = {'yum-cron', 'status' }
-    method = 'yum_cron'
-    options = {}
-  else
-    self._error = 'Could not determine linux distro for autoupdates'
-    return callback()
-  end
-
-  local function statExecCb(err, exitcode, stdout_data, stderr_data)
-    status = 'disabled'
-    if exitcode ~= 0 then
-      self._error = fmt("Autoupdates check exited with a %d exitcode", exitcode)
-      return callback()
+  local function finalCb()
+    -- no data or err recieved, so autoupdates is disabled
+    if not next(errTable) and not next(outTable) then
+      table.insert(self._params, {
+        update_method = method,
+        status = 'disabled'
+      })
+    else
+      self:_pushParams(errTable, outTable)
     end
-    if vendor == 'rhel' or vendor == 'centos' then
-      status = 'enabled'
-    elseif vendor == 'ubuntu' or vendor == 'debian' then
-      for line in stdout_data:gmatch("[^\r\n]+") do
-        local _, _, key, value = line:find("(.*)%s(.*)")
-        value, _ = value:gsub('"', ''):gsub(';', '')
-        if key == 'APT::Periodic::Unattended-Upgrade' and value ~= 0 then
-          status = 'enabled'
-        end
-      end
-    end
-    table.insert(self._params, {
-      update_method = method,
-      status = status
-    })
     return callback()
   end
-  return execFileToBuffers(statcmd, statargs, options, statExecCb)
+
+  local reader = method == 'unattended_upgrades' and AptReader:new() or YumReader:new()
+  local child = run(cmd, args, opts)
+  child:pipe(reader)
+  reader:on('error', function(err) table.insert(errTable, err) end)
+  reader:on('data', function(data) table.insert(outTable, data) end)
+  reader:once('end', finalCb)
+end
+
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'AUTOUPDATES'
 end
 
-return Info
+exports.Info = Info
+exports.YumReader = YumReader
+exports.AptReader = AptReader

@@ -35,5 +35,5 @@ exports['rate-limiting'] = load_fixtures(path.join(base, 'rate-limiting'), true)
 exports['custom_plugins'] = load_fixtures(path.join('static','tests', 'custom_plugins'))
 exports['checks'] = load_fixtures(path.join('static','tests', 'checks'))
 exports['upgrade'] = load_fixtures(path.join('static','tests', 'upgrade'))
-
+exports['hostinfo'] = load_fixtures(path.join('static','tests', 'hostinfo'))
 return exports

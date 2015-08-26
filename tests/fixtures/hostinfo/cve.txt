@@ -1,0 +1,20 @@
+  * fix for CVE-2014-2855 - rsync denial of service
+    - debian/patches/CVE-2014-3634.patch: limit PRI values in
+    - CVE-2014-3634
+    - CVE-2014-3683
+    - debian/patches/CVE-2014-9680.patch: sanity check TZ env variable in
+    - CVE-2014-9680
+    + CVE-2015-0261: missing bounds checks in IPv6 Mobility printer.
+    + CVE-2015-2153: missing bounds checks in RPKI/RTR printer.
+    + CVE-2015-2154: missing bounds checks in ISOCLNS printer.
+    + CVE-2015-2155: missing bounds checks in ForCES printer.
+    in the PPP dissector (CVE-2014-9140).
+    + CVE-2014-8767: missing bounds checks in OLSR dissector (closes: #770434).
+    + CVE-2014-8768: missing bounds checks in Geonet dissector
+    + CVE-2014-8769: missing bounds checks in AOVD dissector (closes: #770424).
+    - This fixes CVE-2014-9114: blkid command injection
+      see https://security-tracker.debian.org/tracker/CVE-2014-9114
+    - This fixes CVE-2014-9114: blkid command injection
+      see https://security-tracker.debian.org/tracker/CVE-2014-9114
+  * debian/changelog mention CVE-2014-4877 in 1.16-1
+    - No longer create local symbolic links by default CVE-2014-4877

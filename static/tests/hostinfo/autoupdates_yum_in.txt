@@ -1,0 +1,2 @@
+Loaded: loaded (/usr/lib/systemd/system/yum-cron.service; enabled)
+Active: active (exited) since Thu 2015-08-13 03:06:32 UTC; 1 weeks 0 days ago

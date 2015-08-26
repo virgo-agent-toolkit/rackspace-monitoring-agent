@@ -13,52 +13,55 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+
 local HostInfo = require('./base').HostInfo
+local run = require('./misc').run
+local Transform = require('stream').Transform
 
-local table = require('table')
-local execFileToBuffers = require('./misc').execFileToBuffers
-local los = require('los')
-local string = require('string')
-
---[[ SSHd Variables ]]--
-local Info = HostInfo:extend()
-function Info:initialize()
-  HostInfo.initialize(self)
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
 end
 
+function Reader:_transform(line, cb)
+  line = line:gsub("^%s*(.-)%s*$", "%1")
+  local _, _, key, value = line:find("(.*)%s(.*)")
+  if key then self:push({[key] = value}) end
+  cb()
+end
+--------------------------------------------------------------------------------------------------------------------
+
+local Info = HostInfo:extend()
+
 function Info:_run(callback)
-  if los.type() == 'win32' then
-    self._error = 'Unsupported OS for sshd'
+  local outTable, errTable = {}, {}
+  local cmd, args, opts = 'sshd', {'-T'}, {}
+
+  local function finalCb()
+    self:_pushParams(errTable, outTable)
     return callback()
-  end
+end
 
-  local function execCb(err, exitcode, stdout_data, stderr_data)
-    if exitcode ~= 0 then
-      self._error = string.format("SSHD exited with a %d exitcode", exitcode)
-      return callback()
+  local child = run(cmd, args, opts)
+  local reader = Reader:new()
+  child:pipe(reader)
+  reader:on('data', function(data)
+    for k, v in pairs(data) do
+      outTable[k] = v
     end
-    for line in stdout_data:gmatch("[^\r\n]+") do
-      line = line:gsub("^%s*(.-)%s*$", "%1")
-      local _, _, key, value = line:find("(.*)%s(.*)")
-      if key ~= nil then
-        local obj = {}
-        obj[key] = value
-        table.insert(self._params, obj)
-      end
-    end
-    callback()
-  end
+  end)
+  reader:on('error', function(data) table.insert(errTable, data) end)
+  reader:once('end', finalCb)
+end
 
-  local command = '/usr/sbin/sshd'
-  local args = {'-T'}
-  local options = {}
-
-  execFileToBuffers(command, args, options, execCb)
-
+function Info:getPlatforms()
+  return {'linux', 'darwin'}
 end
 
 function Info:getType()
   return 'SSHD'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

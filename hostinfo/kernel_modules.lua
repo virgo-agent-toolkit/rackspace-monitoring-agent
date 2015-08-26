@@ -14,10 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
+local read = require('./misc').read
+local Transform = require('stream').Transform
 
-local table = require('table')
-local los = require('los')
-local readCast = require('./misc').readCast
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+end
+
+function Reader:_transform(line, cb)
+  local function getDeps(dependsArr)
+    local outobj = {}
+    for word in dependsArr:gmatch('([^,]+)') do
+      table.insert(outobj, word)
+    end
+    return outobj
+  end
+  local iter = line:gmatch("%S+")
+
+  self:push({
+    name = iter(),
+    mem_size = iter(),
+    instanceCount = iter(),
+    dependencies = getDeps(iter()),
+    state = iter(),
+    memOffset = iter(),
+  })
+  return cb()
+end
+--------------------------------------------------------------------------------------------------------------------
 
 --[[ Kernel modules ]]--
 local Info = HostInfo:extend()
@@ -26,38 +52,34 @@ function Info:initialize()
 end
 
 function Info:_run(callback)
+  local filename = "/proc/modules"
+  local outTable, errTable = {}, {}
 
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for Kernel modules'
+  local function finalCb()
+    self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  local filename = "/proc/modules"
-  local errTable = {}
+  local readStream = read(filename)
+  local reader = Reader:new()
+  -- Catch no file found errors
+  readStream:on('error', function(err)
+    table.insert(errTable, err)
+    return finalCb()
+  end)
+  readStream:pipe(reader)
+  reader:on('data', function(data) table.insert(outTable, data) end)
+  reader:on('error', function(err) table.insert(errTable, err) end)
+  reader:once('end', finalCb)
+end
 
-  local function casterFunc(iter, obj)
-    local name, dependencies, state, dependsArr
-    name = iter()
-    iter()
-    iter()
-    dependencies = iter()
-    state = iter()
-    iter()
-    dependsArr = {}
-    for word in dependencies:gmatch('([^,]+)') do
-      table.insert(dependsArr, word)
-    end
-    obj[name] = {
-      state = state,
-      depends = dependsArr
-    }
-  end
-
-  readCast(filename, errTable, self._params, casterFunc, callback)
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'KERNEL_MODULES'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

@@ -1,0 +1,1 @@
+/dev/xvda1      /               ext4    errors=remount-ro,noatime,barrier=0 0       1

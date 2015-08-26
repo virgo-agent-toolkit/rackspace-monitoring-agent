@@ -13,43 +13,62 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ]]--
-local los = require('los')
-local readCast = require('./misc').readCast
+local HostInfo = require('./base').HostInfo
+local read = require('./misc').read
+local Transform = require('stream').Transform
+--------------------------------------------------------------------------------------------------------------------
+local Reader = Transform:extend()
+function Reader:initialize()
+  Transform.initialize(self, {objectMode = true})
+end
+
+function Reader:_transform(line, cb)
+  local out = {}
+  local iter = line:gmatch("%S+")
+  local types = {'file_system', 'mount_point', 'type', 'options', 'pass' }
+  for i = 1, #types do
+    out[types[i]] = iter()
+  end
+  self:push(out)
+  return cb()
+end
+--------------------------------------------------------------------------------------------------------------------
 
 --[[ Check fstab ]]--
-local HostInfo = require('./base').HostInfo
 local Info = HostInfo:extend()
 function Info:initialize()
   HostInfo.initialize(self)
 end
 
 function Info:_run(callback)
-  local errTable = {}
+  local filename = '/etc/fstab'
+  local ouTable, errTable = {}, {}
 
-  if los.type() ~= 'linux' then
-    self._error = 'Unsupported OS for fstab'
+  local function finalCb()
+    self:_pushParams(errTable, ouTable)
     return callback()
   end
 
-  local function casterFunc(iter, obj)
-    local types = {'file_system', 'mount_point', 'type', 'options', 'pass' }
-    for i = 1, #types do
-      obj[types[i]] = iter()
-    end
-  end
+  local readStream = read(filename)
+  local reader = Reader:new()
+  -- Catch no file found errors
+  readStream:on('error', function(err)
+    table.insert(errTable, err)
+    return finalCb()
+  end)
+  readStream:pipe(reader)
+  reader:on('data', function(data) table.insert(ouTable, data) end)
+  reader:on('error', function(err) table.insert(errTable, err) end)
+  reader:once('end', finalCb)
+end
 
-  local function cb()
-    if self._params == nil then
-      self._error = errTable
-    end
-    return callback()
-  end
-
-  readCast('/etc/fstab', errTable, self._params, casterFunc, cb)
+function Info:getPlatforms()
+  return {'linux'}
 end
 
 function Info:getType()
   return 'FSTAB'
 end
 
-return Info
+exports.Info = Info
+exports.Reader = Reader

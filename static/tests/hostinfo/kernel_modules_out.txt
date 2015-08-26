@@ -1,0 +1,1 @@
+[{"mem_size":"16384","memOffset":"0xffffffffc02d9000","instanceCount":"4","state":"Live","name":"nf_conntrack_ipv4","dependencies":["-"]},{"mem_size":"36864","memOffset":"0xffffffffc028b000","instanceCount":"6","state":"Live","name":"x_tables","dependencies":["xt_conntrack","xt_tcpudp","iptable_filter","ip_tables","ip6table_filter","ip6_tables"]}]
