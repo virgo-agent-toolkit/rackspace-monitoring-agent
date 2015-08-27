@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.1.17
+
+* Fix RPM auto list
+
 ## rackspace-monitoring-agent-2.1.16
 
 * Hotfix for hostinfo serialization
