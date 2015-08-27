@@ -88,9 +88,9 @@ require('tap')(function(test)
   ---------------------------------------------- Tests for Autoupdates ------------------------------------------------
 
   test('test for Autoupdates: apt reader enabled', function(expect)
-    local autoupdates = require('../hostinfo/autoupdates')
+    local hostinfo = require('../hostinfo/autoupdates')
     local errTable, outTable = {}, {}
-    local reader = autoupdates.AptReader:new()
+    local reader = hostinfo.AptReader:new()
     local inFixture = LineEmitter:new()
     local outFixture = hostinfoFixtureDir['autoupdates_apt_out.txt']
     local cb = expect(function()
@@ -108,9 +108,9 @@ require('tap')(function(test)
   end)
 
   test('test for Autoupdates: yum reader enabled', function(expect)
-    local autoupdates = require('../hostinfo/autoupdates')
+    local hostinfo = require('../hostinfo/autoupdates')
     local errTable, outTable = {}, {}
-    local reader = autoupdates.YumReader:new()
+    local reader = hostinfo.YumReader:new()
     local inFixture = LineEmitter:new()
     local outFixture = hostinfoFixtureDir['autoupdates_yum_out.txt']
     local cb = expect(function()
@@ -130,9 +130,9 @@ require('tap')(function(test)
   ----------------------------------------------- Tests for packages --------------------------------------------------
 
   test('test for packages: linux reader', function(expect)
-    local autoupdates = require('../hostinfo/packages')
+    local hostinfo = require('../hostinfo/packages')
     local errTable, outTable = {}, {}
-    local reader = autoupdates.LinuxReader:new()
+    local reader = hostinfo.LinuxReader:new()
     local inFixture = LineEmitter:new()
     local outFixture = hostinfoFixtureDir['packages_linux_out.txt']
     local cb = expect(function()
@@ -206,4 +206,45 @@ require('tap')(function(test)
     inFixture:write(chunk)
     inFixture:write(nil)
   end)
+
+  ----------------------------------------------- Tests for connections ------------------------------------------------
+  local hostinfo = require('../hostinfo/connections')
+  test('test for connections: arp reader', function(expect)
+    local errTable, outTable = {}, {}
+    local reader = hostinfo.ArpReader:new()
+    local inFixture = LineEmitter:new()
+    local outFixture = hostinfoFixtureDir['connections_arp_out.txt']
+    local cb = expect(function()
+      local outFixtureTable = json.parse(outFixture)
+      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
+      assert(#errTable==0, 'Not ok: errtable is not 0 length')
+    end)
+    inFixture:pipe(reader)
+    reader:on('error', function(err) table.insert(errTable, err) end)
+    reader:on('data', function(data) table.insert(outTable, data) end)
+    reader:once('end', cb)
+    local chunk = hostinfoFixtureDir['connections_arp_in.txt']
+    inFixture:write(chunk)
+    inFixture:write(nil)
+  end)
+
+  test('test for connections: netstat reader', function(expect)
+    local errTable, outTable = {}, {}
+    local reader = hostinfo.NetstatReader:new()
+    local inFixture = LineEmitter:new()
+    local outFixture = hostinfoFixtureDir['connections_netstat_out.txt']
+    local cb = expect(function()
+      local outFixtureTable = json.parse(outFixture)
+      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
+      assert(#errTable==0, 'Not ok: errtable is not 0 length')
+    end)
+    inFixture:pipe(reader)
+    reader:on('error', function(err) table.insert(errTable, err) end)
+    reader:on('data', function(data) table.insert(outTable, data) end)
+    reader:once('end', cb)
+    local chunk = hostinfoFixtureDir['connections_netstat_in.txt']
+    inFixture:write(chunk)
+    inFixture:write(nil)
+  end)
+
 end)

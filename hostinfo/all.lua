@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 return {
+  require('./connections'),
   require('./iptables'),
   require('./ip6tables'),
   require('./autoupdates'),
