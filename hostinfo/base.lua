@@ -17,7 +17,6 @@ limitations under the License.
 local gmtNow = require('virgo/utils').gmtNow
 local tableToString = require('virgo/util/misc').tableToString
 local los = require('los')
-local json = require('json')
 local Object = require('core').Object
 -------------------------------------------------------------------------------
 
@@ -28,11 +27,11 @@ function HostInfo:initialize()
 end
 
 function HostInfo:serialize()
-  return json.stringify({
+  return {
     error = self._error,
     metrics = self._params,
     timestamp = gmtNow()
-  })
+  }
 end
 
 function HostInfo:getType()

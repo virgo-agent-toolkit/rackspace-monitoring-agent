@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.1.16
+
+* Hotfix for hostinfo serialization
+
 ## rackspace-monitoring-agent-2.1.15
 
 * Do not prelink on RPM systems
