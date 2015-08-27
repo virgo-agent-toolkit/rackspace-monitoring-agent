@@ -1,0 +1,26 @@
+2015-08-27 18:35:32,782 fail2ban.server         [12228]: INFO    Changed logging target to /var/log/fail2ban.log for$
+2015-08-27 18:35:32,840 fail2ban.database       [12228]: INFO    Connected to fail2ban persistent database '/var/lib$
+2015-08-27 18:35:32,900 fail2ban.database       [12228]: WARNING New database created. Version '2'
+2015-08-27 18:35:32,902 fail2ban.jail           [12228]: INFO    Creating new jail 'sshd'
+2015-08-27 18:35:33,144 fail2ban.jail           [12228]: INFO    Jail 'sshd' uses pyinotify
+2015-08-27 18:35:33,166 fail2ban.filter         [12228]: INFO    Set jail log file encoding to UTF-8
+2015-08-27 18:35:33,171 fail2ban.jail           [12228]: INFO    Initiated 'pyinotify' backend
+2015-08-27 18:35:33,179 fail2ban.actions        [12228]: INFO    Set banTime = 600
+2015-08-27 18:35:33,179 fail2ban.filter         [12228]: INFO    Set findtime = 600
+2015-08-27 18:35:33,224 fail2ban.filter         [12228]: INFO    Added logfile = /var/log/auth.log
+2015-08-27 18:35:33,242 fail2ban.filter         [12228]: INFO    Set maxRetry = 5
+2015-08-27 18:35:33,243 fail2ban.filter         [12228]: INFO    Set jail log file encoding to UTF-8
+2015-08-27 18:35:33,244 fail2ban.filter         [12228]: INFO    Set maxlines = 10
+2015-08-27 18:35:33,310 fail2ban.server         [12228]: INFO    Jail sshd is not a JournalFilter instance
+2015-08-27 18:35:33,318 fail2ban.jail           [12228]: INFO    Jail 'sshd' started
+2015-08-27 18:39:02,454 fail2ban.filter         [12228]: INFO    [sshd] Found 43.229.53.20
+2015-08-27 18:39:02,456 fail2ban.filter         [12228]: INFO    [sshd] Found 58.218.211.166
+2015-08-27 18:39:02,463 fail2ban.filter         [12228]: INFO    [sshd] Found 43.229.53.20
+2015-08-27 18:39:02,476 fail2ban.filter         [12228]: INFO    [sshd] Found 58.218.211.166
+2015-08-27 18:49:05,849 fail2ban.actions        [12228]: NOTICE  [sshd] Unban 43.229.53.20
+2015-08-27 19:24:15,683 fail2ban.actions        [12228]: NOTICE  [sshd] Ban 43.229.53.20
+2015-08-27 19:34:16,643 fail2ban.actions        [12228]: NOTICE  [sshd] Unban 43.229.53.20
+2015-08-27 20:14:40,828 fail2ban.actions        [12228]: NOTICE  [sshd] Ban 43.229.53.20
+
+2015-08-27 20:55:13,275 fail2ban.actions        [12228]: NOTICE  [sshd] Ban 43.229.53.20
+2015-08-27 21:05:14,238 fail2ban.actions        [12228]: NOTICE  [sshd] Unban 43.229.53.20

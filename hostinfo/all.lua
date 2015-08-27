@@ -46,5 +46,6 @@ return {
   require('./remote_services'),
   require('./ip4routes'),
   require('./ip6routes'),
-  require('./apache2')
+  require('./apache2'),
+  require('./fail2ban')
 }

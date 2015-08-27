@@ -130,4 +130,21 @@ require('tap')(function(test)
     testTemplate(expect, 'connections', 'connections_netstat', 'NetstatReader')
   end)
 
+  ----------------------------------------------- Tests for fail2ban ------------------------------------------------
+  test('Test Fail2ban: LogfilePathReader', function(expect)
+    testTemplate(expect, 'fail2ban', 'fail2ban_logfilepath', 'LogfilePathReader')
+  end)
+
+  test('Test Fail2ban: JailsListReader', function(expect)
+    testTemplate(expect, 'fail2ban', 'fail2ban_jailslist', 'JailsListReader')
+  end)
+
+  test('Test Fail2ban: ActivityLogReader', function(expect)
+    testTemplate(expect, 'fail2ban', 'fail2ban_activitylog', 'ActivityLogReader')
+  end)
+
+  test('Test Fail2ban: BannedStatsReader', function(expect)
+    testTemplate(expect, 'fail2ban', 'fail2ban_bannedstats', 'BannedStatsReader')
+  end)
+
 end)
