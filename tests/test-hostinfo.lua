@@ -43,6 +43,27 @@ require('tap')(function(test)
     info:run(expect(onRun))
   end)
 
+  -- Utility function to run checks
+  local function testTemplate(expect, hostinfoName, testFileName, Reader)
+    local hostinfo = require('../hostinfo/'..hostinfoName)
+    local errTable, outTable = {}, {}
+    local reader = hostinfo[Reader]:new()
+    local inFixture = LineEmitter:new()
+    local outFixture = hostinfoFixtureDir[testFileName..'_out.txt']
+    local cb = expect(function()
+      local outFixtureTable = json.parse(outFixture)
+      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
+      assert(#errTable==0, 'Not ok: errtable is not 0 length')
+    end)
+    inFixture:pipe(reader)
+    reader:on('error', function(err) table.insert(errTable, err) end)
+    reader:on('data', function(data) table.insert(outTable, data) end)
+    reader:once('end', cb)
+    local chunk = hostinfoFixtureDir[testFileName..'_in.txt']
+    inFixture:write(chunk)
+    inFixture:write()
+  end
+
   -- Some of the hostinfo checks are very similiar and only have one reader so we'll just loop over them
   local hostinfoChecks = {
     'cron',
@@ -64,187 +85,49 @@ require('tap')(function(test)
   }
 
   for _, checkName in pairs(hostinfoChecks) do
-    test('Auto test:' .. checkName, function(expect)
-      local hostinfo = require('../hostinfo/'..checkName)
-      local errTable, outTable = {}, {}
-      local reader = hostinfo.Reader:new()
-      local inFixture = LineEmitter:new()
-      local outFixture = hostinfoFixtureDir[checkName..'_out.txt']
-      local cb = expect(function()
-        local outFixtureTable = json.parse(outFixture)
-        assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-        assert(#errTable==0, 'Not ok: errtable is not 0 length')
-      end)
-      inFixture:pipe(reader)
-      reader:on('error', function(err) table.insert(errTable, err) end)
-      reader:on('data', function(data) table.insert(outTable, data) end)
-      reader:once('end', cb)
-      local chunk = hostinfoFixtureDir[checkName..'_in.txt']
-      inFixture:write(chunk)
-      inFixture:write()
+    test('Test: ' .. checkName, function(expect)
+      testTemplate(expect, checkName, checkName, 'Reader')
     end)
   end
 
   ---------------------------------------------- Tests for Autoupdates ------------------------------------------------
 
-  test('test for Autoupdates: apt reader enabled', function(expect)
-    local hostinfo = require('../hostinfo/autoupdates')
-    local errTable, outTable = {}, {}
-    local reader = hostinfo.AptReader:new()
-    local inFixture = LineEmitter:new()
-    local outFixture = hostinfoFixtureDir['autoupdates_apt_out.txt']
-    local cb = expect(function()
-      local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-      assert(#errTable==0, 'Not ok: errtable is not 0 length')
-    end)
-    inFixture:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
-    reader:on('data', function(data) table.insert(outTable, data) end)
-    reader:once('end', cb)
-    local chunk = hostinfoFixtureDir['autoupdates_apt_in.txt']
-    inFixture:write(chunk)
-    inFixture:write()
+  test('Test Autoupdates: apt reader enabled', function(expect)
+    testTemplate(expect, 'autoupdates', 'autoupdates_apt', 'AptReader')
   end)
 
-  test('test for Autoupdates: yum reader enabled', function(expect)
-    local hostinfo = require('../hostinfo/autoupdates')
-    local errTable, outTable = {}, {}
-    local reader = hostinfo.YumReader:new()
-    local inFixture = LineEmitter:new()
-    local outFixture = hostinfoFixtureDir['autoupdates_yum_out.txt']
-    local cb = expect(function()
-      local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-      assert(#errTable==0, 'Not ok: errtable is not 0 length')
-    end)
-    inFixture:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
-    reader:on('data', function(data) table.insert(outTable, data) end)
-    reader:once('end', cb)
-    local chunk = hostinfoFixtureDir['autoupdates_yum_in.txt']
-    inFixture:write(chunk)
-    inFixture:write(nil)
+  test('Test Autoupdates: yum reader enabled', function(expect)
+    testTemplate(expect, 'autoupdates', 'autoupdates_yum', 'YumReader')
   end)
 
   ----------------------------------------------- Tests for packages --------------------------------------------------
 
-  test('test for packages: linux reader', function(expect)
-    local hostinfo = require('../hostinfo/packages')
-    local errTable, outTable = {}, {}
-    local reader = hostinfo.LinuxReader:new()
-    local inFixture = LineEmitter:new()
-    local outFixture = hostinfoFixtureDir['packages_linux_out.txt']
-    local cb = expect(function()
-      local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-      assert(#errTable==0, 'Not ok: errtable is not 0 length')
-    end)
-    inFixture:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
-    reader:on('data', function(data) table.insert(outTable, data) end)
-    reader:once('end', cb)
-    local chunk = hostinfoFixtureDir['packages_linux_in.txt']
-    inFixture:write(chunk)
-    inFixture:write(nil)
+  test('Test Packages: linux reader', function(expect)
+    testTemplate(expect, 'packages', 'packages_linux', 'LinuxReader')
   end)
+
   ----------------------------------------------- Tests for apache2 --------------------------------------------------
-  local hostinfo = require('../hostinfo/apache2')
-  test('test for apache2: apache output reader', function(expect)
-    local errTable, outTable = {}, {}
-    local reader = hostinfo.ApacheOutputReader:new()
-    local inFixture = LineEmitter:new()
-    local outFixture = hostinfoFixtureDir['apache2_apacheOut_out.txt']
-    local cb = expect(function()
-      local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-      assert(#errTable==0, 'Not ok: errtable is not 0 length')
-    end)
-    inFixture:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
-    reader:on('data', function(data) table.insert(outTable, data) end)
-    reader:once('end', cb)
-    local chunk = hostinfoFixtureDir['apache2_apacheOut_in.txt']
-    inFixture:write(chunk)
-    inFixture:write(nil)
+
+  test('Test Apache2: apache output reader', function(expect)
+    testTemplate(expect, 'apache2', 'apache2_apacheOut', 'ApacheOutputReader')
   end)
 
-  test('test for apache2: VhostOutputReader', function(expect)
-    local errTable, outTable = {}, {}
-    local reader = hostinfo.VhostOutputReader:new()
-    local inFixture = LineEmitter:new()
-    local outFixture = hostinfoFixtureDir['apache2_VhostOutput_out.txt']
-    local cb = expect(function()
-      local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-      assert(#errTable==0, 'Not ok: errtable is not 0 length')
-    end)
-    inFixture:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
-    reader:on('data', function(data) table.insert(outTable, data) end)
-    reader:once('end', cb)
-    local chunk = hostinfoFixtureDir['apache2_VhostOutput_in.txt']
-    inFixture:write(chunk)
-    inFixture:write(nil)
+  test('Test Apache2: VhostOutputReader', function(expect)
+    testTemplate(expect, 'apache2', 'apache2_VhostOutput', 'VhostOutputReader')
   end)
 
-  test('test for apache2: VhostConfigReader', function(expect)
-    local errTable, outTable = {}, {}
-    local reader = hostinfo.VhostConfigReader:new()
-    local inFixture = LineEmitter:new()
-    local outFixture = hostinfoFixtureDir['apache2_VhostConfig_out.txt']
-    local cb = expect(function()
-      local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-      assert(#errTable==0, 'Not ok: errtable is not 0 length')
-    end)
-    inFixture:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
-    reader:on('data', function(data) table.insert(outTable, data) end)
-    reader:once('end', cb)
-    local chunk = hostinfoFixtureDir['apache2_VhostConfig_in.txt']
-    inFixture:write(chunk)
-    inFixture:write(nil)
+  test('Test Apache2: VhostConfigReader', function(expect)
+    testTemplate(expect, 'apache2', 'apache2_VhostConfig', 'VhostConfigReader')
   end)
 
   ----------------------------------------------- Tests for connections ------------------------------------------------
-  local hostinfo = require('../hostinfo/connections')
-  test('test for connections: arp reader', function(expect)
-    local errTable, outTable = {}, {}
-    local reader = hostinfo.ArpReader:new()
-    local inFixture = LineEmitter:new()
-    local outFixture = hostinfoFixtureDir['connections_arp_out.txt']
-    local cb = expect(function()
-      local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-      assert(#errTable==0, 'Not ok: errtable is not 0 length')
-    end)
-    inFixture:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
-    reader:on('data', function(data) table.insert(outTable, data) end)
-    reader:once('end', cb)
-    local chunk = hostinfoFixtureDir['connections_arp_in.txt']
-    inFixture:write(chunk)
-    inFixture:write(nil)
+
+  test('Test Connections: arp reader', function(expect)
+    testTemplate(expect, 'connections', 'connections_arp', 'ArpReader')
   end)
 
-  test('test for connections: netstat reader', function(expect)
-    local errTable, outTable = {}, {}
-    local reader = hostinfo.NetstatReader:new()
-    local inFixture = LineEmitter:new()
-    local outFixture = hostinfoFixtureDir['connections_netstat_out.txt']
-    local cb = expect(function()
-      local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
-      assert(#errTable==0, 'Not ok: errtable is not 0 length')
-    end)
-    inFixture:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
-    reader:on('data', function(data) table.insert(outTable, data) end)
-    reader:once('end', cb)
-    local chunk = hostinfoFixtureDir['connections_netstat_in.txt']
-    inFixture:write(chunk)
-    inFixture:write(nil)
+  test('Test Connections: netstat reader', function(expect)
+    testTemplate(expect, 'connections', 'connections_netstat', 'NetstatReader')
   end)
 
 end)
