@@ -44,5 +44,6 @@ return {
   require('./last_logins'),
   require('./remote_services'),
   require('./ip4routes'),
-  require('./ip6routes')
+  require('./ip6routes'),
+  require('./apache2')
 }

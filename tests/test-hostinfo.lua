@@ -148,5 +148,62 @@ require('tap')(function(test)
     inFixture:write(chunk)
     inFixture:write(nil)
   end)
+  ----------------------------------------------- Tests for apache2 --------------------------------------------------
+  local hostinfo = require('../hostinfo/apache2')
+  test('test for apache2: apache output reader', function(expect)
+    local errTable, outTable = {}, {}
+    local reader = hostinfo.ApacheOutputReader:new()
+    local inFixture = LineEmitter:new()
+    local outFixture = hostinfoFixtureDir['apache2_apacheOut_out.txt']
+    local cb = expect(function()
+      local outFixtureTable = json.parse(outFixture)
+      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
+      assert(#errTable==0, 'Not ok: errtable is not 0 length')
+    end)
+    inFixture:pipe(reader)
+    reader:on('error', function(err) table.insert(errTable, err) end)
+    reader:on('data', function(data) table.insert(outTable, data) end)
+    reader:once('end', cb)
+    local chunk = hostinfoFixtureDir['apache2_apacheOut_in.txt']
+    inFixture:write(chunk)
+    inFixture:write(nil)
+  end)
 
+  test('test for apache2: VhostOutputReader', function(expect)
+    local errTable, outTable = {}, {}
+    local reader = hostinfo.VhostOutputReader:new()
+    local inFixture = LineEmitter:new()
+    local outFixture = hostinfoFixtureDir['apache2_VhostOutput_out.txt']
+    local cb = expect(function()
+      local outFixtureTable = json.parse(outFixture)
+      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
+      assert(#errTable==0, 'Not ok: errtable is not 0 length')
+    end)
+    inFixture:pipe(reader)
+    reader:on('error', function(err) table.insert(errTable, err) end)
+    reader:on('data', function(data) table.insert(outTable, data) end)
+    reader:once('end', cb)
+    local chunk = hostinfoFixtureDir['apache2_VhostOutput_in.txt']
+    inFixture:write(chunk)
+    inFixture:write(nil)
+  end)
+
+  test('test for apache2: VhostConfigReader', function(expect)
+    local errTable, outTable = {}, {}
+    local reader = hostinfo.VhostConfigReader:new()
+    local inFixture = LineEmitter:new()
+    local outFixture = hostinfoFixtureDir['apache2_VhostConfig_out.txt']
+    local cb = expect(function()
+      local outFixtureTable = json.parse(outFixture)
+      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
+      assert(#errTable==0, 'Not ok: errtable is not 0 length')
+    end)
+    inFixture:pipe(reader)
+    reader:on('error', function(err) table.insert(errTable, err) end)
+    reader:on('data', function(data) table.insert(outTable, data) end)
+    reader:once('end', cb)
+    local chunk = hostinfoFixtureDir['apache2_VhostConfig_in.txt']
+    inFixture:write(chunk)
+    inFixture:write(nil)
+  end)
 end)

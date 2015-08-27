@@ -1,0 +1,5 @@
+  [{"version":"Apache/2.4.10 (Ubuntu)"},
+  {"mpm":"event"},
+  {"config_path":"/etc/apache2"},
+  {"config_file":"apache2.conf"},
+  {"syntax_ok":true}]
