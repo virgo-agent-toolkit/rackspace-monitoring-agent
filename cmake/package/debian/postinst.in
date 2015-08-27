@@ -23,17 +23,20 @@ legacy_start() {
   exit $?
 }
 
+systemd_start() {
+  systemctl reload @APP_NAME@.service >/dev/null 2>&1 || true
+  systemctl enable @APP_NAME@.service >/dev/null 2>&1 || true
+  if [ -f "/etc/rackspace-monitoring-agent.cfg" ] ; then
+    systemctl restart @APP_NAME@.service >/dev/null 2>&1 || true
+  fi
+}
+
 case "$1" in
     configure)
-      if [ -x "/etc/init.d/@APP_NAME@" ] || [ -e "/etc/init/@APP_NAME@.conf" ]; then
+      if which systemctl > /dev/null; then
+        systemd_start
+      elif [ -x "/etc/init.d/@APP_NAME@" ] || [ -e "/etc/init/@APP_NAME@.conf" ]; then
         legacy_start
-      fi
-      if [ -x "/bin/systemctl"  ]; then
-        /bin/systemctl reload @APP_NAME@.service >/dev/null 2>&1 || true
-        /bin/systemctl enable @APP_NAME@.service >/dev/null 2>&1 || true
-        if [ -f "/etc/rackspace-monitoring-agent.cfg" ] ; then
-          /bin/systemctl restart @APP_NAME@.service >/dev/null 2>&1 || true
-        fi
       fi
       ;;
     remove)
