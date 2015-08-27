@@ -109,6 +109,12 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
     configure_file(${PACKAGE_SCRIPTS}/rpm/preun.in ${RPM_PREUN})
     set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE ${RPM_PREUN})
 
+    ### RPM Prelink Disable
+    set(RPM_PRELINK ${GENERATED_PACKAGE_SCRIPTS}/rpm/rackspace-monitoring-agent-prelink.conf)
+    message("Generating script ${RPM_PRELINK}")
+    configure_file(${PACKAGE_SCRIPTS}/rpm/rackspace-monitoring-agent-prelink.conf.in ${RPM_PRELINK})
+    install(FILES ${RPM_PRELINK} DESTINATION /etc/prelink.conf.d)
+
     ### Install Empty Config File and conf.d dir
     install(FILES ${PACKAGE_SCRIPTS}/rpm/${APP_NAME}.cfg DESTINATION /etc)
     install(DIRECTORY DESTINATION /etc/${APP_NAME}.conf.d)
