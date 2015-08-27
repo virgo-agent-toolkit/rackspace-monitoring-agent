@@ -1,0 +1,3 @@
+[{"local_port":"80","state":"LISTEN","foreign_address":"0.0.0.0","foreign_port":"*","local_address":"0.0.0.0"},
+{"local_port":"22","state":"ESTABLISHED","foreign_address":"43.229.53.20","foreign_port":"47836","local_address":"162.209.76.174"},
+{"local_port":"22","state":"LISTEN","foreign_address":"::","foreign_port":"*","local_address":"::"}]

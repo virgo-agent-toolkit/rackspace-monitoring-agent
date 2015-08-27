@@ -1,0 +1,5 @@
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      0          3422453
+tcp        0      0 162.209.76.174:22       43.229.53.20:47836      ESTABLISHED 0          6187287
+tcp6       0      0 :::22                   :::*                    LISTEN      0          15123
