@@ -37,7 +37,7 @@ local function run(...)
       if err then
         print(json.stringify({error = err}))
       else
-        print(klass:serialize())
+        print(json.stringify(klass:serialize()))
       end
     end)
   else
