@@ -1,0 +1,20 @@
+{"Debug":{"InfoType":"MEMORY", "OS":"linux"}}
+
+{
+  "metrics":{
+    "used_percent":58.364510524827,
+    "swap_free":0,
+    "free":22614016,
+    "swap_page_out":0,
+    "swap_used":0,
+    "swap_total":0,
+    "actual_used":295849984,
+    "swap_page_in":0,
+    "total":506900480,
+    "free_percent":41.635489475173,
+    "ram":488,
+    "actual_free":211050496,
+    "used":484286464
+  },
+  "timestamp":1441066692000
+}

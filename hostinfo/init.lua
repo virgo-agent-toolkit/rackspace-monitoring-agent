@@ -13,13 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-local table = require('table')
-
 local fs = require('fs')
-local misc = require('virgo/util/misc')
+local json = require('json')
 local los = require('los')
 local async = require('async')
-
+local path = require('path')
 local HostInfo = require('./base').HostInfo
 local classes = require('./all')
 
@@ -63,27 +61,68 @@ local function getTypes()
   return HOST_INFO_TYPES
 end
 
--- Dump all the info objects to a file
-local function debugInfo(fileName, callback)
+-- [[ Suite of debug util functions ]] --
+local function debugInfo(infoType, callback)
+  if not callback then
+    callback = function()
+      print('Running hostinfo of type: ' .. infoType)
+    end
+  end
+  local klass = create(infoType)
+  klass:run(function(err)
+    local data = '{"Debug":{"InfoType":"' .. infoType .. '", "OS":"' .. los.type() .. '"}}\n\n'
+    if err then
+      data = data .. json.stringify({error = err})
+    else
+      data = data .. json.stringify(klass:serialize(), {indent = 2})
+    end
+    callback(data)
+  end)
+end
+
+local function debugInfoAll(callback)
   local data = ''
-  async.forEachLimit(HOST_INFO_TYPES, 5, function(v, cb)
-    local klass = create(v)
-    klass:run(function(err)
-      local obj = klass:serialize()
-      data = data .. '-- ' .. v .. '.' .. los.type() .. ' --\n\n'
-      data = data .. misc.toString(obj)
-      data = data .. '\n'
+  async.forEachLimit(HOST_INFO_TYPES, 5, function(infoType, cb)
+    debugInfo(infoType, function(debugData)
+      data = data .. debugData
       cb()
     end)
   end, function()
+    callback(data)
+  end)
+end
+
+local function debugInfoToFile(infoType, fileName, callback)
+  debugInfo(infoType, function(debugData)
+    fs.writeFile(fileName, debugData, callback)
+  end)
+end
+
+local function debugInfoAllToFile(fileName, callback)
+  debugInfoAll(function(data)
     fs.writeFile(fileName, data, callback)
+  end)
+end
+
+local function debugInfoAllToFolder(folderName, callback)
+  fs.mkdirSync(folderName)
+  async.forEachLimit(HOST_INFO_TYPES, 5, function(infoType, cb)
+    debugInfo(infoType, function(debugData)
+      fs.writeFile(path.join(folderName, infoType .. '.json'), debugData, cb)
+    end)
+  end, function()
+    callback()
   end)
 end
 
 --[[ Exports ]]--
 local exports = {}
 exports.create = create
-exports.debugInfo = debugInfo
 exports.classes = classes
 exports.getTypes = getTypes
+exports.debugInfo = debugInfo
+exports.debugInfoToFile = debugInfoToFile
+exports.debugInfoAll = debugInfoAll
+exports.debugInfoAllToFile = debugInfoAllToFile
+exports.debugInfoAllToFolder = debugInfoAllToFolder
 return exports

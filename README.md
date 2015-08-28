@@ -59,24 +59,7 @@ The agent has a built in host information runner (similar to OHAI).
 ```sh
 rackspace-monitoring-agent -e hostinfo_runner -x [type]
 ```
-
-The following hostinfo types currently exist:
-
-```
-  CPU
-  DATE
-  DISK
-  FILESYSTEM
-  LOGIN
-  MEMORY
-  NETWORK
-  PACKAGES
-  PROCS
-  SSHD
-  SYSCTL
-  SYSTEM
-  WHO
-```
+Further documentation for the host informations can be found in the [hostinfo readme](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/README.md)
 
 License
 =======

@@ -1,0 +1,14 @@
+{"Debug":{"InfoType":"CONNECTIONS", "OS":"linux"}}
+
+{
+  "metrics":[{
+      "address":"162.209.76.3"
+    },{
+      "address":"162.209.76.1"
+    },{
+      "address":"162.209.76.2"
+    },{
+      "address":"10.182.0.1"
+    }],
+  "timestamp":1441066692000
+}

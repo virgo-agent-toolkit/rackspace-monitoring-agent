@@ -1,0 +1,13 @@
+{"Debug":{"InfoType":"CRON", "OS":"linux"}}
+
+{
+  "metrics":[{
+      "dom":"*",
+      "m":"*",
+      "command":"/usr/bin/znc >/dev/null 2>&1",
+      "h":"*",
+      "dow":"*",
+      "mon":"*"
+    }],
+  "timestamp":1441066692000
+}

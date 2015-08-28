@@ -1,0 +1,51 @@
+{"Debug":{"InfoType":"APACHE2", "OS":"linux"}}
+
+{
+  "metrics":{
+    "vhosts":{
+      "*:80":{
+        "example.com":{
+          "vhost":"example.com",
+          "errorlog":"${APACHE_LOG_DIR}/error.log",
+          "docroot":"/var/www/example.com/public_html",
+          "accesslogs":"${APACHE_LOG_DIR}/access.log",
+          "conf":"/etc/apache2/sites-enabled/example.com.conf:1",
+          "port":"80"
+        },
+        "test.com":{
+          "vhost":"test.com",
+          "errorlog":"${APACHE_LOG_DIR}/error.log",
+          "docroot":"/var/www/test.com/public_html",
+          "accesslogs":"${APACHE_LOG_DIR}/access.log",
+          "conf":"/etc/apache2/sites-enabled/test.com.conf:1",
+          "port":"80"
+        },
+        "2001:4800:7812:514:be76:4eff:fe05:678d":{
+          "vhost":"2001:4800:7812:514:be76:4eff:fe05:678d",
+          "errorlog":"",
+          "docroot":"/var/www/html",
+          "accesslogs":"",
+          "conf":"/etc/apache2/sites-enabled/magento.conf:1",
+          "port":"80"
+        },
+        "default":{
+          "vhost":"example.com",
+          "errorlog":"${APACHE_LOG_DIR}/error.log",
+          "docroot":"/var/www/example.com/public_html",
+          "accesslogs":"",
+          "conf":"/etc/apache2/sites-enabled/example.com.conf:1"
+        }
+      }
+    },
+    "version":"Apache/2.4.10 (Ubuntu)",
+    "cients":"0",
+    "user":"www-data",
+    "mpm":"prefork",
+    "config_file":"/etc/apache2/apache2.conf",
+    "bin":"/usr/sbin/apache2ctl",
+    "syntax_ok":true,
+    "estimatedRAMperpreforkchild":null,
+    "config_path":"/etc/apache2"
+  },
+  "timestamp":1441066693000
+}

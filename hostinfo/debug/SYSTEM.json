@@ -1,0 +1,13 @@
+{"Debug":{"InfoType":"SYSTEM", "OS":"linux"}}
+
+{
+  "metrics":[{
+      "arch":"x86_64",
+      "version":"3.19.0-23-generic",
+      "vendor_name":"Linux",
+      "vendor":"Ubuntu",
+      "name":"Linux",
+      "vendor_version":"15.04"
+    }],
+  "timestamp":1441066692000
+}

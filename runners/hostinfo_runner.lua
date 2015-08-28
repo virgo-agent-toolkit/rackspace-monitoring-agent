@@ -15,31 +15,50 @@ limitations under the License.
 --]]
 local HostInfo = require('../hostinfo')
 local upper = require('string').upper
-local json = require('json')
 
 local function run(...)
-  local argv, typeName, klass
-  argv = require("options")
-    .usage('Usage: -x [Host Info Type]')
-    .describe("x", "host info type to run")
-    .usage('Usage: -d [filename]')
-    .describe("d", "write debug info to file")
-    .argv("x:d:")
+  local argv = require("options")
+  .usage('Usage: -a')
+  .describe("a", "Get debug info for all hostinfos")
+  .usage('Usage: -d')
+  .describe("d", "Generate documentation")
+  .usage('Usage: -t')
+  .describe("t", "Print all implemented hostinfo types")
+  .usage('Usage: -x [Host Info Type]')
+  .describe("x", "Host info type to run")
+  .usage('Usage: -f [File name]')
+  .describe("f", "Filename to write to. Can be used with either -x for a single hostinfo or -a for all of them")
+  .usage('Usage: -F [Folder name]')
+  .describe("F", "Folder name to write to. Can only be used with the -a option")
+  .argv("adtx:f:F:")
 
   local args = argv.args
-  if args.d then
-    local filename = argv.args.d
-    return HostInfo.debugInfo(filename, print('Debug info written to file '..filename))
-  elseif args.x then
-    typeName = upper(argv.args.x)
-    klass = HostInfo.create(typeName)
-    return klass:run(function(err)
-      if err then
-        print(json.stringify({error = err}))
-      else
-        print(json.stringify(klass:serialize()))
-      end
-    end)
+
+  local folderName, fileName, typeName
+  if args.f then fileName = args.f end
+  if args.x then typeName = upper(args.x) end
+  if args.F then folderName = args.F end
+
+  if args.a and args.F then
+    local function cb() print('Generated debug info for all hostinfo in folder ' .. folderName) end
+    return HostInfo.debugInfoAllToFolder(folderName, cb)
+  elseif args.x and args.f then
+    local function cb() print('Debug info written to file ' .. fileName .. ' for host info type ' .. typeName) end
+    return HostInfo.debugInfoToFile(typeName, fileName, cb)
+  elseif args.a and args.f then
+    local function cb() print('Debug info written to file '.. fileName) end
+    return HostInfo.debugInfoAllToFile(fileName, cb)
+  elseif args.x and not args.f then
+    return HostInfo.debugInfo(typeName, print)
+  elseif args.a and not args.f then
+    return HostInfo.debugInfoAll(print)
+  elseif args.d and args.F then
+      table.foreach(HostInfo.getTypes(), function(_, v)
+        print(string.format('- [%s](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/%s/%s)', v, folderName, v..'.json'))
+      end)
+    return
+  elseif args.t then
+    return print(table.concat(HostInfo.getTypes(), '\n'))
   else
     print(argv._usage)
     return process:exit(0)
