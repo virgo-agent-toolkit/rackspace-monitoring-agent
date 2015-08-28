@@ -173,7 +173,7 @@ function Info:_run(callback)
   end
   local function getApacheClients(cmd, user, cb)
     local cmd = string.format('ps -u %s -o cmd | grep -c %s', user, cmd)
-    local child = run('sh', {'-c', cmd}, {})
+    local child = run('sh', {'-c', cmd})
     streamToBuffer(child, cb)
   end
 
@@ -199,7 +199,7 @@ function Info:_run(callback)
   end
   local function getVhostsOutput(cmd, args, cb)
     local outTable, errTable, current_vhost = {}, {}, ''
-    local child = run(cmd, args, {})
+    local child = run(cmd, args)
     local reader = VhostOutputReader:new()
     local waitCount = 1 -- we wish to wait for the end of the reader stream
     local function await()
@@ -254,7 +254,7 @@ function Info:_run(callback)
   local function getRamPerPreforkChild(user, cb)
     local cmd =  string.format("ps -u %s -o pid= | xargs pmap -d | awk '/private/ \
                {c+=1; sum+=$4} END {printf \"%.2f\", sum/c/1024}'", user)
-    local stream = run('sh', {'-c', cmd}, {})
+    local stream = run('sh', {'-c', cmd})
     streamToBuffer(stream, cb)
   end
 

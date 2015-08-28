@@ -60,7 +60,7 @@ function Info:_run(callback)
     self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
     return callback()
   end
-  local cmd, args, opts = spawnConfig.cmd, spawnConfig.args, {}
+  local cmd, args = spawnConfig.cmd, spawnConfig.args
 
   local function finalCb()
     -- Sort the cves
@@ -74,7 +74,7 @@ function Info:_run(callback)
   end
 
   local reader = Reader:new()
-  local child = run(cmd, args, opts)
+  local child = run(cmd, args)
   child:pipe(reader)
   reader:on('data', function(data)
     outTable[data] = 1

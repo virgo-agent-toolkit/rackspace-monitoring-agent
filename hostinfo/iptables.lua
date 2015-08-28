@@ -50,14 +50,14 @@ end
 
 function Info:_run(callback)
   local errTable, outTable = {}, {}
-  local cmd, args, opts = 'iptables', {'-S'}, {}
+  local cmd, args = 'iptables', {'-S'}
 
   local function finalCb()
     self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  local child = run(cmd, args, opts)
+  local child = run(cmd, args)
   local reader = Reader:new()
   child:pipe(reader)
   reader:on('data', function(data) table.insert(outTable, data) end)

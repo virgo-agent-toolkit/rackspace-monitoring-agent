@@ -97,7 +97,7 @@ function Info:_run(callback)
     return callback()
   end
 
-  local netstatChild = run(netstatcmd, netstatargs, {})
+  local netstatChild = run(netstatcmd, netstatargs)
   local netstatReader = NetstatReader:new()
   netstatChild:pipe(netstatReader)
   netstatReader:on('data', function(data)
@@ -122,7 +122,7 @@ function Info:_run(callback)
   netstatReader:on('error', function(data) table.insert(errTable, data) end)
   netstatReader:once('end', function()
 
-    local arpChild = run(arpcmd, arpargs, {})
+    local arpChild = run(arpcmd, arpargs)
     local arpReader = ArpReader:new()
     arpChild:pipe(arpReader)
     arpReader:on('data', function(data)
