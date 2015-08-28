@@ -20,6 +20,7 @@ local fs = require('fs')
 local sigar = require('sigar')
 local Stream = require('stream').Duplex
 local Transform = require('stream').Transform
+local merge = require('virgo/util/misc').merge
 
 local function read(filePath)
   local Stream = Transform:extend()
@@ -95,6 +96,17 @@ local function getInfoByVendor(options)
   return NilInfo
 end
 
+local function safeMerge(a, b)
+  if type(b) == 'string' then
+    return table.insert(a, b)
+  elseif type(b) == 'table' then
+    return merge(a, b)
+  elseif type(b) == 'nil' then
+    return
+  end
+end
+
+exports.safeMerge = safeMerge
 exports.run = run
 exports.read = read
 exports.getInfoByVendor = getInfoByVendor

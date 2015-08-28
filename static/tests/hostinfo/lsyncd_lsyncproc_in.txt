@@ -1,0 +1,3 @@
+root     root     root     root     1 lsyncd /etc/lsyncd/lsyncd.conf.lua
+root     root     root     root     1 lsyncd   /etc/lsyncd/lsyncd.conf.lua
+root     root     root     root     0 rackspace-monitoring-agent -e hostinfo_runner -x lsyncd
