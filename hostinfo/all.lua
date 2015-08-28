@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 return {
+  require('./connections'),
   require('./iptables'),
   require('./ip6tables'),
   require('./autoupdates'),
@@ -44,5 +45,6 @@ return {
   require('./last_logins'),
   require('./remote_services'),
   require('./ip4routes'),
-  require('./ip6routes')
+  require('./ip6routes'),
+  require('./apache2')
 }

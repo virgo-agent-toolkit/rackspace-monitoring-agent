@@ -1,0 +1,13 @@
+  [{"current_vhost":"*:80"},
+  {"conf":"/etc/apache2/sites-enabled/000-default.conf:1",
+    "vhost":"2001:4800:7812:514:be76:4eff:fe05:678d"},
+  {"vhost":"2001:4800:7812:514:be76:4eff:fe05:678d",
+    "conf":"/etc/apache2/sites-enabled/000-default.conf:1",
+    "port":"80"},
+  {"vhost":"example.com",
+    "conf":"/etc/apache2/sites-enabled/example.com.conf:1",
+    "port":"80"},
+  {"vhost":"test.com",
+    "conf":"/etc/apache2/sites-enabled/test.com.conf:1",
+    "port":"80"},
+   {"user":"www-data"}]

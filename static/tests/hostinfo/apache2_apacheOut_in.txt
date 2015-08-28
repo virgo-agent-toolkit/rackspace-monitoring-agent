@@ -1,0 +1,28 @@
+AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 2001:4800:7812:514:be76:4eff:fe05:678d. Set the 'ServerName' directive globally to suppress this message
+Server version: Apache/2.4.10 (Ubuntu)
+Server built:   Jul 24 2015 17:25:18
+Server's Module Magic Number: 20120211:37
+Server loaded:  APR 1.5.1, APR-UTIL 1.5.4
+Compiled using: APR 1.5.1, APR-UTIL 1.5.4
+Architecture:   64-bit
+Server MPM:     event
+  threaded:     yes (fixed thread count)
+    forked:     yes (variable process count)
+Server compiled with....
+ -D APR_HAS_SENDFILE
+ -D APR_HAS_MMAP
+ -D APR_HAVE_IPV6 (IPv4-mapped addresses enabled)
+ -D APR_USE_SYSVSEM_SERIALIZE
+ -D APR_USE_PTHREAD_SERIALIZE
+ -D SINGLE_LISTEN_UNSERIALIZED_ACCEPT
+ -D APR_HAS_OTHER_CHILD
+ -D AP_HAVE_RELIABLE_PIPED_LOGS
+ -D DYNAMIC_MODULE_LIMIT=256
+ -D HTTPD_ROOT="/etc/apache2"
+ -D SUEXEC_BIN="/usr/lib/apache2/suexec"
+ -D DEFAULT_PIDLOG="/var/run/apache2.pid"
+ -D DEFAULT_SCOREBOARD="logs/apache_runtime_status"
+ -D DEFAULT_ERRORLOG="logs/error_log"
+ -D AP_TYPES_CONFIG_FILE="mime.types"
+ -D SERVER_CONFIG_FILE="apache2.conf"
+Syntax OK
