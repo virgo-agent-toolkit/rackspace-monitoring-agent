@@ -66,14 +66,14 @@ function Info:_run(callback)
     self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
     return callback()
   end
-  local cmd, args, opts = spawnConfig.cmd, spawnConfig.args, {}
+  local cmd, args = spawnConfig.cmd, spawnConfig.args
 
   local function finalCb()
     self:_pushParams(errTable, outTable)
     return callback()
   end
 
-  local child = run(cmd, args, opts)
+  local child = run(cmd, args)
   local reader = cmd == 'brew' and MacReader:new() or LinuxReader:new()
   child:pipe(reader)
   reader:on('data', function(data) table.insert(outTable, data) end)

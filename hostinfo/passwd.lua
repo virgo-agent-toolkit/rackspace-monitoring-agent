@@ -63,8 +63,8 @@ function Info:_run(callback)
     end
 
     local function iter(datum, callback)
-      local cmd, args, opts = 'passwd', {'-S', datum}, {}
-      local child = run(cmd, args, opts)
+      local cmd, args = 'passwd', {'-S', datum}
+      local child = run(cmd, args)
       local reader = Reader:new()
       child:pipe(reader)
       reader:on('data', function(data) table.insert(outTable, data) end)

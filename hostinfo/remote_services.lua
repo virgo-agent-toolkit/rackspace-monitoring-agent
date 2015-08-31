@@ -56,7 +56,7 @@ end
 local Info = HostInfo:extend()
 
 function Info:_run(callback)
-  local cmd, args, opts = 'netstat', {'-tlpen'}, {}
+  local cmd, args = 'netstat', {'-tlpen'}
   local outTable, errTable = {}, {}
 
   local function finalCb()
@@ -64,7 +64,7 @@ function Info:_run(callback)
     return callback()
   end
 
-  local child = run(cmd, args, opts)
+  local child = run(cmd, args)
   local reader = Reader:new()
   child:pipe(reader)
   reader:on('data', function(data) table.insert(outTable, data) end)

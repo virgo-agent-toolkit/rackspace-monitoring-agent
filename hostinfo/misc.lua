@@ -56,6 +56,7 @@ end
 
 
 local function run(command, arguments, options)
+  if not options then options = {} end
   local stream = Stream:new()
   local called, exitCode
   called = 2

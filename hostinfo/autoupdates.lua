@@ -76,7 +76,7 @@ function Info:_run(callback)
     return callback()
   end
 
-  local cmd, args, opts = spawnConfig.cmd, spawnConfig.args, {}
+  local cmd, args = spawnConfig.cmd, spawnConfig.args
   local method =  spawnConfig.method
 
   local function finalCb()
@@ -93,7 +93,7 @@ function Info:_run(callback)
   end
 
   local reader = method == 'unattended_upgrades' and AptReader:new() or YumReader:new()
-  local child = run(cmd, args, opts)
+  local child = run(cmd, args)
   child:pipe(reader)
   reader:on('error', function(err) table.insert(errTable, err) end)
   reader:on('data', function(data) table.insert(outTable, data) end)
