@@ -1,0 +1,4 @@
+Status
+|- Number of jail:	1
+`- Jail list:	sshd
+`- Jail list:	sshd foo, bar, baz, derp
