@@ -129,6 +129,24 @@ You can also run an individual test module:
 
     TEST_MODULE=net make test
 
+Running tests on docker
+=======================
+
+This only needs to be done once per terminal session:
+
+```
+docker-machine create agent
+eval $(docker-machine env agent)
+```
+
+Use `docker-compose` to build and run the tests:
+
+```
+docker-compose run build make clean
+docker-compose run build make
+docker-compose run build test
+```
+
 Configuration File Parameters
 =============================
 

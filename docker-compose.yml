@@ -1,0 +1,6 @@
+build:
+  build: .
+  environment:
+   TRAVIS: true
+  volumes:
+   - .:/src
