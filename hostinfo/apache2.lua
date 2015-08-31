@@ -20,8 +20,8 @@ local run = misc.run
 local read = misc.read
 local Transform = require('stream').Transform
 local vumisc = require('virgo/util/misc')
+local json = require('json')
 local merge = vumisc.merge
-local tableToString = vumisc.tableToString
 local async = require('async')
 local path = require('path')
 --------------------------------------------------------------------------------------------------------------------
@@ -106,6 +106,16 @@ function PerforkReader:_transform(line, cb)
   if self._pushed and line:find('^(%s*)MaxClients') then
     self:push({max_clients = line:match('%s+%S+%s+(%S+)')})
   end
+  cb()
+end
+
+local RamPerPreforkChildReader = Reader:extend()
+-- 'mapped: 121504K    writeable/private: 2228K    shared: 4K' -> 2.175
+-- Ohai gives you ram in mb, though it isnt specified in the output, well do the same
+function RamPerPreforkChildReader:_transform(line, cb)
+  local dataTable = {}
+  line:gsub("%S+", function(c) table.insert(dataTable, c) end)
+  self:push(dataTable[4]:match('%d+')/1024) -- Strip K at the end for kilobytes and convert to mb
   cb()
 end
 
@@ -252,10 +262,19 @@ function Info:_run(callback)
     reader:once('end', function() await() end)
   end
   local function getRamPerPreforkChild(user, cb)
-    local cmd =  string.format("ps -u %s -o pid= | xargs pmap -d | awk '/private/ \
-               {c+=1; sum+=$4} END {printf \"%.2f\", sum/c/1024}'", user)
-    local stream = run('sh', {'-c', cmd})
-    streamToBuffer(stream, cb)
+    local cmd = "ps -u " .. user .. " -o pid= | xargs pmap -d | awk '/private/'"
+    local stream = run('sh', {'-c', cmd}, {})
+    local reader = RamPerPreforkChildReader:new()
+    stream:pipe(reader)
+    streamToBuffer(reader, function(out, err)
+      -- Get Average
+      local sum = 0
+      table.foreach(out, function(k, v)
+        sum = sum + v
+      end)
+      sum = sum / #out
+      cb(sum, err)
+    end)
   end
 
   outTable.bin = spawnConfig.apacheCmd
@@ -286,7 +305,7 @@ function Info:_run(callback)
     end
     if outTable.mpm == 'prefork' and #outTable.user ~= 0 then
       getRamPerPreforkChild(outTable.user, function(out, err)
-        outTable.estimatedRAMperpreforkchild = type(out) == 'table' and tableToString(out) or out
+        outTable.estimatedRAMperpreforkchild = type(out) == 'table' and json.stringify(out) or out
         merge(errTable, err)
         local readStream = read(outTable.config_file)
         readStream:on('error', function(err)
@@ -297,7 +316,7 @@ function Info:_run(callback)
         readStream:pipe(reader)
         streamToBuffer(reader, function(out, err)
           merge(errTable, err)
-          if out.max_clients > 0 then outTable.max_clients = out.max_clients end
+          if out.max_clients then outTable.max_clients = out.max_clients end
           return finalCb()
         end)
       end)
@@ -319,4 +338,5 @@ exports.Info = Info
 exports.ApacheOutputReader = ApacheOutputReader
 exports.VhostConfigReader = VhostConfigReader
 exports.VhostOutputReader = VhostOutputReader
+exports.RamPerPreforkChildReader = RamPerPreforkChildReader
 exports.PerforkReader = PerforkReader -- untested
