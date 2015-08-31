@@ -120,6 +120,10 @@ require('tap')(function(test)
     testTemplate(expect, 'apache2', 'apache2_VhostConfig', 'VhostConfigReader')
   end)
 
+  test('Test Apache2: RamPerPreforkChildReader', function(expect)
+    testTemplate(expect, 'apache2', 'apache2_RamPerPreforkChild', 'RamPerPreforkChildReader')
+  end)
+
   ----------------------------------------------- Tests for connections ------------------------------------------------
 
   test('Test Connections: arp reader', function(expect)
