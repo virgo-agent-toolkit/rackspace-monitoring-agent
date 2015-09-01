@@ -1,1 +1,22 @@
-[{"logged_in":{"user":"root","login_time":"Mon Aug 24 22:07","host":"secure-bastion.d"}},{"previous_logins":{"host":"secure-bastion.d","login_time":"Mon Aug 24 19:47","duration":"(00:36)","user":"root","logout_time":"20:23"}},{"bootups":{"type":"reboot","kernel":"3.19.0-23-generi"}},{"data_collection_start":"Thu Aug 13 02:58:41 2015"}]
+  [{
+  "logged_in":{
+    "user":"root",
+    "login_time":"Mon Aug 24 22:07",
+    "host":"secure-bastion.d"
+    }
+  },{
+  "previous_logins": {
+    "host":"secure-bastion.d",
+    "login_time":"Mon Aug 24 19:47",
+    "duration":"00:36",
+    "user":"root",
+    "logout_time":"20:23"
+    }
+  },{
+  "bootups":{
+    "type":"reboot",
+    "kernel":"3.19.0-23-generi"
+    }
+  },{
+  "data_collection_start":"Thu Aug 13 02:58:41 2015"
+  }]
