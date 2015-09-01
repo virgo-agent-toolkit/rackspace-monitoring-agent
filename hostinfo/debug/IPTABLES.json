@@ -1,0 +1,65 @@
+{"Debug":{"InfoType":"IPTABLES", "OS":"linux"}}
+
+{
+  "metrics":[{
+      "type":"-P",
+      "chain":"INPUT",
+      "policy":"ACCEPT"
+    },{
+      "type":"-P",
+      "chain":"FORWARD",
+      "policy":"ACCEPT"
+    },{
+      "type":"-P",
+      "chain":"OUTPUT",
+      "policy":"ACCEPT"
+    },{
+      "type":"-N",
+      "chain":"f2b-sshd"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m multiport --dports 22 -j f2b-sshd"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m tcp --dport 8080 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m tcp --dport 8080 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m tcp --dport 8080 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m tcp --dport 8080 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m tcp --dport 80 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m state --state NEW -m tcp --dport 8080 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m state --state NEW -m tcp --dport 8080 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m state --state NEW -m tcp --dport 143 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"INPUT",
+      "policy":"INPUT -p tcp -m state --state NEW -m tcp --dport 143 -j ACCEPT"
+    },{
+      "type":"-A",
+      "chain":"f2b-sshd",
+      "policy":""
+    }],
+  "timestamp":1441066692000
+}

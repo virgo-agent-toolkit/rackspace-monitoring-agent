@@ -1,0 +1,175 @@
+{"Debug":{"InfoType":"LAST_LOGINS", "OS":"linux"}}
+
+{
+  "metrics":{
+    "previous_logins":[{
+        "host":"secure-bastion.d",
+        "login_time":"Mon Aug 31 17:10",
+        "duration":"02:28",
+        "user":"root",
+        "logout_time":"19:38"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Fri Aug 28 21:08",
+        "duration":"03:07",
+        "user":"root",
+        "logout_time":"00:15"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Fri Aug 28 19:23",
+        "duration":"01:53",
+        "user":"root",
+        "logout_time":"21:17"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Fri Aug 28 17:44",
+        "duration":"01:13",
+        "user":"root",
+        "logout_time":"18:58"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Fri Aug 28 00:52",
+        "duration":"00:34",
+        "user":"root",
+        "logout_time":"01:26"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Thu Aug 27 20:40",
+        "duration":"02:32",
+        "user":"root",
+        "logout_time":"23:12"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Thu Aug 27 18:34",
+        "duration":"01:15",
+        "user":"root",
+        "logout_time":"19:50"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Wed Aug 26 17:25",
+        "duration":"09:09",
+        "user":"root",
+        "logout_time":"02:35"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Tue Aug 25 23:10",
+        "duration":"01:37",
+        "user":"root",
+        "logout_time":"00:47"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Tue Aug 25 17:33",
+        "duration":"04:37",
+        "user":"root",
+        "logout_time":"22:11"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Mon Aug 24 22:07",
+        "duration":"05:39",
+        "user":"root",
+        "logout_time":"03:46"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Mon Aug 24 19:47",
+        "duration":"00:36",
+        "user":"root",
+        "logout_time":"20:23"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Thu Aug 20 23:43",
+        "duration":"04:21",
+        "user":"root",
+        "logout_time":"04:05"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Thu Aug 20 20:28",
+        "duration":"02:50",
+        "user":"root",
+        "logout_time":"23:18"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Thu Aug 20 17:09",
+        "duration":"02:24",
+        "user":"root",
+        "logout_time":"19:33"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Wed Aug 19 20:07",
+        "duration":"03:59",
+        "user":"root",
+        "logout_time":"00:06"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Wed Aug 19 16:49",
+        "duration":"02:10",
+        "user":"root",
+        "logout_time":"18:59"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Tue Aug 18 18:29",
+        "duration":"07:35",
+        "user":"root",
+        "logout_time":"02:04"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Mon Aug 17 19:59",
+        "duration":"06:14",
+        "user":"root",
+        "logout_time":"02:13"
+      },{
+        "host":"secure-bastion.d",
+        "login_time":"Mon Aug 17 17:15",
+        "duration":"00:57",
+        "user":"root",
+        "logout_time":"18:12"
+      },{
+        "host":"c-24-4-37-14.hsd",
+        "login_time":"Fri Aug 14 23:10",
+        "duration":"04:19",
+        "user":"root",
+        "logout_time":"03:30"
+      },{
+        "host":"c-24-4-37-14.hsd",
+        "login_time":"Fri Aug 14 17:10",
+        "duration":"05:46",
+        "user":"root",
+        "logout_time":"22:57"
+      },{
+        "host":"c-24-4-37-14.hsd",
+        "login_time":"Fri Aug 14 00:42",
+        "duration":"02:53",
+        "user":"root",
+        "logout_time":"03:36"
+      },{
+        "host":"c-24-4-37-14.hsd",
+        "login_time":"Thu Aug 13 14:27",
+        "duration":"09:32",
+        "user":"root",
+        "logout_time":"00:00"
+      },{
+        "host":"c-24-4-37-14.hsd",
+        "login_time":"Thu Aug 13 14:14",
+        "duration":"00:00",
+        "user":"root",
+        "logout_time":"14:14"
+      },{
+        "host":"c-24-4-37-14.hsd",
+        "login_time":"Thu Aug 13 14:13",
+        "duration":"00:00",
+        "user":"root",
+        "logout_time":"14:14"
+      }],
+    "data_collection_start":"Thu Aug 13 02:58:41 2015",
+    "bootups":[{
+        "type":"reboot",
+        "when":"Thu Aug 13 02:58:41 2015",
+        "kernel":"3.19.0-23-generi"
+      }],
+    "logged_in":[{
+        "user":"root",
+        "login_time":"Mon Aug 31 19:55",
+        "host":"secure-bastion.d"
+      }]
+  },
+  "timestamp":1441066693000
+}

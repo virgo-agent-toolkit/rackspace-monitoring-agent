@@ -1,0 +1,36 @@
+{"Debug":{"InfoType":"LOGIN", "OS":"linux"}}
+
+{
+  "metrics":{
+    "LOG_UNKFAIL_ENAB":"no",
+    "TTYPERM":"0600",
+    "USERGROUPS_ENAB":"yes",
+    "SYSLOG_SG_ENAB":"yes",
+    "DEFAULT_HOME":"yes",
+    "PASS_MIN_DAYS":"0",
+    "LOGIN_TIMEOUT":"60",
+    "UID_MAX":"60000",
+    "GID_MAX":"60000",
+    "GID_MIN":"1000",
+    "KILLCHAR":"025",
+    "LOGIN_RETRIES":"5",
+    "ENV_PATH":"PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games",
+    "TTYGROUP":"tty",
+    "MAIL_DIR":"/var/mail",
+    "PASS_MAX_DAYS":"99999",
+    "UMASK":"022",
+    "PASS_WARN_AGE":"7",
+    "HUSHLOGIN_FILE":".hushlogin",
+    "CHFN_RESTRICT":"rwh",
+    "UID_MIN":"1000",
+    "FTMP_FILE":"/var/log/btmp",
+    "FAILLOG_ENAB":"yes",
+    "ENV_SUPATH":"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+    "ENCRYPT_METHOD":"SHA512",
+    "ERASECHAR":"0177",
+    "SU_NAME":"su",
+    "SYSLOG_SU_ENAB":"yes",
+    "LOG_OK_LOGINS":"no"
+  },
+  "timestamp":1441066692000
+}

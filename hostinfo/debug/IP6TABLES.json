@@ -1,0 +1,18 @@
+{"Debug":{"InfoType":"IP6TABLES", "OS":"linux"}}
+
+{
+  "metrics":[{
+      "type":"-P",
+      "chain":"INPUT",
+      "policy":"ACCEPT"
+    },{
+      "type":"-P",
+      "chain":"FORWARD",
+      "policy":"ACCEPT"
+    },{
+      "type":"-P",
+      "chain":"OUTPUT",
+      "policy":"ACCEPT"
+    }],
+  "timestamp":1441066692000
+}

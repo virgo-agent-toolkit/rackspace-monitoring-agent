@@ -1,0 +1,14 @@
+{"Debug":{"InfoType":"DATE", "OS":"linux"}}
+
+{
+  "metrics":[{
+      "date":{
+        "day":"01",
+        "year":"2015",
+        "month":"09"
+      },
+      "time":"00:18:12",
+      "timezone":"UTC"
+    }],
+  "timestamp":1441066692000
+}

@@ -1,0 +1,9 @@
+{"Debug":{"InfoType":"AUTOUPDATES", "OS":"linux"}}
+
+{
+  "metrics":[{
+      "status":"disabled",
+      "update_method":"unattended_upgrades"
+    }],
+  "timestamp":1441066692000
+}

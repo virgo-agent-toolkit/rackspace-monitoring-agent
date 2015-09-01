@@ -1,0 +1,22 @@
+{"Debug":{"InfoType":"CPU", "OS":"linux"}}
+
+{
+  "metrics":[{
+      "soft_irq":37990,
+      "name":"cpu.0",
+      "vendor":"AMD",
+      "user":7423040,
+      "model":"Opteron",
+      "total_sockets":1,
+      "total_cores":1,
+      "nice":0,
+      "wait":1652660,
+      "idle":1616783100,
+      "total":1629332070,
+      "stolen":1318580,
+      "irq":4400,
+      "sys":2112300,
+      "mhz":2100
+    }],
+  "timestamp":1441066692000
+}
