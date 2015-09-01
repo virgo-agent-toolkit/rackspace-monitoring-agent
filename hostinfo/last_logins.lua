@@ -52,13 +52,13 @@ function Reader:_transform(line, cb)
       table.insert(begins, dataTable[i])
     end
     self:push({data_collection_start = table.concat(begins, ' ')})
-  else
+  elseif #line > 0 then
     self:push({previous_logins = {
       user = dataTable[1],
       host = dataTable[3],
       login_time = getLoginTime(dataTable),
       logout_time = dataTable[9],
-      duration = dataTable[10]
+      duration = dataTable[10]:match('%((.+)%)')
     }})
   end
   cb()
@@ -92,7 +92,14 @@ function Info:_run(callback)
     end
   end)
   reader:on('error', function(data) table.insert(errTable, data) end)
-  reader:once('end', finalCb)
+  reader:once('end', function()
+    if outTable.data_collection_start and outTable.bootups then
+      if #outTable.bootups == 1 then
+        outTable.bootups[1]['when'] = outTable.data_collection_start
+      end
+    end
+    finalCb()
+  end)
 end
 
 function Info:getPlatforms()
