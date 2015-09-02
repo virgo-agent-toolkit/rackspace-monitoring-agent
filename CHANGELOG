@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.1.20
+
+* Bump virgo-base for timestamp fix
+
 ## rackspace-monitoring-agent-2.1.19
 
 * Bump to new libuv (fix libuv regression)
