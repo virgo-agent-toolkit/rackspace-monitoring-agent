@@ -635,7 +635,7 @@ function CheckResult:getTimestamp()
 end
 
 function CheckResult:setTimestamp(timestamp)
-  self._timestamp = timestamp or vutils.gmtNow()
+  self._timestamp = timestamp or vutils.gmtRaw()
   return self._timestamp
 end
 

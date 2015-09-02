@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local gmtNow = require('virgo/utils').gmtNow
+local vutils = require('virgo/utils')
 local tableToString = require('virgo/util/misc').tableToString
 local los = require('los')
 local Object = require('core').Object
@@ -30,7 +30,7 @@ function HostInfo:serialize()
   return {
     error = self._error,
     metrics = self._params,
-    timestamp = gmtNow()
+    timestamp = vutils.gmtRaw()
   }
 end
 
