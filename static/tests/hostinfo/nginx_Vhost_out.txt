@@ -1,0 +1,4 @@
+[{"listen":"80"},
+{"listen":"[::]:80"},
+{"domain":"example.com"},
+{"docroot":"/var/www/example.com"}]

@@ -1,0 +1,2 @@
+nginx version: nginx/1.6.2 (Ubuntu)
+configure arguments: --with-cc-opt='-g -O2 -fPIE -fstack-protector-strong -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2' --prefix=/usr/share/nginx --with-http_image_filter_module

@@ -156,7 +156,9 @@ The items in the list are linked to sample debug output for themselves.
   Uses a few different methods to retrieve information about the hosts fail2ban instance and installation
 - [LSYNCD](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/LSYNCD.json)
   Checks the status of the live syncing daemon or lsyncd
-
+- [NGINX_CONFIG](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/NGINX_CONFIG.json)
+  Returns vhosts, version, includes, status (0 if everything is ok when nginx -t is run), configuration path, prefix and configure arguments for local nginx 
+  
 ## Notes for developers
 
 PRs are always welcome. Few tips:  

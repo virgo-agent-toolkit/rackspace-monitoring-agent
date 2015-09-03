@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 
 return {
+  require('./nginx_config'),
   require('./connections'),
   require('./iptables'),
   require('./ip6tables'),
