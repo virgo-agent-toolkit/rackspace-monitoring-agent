@@ -133,6 +133,10 @@ require('tap')(function(test)
   test('Test Connections: netstat reader', function(expect)
     testTemplate(expect, 'connections', 'connections_netstat', 'NetstatReader')
   end)
+  ----------------------------------------------- Tests for lsyncd -----------------------------------------------------
+  test('Test Lsyncd: LsyncProcReader', function(expect)
+    testTemplate(expect, 'lsyncd', 'lsyncd_lsyncproc', 'LsyncProcReader')
+  end)
 
   ----------------------------------------------- Tests for fail2ban ------------------------------------------------
   test('Test Fail2ban: LogfilePathReader', function(expect)
