@@ -53,5 +53,6 @@ return {
   require('./wordpress'),
   require('./magento'),
   require('./php'),
-  require('./postfix')
+  require('./postfix'),
+  require('./mysql')
 }

@@ -1,0 +1,2 @@
+root	kostco-rmapg-ubu
+repl %.mydomain.com

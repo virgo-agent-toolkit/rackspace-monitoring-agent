@@ -1,0 +1,8 @@
+Slave_retried_transactions
+Slave_running	OFF
+Last_query_cost	0.000000
+root	::1
+thread_handling	one-thread-per-connection
+thread_stack	196608
+time_format	%H:%i:%s
+optimizer_trace_features	greedy_search=on,range_optimizer=on,dynamic_range=on,repeated_subselect=on

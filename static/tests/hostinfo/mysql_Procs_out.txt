@@ -1,0 +1,93 @@
+  [{
+      "Id":"32"
+    },{
+      "User":"root"
+    },{
+      "Host":"localhost"
+    },{
+      "db":"NULL"
+    },{
+      "Command":"Query"
+    },{
+      "Time":"0"
+    },{
+      "State":"init"
+    },{
+      "Info":"show full processlist"
+    },{
+      "Id":"1"
+    },{
+      "User":"system user"
+    },{
+      "db":"NULL"
+    },{
+      "Command":"Connect"
+    },{
+      "Time":"1030455"
+    },{
+      "State":"Waiting for master to send event"
+    },{
+      "Info":"NULL"
+    },{
+      "Id":"2"
+    },{
+      "User":"system user"
+    },{
+      "db":"NULL"
+    },{
+      "Command":"Connect"
+    },{
+      "Time":"1004"
+    },{
+      "State":"Has read all relay log; waiting for the slave"
+    },{
+      "Info":"NULL"
+    },{
+      "Id":"3112"
+    },{
+      "User":"replikator"
+    },{
+      "Host":"artemis:2204"
+    },{
+      "db":"NULL"
+    },{
+      "Command":"Binlog Dump"
+    },{
+      "Time":"2144"
+    },{
+      "State":"Has sent all binlog to slave; waiting for binlog to be updated"
+    },{
+      "Info":"NULL"
+    },{
+      "Id":"3113"
+    },{
+      "User":"replikator"
+    },{
+      "Host":"iconnect2:45781"
+    },{
+      "db":"NULL"
+    },{
+      "Command":"Binlog Dump"
+    },{
+      "Time":"2086"
+    },{
+      "State":"Has sent all binlog to slave; waiting for binlog to be updated"
+    },{
+      "Info":"NULL"
+    },{
+      "Id":"3123"
+    },{
+      "User":"stefan"
+    },{
+      "Host":"localhost"
+    },{
+      "db":"apollon"
+    },{
+      "Command":"Query"
+    },{
+      "Time":"0"
+    },{
+      "State":"NULL"
+    },{
+      "Info":"SHOW FULL PROCESSLIST"
+    }]

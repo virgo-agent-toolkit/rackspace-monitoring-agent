@@ -1,0 +1,56 @@
+*************************** 1. row ***************************
+     Id: 32
+   User: root
+   Host: localhost
+     db: NULL
+Command: Query
+   Time: 0
+  State: init
+   Info: show full processlist
+   *************************** 1. row ***************************
+   Id: 1
+   User: system user
+   Host:
+   db: NULL
+   Command: Connect
+   Time: 1030455
+   State: Waiting for master to send event
+   Info: NULL
+   *************************** 2. row ***************************
+   Id: 2
+   User: system user
+   Host:
+   db: NULL
+   Command: Connect
+   Time: 1004
+   State: Has read all relay log; waiting for the slave
+          I/O thread to update it
+   Info: NULL
+   *************************** 3. row ***************************
+   Id: 3112
+   User: replikator
+   Host: artemis:2204
+   db: NULL
+   Command: Binlog Dump
+   Time: 2144
+   State: Has sent all binlog to slave; waiting for binlog to be updated
+   Info: NULL
+   *************************** 4. row ***************************
+   Id: 3113
+   User: replikator
+   Host: iconnect2:45781
+   db: NULL
+   Command: Binlog Dump
+   Time: 2086
+   State: Has sent all binlog to slave; waiting for binlog to be updated
+   Info: NULL
+   *************************** 5. row ***************************
+   Id: 3123
+   User: stefan
+   Host: localhost
+   db: apollon
+   Command: Query
+   Time: 0
+   State: NULL
+   Info: SHOW FULL PROCESSLIST
+   5 rows in set (0.00 sec)

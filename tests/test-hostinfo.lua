@@ -203,6 +203,27 @@ require('tap')(function(test)
 
   test('Unit test for PHP: ApacheErrorReader', function(expect)
     testTemplate(expect, 'php', 'php_ApacheError', 'ApacheErrorReader')
+
+  ----------------------------------------------- Tests for mysql and mariadb --------------------------------------------------
+
+  test('Test Mysql: AdminStatusReader', function(expect)
+    testTemplate(expect, 'mysql', 'mysql_AdminStatus', 'AdminStatusReader')
+  end)
+
+  test('Test Mysql: KeyValueReader', function(expect)
+    testTemplate(expect, 'mysql', 'mysql_KeyValue', 'KeyValueReader')
+  end)
+
+  test('Test Mysql: ReplicantUserReader', function(expect)
+    testTemplate(expect, 'mysql', 'mysql_ReplicantUser', 'ReplicantUserReader')
+  end)
+
+  test('Test Mysql: ProcsReader', function(expect)
+    testTemplate(expect, 'mysql', 'mysql_Procs', 'ProcsReader')
+  end)
+
+  test('Test Mysql: VersionReader', function(expect)
+    testTemplate(expect, 'mysql', 'mysql_Version', 'VersionReader')
   end)
 
 end)
