@@ -47,5 +47,6 @@ return {
   require('./ip4routes'),
   require('./ip6routes'),
   require('./apache2'),
-  require('./fail2ban')
+  require('./fail2ban'),
+  require('./lsyncd')
 }
