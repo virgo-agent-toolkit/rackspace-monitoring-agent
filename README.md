@@ -15,9 +15,9 @@ Installing The Agent
 Make sure you have the required packages to build things on your system. The
 `Dockerfile` will contain the development dependencies.
 
-Please note, we provide binaries for many platforms. Check out the article
-[here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent)
-for instructions.
+**Please note, we provide binaries for many platforms. Check out the article at
+[http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent)
+for instructions.**
 
 Otherwise, continue reading this section.
 
