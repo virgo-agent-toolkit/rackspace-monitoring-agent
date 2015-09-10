@@ -1,0 +1,2 @@
+  [{"prefix":"/usr/share/nginx"},
+  {"conf_path":"/etc/nginx/nginx.conf"}]

@@ -133,9 +133,33 @@ require('tap')(function(test)
   test('Test Connections: netstat reader', function(expect)
     testTemplate(expect, 'connections', 'connections_netstat', 'NetstatReader')
   end)
+
   ----------------------------------------------- Tests for lsyncd -----------------------------------------------------
+
   test('Test Lsyncd: LsyncProcReader', function(expect)
     testTemplate(expect, 'lsyncd', 'lsyncd_lsyncproc', 'LsyncProcReader')
+  end)
+
+  ----------------------------------------------- Tests for nginx -----------------------------------------------------
+
+  test('Test Nginx: VersionAndConfigureOptionsReader', function(expect)
+    testTemplate(expect, 'nginx_config', 'nginx_VersionAndConfigureOptions', 'VersionAndConfigureOptionsReader')
+  end)
+
+  test('Test Nginx: ConfArgsReader', function(expect)
+    testTemplate(expect, 'nginx_config', 'nginx_ConfArgs', 'ConfArgsReader')
+  end)
+
+  test('Test Nginx: ConfFileReader', function(expect)
+    testTemplate(expect, 'nginx_config', 'nginx_ConfFile', 'ConfFileReader')
+  end)
+
+  test('Test Nginx: VhostReader', function(expect)
+    testTemplate(expect, 'nginx_config', 'nginx_Vhost', 'VhostReader')
+  end)
+
+  test('Test Nginx: ConfValidOrErrReader', function(expect)
+    testTemplate(expect, 'nginx_config', 'nginx_ConfValidOrError', 'ConfValidOrErrReader')
   end)
 
   ----------------------------------------------- Tests for fail2ban ------------------------------------------------
