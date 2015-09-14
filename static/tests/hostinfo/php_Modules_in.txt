@@ -1,0 +1,4 @@
+zlib
+
+[Zend Modules]
+Zend OPcache

@@ -1,0 +1,13 @@
+{"Debug":{"InfoType":"PHP", "OS":"linux"}}
+
+{
+  "metrics":{
+    "modules":["bcmath","bz2","calendar","Core","ctype","curl","date","dba","dom","ereg","exif","fileinfo","filter","ftp","gd","gettext","hash","iconv","json","libxml","mbstring","mcrypt","mhash","mysql","mysqli","openssl","pcntl","pcre","PDO","pdo_mysql","Phar","posix","readline","Reflection","session","shmop","SimpleXML","soap","sockets","SPL","ssh2","standard","sysvmsg","sysvsem","sysvshm","tokenizer","wddx","xml","xmlreader","xmlwriter","Zend OPcache","zip","zlib","Zend OPcache"],
+    "version":{
+      "type":"PHP",
+      "version":"5.6.4-4ubuntu6.2"
+    },
+    "log_files":"/var/log/apache2/*error.log*"
+  },
+  "timestamp":1442261499000
+}
