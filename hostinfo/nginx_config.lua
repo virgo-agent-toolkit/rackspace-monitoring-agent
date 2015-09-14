@@ -188,12 +188,9 @@ function Info:_run(callback)
       reader:on('data', function(data)
         if data.domain then
           domain = data.domain
-          vhost[domain] = {}
-          vhost[domain]['domain'] = domain
-        elseif data.docroot and domain then
+        elseif data.docroot then
           docroot = data.docroot
-          vhost[domain]['docroot'] = docroot
-        elseif data.listen and domain then
+        elseif data.listen then
           if listen then
             if type(listen) == 'string' then
               local temp = listen
@@ -203,10 +200,20 @@ function Info:_run(callback)
             elseif type(listen) == 'table' then
               table.insert(listen, data.listen)
             end
-          elseif domain then
+          else
             listen = data.listen
           end
-          vhost[domain]['listen'] = listen
+        end
+
+        if domain then
+          vhost[domain] = {}
+          vhost[domain]['domain'] = domain
+          if listen then
+            vhost[domain]['listen'] = listen
+          end
+          if docroot then
+            vhost[domain]['docroot'] = docroot
+          end
         end
       end)
       reader:on('error', function(err) safeMerge(errTable, err) end)
