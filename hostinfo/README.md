@@ -164,6 +164,8 @@ The items in the list are linked to sample debug output for themselves.
   Returns the path, version and edition of local magento instances found via the apache2 and nginx configs  
 - [PHP](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/PHP.json)  
   Returns information such as version, type (HHVM/PHP), and errors about php. Use the CLI and log files to extract this information  
+- [POSTFIX](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/POSTFIX.json)  
+  Checks the status of the postfix mail server  
   
 ## Notes for developers
 

@@ -1,0 +1,32 @@
+{"Debug":{"InfoType":"POSTFIX", "OS":"linux"}}
+
+{
+  "metrics":{
+    "current_configuration":{
+      "inet_protocols":"all",
+      "alias_database":"hash:/etc/aliases",
+      "myhostname":"kostco-rmapg-ubuntu-2",
+      "inet_interfaces":"all",
+      "mynetworks":"[::1]/128",
+      "mydestination":"localhost",
+      "config_directory":"/etc/postfix",
+      "queue_directory":"/var/spool/postfix",
+      "mydomain":"localdomain",
+      "mail_version":"2.11.3",
+      "myorigin":"$myhostname"
+    },
+    "mail_queue_size":{
+      "deferred":0,
+      "active":35,
+      "incoming":0,
+      "hold":0,
+      "corrupt":0,
+      "bounce":0
+    },
+    "process":{
+      "PID":"3593",
+      "process":"/usr/lib/postfix/master"
+    }
+  },
+  "timestamp":1442342588000
+}
