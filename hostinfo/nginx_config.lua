@@ -22,7 +22,9 @@ local read = misc.read
 local async = require('async')
 local fs = require('fs')
 local path = require('path')
+
 --------------------------------------------------------------------------------------------------------------------
+
 local Reader = Transform:extend()
 function Reader:initialize()
   Transform.initialize(self, {objectMode = true})
