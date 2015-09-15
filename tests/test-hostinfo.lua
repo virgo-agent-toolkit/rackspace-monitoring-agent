@@ -163,6 +163,7 @@ require('tap')(function(test)
   end)
 
   ----------------------------------------------- Tests for fail2ban ------------------------------------------------
+
   test('Test Fail2ban: LogfilePathReader', function(expect)
     testTemplate(expect, 'fail2ban', 'fail2ban_logfilepath', 'LogfilePathReader')
   end)
@@ -177,6 +178,16 @@ require('tap')(function(test)
 
   test('Test Fail2ban: BannedStatsReader', function(expect)
     testTemplate(expect, 'fail2ban', 'fail2ban_bannedstats', 'BannedStatsReader')
+  end)
+
+  ----------------------------------------------- Tests for wordpress --------------------------------------------------
+
+  test('Test Wordpress: VersionReader', function(expect)
+    testTemplate(expect, 'wordpress', 'wordpress_Version', 'VersionReader')
+  end)
+
+  test('Test Wordpress: PluginsReader', function(expect)
+    testTemplate(expect, 'wordpress', 'wordpress_Plugins', 'PluginsReader')
   end)
 
 end)
