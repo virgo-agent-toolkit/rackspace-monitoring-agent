@@ -98,7 +98,7 @@ function Info:_run(callback)
 
   local function getVersion(dir, cb)
     local out, errs = {}, {}
-    local version_fle = path.join(dir, 'wp-includes/version.php')
+    local version_fle = path.join(dir, 'wp-includes', 'version.php')
     local readStream = read(version_fle)
     -- Handle file not found errors
     readStream:on('error', function(err)
@@ -119,12 +119,10 @@ function Info:_run(callback)
 
   local function getPlugins(dir, callback)
     local plugins, errs = {}, {}
-    walk(path.join(dir, '/wp-content/plugins'), function(err, filesList)
-      if err then
+    walk(path.join(dir, 'wp-content', 'plugins'), function(err, filesList)
+      if err or not filesList or not next(filesList) then
         safeMerge(errs, err)
-        if not filesList then
-          return callback(errs)
-        end
+        return callback(errs)
       end
 
       async.forEachLimit(filesList, 5, function(filepath, cb)
