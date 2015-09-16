@@ -22,6 +22,7 @@ local read = misc.read
 local async = require('async')
 local fs = require('fs')
 local path = require('path')
+local trim = require('virgo/util/misc').trim
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -115,7 +116,6 @@ function Info:_run(callback)
     local out = {}
     local child = run(nginxFullPath, {'-V'})
     local reader = VersionAndConfigureOptionsReader:new()
-
     -- Nginx is weird
     -- The following has been tested on centos and ubuntu cloud servers
     child:on('error', function(err)
@@ -124,7 +124,6 @@ function Info:_run(callback)
       if type(err) == 'string' then reader:write(err) end
     end)
     child:once('end', function() reader:push(nil) end)
-
     reader:on('data', function(data)
       safeMerge(out, data)
     end)
@@ -144,7 +143,7 @@ function Info:_run(callback)
     confArgsReader:on('data', function(data) safeMerge(out, data) end)
     confArgsReader:on('error', function(err) safeMerge(errs, err) end)
     confArgsReader:once('end', function()
-      if not next(out) then finalCb() end
+      if not next(out) then  end
       cb(out)
     end)
     table.foreach(conf_args, function(_, v)
@@ -161,24 +160,25 @@ function Info:_run(callback)
     reader:on('data', function(data) safeMerge(out, data) end)
     reader:on('error', function(err) safeMerge(errs, err) end)
     reader:once('end', function()
-      if not next(out) then finalCb() end
+      if not next(out) then  end
       cb({includes = out})
     end)
   end
 
   local function getVhosts(includes, callback)
     local files, vhosts, errTable = {}, {}, {}
-    table.foreach(includes, function(_, v)
+    table.foreach(includes, function(_, filePath)
+      filePath = trim(filePath)
       -- path/*.conf || path/* -> path/
-      if v:find('%*') then v = v:gsub('%*.*', '') end
-      if v:sub(v:len()) == '/' then
+      if filePath:find('%*') then filePath = filePath:gsub('%*.*', '') end
+      if filePath:sub(filePath:len()) == '/' then
         -- parse directory into list of files
-        local filesInDir = fs.readdirSync(v)
+        local filesInDir = fs.readdirSync(filePath)
         table.foreach(filesInDir, function(_, fileName)
-          table.insert(files, path.join(v, fileName))
+          safeMerge(files, path.join(filePath, fileName))
         end)
       else
-        safeMerge(files, v)
+        safeMerge(files, filePath)
       end
     end)
 
@@ -210,12 +210,8 @@ function Info:_run(callback)
         if domain then
           vhost[domain] = {}
           vhost[domain]['domain'] = domain
-          if listen then
-            vhost[domain]['listen'] = listen
-          end
-          if docroot then
-            vhost[domain]['docroot'] = docroot
-          end
+          vhost[domain]['listen'] = listen or ''
+          vhost[domain]['docroot'] = docroot or ''
         end
       end)
       reader:on('error', function(err) safeMerge(errTable, err) end)
@@ -268,7 +264,7 @@ function Info:_run(callback)
 
   local function compose(func, cb, args)
     if args then
-      if not outTable[args] then return finalCb() end
+      if not outTable[args] then  end
       func(outTable[args], function(data)
         safeMerge(outTable, data)
         return cb()
@@ -301,7 +297,9 @@ function Info:_run(callback)
     function(cb)
       compose(getVhosts, cb, 'includes')
     end
-  }, finalCb)
+  }, function()
+    finalCb()
+  end)
 end
 
 function Info:getPlatforms()
