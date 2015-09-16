@@ -1,0 +1,4 @@
+Plugin Name: Akismet
+Plugin URI: http://akismet.com/
+Description: Used by millions, Akismet is quite possibly the best way in the world to <strong>prot$
+Version: 3.1.3

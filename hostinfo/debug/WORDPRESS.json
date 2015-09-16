@@ -1,0 +1,24 @@
+{"Debug":{"InfoType":"WORDPRESS", "OS":"linux"}}
+
+{
+  "metrics":{
+    "docroots":{
+      "example.com":"/var/www/example.com/public_html",
+      "2001:4800:7817:101:be76:4eff:fe05:2e7":"/var/www/html"
+    },
+    "found":{
+      "2001:4800:7817:101:be76:4eff:fe05:2e7":{
+        "path":"/var/www/html/",
+        "version":["4.3"],
+        "plugins":[{
+          "name":"Hello",
+          "version":"1.6"
+        },{
+          "name":"Akismet",
+          "version":"3.1.3"
+        }]
+      }
+    }
+  },
+  "timestamp":1442252803000
+}

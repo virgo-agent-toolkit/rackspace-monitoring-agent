@@ -49,5 +49,6 @@ return {
   require('./ip6routes'),
   require('./apache2'),
   require('./fail2ban'),
-  require('./lsyncd')
+  require('./lsyncd'),
+  require('./wordpress')
 }
