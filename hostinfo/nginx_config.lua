@@ -143,7 +143,7 @@ function Info:_run(callback)
     confArgsReader:on('data', function(data) safeMerge(out, data) end)
     confArgsReader:on('error', function(err) safeMerge(errs, err) end)
     confArgsReader:once('end', function()
-      if not next(out) then  end
+      if not next(out) then return finalCb() end
       cb(out)
     end)
     table.foreach(conf_args, function(_, v)
@@ -160,7 +160,7 @@ function Info:_run(callback)
     reader:on('data', function(data) safeMerge(out, data) end)
     reader:on('error', function(err) safeMerge(errs, err) end)
     reader:once('end', function()
-      if not next(out) then  end
+      if not next(out) then return finalCb() end
       cb({includes = out})
     end)
   end
@@ -264,7 +264,7 @@ function Info:_run(callback)
 
   local function compose(func, cb, args)
     if args then
-      if not outTable[args] then  end
+      if not outTable[args] then return finalCb() end
       func(outTable[args], function(data)
         safeMerge(outTable, data)
         return cb()
@@ -297,9 +297,7 @@ function Info:_run(callback)
     function(cb)
       compose(getVhosts, cb, 'includes')
     end
-  }, function()
-    finalCb()
-  end)
+  }, finalCb)
 end
 
 function Info:getPlatforms()
