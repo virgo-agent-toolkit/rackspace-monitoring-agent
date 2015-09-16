@@ -13,8 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
-
-return {
+local HostInfo = require('./base').HostInfo
+local async = require('async')
+------------------------------------------------------------------------------------------------------------------------
+--[[ Index of all hostinfos ]]--
+local classes = {
+  require('./all'),
   require('./nginx_config'),
   require('./connections'),
   require('./iptables'),
@@ -55,3 +59,50 @@ return {
   require('./php'),
   require('./postfix')
 }
+------------------------------------------------------------------------------------------------------------------------
+
+--[[ Get all hostinfo data ]]--
+local Info = HostInfo:extend()
+function Info:initialize()
+  HostInfo.initialize(self)
+end
+
+function Info:_run(callback)
+  local result = {}
+  local map = {}
+  local types = {}
+  for _, klass in pairs(classes) do
+    if klass.Info then klass = klass.Info end
+    if klass.getType() ~= 'ALL' then
+      map[klass.getType()] = klass
+      table.insert(types, klass.getType())
+    end
+  end
+
+  async.forEachLimit(types, 5, function(type, cb)
+    local data = {}
+    local Klass = map[type]
+    if Klass.Info then Klass = Klass.Info end
+    local type = Klass.getType()
+    local klass = Klass:new()
+    klass:run(function(err)
+      if err then
+        data = {error = err }
+      else
+        data = klass:serialize()
+      end
+      result[type] = data
+      cb()
+    end)
+  end, function()
+    self:_pushParams(nil, result)
+    callback()
+  end)
+end
+
+function Info:getType()
+  return 'ALL'
+end
+
+exports.Info = Info
+exports.classes = classes
