@@ -51,5 +51,6 @@ return {
   require('./fail2ban'),
   require('./lsyncd'),
   require('./wordpress'),
-  require('./magento')
+  require('./magento'),
+  require('./php')
 }

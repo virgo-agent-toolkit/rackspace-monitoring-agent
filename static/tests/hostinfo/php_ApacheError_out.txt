@@ -1,0 +1,4 @@
+  [{"error_lines":"[Mon Sep 14 06:42:33.410121 2015] [mpm_prefork:notice] [pid 7681] AH00163: Apache/2.4.10 (Ubuntu) $"},
+  {"error_lines":"[Mon Sep 14 06:42:33.410150 2015] [core:notice] [pid 7681] AH00094: Command line: '/usr/sbin/apach$"},
+  {"error_lines":"[Mon Sep 14 08:40:48.077779 2015] [:error] [pid 12621] [client 185.49.14.190:43000] script '/var/w$"},
+  {"error_lines":"[Mon Sep 14 11:26:16.753165 2015] [mpm_prefork:notice] [pid 7681] AH00169: caught SIGTERM, shuttin$"}]
