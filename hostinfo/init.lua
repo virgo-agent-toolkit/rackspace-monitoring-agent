@@ -20,6 +20,7 @@ local async = require('async')
 local path = require('path')
 local HostInfo = require('./base').HostInfo
 local classes = require('./all')
+local uv = require('uv')
 
 local function create_class_info()
   local map = {}
@@ -118,10 +119,10 @@ end
 local function debugInfoAllTime(callback)
   local data = {}
   async.forEachLimit(HOST_INFO_TYPES, 5, function(infoType, cb)
-    local start = os.clock()
+    local start = uv.hrtime()
     debugInfo(infoType, function(_)
-      local endTime = os.clock() - start
-      data[infoType] = endTime
+      local endTime = uv.hrtime() - start
+      data[infoType] = endTime / 10000
       cb()
     end)
   end, function()
