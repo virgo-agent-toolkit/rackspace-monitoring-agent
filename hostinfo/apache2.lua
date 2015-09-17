@@ -303,26 +303,27 @@ function Info:_run(callback)
     if outTable.config_file then
       outTable.config_file = path.join(outTable.config_path, outTable.config_file)
     end
-    if outTable.mpm == 'prefork' and #outTable.user ~= 0 then
-      getRamPerPreforkChild(outTable.user, function(out, err)
-        outTable.estimatedRAMperpreforkchild = type(out) == 'table' and json.stringify(out) or out
-        merge(errTable, err)
-        local readStream = read(outTable.config_file)
-        readStream:on('error', function(err)
-          table.insert(errTable, err)
-          return finalCb()
-        end)
-        local reader = PerforkReader:new()
-        readStream:pipe(reader)
-        streamToBuffer(reader, function(out, err)
+    if outTable.mpm == 'prefork' and outTable.user then
+      if #outTable.user ~= 0 then
+        getRamPerPreforkChild(outTable.user, function(out, err)
+          outTable.estimatedRAMperpreforkchild = type(out) == 'table' and json.stringify(out) or out
           merge(errTable, err)
-          if out.max_clients then outTable.max_clients = out.max_clients end
-          return finalCb()
+          local readStream = read(outTable.config_file)
+          readStream:on('error', function(err)
+            table.insert(errTable, err)
+            return finalCb()
+          end)
+          local reader = PerforkReader:new()
+          readStream:pipe(reader)
+          streamToBuffer(reader, function(out, err)
+            merge(errTable, err)
+            if out.max_clients then outTable.max_clients = out.max_clients end
+            return finalCb()
+          end)
         end)
-      end)
-    else
-      return finalCb()
+      end
     end
+    return finalCb()
   end)
 end
 
