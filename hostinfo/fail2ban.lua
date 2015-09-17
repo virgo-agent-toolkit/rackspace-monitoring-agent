@@ -106,6 +106,7 @@ function Info:_run(callback)
   local function getActivityLogAndBannedStats(logfilePath, cb)
     local errTable, outTable = {}, {}
     outTable.banned, outTable.activity = {}, {}
+    local counter = 500 -- lets limit this at 500
     local readStream = read(logfilePath)
     local reader = ActivityLogReader:new()
     local bannedStatsReader = BannedStatsReader:new()
@@ -116,8 +117,11 @@ function Info:_run(callback)
     end)
     readStream:pipe(reader)
     reader:on('data', function(data)
-      table.insert(outTable.activity, data)
-      bannedStatsReader:write(data)
+      if counter ~= 0 then
+        counter = counter - 1
+        table.insert(outTable.activity, data)
+        bannedStatsReader:write(data)
+      end
     end)
     reader:on('error', function(err) table.insert(errTable, err) end)
     reader:once('end', function()
