@@ -52,5 +52,6 @@ return {
   require('./lsyncd'),
   require('./wordpress'),
   require('./magento'),
-  require('./php')
+  require('./php'),
+  require('./postfix')
 }
