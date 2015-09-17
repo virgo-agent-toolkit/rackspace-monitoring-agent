@@ -1,0 +1,19 @@
+            'major'     => '1',
+            'minor'     => '9',
+            'revision'  => '0',
+            'patch'     => '1',
+            'stability' => '',
+            'number'    => '',
+                            'scope_code' => $code,
+                            'scope_type' => $type,
+                            'options'    => $options,
+                            self::dispatchEvent('mage_run_exception', array('exception' => $e));
+                            $options = array('etc_dir' => $options);
+                                 * Magento edition constants
+                                const EDITION_COMMUNITY    = 'Community';
+                                const EDITION_ENTERPRISE   = 'Enterprise';
+                                const EDITION_PROFESSIONAL = 'Professional';
+                                const EDITION_GO           = 'Go';
+    static private $_currentEdition = self::EDITION_COMMUNITY;
+       return self::$_currentEdition;
+                self::$_currentEdition = $options['edition'];

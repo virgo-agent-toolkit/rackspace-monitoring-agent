@@ -81,7 +81,8 @@ require('tap')(function(test)
     'passwd',
     'remote_services',
     'sshd',
-    'sysctl'
+    'sysctl',
+    'magento'
   }
 
   for _, checkName in pairs(hostinfoChecks) do

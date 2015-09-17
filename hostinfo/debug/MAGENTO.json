@@ -1,0 +1,12 @@
+{"Debug":{"InfoType":"MAGENTO", "OS":"linux"}}
+
+{
+  "metrics":{
+    "2001:4800:7817:101:be76:4eff:fe05:2e7":{
+      "path":"/var/www/html/app/Mage.php",
+      "version":"1.9.0.1",
+      "edition":"Community"
+    }
+  },
+  "timestamp":1442017465000
+}
