@@ -15,13 +15,8 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 local misc = require('./misc')
-local getInfoByVendor = misc.getInfoByVendor
-local run = misc.run
-local read = misc.read
 local Transform = require('stream').Transform
-local vumisc = require('virgo/util/misc')
 local json = require('json')
-local merge = vumisc.merge
 local async = require('async')
 local path = require('path')
 --------------------------------------------------------------------------------------------------------------------
@@ -142,7 +137,7 @@ function Info:_run(callback)
     default = nil
   }
 
-  local spawnConfig = getInfoByVendor(options)
+  local spawnConfig = misc.getInfoByVendor(options)
   if not spawnConfig.apacheCmd then
     self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
     return callback()
@@ -157,14 +152,14 @@ function Info:_run(callback)
     local outTable, errTable = {}, {}
     stream:on('data', function(data)
       if type(data) == 'table' then
-        merge(outTable, data)
+        misc.safeMerge(outTable, data)
       else
         table.insert(outTable, data)
       end
     end)
     stream:on('error', function(err)
       if type(err) == 'table' then
-        merge(errTable, err)
+        misc.safeMerge(errTable, err)
       else
         table.insert(errTable, err)
       end
@@ -173,7 +168,7 @@ function Info:_run(callback)
   end
 
   local function getApacheOutput(cmd, args, cb)
-    local apacheChild = run(cmd, args, {})
+    local apacheChild = misc.run(cmd, args, {})
     local reader = ApacheOutputReader:new()
     -- We want to capture both stderr and stdout and pass it through the same reader
     apacheChild:on('data', function(data) reader:write(data) end)
@@ -183,12 +178,12 @@ function Info:_run(callback)
   end
   local function getApacheClients(cmd, user, cb)
     local cmd = string.format('ps -u %s -o cmd | grep -c %s', user, cmd)
-    local child = run('sh', {'-c', cmd})
+    local child = misc.run('sh', {'-c', cmd})
     streamToBuffer(child, cb)
   end
 
   local function getVhostsConfig(file, line_number, cb)
-    local readStream = read(file)
+    local readStream = misc.read(file)
     -- Catch no file found errors
     readStream:on('error', function(err)
       table.insert(errTable, err)
@@ -209,7 +204,7 @@ function Info:_run(callback)
   end
   local function getVhostsOutput(cmd, args, cb)
     local outTable, errTable, current_vhost = {}, {}, ''
-    local child = run(cmd, args)
+    local child = misc.run(cmd, args)
     local reader = VhostOutputReader:new()
     local waitCount = 1 -- we wish to wait for the end of the reader stream
     local function await()
@@ -224,7 +219,7 @@ function Info:_run(callback)
         outTable.vhosts = {}
         outTable.vhosts[current_vhost] = {}
       end
-      if data.user then merge(outTable, data) end
+      if data.user then misc.safeMerge(outTable, data) end
       if data.conf then
         local file, lineNum = data.conf:match("(.+)%:(.+)")
         if not data.port then
@@ -263,7 +258,7 @@ function Info:_run(callback)
   end
   local function getRamPerPreforkChild(user, cb)
     local cmd = "ps -u " .. user .. " -o pid= | xargs pmap -d | awk '/private/'"
-    local stream = run('sh', {'-c', cmd}, {})
+    local stream = misc.run('sh', {'-c', cmd}, {})
     local reader = RamPerPreforkChildReader:new()
     stream:pipe(reader)
     streamToBuffer(reader, function(out, err)
@@ -282,19 +277,19 @@ function Info:_run(callback)
   async.parallel({
     function(cb)
       getApacheOutput(spawnConfig.apacheCmd, spawnConfig.apacheArgs, function(out, err)
-        merge(outTable, out)
-        merge(errTable, err)
+        misc.safeMerge(outTable, out)
+        misc.safeMerge(errTable, err)
         if not outTable.syntax_ok then outTable.syntax_ok = true end
         cb()
       end)
     end,
     function(cb)
       getVhostsOutput(spawnConfig.vhostCmd, spawnConfig.vhostArgs, function(out, err)
-        merge(outTable, out)
-        merge(errTable, err)
+        misc.safeMerge(outTable, out)
+        misc.safeMerge(errTable, err)
         getApacheClients(spawnConfig.apacheConfig, outTable.user, function(out, err)
           outTable.cients = out and table.concat(out) or ''
-          merge(errTable, err)
+          misc.safeMerge(errTable, err)
           cb()
         end)
       end)
@@ -307,8 +302,8 @@ function Info:_run(callback)
       if #outTable.user ~= 0 then
         getRamPerPreforkChild(outTable.user, function(out, err)
           outTable.estimatedRAMperpreforkchild = type(out) == 'table' and json.stringify(out) or out
-          merge(errTable, err)
-          local readStream = read(outTable.config_file)
+          misc.safeMerge(errTable, err)
+          local readStream = misc.read(outTable.config_file)
           readStream:on('error', function(err)
             table.insert(errTable, err)
             return finalCb()
@@ -316,7 +311,7 @@ function Info:_run(callback)
           local reader = PerforkReader:new()
           readStream:pipe(reader)
           streamToBuffer(reader, function(out, err)
-            merge(errTable, err)
+            misc.safeMerge(errTable, err)
             if out.max_clients then outTable.max_clients = out.max_clients end
             return finalCb()
           end)
