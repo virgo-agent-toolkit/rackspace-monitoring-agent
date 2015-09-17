@@ -158,9 +158,13 @@ The items in the list are linked to sample debug output for themselves.
   Checks the status of the live syncing daemon or lsyncd
 - [NGINX_CONFIG](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/NGINX_CONFIG.json)
   Returns vhosts, version, includes, status (0 if everything is ok when nginx -t is run), configuration path, prefix and configure arguments for local nginx 
-- [WORDPRESS](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/WORDPRESS.json)
-  Checks Apache vhosts and retrieves data about any wordpress instances version and plugins
-    
+- [WORDPRESS](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/WORDPRESS.json)  
+  Checks Apache vhosts and retrieves data about any wordpress instances version and plugins  
+- [MAGENTO](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/MAGENTO.json)  
+  Returns the path, version and edition of local magento instances found via the apache2 and nginx configs  
+- [PHP](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/PHP.json)  
+  Returns information such as version, type (HHVM/PHP), and errors about php. Use the CLI and log files to extract this information  
+  
 ## Notes for developers
 
 PRs are always welcome. Few tips:  

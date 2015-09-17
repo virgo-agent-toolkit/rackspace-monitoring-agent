@@ -81,7 +81,8 @@ require('tap')(function(test)
     'passwd',
     'remote_services',
     'sshd',
-    'sysctl'
+    'sysctl',
+    'magento'
   }
 
   for _, checkName in pairs(hostinfoChecks) do
@@ -140,7 +141,7 @@ require('tap')(function(test)
     testTemplate(expect, 'lsyncd', 'lsyncd_lsyncproc', 'LsyncProcReader')
   end)
 
-  ----------------------------------------------- Tests for nginx -----------------------------------------------------
+  ----------------------------------------------- Tests for nginx ------------------------------------------------------
 
   test('Test Nginx: VersionAndConfigureOptionsReader', function(expect)
     testTemplate(expect, 'nginx_config', 'nginx_VersionAndConfigureOptions', 'VersionAndConfigureOptionsReader')
@@ -188,6 +189,20 @@ require('tap')(function(test)
 
   test('Test Wordpress: PluginsReader', function(expect)
     testTemplate(expect, 'wordpress', 'wordpress_Plugins', 'PluginsReader')
+  end)
+
+  ------------------------------------------------ Tests for php -------------------------------------------------------
+
+  test('Test PHP: VersionAndErrorReader', function(expect)
+    testTemplate(expect, 'php', 'php_VersionAndError', 'VersionAndErrorReader')
+  end)
+
+  test('Test PHP: ModulesReader', function(expect)
+    testTemplate(expect, 'php', 'php_Modules', 'ModulesReader')
+  end)
+
+  test('Test PHP: ApacheErrorReader', function(expect)
+    testTemplate(expect, 'php', 'php_ApacheError', 'ApacheErrorReader')
   end)
 
 end)

@@ -1,0 +1,9 @@
+  [{"version":{"name":"major","version":"1"}},
+  {"version":{"name":"minor","version":"9"}},
+  {"version":{"name":"revision","version":"0"}},
+  {"version":{"name":"patch","version":"1"}},
+  {"editionList":{"EDITION_COMMUNITY":"Community"}},
+  {"editionList":{"EDITION_ENTERPRISE":"Enterprise"}},
+  {"editionList":{"EDITION_PROFESSIONAL":"Professional"}},
+  {"editionList":{"EDITION_GO":"Go"}},
+  {"editionAssign":"EDITION_COMMUNITY"}]
