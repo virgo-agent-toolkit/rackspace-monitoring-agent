@@ -1,3 +1,8 @@
+## rackspace-monitoring-agent-2.2.0
+
+* Bump luvi for libuv 1.7.4
+* Hostinfo tweaks and additions
+
 ## rackspace-monitoring-agent-2.1.21
 
 * Bump virgo-base for source protocol fix
