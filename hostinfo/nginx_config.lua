@@ -16,9 +16,6 @@ limitations under the License.
 local HostInfo = require('./base').HostInfo
 local Transform = require('stream').Transform
 local misc = require('./misc')
-local run = misc.run
-local safeMerge = misc.safeMerge
-local read = misc.read
 local async = require('async')
 local fs = require('fs')
 local path = require('path')
@@ -114,7 +111,7 @@ function Info:_run(callback)
 
   local function getVersionAndConfigureOptions(cb)
     local out = {}
-    local child = run(nginxFullPath, {'-V'})
+    local child = misc.run(nginxFullPath, {'-V'})
     local reader = VersionAndConfigureOptionsReader:new()
     -- Nginx is weird
     -- The following has been tested on centos and ubuntu cloud servers
@@ -125,7 +122,7 @@ function Info:_run(callback)
     end)
     child:once('end', function() reader:push(nil) end)
     reader:on('data', function(data)
-      safeMerge(out, data)
+      misc.safeMerge(out, data)
     end)
     reader:once('end', function()
       if out and next(out) then
@@ -140,8 +137,8 @@ function Info:_run(callback)
   local function getPrefixAndConfPath(conf_args, cb)
     local out, errs = {}, {}
     local confArgsReader = ConfArgsReader:new()
-    confArgsReader:on('data', function(data) safeMerge(out, data) end)
-    confArgsReader:on('error', function(err) safeMerge(errs, err) end)
+    confArgsReader:on('data', function(data) misc.safeMerge(out, data) end)
+    confArgsReader:on('error', function(err) misc.safeMerge(errs, err) end)
     confArgsReader:once('end', function()
       if not next(out) then return finalCb() end
       cb(out)
@@ -154,11 +151,11 @@ function Info:_run(callback)
 
   local function getIncludes(conf_path, cb)
     local out, errs = {}, {}
-    local readStream = read(conf_path)
+    local readStream = misc.read(conf_path)
     local reader = ConfFileReader:new()
     readStream:pipe(reader)
-    reader:on('data', function(data) safeMerge(out, data) end)
-    reader:on('error', function(err) safeMerge(errs, err) end)
+    reader:on('data', function(data) misc.safeMerge(out, data) end)
+    reader:on('error', function(err) misc.safeMerge(errs, err) end)
     reader:once('end', function()
       if not next(out) then return finalCb() end
       cb({includes = out})
@@ -175,17 +172,17 @@ function Info:_run(callback)
         -- parse directory into list of files
         local filesInDir = fs.readdirSync(filePath)
         table.foreach(filesInDir, function(_, fileName)
-          safeMerge(files, path.join(filePath, fileName))
+          misc.safeMerge(files, path.join(filePath, fileName))
         end)
       else
-        safeMerge(files, filePath)
+        misc.safeMerge(files, filePath)
       end
     end)
 
     async.forEachLimit(files, 5, function(file, cb)
       local vhost = {}
       local domain, listen, docroot
-      local readStream = read(file)
+      local readStream = misc.read(file)
       local reader = VhostReader:new()
       reader:on('data', function(data)
         if data.domain then
@@ -214,9 +211,9 @@ function Info:_run(callback)
           vhost[domain]['docroot'] = docroot or ''
         end
       end)
-      reader:on('error', function(err) safeMerge(errTable, err) end)
+      reader:on('error', function(err) misc.safeMerge(errTable, err) end)
       reader:once('end', function()
-        safeMerge(vhosts, vhost)
+        misc.safeMerge(vhosts, vhost)
         cb()
       end)
       readStream:pipe(reader)
@@ -231,7 +228,7 @@ function Info:_run(callback)
 
   local function getConfValidOrErrors(cb)
     local out, err = {}, {}
-    local child = run(nginxFullPath, {'-t'})
+    local child = misc.run(nginxFullPath, {'-t'})
     local reader = ConfValidOrErrReader:new()
     child:pipe(reader)
     child:on('error', function(err)
@@ -245,11 +242,11 @@ function Info:_run(callback)
       if data.status then
         out.status = 0
       else
-        safeMerge(out, data)
+        misc.safeMerge(out, data)
       end
     end)
     reader:on('error', function(data)
-      safeMerge(err, data)
+      misc.safeMerge(err, data)
     end)
     reader:once('end', function()
       if next(out) and not next(err) then
@@ -266,12 +263,12 @@ function Info:_run(callback)
     if args then
       if not outTable[args] then return finalCb() end
       func(outTable[args], function(data)
-        safeMerge(outTable, data)
+        misc.safeMerge(outTable, data)
         return cb()
       end)
     else
       func(function(data)
-        safeMerge(outTable, data)
+        misc.safeMerge(outTable, data)
         return cb()
       end)
     end

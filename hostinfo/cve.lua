@@ -14,12 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-
-local misc = require('./misc')
-local run = misc.run
-local getInfoByVendor = misc.getInfoByVendor
 local Transform = require('stream').Transform
-
+local misc = require('./misc')
 --------------------------------------------------------------------------------------------------------------------
 local Reader = Transform:extend()
 
@@ -55,7 +51,7 @@ function Info:_run(callback)
     default = nil
   }
 
-  local spawnConfig = getInfoByVendor(options)
+  local spawnConfig = misc.getInfoByVendor(options)
   if not spawnConfig.cmd then
     self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
     return callback()
@@ -74,7 +70,7 @@ function Info:_run(callback)
   end
 
   local reader = Reader:new()
-  local child = run(cmd, args)
+  local child = misc.run(cmd, args)
   child:pipe(reader)
   reader:on('data', function(data)
     outTable[data] = 1
