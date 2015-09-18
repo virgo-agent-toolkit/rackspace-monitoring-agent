@@ -16,9 +16,6 @@ limitations under the License.
 local HostInfo = require('./base').HostInfo
 local Transform = require('stream').Transform
 local misc = require('./misc')
-local run = misc.run
-local read = misc.read
-local merge = require('virgo/util/misc').merge
 local async = require('async')
 
 local Reader = Transform:extend()
@@ -78,18 +75,18 @@ function Info:_run(callback)
 
   local function getLogfilePath(cb)
     local errTable = {}
-    local child = run('fail2ban-client', {'get', 'logtarget'})
+    local child = misc.run('fail2ban-client', {'get', 'logtarget'})
     local loglocation
     local reader = LogfilePathReader:new()
     child:pipe(reader)
-    reader:on('error', function(err) table.insert(errTable, err) end)
+    reader:on('error', function(err) misc.safeMerge(errTable, err) end)
     reader:on('data', function(data) loglocation = data end)
     reader:once('end', function()
       local alternateLoglocation = '/var/log/messages'
       if loglocation == 'SYSLOG' then
-        local readStream = read(loglocation)
+        local readStream = misc.read(loglocation)
         readStream:on('error', function(err)
-          table.insert(errTable, err)
+          misc.safeMerge(errTable, err)
           readStream:close()
           cb({loglocation = '/var/log/syslog'}, errTable)
         end)
@@ -106,7 +103,8 @@ function Info:_run(callback)
   local function getActivityLogAndBannedStats(logfilePath, cb)
     local errTable, outTable = {}, {}
     outTable.banned, outTable.activity = {}, {}
-    local readStream = read(logfilePath)
+    local counter = 500 -- lets limit this at 500
+    local readStream = misc.read(logfilePath)
     local reader = ActivityLogReader:new()
     local bannedStatsReader = BannedStatsReader:new()
     -- Catch no file found errors
@@ -116,10 +114,13 @@ function Info:_run(callback)
     end)
     readStream:pipe(reader)
     reader:on('data', function(data)
-      table.insert(outTable.activity, data)
-      bannedStatsReader:write(data)
+      if counter ~= 0 then
+        counter = counter - 1
+        table.insert(outTable.activity, data)
+        bannedStatsReader:write(data)
+      end
     end)
-    reader:on('error', function(err) table.insert(errTable, err) end)
+    reader:on('error', function(err) misc.safeMerge(errTable, err) end)
     reader:once('end', function()
       bannedStatsReader:emit('end')
     end)
@@ -139,7 +140,7 @@ function Info:_run(callback)
       outTable.banned[data.ip] = {}
       outTable.banned[data.ip][data.jail] = ban
     end)
-    bannedStatsReader:on('error', function(err) table.insert(errTable, err) end)
+    bannedStatsReader:on('error', function(err) misc.safeMerge(errTable, err) end)
     bannedStatsReader:once('end', function()
       cb(outTable, errTable)
     end)
@@ -147,7 +148,7 @@ function Info:_run(callback)
 
   local function getJailsList(cb)
     local errTable, outTable = {}, {}
-    local child = run('fail2ban-client', {'status'})
+    local child = misc.run('fail2ban-client', {'status'})
     local reader = JailsListReader:new()
     child:pipe(reader)
     reader:on('error', function(err) table.insert(errTable, err) end)
@@ -166,11 +167,11 @@ function Info:_run(callback)
   async.parallel({
     function(cb)
       getLogfilePath(function(out, err)
-        merge(errTable, err) -- err here should be just {}
+        misc.safeMerge(errTable, err) -- err here should be just {}
         if out.loglocation then
           getActivityLogAndBannedStats(out.loglocation, function(out, err)
-            merge(outTable, out)
-            merge(errTable, err)
+            misc.safeMerge(outTable, out)
+            misc.safeMerge(errTable, err)
             cb()
           end)
         else
@@ -180,8 +181,8 @@ function Info:_run(callback)
     end,
     function(cb)
       getJailsList(function(out, err)
-        merge(outTable, out)
-        merge(errTable, err)
+        misc.safeMerge(outTable, out)
+        misc.safeMerge(errTable, err)
         cb()
       end)
     end

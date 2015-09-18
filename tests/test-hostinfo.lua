@@ -180,6 +180,14 @@ require('tap')(function(test)
   test('Test Fail2ban: BannedStatsReader', function(expect)
     testTemplate(expect, 'fail2ban', 'fail2ban_bannedstats', 'BannedStatsReader')
   end)
+  ----------------------------------------------- Tests for postfix ---------------------------------------------------
+  test('Test Postfix: ProcessReader', function(expect)
+    testTemplate(expect, 'postfix', 'postfix_Process', 'ProcessReader')
+  end)
+
+  test('Test Postfix: ConfigReader', function(expect)
+    testTemplate(expect, 'postfix', 'postfix_Config', 'ConfigReader')
+  end)
 
   ----------------------------------------------- Tests for wordpress --------------------------------------------------
 

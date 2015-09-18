@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@ limitations under the License.
 local HostInfo = require('./base').HostInfo
 local Transform = require('stream').Transform
 local misc = require('./misc')
-local run = misc.run
-local getInfoByVendor = misc.getInfoByVendor
 
 local Reader = Transform:extend()
 function Reader:initialize()
@@ -70,7 +68,7 @@ function Info:_run(callback)
     centos = rhel,
     default = nil
   }
-  local spawnConfig = getInfoByVendor(options)
+  local spawnConfig = misc.getInfoByVendor(options)
   if not spawnConfig.cmd then
     self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
     return callback()
@@ -93,7 +91,7 @@ function Info:_run(callback)
   end
 
   local reader = method == 'unattended_upgrades' and AptReader:new() or YumReader:new()
-  local child = run(cmd, args)
+  local child = misc.run(cmd, args)
   child:pipe(reader)
   reader:on('error', function(err) table.insert(errTable, err) end)
   reader:on('data', function(data) table.insert(outTable, data) end)

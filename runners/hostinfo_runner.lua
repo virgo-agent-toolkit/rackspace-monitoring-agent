@@ -24,6 +24,10 @@ local function run(...)
   .describe("d", "Generate documentation")
   .usage('Usage: -t')
   .describe("t", "Print all implemented hostinfo types")
+  .usage('Usage: -T')
+  .describe("T", "Print run times for all implemented hostinfo types")
+  .usage('Usage: -S')
+  .describe("S", "Print size in bytes for all implemented hostinfo types")
   .usage('Usage: -x [Host Info Type]')
   .describe("x", "Host info type to run")
   .usage('Usage: -f [File name]')
@@ -59,6 +63,10 @@ local function run(...)
     return
   elseif args.t then
     return print(table.concat(HostInfo.getTypes(), '\n'))
+  elseif args.T then
+    HostInfo.debugInfoAllTime(print)
+  elseif args.S then
+    HostInfo.debugInfoAllSize(print)
   else
     print(argv._usage)
     return process:exit(0)

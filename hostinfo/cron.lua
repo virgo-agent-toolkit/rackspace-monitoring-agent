@@ -16,8 +16,6 @@ limitations under the License.
 local HostInfo = require('./base').HostInfo
 
 local misc = require('./misc')
-local getInfoByVendor = misc.getInfoByVendor
-local read = misc.read
 local async = require('async')
 local fs = require('fs')
 local path = require('path')
@@ -75,7 +73,7 @@ function Info:_run(callback)
   }
 
   local vendorInfo, dir
-  vendorInfo = getInfoByVendor(options)
+  vendorInfo = misc.getInfoByVendor(options)
   if not vendorInfo.dir then
     self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
     return callback()
@@ -95,21 +93,21 @@ function Info:_run(callback)
   end
 
   local function onreadDir(err, files)
-    if err then table.insert(errTable, err) end
+    if err then misc.safeMerge(errTable, err) end
     if not files or #files == 0 then
       return finalCb()
     end
     async.forEachLimit(files, 5, function(file, cb)
-      local readStream = read(path.join(dir, file))
+      local readStream = misc.read(path.join(dir, file))
       local reader = Reader:new()
       -- Catch no file found errors
       readStream:on('error', function(err)
-        table.insert(errTable, err)
+        misc.safeMerge(errTable, err)
         return cb()
       end)
       readStream:pipe(reader)
-      reader:on('data', function(data) table.insert(outTable, data) end)
-      reader:on('error', function(err) table.insert(errTable, err) end)
+      reader:on('data', function(data) misc.safeMerge(outTable, data) end)
+      reader:on('error', function(err) misc.safeMerge(errTable, err) end)
       reader:once('end', cb)
     end, finalCb)
   end

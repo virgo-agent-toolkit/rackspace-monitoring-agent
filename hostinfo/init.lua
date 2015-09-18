@@ -20,6 +20,7 @@ local async = require('async')
 local path = require('path')
 local HostInfo = require('./base').HostInfo
 local classes = require('./all')
+local uv = require('uv')
 
 local function create_class_info()
   local map = {}
@@ -115,6 +116,40 @@ local function debugInfoAllToFolder(folderName, callback)
   end)
 end
 
+local function debugInfoAllTime(callback)
+  local data = {}
+  async.forEachLimit(HOST_INFO_TYPES, 5, function(infoType, cb)
+    local start = uv.hrtime()
+    debugInfo(infoType, function(_)
+      local endTime = uv.hrtime() - start
+      data[infoType] = endTime / 10000
+      cb()
+    end)
+  end, function()
+    callback(json.stringify(data, {indent = 2}))
+  end)
+end
+
+local function debugInfoAllSize(callback)
+  local folderName = 'tempDebug'
+  local data = {}
+  data.hostinfos = {}
+  local totalSize = 0
+  debugInfoAllToFolder(folderName, function()
+    local files = fs.readdirSync(folderName)
+    async.forEachLimit(files, 5, function(file, cb)
+      local size = fs.statSync(path.join(folderName, file))['size']
+      totalSize = totalSize + size
+      data.hostinfos[file:sub(0, -6)] = size
+      cb()
+    end, function()
+      fs.unlinkSync(folderName)
+      data.total_size = totalSize
+      callback(json.stringify(data, {indent = 2}))
+    end)
+  end)
+end
+
 --[[ Exports ]]--
 local exports = {}
 exports.create = create
@@ -125,4 +160,6 @@ exports.debugInfoToFile = debugInfoToFile
 exports.debugInfoAll = debugInfoAll
 exports.debugInfoAllToFile = debugInfoAllToFile
 exports.debugInfoAllToFolder = debugInfoAllToFolder
+exports.debugInfoAllTime = debugInfoAllTime
+exports.debugInfoAllSize = debugInfoAllSize
 return exports

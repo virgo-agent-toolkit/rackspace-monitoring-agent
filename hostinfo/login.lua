@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2015 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
-local read = require('./misc').read
+local misc = require('./misc')
 local Transform = require('stream').Transform
 
 --------------------------------------------------------------------------------------------------------------------
@@ -47,20 +47,16 @@ function Info:_run(callback)
     return callback()
   end
 
-  local readStream = read(filename)
+  local readStream = misc.read(filename)
   local reader = Reader:new()
   -- Catch no file found errors
   readStream:on('error', function(err)
-    table.insert(errTable, err)
+    misc.safeMerge(errTable, err)
     return finalCb()
   end)
   readStream:pipe(reader)
-  reader:on('data', function(data)
-    for k, v in pairs(data) do
-      outTable[k] = v
-    end
-  end)
-  reader:on('error', function(err) table.insert(errTable, err) end)
+  reader:on('data', function(data) misc.safeMerge(outTable, data) end)
+  reader:on('error', function(err) misc.safeMerge(errTable, err) end)
   reader:once('end', finalCb)
 end
 
