@@ -80,6 +80,16 @@ Examples:
   ```
   rackspace-monitoring-agent -e hostinfo_runner -d -F debug
   ```
+  
+  8. The -T flag will benchmark all the hostinfos and return a list of hostinfos and their run times derived using luas os.clock util.
+  ```
+  rackspace-monitoring-agent -e hostinfo_runner -T
+  ```
+  
+  9. The -S flag will benchmark output file sizes of all hostinfos and return a list thereof. Be forewarned that this isn't very accurate since data returned varies greatly depending on host configuration  
+  ```
+  rackspace-monitoring-agent -e hostinfo_runner -S
+  ```
 
 ## Current list of available hostinfo checks
 
