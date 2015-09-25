@@ -22,6 +22,7 @@ local parseCSVLine = require('virgo/util/misc').parseCSVLine
 local table = require('table')
 local string = require('string')
 local los = require('los')
+local uv = require('uv')
 
 local function lines(str)
   local t = {}
@@ -147,6 +148,10 @@ function WindowsPowershellCmdletCheck:run(callback)
     child:on('exit', handle_data)
     child:on('error', function(err)
       checkResult:setStatus("err " .. err)
+
+      -- Get the cpu count
+      local vcpus = #uv.cpu_info()
+      checkResult:addMetric('cpu_count', nil, 'uint32', vcpus)
 
       -- Return Result
       self._lastResult = checkResult
