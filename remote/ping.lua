@@ -58,8 +58,6 @@ local function processMessage(err, data, address)
   if first == 128 then
     -- ICMP6 request, ignore these.
     return
-  elseif first == 129 then
-    -- ICMP6 response, leave along, it's good.
   elseif rshift(first, 4) == 4 then
     -- IPv4 IP header detected, strip it by reading length
     data = sub(data, band(byte(data, 1), 0xf) * 4 + 1)
@@ -149,13 +147,13 @@ return function (attributes, config, register, set)
     sock:send(top .. checksum(top .. "\x00\x00" .. bottom) .. bottom, ip, 0)
     local thread = coroutine.running()
     waiting[seq] = thread
-    local message, err
+    local message
     local delta
     timer:start(delay, 0, function ()
       results[#results + 1] = delta
       assert(coroutine.resume(thread))
     end)
-    message, err = coroutine.yield()
+    message = coroutine.yield()
     if message then
       local rbegin = bor(
         lshift(byte(message, 1), 24), lshift(byte(message, 2), 16),
