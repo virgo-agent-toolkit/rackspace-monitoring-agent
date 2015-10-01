@@ -51,7 +51,6 @@ function VirgoProtocolConnection:_bindHandlers()
     info:run(function(err)
       if err then
         self._log(logging.ERR, fmt('host_info.get error', tostring(err)))
-        return
       end
       local m = msg.HostInfoResponse:new(request, info:serialize())
       self:_send(m, callback)

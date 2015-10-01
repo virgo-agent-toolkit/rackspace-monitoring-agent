@@ -1,0 +1,1 @@
+  ["/etc/lsyncd/lsyncd.conf.lua","/etc/lsyncd/lsyncd.conf.lua"]

@@ -51,7 +51,7 @@ function Info:_run(callback)
   local errTable, outTable = {}, {}
   fs.readFile(PASSWD_PATH, function(err, data)
     if err then
-      self._error = "Couldn't read /etc/passwd"
+      self:_pushError("Couldn't read /etc/passwd")
       return callback()
     end
 

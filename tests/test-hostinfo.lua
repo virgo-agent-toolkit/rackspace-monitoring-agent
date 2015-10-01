@@ -24,24 +24,17 @@ require('tap')(function(test)
   local is_equal = require('virgo/util/underscore').is_equal
 
   for _, type in pairs(hostinfo.getTypes()) do
-    test('test ' .. type, function(expect)
+    test('Smoke test for: ' .. type, function(expect)
       local info = hostinfo.create(type)
-      info:run(expect(function() assert(info._params, 'Params should be an object, was false or nil') end))
+      local errMsg = 'this is an error'
+      local cb = expect(function()
+        assert(info._error:find(errMsg), "Couldn't find error message")
+        assert(info._params, 'Params should be an object, was false or nil')
+      end)
+      info:_pushError(errMsg)
+      info:run(cb)
     end)
   end
-  -- check if all hostinfos call callback at the end
-  test('test for bad hostinfo', function(expect)
-    local info
-    local errMsg = 'this is an error'
-    local function onRun()
-      assert(info._error:find(errMsg))
-    end
-    info = hostinfo.create('nil')
-    info._run = function()
-      error(errMsg)
-    end
-    info:run(expect(onRun))
-  end)
 
   -- Utility function to run checks
   local function testTemplate(expect, hostinfoName, testFileName, Reader)
@@ -82,134 +75,131 @@ require('tap')(function(test)
     'remote_services',
     'sshd',
     'sysctl',
-    'magento'
+    'magento',
+    'lsyncd'
   }
 
   for _, checkName in pairs(hostinfoChecks) do
-    test('Test: ' .. checkName, function(expect)
+    test('Unit test for reader in: ' .. checkName, function(expect)
       testTemplate(expect, checkName, checkName, 'Reader')
     end)
   end
 
   ---------------------------------------------- Tests for Autoupdates ------------------------------------------------
 
-  test('Test Autoupdates: apt reader enabled', function(expect)
+  test('Unit test for Autoupdates: apt reader enabled', function(expect)
     testTemplate(expect, 'autoupdates', 'autoupdates_apt', 'AptReader')
   end)
 
-  test('Test Autoupdates: yum reader enabled', function(expect)
+  test('Unit test for Autoupdates: yum reader enabled', function(expect)
     testTemplate(expect, 'autoupdates', 'autoupdates_yum', 'YumReader')
   end)
 
   ----------------------------------------------- Tests for packages --------------------------------------------------
 
-  test('Test Packages: linux reader', function(expect)
+  test('Unit test for Packages: linux reader', function(expect)
     testTemplate(expect, 'packages', 'packages_linux', 'LinuxReader')
   end)
 
   ----------------------------------------------- Tests for apache2 --------------------------------------------------
 
-  test('Test Apache2: apache output reader', function(expect)
+  test('Unit test for Apache2: apache output reader', function(expect)
     testTemplate(expect, 'apache2', 'apache2_apacheOut', 'ApacheOutputReader')
   end)
 
-  test('Test Apache2: VhostOutputReader', function(expect)
+  test('Unit test for Apache2: VhostOutputReader', function(expect)
     testTemplate(expect, 'apache2', 'apache2_VhostOutput', 'VhostOutputReader')
   end)
 
-  test('Test Apache2: VhostConfigReader', function(expect)
+  test('Unit test for Apache2: VhostConfigReader', function(expect)
     testTemplate(expect, 'apache2', 'apache2_VhostConfig', 'VhostConfigReader')
   end)
 
-  test('Test Apache2: RamPerPreforkChildReader', function(expect)
+  test('Unit test for Apache2: RamPerPreforkChildReader', function(expect)
     testTemplate(expect, 'apache2', 'apache2_RamPerPreforkChild', 'RamPerPreforkChildReader')
   end)
 
   ----------------------------------------------- Tests for connections ------------------------------------------------
 
-  test('Test Connections: arp reader', function(expect)
+  test('Unit test for Connections: arp reader', function(expect)
     testTemplate(expect, 'connections', 'connections_arp', 'ArpReader')
   end)
 
-  test('Test Connections: netstat reader', function(expect)
+  test('Unit test for Connections: netstat reader', function(expect)
     testTemplate(expect, 'connections', 'connections_netstat', 'NetstatReader')
-  end)
-
-  ----------------------------------------------- Tests for lsyncd -----------------------------------------------------
-
-  test('Test Lsyncd: LsyncProcReader', function(expect)
-    testTemplate(expect, 'lsyncd', 'lsyncd_lsyncproc', 'LsyncProcReader')
   end)
 
   ----------------------------------------------- Tests for nginx ------------------------------------------------------
 
-  test('Test Nginx: VersionAndConfigureOptionsReader', function(expect)
+  test('Unit test for Nginx: VersionAndConfigureOptionsReader', function(expect)
     testTemplate(expect, 'nginx_config', 'nginx_VersionAndConfigureOptions', 'VersionAndConfigureOptionsReader')
   end)
 
-  test('Test Nginx: ConfArgsReader', function(expect)
+  test('Unit test for Nginx: ConfArgsReader', function(expect)
     testTemplate(expect, 'nginx_config', 'nginx_ConfArgs', 'ConfArgsReader')
   end)
 
-  test('Test Nginx: ConfFileReader', function(expect)
+  test('Unit test for Nginx: ConfFileReader', function(expect)
     testTemplate(expect, 'nginx_config', 'nginx_ConfFile', 'ConfFileReader')
   end)
 
-  test('Test Nginx: VhostReader', function(expect)
+  test('Unit test for Nginx: VhostReader', function(expect)
     testTemplate(expect, 'nginx_config', 'nginx_Vhost', 'VhostReader')
   end)
 
-  test('Test Nginx: ConfValidOrErrReader', function(expect)
+  test('Unit test for Nginx: ConfValidOrErrReader', function(expect)
     testTemplate(expect, 'nginx_config', 'nginx_ConfValidOrError', 'ConfValidOrErrReader')
   end)
 
   ----------------------------------------------- Tests for fail2ban ------------------------------------------------
 
-  test('Test Fail2ban: LogfilePathReader', function(expect)
+  test('Unit test for Fail2ban: LogfilePathReader', function(expect)
     testTemplate(expect, 'fail2ban', 'fail2ban_logfilepath', 'LogfilePathReader')
   end)
 
-  test('Test Fail2ban: JailsListReader', function(expect)
+  test('Unit test for Fail2ban: JailsListReader', function(expect)
     testTemplate(expect, 'fail2ban', 'fail2ban_jailslist', 'JailsListReader')
   end)
 
-  test('Test Fail2ban: ActivityLogReader', function(expect)
+  test('Unit test for Fail2ban: ActivityLogReader', function(expect)
     testTemplate(expect, 'fail2ban', 'fail2ban_activitylog', 'ActivityLogReader')
   end)
 
-  test('Test Fail2ban: BannedStatsReader', function(expect)
+  test('Unit test for Fail2ban: BannedStatsReader', function(expect)
     testTemplate(expect, 'fail2ban', 'fail2ban_bannedstats', 'BannedStatsReader')
   end)
+
   ----------------------------------------------- Tests for postfix ---------------------------------------------------
-  test('Test Postfix: ProcessReader', function(expect)
+
+  test('Unit test for Postfix: ProcessReader', function(expect)
     testTemplate(expect, 'postfix', 'postfix_Process', 'ProcessReader')
   end)
 
-  test('Test Postfix: ConfigReader', function(expect)
+  test('Unit test for Postfix: ConfigReader', function(expect)
     testTemplate(expect, 'postfix', 'postfix_Config', 'ConfigReader')
   end)
 
   ----------------------------------------------- Tests for wordpress --------------------------------------------------
 
-  test('Test Wordpress: VersionReader', function(expect)
+  test('Unit test for Wordpress: VersionReader', function(expect)
     testTemplate(expect, 'wordpress', 'wordpress_Version', 'VersionReader')
   end)
 
-  test('Test Wordpress: PluginsReader', function(expect)
+  test('Unit test for Wordpress: PluginsReader', function(expect)
     testTemplate(expect, 'wordpress', 'wordpress_Plugins', 'PluginsReader')
   end)
 
   ------------------------------------------------ Tests for php -------------------------------------------------------
 
-  test('Test PHP: VersionAndErrorReader', function(expect)
+  test('Unit test for PHP: VersionAndErrorReader', function(expect)
     testTemplate(expect, 'php', 'php_VersionAndError', 'VersionAndErrorReader')
   end)
 
-  test('Test PHP: ModulesReader', function(expect)
+  test('Unit test for PHP: ModulesReader', function(expect)
     testTemplate(expect, 'php', 'php_Modules', 'ModulesReader')
   end)
 
-  test('Test PHP: ApacheErrorReader', function(expect)
+  test('Unit test for PHP: ApacheErrorReader', function(expect)
     testTemplate(expect, 'php', 'php_ApacheError', 'ApacheErrorReader')
   end)
 

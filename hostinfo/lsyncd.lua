@@ -18,12 +18,12 @@ local Transform = require('stream').Transform
 local misc = require('./misc')
 local async = require('async')
 --------------------------------------------------------------------------------------------------------------------
-local LsyncProcReader = Transform:extend()
-function LsyncProcReader:initialize()
+local Reader = Transform:extend()
+function Reader:initialize()
   Transform.initialize(self, {objectMode = true})
 end
 
-function LsyncProcReader:_transform(line, cb)
+function Reader:_transform(line, cb)
   -- 'root     root     root     root     1 lsyncd /etc/lsyncd/lsyncd.conf.lua' -> '/etc/lsyncd/lsyncd.conf.lua'
   local config = line:match('%slsyncd%s*(%S+)')
   if config then self:push(config) end
@@ -77,7 +77,7 @@ function Info:_run(callback)
     end
 
     local child = misc.run('sh', {'-c', 'ps -eo euser,ruser,suser,fuser,f,cmd|grep lsync | grep -v grep'})
-    local reader = LsyncProcReader:new()
+    local reader = Reader:new()
     child:pipe(reader)
     -- There's a good chance the user just doesnt have lsyncd, error out quickly in that case
     child:on('error', function(error)
@@ -132,4 +132,4 @@ function Info:getType()
 end
 
 exports.Info = Info
-exports.LsyncProcReader = LsyncProcReader
+exports.Reader = Reader

@@ -40,7 +40,7 @@ end
 
 function HostInfo:run(callback)
   if not self:_isValidPlatform() then
-    self._error = 'unsupported operating system for ' .. self:getType()
+    self:_pushError('unsupported operating system for ' .. self:getType())
     return callback()
   end
   local status, err = pcall(function()
@@ -48,7 +48,7 @@ function HostInfo:run(callback)
   end)
   if not status then
     self._params = {}
-    self._error = err
+    self:_pushError(err)
     callback()
   end
 end
@@ -78,7 +78,7 @@ function HostInfo:_pushError(err)
   if type(err) == 'nil' then
     err = undeferr
   elseif type(err) == 'string' then
-    if not #err > 0 then err = undeferr end
+    if #err == 0 then err = undeferr end
   elseif type(err) == 'number' then
     err = 'Error code:' .. err
   elseif type(err) == 'table' then
@@ -88,22 +88,25 @@ function HostInfo:_pushError(err)
       err = tableToString(err)
     end
   end
-  self._error = err
+  -- Allow pusherror to be called more than once and additively build errmsgs
+  if self._error then
+    self._error = '>' .. self._error .. '\n>' .. err
+  else
+    self._error = err
+  end
 end
 
 function HostInfo:_pushParams(err, data)
-  if not data then
-    self:_pushError(err)
-  elseif not next(data) then
-    self:_pushError(err)
-  else
     -- flatten single entry objects
     if type(data) == 'table' then
       if #data == 1 then data = data[1] end
     end
     self._params = data
-    self._error = nil
-  end
+    if err then
+      self:_pushError(err)
+    elseif not err and not data or not next(data) then
+      self:_pushError(err)
+    end
 end
 
 
