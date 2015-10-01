@@ -106,7 +106,7 @@ function Info:_run(callback)
 
   local function getPHPVersionAndErrors(cb)
     local out, errs = {}, {}
-    local child = misc.run('php', {'-v'})
+    local child = misc.run('php', {'--version'})
     local reader = VersionAndErrorReader:new()
     child:pipe(reader)
     reader:on('data', function(data) misc.safeMerge(out, data) end)
@@ -126,7 +126,7 @@ function Info:_run(callback)
 
   local function getPhpModules(cb)
     local out, errs = {}, {}
-    local child = misc.run('php', {'-m'})
+    local child = misc.run('php', {'--modules'})
     local reader = ModulesReader:new()
     child:pipe(reader)
     reader:on('data', function(data) misc.safeMerge(out, data) end)
