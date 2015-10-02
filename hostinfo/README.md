@@ -145,7 +145,8 @@ The items in the list are linked to sample debug output for themselves.
 - [FSTAB](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/FSTAB.json)  
   Reads /etc/fstab and retrieves information about the hosts file systems table. Fetches less, more targeted information compared to filesystem
 - [FILEPERMS](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/FILEPERMS.json)  
-  Reads a pre-specified list of files and checks and retrieves their permissions. Look at the fileperms.lua file to see the list of files checked
+  Reads a pre-specified list of files and checks and retrieves their permissions. Look at the fileperms.lua file to see the list of files checked  
+  Optionally, you can overwrite this list by passing parameters to the call, this can be a single path or a comma separated list  
 - [SERVICES](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/SERVICES.json)  
   Reads a few folders and files and generates a list of startup services. services.lua L28-L35 list the places read
 - [DELETED_LIBS](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/DELETED_LIBS.json)  
@@ -177,6 +178,16 @@ The items in the list are linked to sample debug output for themselves.
 - [POSTFIX](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/POSTFIX.json)  
   Checks the status of the postfix mail server  
   
+  
+### Special hostinfos
+
+  These hostinfos will only work with user specified parameters.  
+
+- RUN  
+  This will run any command or shell script wrapped in bash using ```sh -c```
+- READ
+  Can read either a directory and return a list of files within or read a file and return contents
+
 ## Notes for developers
 
 PRs are always welcome. Few tips:  

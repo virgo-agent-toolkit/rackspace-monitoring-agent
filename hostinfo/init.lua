@@ -45,13 +45,13 @@ function NilInfo:initialize()
 end
 
 --[[ Factory ]]--
-local function create(infoType)
+local function create(infoType, params)
   local klass = HOST_INFO_MAP[infoType]
   if klass then
     if klass.Info then
-      return klass.Info:new()
+      return klass.Info:new(params)
     else
-      return klass:new()
+      return klass:new(params)
     end
   end
   return NilInfo:new()
@@ -63,13 +63,13 @@ local function getTypes()
 end
 
 -- [[ Suite of debug util functions ]] --
-local function debugInfo(infoType, callback)
+local function debugInfo(infoType, params, callback)
   if not callback then
     callback = function()
       print('Running hostinfo of type: ' .. infoType)
     end
   end
-  local klass = create(infoType)
+  local klass = create(infoType, params)
   klass:run(function(err)
     local data = '{"Debug":{"InfoType":"' .. infoType .. '", "OS":"' .. los.type() .. '"}}\n\n'
     if err then
@@ -93,8 +93,8 @@ local function debugInfoAll(callback)
   end)
 end
 
-local function debugInfoToFile(infoType, fileName, callback)
-  debugInfo(infoType, function(debugData)
+local function debugInfoToFile(infoType, fileName, params, callback)
+  debugInfo(infoType, params, function(debugData)
     fs.writeFile(fileName, debugData, callback)
   end)
 end

@@ -15,6 +15,8 @@ limitations under the License.
 --]]
 
 return {
+  require('./run'),
+  require('./read'),
   require('./nginx_config'),
   require('./connections'),
   require('./iptables'),
