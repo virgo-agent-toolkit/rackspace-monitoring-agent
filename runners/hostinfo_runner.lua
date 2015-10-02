@@ -34,26 +34,31 @@ local function run(...)
   .describe("f", "Filename to write to. Can be used with either -x for a single hostinfo or -a for all of them")
   .usage('Usage: -F [Folder name]')
   .describe("F", "Folder name to write to. Can only be used with the -a option")
-  .argv("adtx:f:F:")
+  .usage('Usage: -p [parameters]')
+  .describe("p", "Optional parameters to pass to hostinfo")
+  .argv("adtx:f:F:p:")
 
   local args = argv.args
 
-  local folderName, fileName, typeName
+  local folderName, fileName, typeName, params
   if args.f then fileName = args.f end
   if args.x then typeName = upper(args.x) end
   if args.F then folderName = args.F end
+  if args.p then params = args.p end
 
   if args.a and args.F then
     local function cb() print('Generated debug info for all hostinfo in folder ' .. folderName) end
     return HostInfo.debugInfoAllToFolder(folderName, cb)
-  elseif args.x and args.f then
-    local function cb() print('Debug info written to file ' .. fileName .. ' for host info type ' .. typeName) end
-    return HostInfo.debugInfoToFile(typeName, fileName, cb)
+  elseif args.x then
+    if args.f then
+      local function cb() print('Debug info written to file ' .. fileName .. ' for host info type ' .. typeName) end
+      return HostInfo.debugInfoToFile(typeName, fileName, params, cb)
+    elseif not args.f then
+      return HostInfo.debugInfo(typeName, params, print)
+    end
   elseif args.a and args.f then
     local function cb() print('Debug info written to file '.. fileName) end
     return HostInfo.debugInfoAllToFile(fileName, cb)
-  elseif args.x and not args.f then
-    return HostInfo.debugInfo(typeName, print)
   elseif args.a and not args.f then
     return HostInfo.debugInfoAll(print)
   elseif args.d and args.F then

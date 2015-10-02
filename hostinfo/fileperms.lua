@@ -24,30 +24,45 @@ local fmt = string.format
 local HostInfo = require('./base').HostInfo
 local Info = HostInfo:extend()
 
+function Info:initialize(params)
+  HostInfo.initialize(self)
+  self.params = params
+end
 
 function Info:_run(callback)
-  local fileList = {
-    '/etc/grub.conf',
-    '/boot/grub/grub.cfg',
-    '/etc/passwd',
-    '/etc/shadow',
-    '/etc/hosts.allow',
-    '/etc/hosts.deny',
-    '/etc/anacrontab',
-    '/etc/crontab',
-    '/etc/cron.hourly',
-    '/etc/cron.daily',
-    '/etc/cron.weekly',
-    '/etc/cron.monthly',
-    '/etc/cron.d',
-    '/etc/ssh/sshd_config',
-    '/etc/gshadow',
-    '/etc/group',
-    '/etc/login.defs',
-    '/var/run/php-fpm.sock'
-  }
-  local outTable = {}
-  local errTable = {}
+  local fileList = {}
+  if self.params then
+    if self.params:find(',') then
+      for file in self.params:gmatch('([^,%s]+)') do
+        table.insert(fileList, file)
+      end
+    else
+      fileList = {self.params}
+    end
+  else
+    fileList = {
+      '/etc/grub.conf',
+      '/boot/grub/grub.cfg',
+      '/etc/passwd',
+      '/etc/shadow',
+      '/etc/hosts.allow',
+      '/etc/hosts.deny',
+      '/etc/anacrontab',
+      '/etc/crontab',
+      '/etc/cron.hourly',
+      '/etc/cron.daily',
+      '/etc/cron.weekly',
+      '/etc/cron.monthly',
+      '/etc/cron.d',
+      '/etc/ssh/sshd_config',
+      '/etc/gshadow',
+      '/etc/group',
+      '/etc/login.defs',
+      '/var/run/php-fpm.sock'
+    }
+  end
+
+  local outTable, errTable = {}, {}
 
   async.forEachLimit(fileList, 5, function(file, cb)
     exists(file, function(err, data)
