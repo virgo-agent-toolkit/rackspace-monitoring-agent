@@ -139,7 +139,7 @@ function Info:_run(callback)
 
   local spawnConfig = misc.getInfoByVendor(options)
   if not spawnConfig.apacheCmd then
-    self._error = string.format("Couldn't decipher linux distro for check %s",  self:getType())
+    self:_pushError(string.format("Couldn't decipher linux distro for check %s",  self:getType()))
     return callback()
   end
 

@@ -3,7 +3,8 @@
 {
   "metrics":{
     "config_file":"/etc/lsyncd/lsyncd2.conf.lua",
-    "bin":"/usr/local/bin/lsyncd"
+    "bin":"/usr/local/bin/lsyncd",
+    "status":"true"
   },
   "timestamp":1441054458000
 }
