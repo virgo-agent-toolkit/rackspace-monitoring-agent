@@ -27,9 +27,9 @@ require('tap')(function(test)
     test('Smoke test for: ' .. type, function(expect)
       local info = hostinfo.create(type)
       local errMsg = 'this is an error'
-      local errMsgUnsupported = 'Unsupported operating system for hostinfo'
+      local errMsgUnsupported = 'Unsupported operating system for'
       local cb = expect(function()
-        local found = info._error:find(errMsg) or info._error:find(errMsgUnsupported)
+        local found = info._error:find(errMsg) >= 0 or info._error:find(errMsgUnsupported) >= 0
         assert(found, "Couldn't find error message")
         assert(info._params, 'Params should be an object, was false or nil')
       end)

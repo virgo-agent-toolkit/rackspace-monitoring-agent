@@ -40,7 +40,7 @@ end
 
 function HostInfo:run(callback)
   if not self:_isValidPlatform() then
-    self:_pushError('unsupported operating system for ' .. self:getType())
+    self:_pushError('Unsupported operating system for ' .. self:getType())
     return callback()
   end
   local status, err = pcall(function()
