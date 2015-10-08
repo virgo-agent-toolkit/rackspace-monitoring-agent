@@ -33,6 +33,7 @@ local MetricsRequest = require('../protocol/virgo_messages').MetricsRequest
 local Metric = require('../check/base').Metric
 local NetworkCheck = require('../check/network').NetworkCheck
 local PluginCheck = require('../check/plugin').PluginCheck
+local HostInfoCheck = require('../check/hostinfo').HostInfoCheck
 
 _G.TEST_DIR = 'tests/tmpdir'
 constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', _G.TEST_DIR)
@@ -542,5 +543,45 @@ require('tap')(function(test)
         assert(metrics['none']['metric2'].v == '100')
       end)
     }, expect)
+  end)
+
+  test('test nonexistant hostinfo', function(expect)
+    local check = HostInfoCheck:new({ details = {type = 'NON_EXISTANT' }})
+    check:run(expect(function(cr)
+      p(cr:serialize())
+      assert(cr:getState() == 'unavailable')
+    end))
+  end)
+
+  test('test nonexistant hostinfo (lower)', function(expect)
+    local check = HostInfoCheck:new({ details = {type = 'cpu' }})
+    check:run(expect(function(cr)
+      assert(cr:getState() == 'available')
+      p(cr:getMetrics())
+    end))
+  end)
+
+  test('test cpu hostinfo (upper)', function(expect)
+    local check = HostInfoCheck:new({ details = {type = 'CPU' }})
+    check:run(expect(function(cr)
+      assert(cr:getState() == 'available')
+      p(cr:serialize())
+    end))
+  end)
+
+  test('test memory hostinfo', function(expect)
+    local check = HostInfoCheck:new({ details = {type = 'MEMORY' }})
+    check:run(expect(function(cr)
+      assert(cr:getState() == 'available')
+      p(cr:serialize())
+    end))
+  end)
+
+  test('test hostinfo', function(expect)
+    local check = HostInfoCheck:new({ details = {type = 'DATE' }})
+    check:run(expect(function(cr)
+      assert(cr:getState() == 'available')
+      p(cr:serialize())
+    end))
   end)
 end)
