@@ -13,14 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 --]]
+
+local us = require('virgo/util/underscore')
+
 local FEATURE_UPGRADES = { name = 'upgrades', version = '1.0.0' }
 local FEATURE_CONFD = { name = 'confd', version = '1.0.0' }
 local FEATURE_HEALTH = { name = 'health', version = '1.0.0' }
+local FEATURE_POLLER = { name = 'poller', version = '1.0.0' }
 
 local FEATURES = {
   FEATURE_UPGRADES,
   FEATURE_CONFD,
-  FEATURE_HEALTH 
+  FEATURE_HEALTH,
+  FEATURE_POLLER
 }
 
 local function disable(name, remove)
@@ -30,7 +35,7 @@ local function disable(name, remove)
         table.remove(FEATURES, i)
       else
         v.disabled = true
-      end 
+      end
       break
     end
   end
@@ -52,6 +57,13 @@ local function disableWithOption(option, name, remove)
   end
 end
 
+local function setParams(name, params)
+  local feature = get(name)
+  if not feature then return end
+  us.extend(feature, { params = params })
+end
+
 exports.get = get
+exports.setParams = setParams
 exports.disable = disable
 exports.disableWithOption = disableWithOption

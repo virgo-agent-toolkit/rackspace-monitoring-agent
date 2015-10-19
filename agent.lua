@@ -232,6 +232,12 @@ function Agent:_preConfig(callback)
   -- Disable Features
   features.disableWithOption(self._config['upgrade'], 'upgrades', true)
   features.disableWithOption(self._config['health'], 'health')
+
+  -- Set Feature Params
+  features.setParams('poller', {
+    private_zone = self._config['private_zone']
+  })
+
   self._features = features.get()
 
   async.series({
