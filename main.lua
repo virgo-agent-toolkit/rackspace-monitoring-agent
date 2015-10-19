@@ -232,6 +232,7 @@ local function start(...)
     virgo.config['insecure'] = virgo.config['monitoring_insecure']
     virgo.config['debug'] = virgo.config['monitoring_debug']
     virgo.config['health'] = virgo.config['monitoring_health']
+    virgo.config['private_zone'] = virgo.config['monitoring_private_zone']
 
     -- Set debug logging based on the config file
     if virgo.config['debug'] == 'true' then
