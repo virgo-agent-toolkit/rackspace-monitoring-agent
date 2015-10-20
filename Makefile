@@ -1,4 +1,4 @@
-APP_FILES=$(shell find . -type f -name '*.lua')
+APP_FILES=$(shell find . -path ./tests -prune -o -type f -name '*.lua')
 LIT_VERSION=2.2.4
 TARGET=build/rackspace-monitoring-agent
 LUVI?=./luvi
@@ -50,3 +50,4 @@ siggenupload:
 	cmake --build build -- siggenupload
 
 .PHONY: clean lint package packagerepo packagerepoupload siggen siggenupload install
+
