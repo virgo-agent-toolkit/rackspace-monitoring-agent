@@ -25,11 +25,23 @@ local uv = require('uv')
 local function create_class_info()
   local map = {}
   local types = {}
-  for x, klass in pairs(classes) do
+  for _, klass in pairs(classes) do
     if klass.Info then klass = klass.Info end
     map[klass.getType()] = klass
-    table.insert(types, klass.getType())
+
+    -- We'll only populate the types array with ones that work on this OS
+    local os = los.type()
+    local supportedOSs = klass.getPlatforms()
+    -- if getPlatform isnt defined we assume it works everywhere, only hostinfo nil does this
+    if not supportedOSs then
+      table.insert(types, klass.getType())
+    else
+      table.foreach(supportedOSs, function(_, v)
+        if v == os then table.insert(types, klass.getType()) end
+      end)
+    end
   end
+
   return {map = map, types = types}
 end
 
