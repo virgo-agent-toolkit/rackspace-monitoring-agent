@@ -1,3 +1,8 @@
+## rackspace-monitoring-agent-2.2.2
+
+* rhel7: fix post install script for detecing chkconfig
+* hostinfo: only propogate hostinfo's for the current running operating system
+
 ## rackspace-monitoring-agent-2.2.1
 
 * windows_perfos: add cpu count to windows perfos check
