@@ -1,5 +1,5 @@
 # This adds the proper /etc/rc*.d links for the script
-/sbin/chkconfig --add @APP_NAME@
+[ -x /sbin/chkconfig ] && /sbin/chkconfig --add @APP_NAME@
 
 mkdir -p /var/lib/@APP_NAME@
 mkdir -p /usr/lib/@APP_NAME@/plugins
