@@ -31,7 +31,7 @@ local function start(...)
   local _, _, opensslVersion = openssl.version()
 
   local gcCollect = uv.new_prepare()
-  uv.prepare_start(gcCollect, function() collectgarbage('step') end)
+  uv.prepare_start(gcCollect, function() collectgarbage() end)
   uv.unref(gcCollect)
 
   local function detach()
