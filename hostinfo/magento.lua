@@ -157,7 +157,7 @@ function Info:_run(callback)
       walk(site_path, function(err, filesList)
         if err or not filesList or not next(filesList) then
           misc.safeMerge(errs, err)
-          cb(errs or 'No files found')
+          return cb(errs or 'No files found')
         end
 
         async.forEachLimit(filesList, 5, function(filePath, limitCb)

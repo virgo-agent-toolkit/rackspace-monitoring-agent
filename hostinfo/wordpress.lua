@@ -168,7 +168,7 @@ function Info:_run(callback)
       walk(site_path, function(err, filesList)
         if err or not filesList or not next(filesList) then
           safeMerge(errs, err)
-          tableCb()
+          return cb(errs or 'No files found')
         end
 
         async.forEachLimit(filesList, 5, function(filePath, limitCb)
@@ -218,7 +218,7 @@ function Info:_run(callback)
   async.series({
     function(cb)
       getDocroots(function(err, docroots)
-        if not docroots then
+        if not docroots or not next(docroots) then
           if err then safeMerge(errTable, err) end
           return cb()
         end
