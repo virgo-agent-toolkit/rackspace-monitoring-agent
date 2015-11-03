@@ -97,16 +97,20 @@ function HostInfo:_pushError(err)
 end
 
 function HostInfo:_pushParams(err, data)
-    -- flatten single entry objects
-    if type(data) == 'table' then
-      if #data == 1 then data = data[1] end
-    end
-    self._params = data
-    if err then
+  -- flatten single entry objects
+  if type(data) == 'table' then
+    if #data == 1 then data = data[1] end
+  end
+  self._params = data
+  if err then
+    if type(err) == 'table' and next(err) then
       self:_pushError(err)
-    elseif not err and not data or not next(data) then
+    elseif type(err) == 'string' and #err > 0 then
       self:_pushError(err)
     end
+  elseif not err and not data or not next(data) then
+    self:_pushError(err)
+  end
 end
 
 
