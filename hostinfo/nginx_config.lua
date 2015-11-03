@@ -20,7 +20,6 @@ local async = require('async')
 local fs = require('fs')
 local path = require('path')
 local trim = require('virgo/util/misc').trim
-
 --------------------------------------------------------------------------------------------------------------------
 
 local Reader = Transform:extend()
@@ -66,6 +65,10 @@ function ConfFileReader:_transform(line, cb)
 end
 
 local VhostReader = Reader:extend()
+function VhostReader:initialize()
+  Reader.initialize(self, {objectMode = true})
+  self.locationBlock = false
+end
 function VhostReader:_transform(line, cb)
   if line:find('^%s*server_name') then
     self:push({domain = line:match('server_name%s(.+)%;')})
@@ -73,6 +76,17 @@ function VhostReader:_transform(line, cb)
     self:push({docroot = line:match('root%s(.+)%;')})
   elseif line:find('^%s*listen') then
     self:push({listen = line:match('listen%s(.+)%;')})
+  elseif line:find('^%s*location') then
+    self.locationBlock = true
+    self:push({location = {location = line:match('location%s(.+)%s{')}})
+  end
+  if self.locationBlock then
+    if line:find('}') then
+      self.locationBlock = false
+      self:push({location = 'push'})
+    else
+      self:push({location = {[line:match('^%s*(%S+)%s')] = line:match('%S%s+(.+)%;')}})
+    end
   end
   cb()
 end
@@ -180,7 +194,7 @@ function Info:_run(callback)
     end)
 
     async.forEachLimit(files, 5, function(file, cb)
-      local vhost = {}
+      local vhost, locations, location = {}, {}, {}
       local domain, listen, docroot
       local readStream = misc.read(file)
       local reader = VhostReader:new()
@@ -202,27 +216,29 @@ function Info:_run(callback)
           else
             listen = data.listen
           end
-        end
-
-        if domain then
-          vhost[domain] = {}
-          vhost[domain]['domain'] = domain
-          vhost[domain]['listen'] = listen or ''
-          vhost[domain]['docroot'] = docroot or ''
+        elseif data.location then
+          if data.location == 'push' then
+            table.insert(locations, location)
+            location = {}
+          else
+            misc.safeMerge(location, data.location)
+          end
         end
       end)
       reader:on('error', function(err) misc.safeMerge(errTable, err) end)
       reader:once('end', function()
+        domain = domain or ''
+        vhost[domain] = {}
+        vhost[domain]['domain'] = domain
+        vhost[domain]['listen'] = listen or ''
+        vhost[domain]['docroot'] = docroot or ''
+        vhost[domain]['locations'] = locations or ''
         misc.safeMerge(vhosts, vhost)
         cb()
       end)
       readStream:pipe(reader)
     end,function()
-      if next(errTable) and not next(vhosts) then
-        callback({vhosts = errTable})
-      else
-        callback({vhosts = vhosts})
-      end
+      callback({vhosts = vhosts or errTable})
     end)
   end
 
