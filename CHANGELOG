@@ -1,3 +1,9 @@
+## rackspace-monitoring-agent-2.2.3
+
+* virgo: bump for machine identity fix
+* luvi: bump to 2.3.5
+* gc: gc optimization
+
 ## rackspace-monitoring-agent-2.2.2
 
 * rhel7: fix post install script for detecing chkconfig
