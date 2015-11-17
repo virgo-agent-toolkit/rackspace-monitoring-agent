@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.2.4
+
+* Add pathing for machine id spawn
+
 ## rackspace-monitoring-agent-2.2.3
 
 * virgo: bump for machine identity fix
