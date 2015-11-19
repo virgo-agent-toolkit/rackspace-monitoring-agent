@@ -146,7 +146,7 @@ function Setup:_buildLocalEntity(agentId)
       if info['address'] then
         addresses[info['name'] .. '_v4'] = info['address']
       end
-      if info['addres6'] then
+      if info['address6'] then
         addresses[info['name'] .. '_v6'] = info['address6']
       end
     end
