@@ -456,7 +456,10 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
 
   local function waitForIO(callback)
     callback = fireOnce(callback)
-    child.stdout:on('end', callback)
+    child.stdout:on('end', function()
+      stdoutLineEmitter:write() -- flush the line emitter
+      callback()
+    end)
     child.stdout:on('error', callback)
   end
 
