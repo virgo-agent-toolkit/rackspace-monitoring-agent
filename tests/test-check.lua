@@ -488,6 +488,18 @@ require('tap')(function(test)
     }, expect)
   end)
 
+  test('test custom plugin lots of data', function(expect)
+    if los.type() == 'win32' then p('skipped') ; return end
+    plugin_test('lots_of_data.sh', 'Everything is OK', 'available', {
+      cb = expect(function(metrics)
+        metrics = metrics['none']
+        assert(metrics['logged_users_aaa'].t == 'int64')
+        assert(metrics['logged_users_aaa'].v == '7')
+      end)
+    }, expect)
+  end)
+
+
   test('test custom plugin invalid metric line invalid metric type', function(expect)
     if los.type() == 'win32' then p('skipped') ; return end
     plugin_test('invalid_metric_lines_1.sh', 'Invalid type "intfoo" for metric "metric1"', 'unavailable', {
