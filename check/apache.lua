@@ -80,7 +80,7 @@ function ApacheCheck:_parseLine(line, checkResult)
   local i = line:find(":")
 
   if not i and self._firstLine then
-    checkResult:addMetric('vhost', nil, 'uint64', line)
+    checkResult:addMetric('vhost', nil, 'string', line)
     return
   elseif not i and not self._firstLine then
     return
