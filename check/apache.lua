@@ -21,7 +21,6 @@ local constants = require('../constants')
 local url = require('url')
 local http = require('http')
 local https = require('https')
-local Error = require('core').Error
 
 local fmt = require('string').format
 
