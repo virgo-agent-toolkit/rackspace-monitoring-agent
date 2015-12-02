@@ -80,8 +80,11 @@ end
 function ApacheCheck:_parseLine(line, checkResult)
   local i = line:find(":")
 
-  if not i then
-    return Error:new('Invalid Apache Status Page')
+  if not i and self._firstLine then
+    checkResult:addMetric('vhost', nil, 'uint64', line)
+    return
+  elseif not i and not self._firstLine then
+    return
   end
 
   local f = line:sub(0, i-1)
@@ -152,17 +155,17 @@ function ApacheCheck:_parseLine(line, checkResult)
       checkResult:addMetric(j, nil, 'uint64', x)
     end
   end
-
-  return
 end
 
 function ApacheCheck:_parse(data, checkResult)
+  self._firstLine = true
   for line in data:gmatch("([^\n]*)\n") do
     local err = self:_parseLine(line, checkResult)
     if err then
       checkResult:setError(err.message)
       return
     end
+    self._firstLine = false
   end
 end
 
@@ -171,12 +174,12 @@ function ApacheCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   local protocol = self._parsed.protocol == 'http' and http or https
   local req = protocol.request(self._parsed, function(res)
-    local data = ''
+    local data = {}
     res:on('data', function(_data)
-      data = data .. _data
+      data[#data + 1] = _data
     end)
     res:on('end', function()
-      self:_parse(data, checkResult)
+      self:_parse(table.concat(data), checkResult)
       res:destroy()
       callback(checkResult)
     end)
