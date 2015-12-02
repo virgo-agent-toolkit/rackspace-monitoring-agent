@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.2.6
+
+* agent.apache: fixes the apache plugin parsing for vhost servers
+
 ## rackspace-monitoring-agent-2.2.5
 
 * plugin : make sure to flush the line emitter on end
