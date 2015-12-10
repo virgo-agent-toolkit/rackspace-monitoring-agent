@@ -1,9 +1,9 @@
 Rackspace Monitoring Agent
 =====
+[![Throughput Graph](https://graphs.waffle.io/virgo-agent-toolkit/waffle-tracker/throughput.svg)](https://waffle.io/virgo-agent-toolkit/waffle-tracker/metrics)  
 
 [![Build status](https://ci.appveyor.com/api/projects/status/56kkuojwo5nxl5q2/branch/master?svg=true)](https://ci.appveyor.com/project/racker-buildbot/rackspace-monitoring-agent/branch/master)
 [![Build Status](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent.png?branch=master)](https://travis-ci.org/virgo-agent-toolkit/rackspace-monitoring-agent) [![Stories in Ready](https://badge.waffle.io/virgo-agent-toolkit/rackspace-monitoring-agent.png?label=ready&title=Ready)](https://waffle.io/virgo-agent-toolkit/waffle-tracker)
-[![Throughput Graph](https://graphs.waffle.io/virgo-agent-toolkit/waffle-tracker/throughput.svg)](https://waffle.io/virgo-agent-toolkit/waffle-tracker/metrics)
 
 The monitoring agent is the first agent to use the infrastructure provided by
 [virgo-base-agent](https://github.com/virgo-agent-toolkit/virgo-base-agent)
@@ -29,6 +29,12 @@ These are:
  - cmake    - Downloadable from cmake gnu site
  - nmake    - Included in Visual studio/VC/bin but may need to be inserted into your path
  - signtool - Included in Microsoft SDKs/windows/v7.1a/bin but may need to be inserted into your path
+
+On Linux from a fresh install:  
+
+```
+apt-get install make cmake
+```
 
 Get the source:
 
