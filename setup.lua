@@ -38,6 +38,7 @@ function Setup:initialize(argv, configFile, agent)
   self._username = argv.args.U
   self._apikey = argv.args.K
   self._autoCreateEntity = argv.args.A
+  self._noEntityCreate = argv.args.N
   self._agent:on('promote', function()
     self._receivedPromotion = true
   end)
@@ -391,6 +392,10 @@ function Setup:run(callback)
 
             if self._autoCreateEntity then
               return createEntity(callback)
+            end
+
+            if self._noEntityCreate then
+              return callback()
             end
 
             self:_out('Please select the Entity that corresponds to this server:')
