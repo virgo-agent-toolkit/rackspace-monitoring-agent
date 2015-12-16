@@ -65,7 +65,9 @@ function Info:_run(callback)
       table.insert(tempTable, key)
     end
     table.sort(tempTable)
-    self:_pushParams(errTable, tempTable)
+    -- Assign a key to the array of CVEs before we send them back to prevent serialization problems
+    -- i.e. ["CVE-2015-24", "CVE-2015-12"] becomes ["1": "C", "2":"V"...] otherwise
+    self:_pushParams(errTable, {['patched_CVE'] = tempTable})
     return callback()
   end
 
