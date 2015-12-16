@@ -82,7 +82,9 @@ local function start(...)
     .alias({['D'] = 'detach'})
     .describe("A", "auto create entity within setup")
     .alias({['A'] = 'auto-create-entity'})
-    .argv("AidDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
+    .describe("N", "do not prompt for entity creation")
+    .alias({['N'] = 'no-entity'})
+    .argv("NAidDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 
