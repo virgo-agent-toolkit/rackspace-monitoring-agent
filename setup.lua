@@ -94,15 +94,12 @@ function Setup:save(token, agent_id, write_agent_id, callback)
   2. this feature will be ran by such a small set of people who are very
   technically minded anyways so setting an environment variable is OK.
   ]]--
-  fs.writeFile(self._configFile, data, function(err)
-    if err then
-      process.stdout:write('failed writing config filen\n')
-      callback(err)
-      return
-    end
-    process.stdout:write('done\n')
-    callback()
-  end)
+  local _, err = fs.writeFileSync(self._configFile, data)
+  if err then
+    process.stdout:write(string.format('failed writing config file : %s\n', err))
+    return callback(err)
+  end
+  callback()
 end
 
 function Setup:_out(msg)
@@ -328,7 +325,7 @@ function Setup:run(callback)
             timer.clearTimer(authTimer)
             if self._receivedPromotion then
               self:_out('')
-              self:_out('Agent successfuly connected!')
+              self:_out('Agent successfully connected!')
               callback()
             else
               authTimer = timer.setTimeout(constants:get('SETUP_AUTH_TIMEOUT'), timeout)
