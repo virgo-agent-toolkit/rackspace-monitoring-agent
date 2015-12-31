@@ -1,0 +1,1 @@
+Uptime: 11497  Threads: 1  Questions: 41  Slow queries: 0  Opens: 67  Flush tables: 1  Open tables: 60  Queries per second avg: 0.003

@@ -1,0 +1,13 @@
+  [{
+      "distribution":"10.0.20-MariaDB,",
+      "targetOS":"debian-linux-gnu",
+      "targetArch":"x86_64",
+      "name":"MariaDB",
+      "version":"15.1"
+    },{
+      "distribution":"5.5.44,",
+      "targetOS":"debian-linux-gnu",
+      "targetArch":"x86_64",
+      "name":"MySql",
+      "version":"14.14"
+    }]

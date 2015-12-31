@@ -175,7 +175,12 @@ The items in the list are linked to sample debug output for themselves.
 - [PHP](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/PHP.json)  
   Returns information such as version, type (HHVM/PHP), and errors about php. Use the CLI and log files to extract this information  
 - [POSTFIX](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/POSTFIX.json)  
-  Checks the status of the postfix mail server  
+  Checks the status of the postfix mail server
+- [MYSQL](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/MYSQL.json)
+  Fetches data pertinent to mysql. Gets version information, admin status, global variables, global status, slave status, replicant users and full processlist works seamlessly with/for mariadb as well
+- [MARIADB](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/MARIADB.json)
+  This test exists merely as a namespace for customers specifically looking for information about mariadb. Uses the mysql hostinfo under the hood.
+
   
 ## Notes for developers
 
