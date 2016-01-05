@@ -26,6 +26,7 @@ local function start(...)
   local logging = require('logging')
   local uv = require('uv')
   local openssl = require('openssl')
+  local setlocale = require('os').setlocale
 
   local log_level
   local _, _, opensslVersion = openssl.version()
@@ -33,6 +34,11 @@ local function start(...)
   local gcCollect = uv.new_prepare()
   uv.prepare_start(gcCollect, function() collectgarbage() end)
   uv.unref(gcCollect)
+
+  local locales = { 'en_US.UTF-8', 'en_US', 'C' }
+  for _, locale in pairs(locales) do
+    if setlocale(locale) then break end
+  end
 
   local function detach()
     local spawn_exe = uv.exepath()
@@ -206,6 +212,7 @@ local function start(...)
       logging.logf(logging.INFO, "  luvi %s", luvi.version)
       logging.logf(logging.INFO, "  libuv %s", uv.version_string())
       logging.logf(logging.INFO, "  %s", opensslVersion)
+      logging.logf(logging.INFO, "Using locale: %s", setlocale())
       logging.logf(logging.INFO, "Using config file: %s", options.configFile)
     end
 
