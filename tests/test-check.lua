@@ -269,11 +269,22 @@ require('tap')(function(test)
   end)
 
     local dump_check = function(name, perms, cb)
-      local check = fixtures['custom_plugins'][name]
+      local check = fixtures['custom_plugins'][path.basename(name)]
       if not check then
         return cb('no plugin named: ' .. name)
       end
       async.waterfall({
+        function(cb)
+          local dirname = path.dirname(name)
+          if not dirname then return cb() end
+          fs.mkdir(path.join(TEST_DIR, dirname), function(err)
+            if err then
+              if err:match('^EEXIST') then return cb() end
+              return cb(err)
+            end
+            cb()
+          end)
+        end,
         function(cb)
           fs.open(path.join(TEST_DIR, name), 'w', perms, cb)
         end,
@@ -371,6 +382,25 @@ require('tap')(function(test)
   test('test custom plugin all types', function(expect)
     if los.type() == 'win32' then p('skipped') ; return end
     plugin_test('plugin_1.sh', 'Everything is OK', 'available', {
+      cb = expect(function(metrics)
+        metrics = metrics['none']
+        assert(metrics['logged_users'].t == 'int64')
+        assert(metrics['logged_users'].v == '7')
+        assert(metrics['active_processes'].t == 'int64')
+        assert(metrics['active_processes'].v == '200')
+        assert(metrics['avg_wait_time'].t == 'double')
+        assert(metrics['avg_wait_time'].v == '100.7')
+        assert(metrics['something'].t == 'string')
+        assert(metrics['something'].v == 'foo bar foo')
+        assert(metrics['packet_count'].t == 'gauge')
+        assert(metrics['packet_count'].v == '150000')
+      end)
+    }, expect)
+  end)
+
+  test('test custom plugin all types (subfolder)', function(expect)
+    if los.type() == 'win32' then p('skipped') ; return end
+    plugin_test('subfolder/plugin_1.sh', 'Everything is OK', 'available', {
       cb = expect(function(metrics)
         metrics = metrics['none']
         assert(metrics['logged_users'].t == 'int64')
@@ -539,6 +569,16 @@ require('tap')(function(test)
   test('test custom plugin windows batch file', function(expect)
     if los.type() ~= 'win32' then p('skipped') ; return end
     plugin_test('windows1.bat', 'Test plugin is OK', 'available', {
+      cb = expect(function(metrics)
+        assert(metrics['none']['metric1'].t == 'int64')
+        assert(metrics['none']['metric2'].v == '100')
+      end)
+    }, expect)
+  end)
+
+  test('test custom plugin windows batch file (subfolder)', function(expect)
+    if los.type() ~= 'win32' then p('skipped') ; return end
+    plugin_test('dummyfolder\\windows1.bat', 'Test plugin is OK', 'available', {
       cb = expect(function(metrics)
         assert(metrics['none']['metric1'].t == 'int64')
         assert(metrics['none']['metric2'].v == '100')

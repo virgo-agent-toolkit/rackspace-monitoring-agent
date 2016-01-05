@@ -83,7 +83,7 @@ function PluginCheck:initialize(params)
     params.details.file = ''
   end
 
-  local file = path.basename(params.details.file)
+  local file = params.details.file
   local args = params.details.args and params.details.args or {}
   local timeout = params.details.timeout and params.details.timeout or constants:get('DEFAULT_PLUGIN_TIMEOUT')
 
