@@ -73,7 +73,7 @@ function Info:_run(callback)
       if not out or not next(out) then
         cb(nil, {
           process = {
-            process = 'Postfix is not misc.running'
+            process = 'Postfix is not running'
           }
         })
       else
