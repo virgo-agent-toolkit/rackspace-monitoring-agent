@@ -1,5 +1,7 @@
-## rackspace-monitoring-agent-2.2.12
+## rackspace-monitoring-agent-2.2.13
 
+* Set the default locale to UTF8 or C
+* Fix custom plugins within a subfolder
 * Write config file synchronously
 
 ## rackspace-monitoring-agent-2.2.9
