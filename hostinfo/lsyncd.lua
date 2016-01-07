@@ -50,7 +50,6 @@ function Info:_run(callback)
 
   local function getLsyncdBin(cb)
     local options = {
-      ubuntu = '/usr/local/bin/lsyncd',
       default = '/usr/bin/lsyncd'
     }
     local lsyncPath = misc.getInfoByVendor(options)
@@ -63,6 +62,19 @@ function Info:_run(callback)
     end
   end
 
+  local function checkLsyncIsInstalled(cb)
+    local isInstalled = false
+    local lsyncCmd = outTable.bin
+    local child = misc.run(lsyncCmd, {'-version'})
+    -- If we can get data from running the lsync cmd its installed else not
+    child:on('data', function(data)
+      isInstalled = true
+    end)
+    child:once('end', function()
+      cb({installed = isInstalled})
+    end)
+  end
+
   local function getLsyncProc(cb)
     local configs, err = {}, {}
     local lsyncd_status_ok
@@ -70,7 +82,7 @@ function Info:_run(callback)
     local function finish()
       counter = counter - 1
       if counter == 0 then cb({
-        staus = lsyncd_status_ok,
+        status = lsyncd_status_ok,
         config_file = configs
       })
       end
@@ -120,7 +132,12 @@ function Info:_run(callback)
         cb()
       end)
     end
-  }, finalCb)
+  }, function()
+    checkLsyncIsInstalled(function(out)
+      misc.safeMerge(outTable, out)
+      finalCb()
+    end)
+  end)
 end
 
 function Info:getPlatforms()
