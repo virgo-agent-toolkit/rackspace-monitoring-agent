@@ -1,5 +1,5 @@
 --[[
-Copyright 2014 Rackspace
+Copyright 2016 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ local Transform = require('stream').Transform
 local async = require('async')
 local join = require('path').join
 local walk = require('luvit-walk').readdirRecursive
-local misc = require('./misc')
+local misc = require('virgo/util/misc')
 local filter = {
   inet_interfaces = true, -- Postfix Listening On Addresses
   inet_protocols = true, -- IP protocols in use

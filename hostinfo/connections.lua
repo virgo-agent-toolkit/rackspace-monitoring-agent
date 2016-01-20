@@ -1,5 +1,5 @@
 --[[
-Copyright 2015 Rackspace
+Copyright 2016 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 -- This check returns a list of open connections to remote places
 
 local HostInfo = require('./base').HostInfo
-local run = require('./misc').run
+local run = require('virgo/util/misc').run
 local Transform = require('stream').Transform
 local sigar = require('sigar')
 local tableContains = require('virgo/util/misc').tableContains
