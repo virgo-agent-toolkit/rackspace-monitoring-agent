@@ -47,7 +47,9 @@ require('tap')(function(test)
     local outFixture = hostinfoFixtureDir[testFileName..'_out.txt']
     local cb = expect(function()
       local outFixtureTable = json.parse(outFixture)
-      assert(is_equal(outFixtureTable, outTable), 'not ok: outFixture and outTable dont match')
+      local outTableStr = json.stringify(outTable)
+      local errMsg = 'Not ok: outFixture and outTable dont match.\nExpected:'..outFixture..'Got:'..outTableStr
+      assert(is_equal(outFixtureTable, outTable), errMsg)
       assert(#errTable==0, 'Not ok: errtable is not 0 length')
     end)
     inFixture:pipe(reader)
@@ -78,7 +80,8 @@ require('tap')(function(test)
     'sshd',
     'sysctl',
     'magento',
-    'lsyncd'
+    'lsyncd',
+    'hostname'
   }
 
   for _, checkName in pairs(hostinfoChecks) do

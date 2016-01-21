@@ -1,0 +1,8 @@
+{"Debug":{"InfoType":"HOSTNAME", "OS":"linux"}}
+
+{
+  "metrics":{
+  	"hostname": "generic-hostname"
+  	},
+  "timestamp":1452033979000
+}

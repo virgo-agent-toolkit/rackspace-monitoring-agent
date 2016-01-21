@@ -176,6 +176,8 @@ The items in the list are linked to sample debug output for themselves.
   Returns information such as version, type (HHVM/PHP), and errors about php. Use the CLI and log files to extract this information  
 - [POSTFIX](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/POSTFIX.json)  
   Checks the status of the postfix mail server  
+- [HOSTNAME](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/debug/HOSTNAME.json)  
+  Returns the hostname  
   
 ## Notes for developers
 
