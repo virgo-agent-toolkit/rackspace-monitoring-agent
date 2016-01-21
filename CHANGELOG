@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.2.14
+
+* DNS resolv.conf fix in luvit
+
 ## rackspace-monitoring-agent-2.2.13
 
 * Set the default locale to UTF8 or C
