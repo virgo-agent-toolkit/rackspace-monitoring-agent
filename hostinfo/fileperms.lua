@@ -66,7 +66,7 @@ function Info:_run(callback)
             local obj = {}
             obj.fileName = file
             --[[Check file permissions, octal: 0777]]--
-            obj.octalFilePerms = band(fstat.mode, 511)
+            obj.octalFilePerms = string.format("%o", band(fstat.mode, 511))
             --[[Check if the file has a sticky id, octal: 01000]]--
             obj.stickyBit = band(fstat.mode, 512) ~= 0
             --[[Check if file has a set group id, octal: 02000]]--
