@@ -686,7 +686,7 @@ function CheckResult:addMetric(name, dimension, type, value, unit)
   end
 
   if type and (type == 'int64' or type == 'uint64' or type == 'gauge') then
-    metric.value = string.format('%d', metric.value)
+    metric.value = string.format('0x%x', metric.value)
   end
 
   self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value, u = metric.unit}
