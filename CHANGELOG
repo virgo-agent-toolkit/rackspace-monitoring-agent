@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.3.1
+
+* Bump Luvit for Windows dns server fix
+
 ## rackspace-monitoring-agent-2.3.0
 
 * Fix precision on certain integer values
