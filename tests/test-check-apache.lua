@@ -32,8 +32,8 @@ require('tap')(function(test)
           local metrics = result:getMetrics()['none']
           assert(result:getState() == 'available')
           assert(metrics['requests_per_second']['v'] == '136.982')
-          assert(metrics['uptime']['v'] == '0x3c291')
-          assert(metrics['total_accesses']['v'] == '0x2030e63')
+          assert(metrics['uptime']['v'] == '246417')
+          assert(metrics['total_accesses']['v'] == '33754723')
           callback()
         end
         ch:run(expect(onResult))
@@ -71,8 +71,8 @@ require('tap')(function(test)
           local metrics = result:getMetrics()['none']
           assert(result:getState() == 'available')
           assert(metrics['requests_per_second']['v'] == '136.982')
-          assert(metrics['uptime']['v'] == '0x3c291')
-          assert(metrics['total_accesses']['v'] == '0x2030e63')
+          assert(metrics['uptime']['v'] == '246417')
+          assert(metrics['total_accesses']['v'] == '33754723')
           assert(metrics['vhost']['v'] == 'test_vhost')
           callback()
         end
