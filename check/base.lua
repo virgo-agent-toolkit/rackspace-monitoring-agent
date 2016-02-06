@@ -685,10 +685,6 @@ function CheckResult:addMetric(name, dimension, type, value, unit)
     self._metrics[metric.dimension] = {}
   end
 
-  if type and (type == 'int64' or type == 'uint64' or type == 'gauge') then
-    metric.value = string.format('0x%x', metric.value)
-  end
-
   self._metrics[metric.dimension][metric.name] = {t = metric.type, v = metric.value, u = metric.unit}
 end
 
@@ -748,8 +744,13 @@ end
 function Metric:initialize(name, dimension, type, value, unit)
   self.name = name
   self.dimension = dimension or 'none'
-  self.value = tostring(value)
   self.unit = unit
+
+  if type and (type == 'int64' or type == 'uint64' or type == 'gauge') then
+    self.value = string.format('0x%x', value)
+  else
+    self.value = tostring(value)
+  end
 
   if type then
     if not tableContains(function(v) return type == v end, VALID_METRIC_TYPES) then

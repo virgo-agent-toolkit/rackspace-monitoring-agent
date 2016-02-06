@@ -19,7 +19,6 @@ local sigar = require('sigar')
 local BaseCheck = require('./base').BaseCheck
 local CheckResult = require('./base').CheckResult
 local MemoryCheck = BaseCheck:extend()
-local s = sigar:new()
 
 function MemoryCheck:initialize(params)
   BaseCheck.initialize(self, params)
@@ -31,6 +30,7 @@ end
 
 function MemoryCheck:run(callback)
   -- Perform Check
+  local s = sigar:new()
   local meminfo = s:mem()
   local swapinfo = s:swap()
   local checkResult = CheckResult:new(self, {})
