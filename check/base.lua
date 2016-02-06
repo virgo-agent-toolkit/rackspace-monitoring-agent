@@ -747,7 +747,8 @@ function Metric:initialize(name, dimension, type, value, unit)
   self.unit = unit
 
   if type and (type == 'int64' or type == 'uint64' or type == 'gauge') then
-    self.value = string.format('0x%x', value)
+    -- windows luajit 2.0.4 has a bug on string.format("%x"). It will convert numbers to the wrong integer
+    self.value = string.format('%d', value) -- tostring does not work for number conversions
   else
     self.value = tostring(value)
   end
