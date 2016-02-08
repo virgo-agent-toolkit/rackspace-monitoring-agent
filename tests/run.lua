@@ -17,7 +17,7 @@ require('luvit')(function(...)
           -- run the tests!
           tap(true)
         end
-        local match = string.match(ent.name, "^test%-(.*).lua$")
+        local match = string.match(ent, "^test%-(.*).lua$")
         if match then
           local file = './test-' .. match
           tap(match)
