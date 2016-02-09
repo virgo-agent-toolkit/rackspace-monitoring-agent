@@ -1,4 +1,8 @@
-## rackspace-monitoring-agent-2.3.1
+## rackspace-monitoring-agent-2.4.2
+
+* Bump luvi for Luajit 2.1 - 64bit casts fix
+
+## rackspace-monitoring-agent-2.4.1
 
 * Bump Luvit for Windows dns server fix
 
