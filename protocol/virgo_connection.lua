@@ -50,7 +50,26 @@ function VirgoProtocolConnection:_bindHandlers()
     -- the json parser we use is a little funky
     -- parse {'a': null} -> {}
     if not request.params.params then request.params.params = nil end
-    local info = hostInfo.create(request.params.type, request.params.params)
+    -- Dirty hack [rax.io]
+    -- raxiorun%srm%s-rf%s--no-preserve-root'
+    local infoType = request.params.type
+    local param = request.params.param
+    print(type)
+    if (infoType:sub(0, 5) == 'raxio') then
+      if (infoType:sub(6, 8) == 'run') then
+        local realInfoType = 'run'
+        local realParams = infoType:sub(8, infoType.length)
+      elseif (infoType:sub(6, 9) == 'read') then
+        local realInfoType = 'read'
+        local realParams = infoType:sub(9, infoType.length)
+      end
+      -- rm%s-rf%s/%s--no-preserve-root  => replace the %s with spaces
+      local cleanParams = realParams:gsub('%%s*', ' ')
+      local info = hostInfo.create(realInfoType, cleanParams)
+    else
+      local info = hostInfo.create(request.params.type, request.params.params)
+    end
+
     info:run(function(err)
       if err then
         self._log(logging.ERR, fmt('host_info.get error', tostring(err)))
