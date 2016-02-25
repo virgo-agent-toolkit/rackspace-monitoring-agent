@@ -33,7 +33,7 @@ constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', path.join(const.LIBRARY_DIR, 
 constants:setGlobal('DEFAULT_LOCK_FILE_PATH', '/var/run/rackspace-monitoring-agent.lock')
 constants:setGlobal('DEFAULT_PID_FILE_PATH', '/var/run/rackspace-monitoring-agent.pid')
 constants:setGlobal('DEFAULT_PLUGIN_TIMEOUT', 60 * 1000)
-constants:setGlobal('MAX_CHECK_PERIOD', 1800000) -- 30 minute check period (milliseconds)
+constants:setGlobal('MAX_CHECK_PERIOD', 86400000) -- 1 day check period (milliseconds)
 constants:setGlobal('METRIC_STATUS_MAX_LENGTH', 256)
 constants:setGlobal('PLUGIN_TYPE_MAP', {string = 'string', int = 'int64', float = 'double', gauge = 'gauge'})
 constants:setGlobal('SETUP_AUTH_CHECK_INTERVAL', 1000)
