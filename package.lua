@@ -1,8 +1,8 @@
 return {
   name = "rackspace-monitoring-agent",
-  version = "2.4.4",
+  version = "2.4.5",
   luvi = {
-    version = "2.6.1-sigar",
+    version = "2.7.0-sigar",
     flavor = "sigar",
     url = "https://github.com/virgo-agent-toolkit/luvi/releases/download/v%s-sigar/luvi-%s-%s"
   },
