@@ -151,10 +151,6 @@ local status_stat_map = {
   Aborted_clients = { type = 'uint64', alias = 'core.aborted_clients', unit = 'clients' },
   Connections = { type = 'gauge', alias = 'core.connections', unit = 'connections'},
 
-  Innodb_buffer_pool_pages_dirty = { type = 'uint64', alias = 'innodb.buffer_pool_pages_dirty', unit = 'pages' },
-  Innodb_buffer_pool_pages_free = { type = 'uint64', alias = 'innodb.buffer_pool_pages_free', unit = 'pages'},
-  Innodb_buffer_pool_pages_flushed = { type = 'uint64', alias = 'innodb.buffer_pool_pages_flushed', unit = 'pages'},
-  Innodb_buffer_pool_pages_total = { type = 'uint64', alias = 'innodb.buffer_pool_pages_total', unit = 'pages'},
   Innodb_row_lock_time = { type = 'gauge', alias = 'innodb.row_lock_time', unit = 'milliseconds'},
   Innodb_row_lock_time_avg = { type = 'uint64', alias = 'innodb.row_lock_time_avg', unit = 'milliseconds'},
   Innodb_row_lock_time_max = { type = 'uint64', alias = 'innodb.row_lock_time_max', unit = 'milliseconds'},
