@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.4.5
+
+* Release new libuv and Ubuntu 16.04 support
+
 ## rackspace-monitoring-agent-2.4.4
 
 * Some logs would end up rotating and no new data would be written to the
