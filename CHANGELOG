@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.5.1
+
+* Accurately report non fatal errors
+
 ## rackspace-monitoring-agent-2.5.0
 
 * luv upgrade for a memory leak fix
