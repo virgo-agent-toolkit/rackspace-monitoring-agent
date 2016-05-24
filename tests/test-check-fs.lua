@@ -59,7 +59,7 @@ require('tap')(function(test)
       assert(metrics['used']['t'] == 'int64')
       assert(metrics['avail']['t'] == 'int64')
       p(metrics['options'])
-      assert(metrics['options']['v']:find('hello_world'))
+      assert(metrics['options']['v']:find('hello_world') > 0)
   
       assert(tonumber(metrics['free']['v']) <= tonumber(metrics['total']['v']))
       assert(tonumber(metrics['free']['v']) + tonumber(metrics['used']['v']) ==
