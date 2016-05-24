@@ -15,6 +15,7 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 local sigar = require('sigar')
+local GetOptionsStringForFs = require('../check/filesystem').GetOptionsStringForFs
 
 --[[ Filesystem Info ]]--
 local Info = HostInfo:extend()
@@ -37,7 +38,16 @@ function Info:_run(callback)
         'options',
       }
       for _, v in pairs(info_fields) do
-        obj[v] = info[v]
+        if v == 'options' then
+          local opts = GetOptionsStringForFs(info.dir_name)
+          if opts then
+            obj[v] = opts
+          else
+            obj[v] = info[v]
+          end
+        else
+          obj[v] = info[v]
+        end
       end
     end
 
