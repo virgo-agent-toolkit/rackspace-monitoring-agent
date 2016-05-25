@@ -58,22 +58,16 @@ require('tap')(function(test)
       assert(metrics['free']['t'] == 'int64')
       assert(metrics['used']['t'] == 'int64')
       assert(metrics['avail']['t'] == 'int64')
-      p(metrics['options'])
       assert(metrics['options']['v']:find('hello_world') > 0)
   
       assert(tonumber(metrics['free']['v']) <= tonumber(metrics['total']['v']))
       assert(tonumber(metrics['free']['v']) + tonumber(metrics['used']['v']) ==
                    tonumber(metrics['total']['v']))
-  
-      -- These metrics are unavailalbe on Win32, see:
-      -- http://www.hyperic.com/support/docs/sigar/org/hyperic/sigar/FileSystemUsage.html#getFiles()
-      if los.type() ~= "win32" then
-        assert(metrics['files']['v'])
-        assert(metrics['free_files']['v'])
-        assert(metrics['files']['t'] == 'int64')
-        assert(metrics['free_files']['t'] == 'int64')
-        assert(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
-      end
+      assert(metrics['files']['v'])
+      assert(metrics['free_files']['v'])
+      assert(metrics['files']['t'] == 'int64')
+      assert(metrics['free_files']['t'] == 'int64')
+      assert(tonumber(metrics['free_files']['v']) <= tonumber(metrics['files']['v']))
       env.unset('TEST_PROC_MOUNTS')
     end
     check:run(expect(onResult))
