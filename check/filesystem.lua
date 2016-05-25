@@ -144,7 +144,7 @@ function FileSystemCheck:run(callback)
   callback(checkResult)
 end
 
-function GetOptionsStringForFs(mountPoint)
+local function GetOptionsStringForFs(mountPoint)
   local procMountsFilename = env.get('TEST_PROC_MOUNTS') or '/proc/mounts'
   local procMountsData, err = lfs.readFileSync(procMountsFilename)
   if err then return nil end
