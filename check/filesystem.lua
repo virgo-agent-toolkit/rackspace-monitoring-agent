@@ -21,6 +21,9 @@ local CheckResult = require('./base').CheckResult
 local table = require('table')
 local los = require('los')
 local sigar = require('sigar')
+local env = require('env')
+local lfs = require('fs')
+local split = require('virgo/util/misc').split
 
 local FileSystemCheck = BaseCheck:extend()
 
@@ -124,6 +127,11 @@ function FileSystemCheck:run(callback)
         end
       end
 
+      -- Override the options if /proc/mounts exists
+      local options = exports.GetOptionsStringForFs(self.mount_point)
+      if options then
+        info['options'] = options
+      end
       checkResult:addMetric('options', nil, nil, info['options'], UNITS['options'])
 
       -- Return Result
@@ -136,4 +144,18 @@ function FileSystemCheck:run(callback)
   callback(checkResult)
 end
 
+local function GetOptionsStringForFs(mountPoint)
+  local procMountsFilename = env.get('TEST_PROC_MOUNTS') or '/proc/mounts'
+  local procMountsData, err = lfs.readFileSync(procMountsFilename)
+  if err then return nil end
+  for line in procMountsData:gmatch"(.-)\n" do
+    local fields = split(line, '[^%s]+')
+    if fields[2] == mountPoint then
+      return fields[4]
+    end
+  end
+  return nil
+end
+
 exports.FileSystemCheck = FileSystemCheck
+exports.GetOptionsStringForFs = GetOptionsStringForFs
