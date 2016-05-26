@@ -1,3 +1,8 @@
+## rackspace-monitoring-agent-2.5.2
+
+* The filesystem check and hostinfo will now read /proc/mounts for the options
+field. This will allow for readonly filesystems to be detected more quickly.
+
 ## rackspace-monitoring-agent-2.5.1
 
 * Accurately report non fatal errors
