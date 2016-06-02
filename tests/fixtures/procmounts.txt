@@ -1,3 +1,4 @@
+rootfs / rootfs rw 0 0
 sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
 proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
 udev /dev devtmpfs rw,relatime,size=10240k,nr_inodes=255394,mode=755 0 0
