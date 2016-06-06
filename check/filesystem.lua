@@ -150,7 +150,7 @@ local function GetOptionsStringForFs(mountPoint)
   if err then return nil end
   for line in procMountsData:gmatch"(.-)\n" do
     local fields = split(line, '[^%s]+')
-    if fields[2] == mountPoint then
+    if fields[2] == mountPoint and fields[3] ~= 'rootfs' then
       return fields[4]
     end
   end
