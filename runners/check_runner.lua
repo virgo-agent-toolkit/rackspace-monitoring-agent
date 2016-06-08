@@ -64,10 +64,15 @@ function CheckRunner:run(callback)
     print('Invalid Check Parameters')
     process:exit(1)
   end
-  check:_runCheckInChild(function(cr)
+  local function done(cr)
     self._cr = cr
-    callback(nil)
-  end)
+    callback()
+  end
+  if check._runCheckInChild then
+    check:_runCheckInChild(done)
+  elseif check.run then
+    check:run(done)
+  end
 end
 
 function CheckRunner:reportError(err, callback)
