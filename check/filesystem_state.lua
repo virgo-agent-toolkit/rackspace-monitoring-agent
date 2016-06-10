@@ -19,22 +19,22 @@ local CheckResult = require('./base').CheckResult
 local table = require('table')
 local los = require('los')
 
-local FileSystemCheckRO = BaseCheck:extend()
+local FileSystemStateCheck = BaseCheck:extend()
 
 local UNITS = {
   total = 'total',
   devices = 'devices'
 }
 
-function FileSystemCheckRO:initialize(params)
+function FileSystemStateCheck:initialize(params)
   BaseCheck.initialize(self, params)
 end
 
-function FileSystemCheckRO:getType()
-  return 'agent.filesystem_ro'
+function FileSystemStateCheck:getType()
+  return 'agent.filesystem_state'
 end
 
-function FileSystemCheckRO:run(callback)
+function FileSystemStateCheck:run(callback)
   local checkResult = CheckResult:new(self, {})
   if los.type() ~= 'linux' then
     checkResult:setStatus("err " .. self:getType() .. " available only on Linux platforms")
@@ -49,4 +49,4 @@ function FileSystemCheckRO:run(callback)
   callback(checkResult)
 end
 
-exports.FileSystemCheckRO = FileSystemCheckRO
+exports.FileSystemStateCheck = FileSystemStateCheck

@@ -35,7 +35,7 @@ function Info:_run(callback)
 end
 
 function Info:getType()
-  return 'FILESYSTEM_RO'
+  return 'FILESYSTEM_STATE'
 end
 
 function Info:getPlatforms()

@@ -27,7 +27,7 @@ return {
   require('./cpu'),
   require('./disk'),
   require('./filesystem'),
-  require('./filesystem_ro'),
+  require('./filesystem_state'),
   require('./login'),
   require('./memory'),
   require('./network'),
