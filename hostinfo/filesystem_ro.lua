@@ -24,11 +24,9 @@ function Info:initialize()
 end
 function Info:_run(callback)
   local fs_list_ro, fs_list_rw = gatherReadWriteReadOnlyInfo()
-  if #fs_list_ro == 0 then fs_list_ro = table.insert(fs_list_ro, '<none>') end
-  if #fs_list_rw == 0 then fs_list_rw = table.insert(fs_list_rw, '<none>') end
   self._params = {
-    total_ro = tostring(#fs_list_ro),
-    total_rw = tostring(#fs_list_rw),
+    total_ro = #fs_list_ro,
+    total_rw = #fs_list_rw,
     devices_ro = table.concat(fs_list_ro, ','),
     devices_rw = table.concat(fs_list_rw, ',')
   }
