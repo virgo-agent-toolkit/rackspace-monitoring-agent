@@ -30,7 +30,6 @@ function Info:_run(callback)
     devices_ro = table.concat(fs_list_ro, ','),
     devices_rw = table.concat(fs_list_rw, ',')
   }
-  p(self._params)
   callback()
 end
 
