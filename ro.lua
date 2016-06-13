@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 --]]
 
-local GetOptionsStringForFs = require('../check/filesystem').GetOptionsStringForFs
+local GetOptionsStringForFs = require('./check/filesystem').GetOptionsStringForFs
 local sigar = require('sigar')
 local split = require('virgo/util/misc').split
 

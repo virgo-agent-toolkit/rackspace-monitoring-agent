@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.5.7
+
+* Fix typo in import
+
 ## rackspace-monitoring-agent-2.5.6
 
 * Add check agent.filesystem_ro and hostinfo filesystem_ro
