@@ -1,0 +1,14 @@
+{"Debug":{"InfoType":"FILESYSTEM_STATE", "OS":"linux"}}
+
+{
+    "timestamp": 1466474297000,
+    "error": null,
+    "info": [
+        {
+            "devices_ro": "",
+            "devices_rw": "/dev/xvda1",
+            "total_ro": 0,
+            "total_rw": 1
+        }
+    ]
+}
