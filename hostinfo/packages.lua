@@ -55,6 +55,7 @@ function Info:_run(callback)
     debian = deb,
     rhel = rhel,
     centos = rhel,
+    fedora = rhel,
     macosx = {cmd = 'brew', args = {'leaves'}},
     default = nil
   }

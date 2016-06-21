@@ -69,6 +69,7 @@ function Info:_run(callback)
     debian = deb,
     rhel = rhel,
     centos = rhel,
+    fedora = rhel,
     default = nil
   }
 
