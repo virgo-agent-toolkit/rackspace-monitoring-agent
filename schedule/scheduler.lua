@@ -111,6 +111,7 @@ function Scheduler:rebuild(checks)
 
   self._minCheckPeriod = constants:get('MAX_CHECK_PERIOD')
 
+  -- Calculate differences
   for _, check in ipairs(checks) do
     local oldCheck = self:getCheck(check.id)
     local checkScheduleJitter = constants:get('CHECK_SCHEDULE_JITTER')
@@ -121,13 +122,10 @@ function Scheduler:rebuild(checks)
     if oldCheck == nil then
       -- new check
       self._log(logging.DEBUG, fmt('Registering New Check %s', check:toString()))
-      self:_register(check)
       self:emit('check.created', check)
     elseif oldCheck:toString() ~= check:toString() then
       -- modified check
       self._log(logging.DEBUG, fmt('Registering Modified Check %s', check:toString()))
-      self:_deregister(oldCheck)
-      self:_register(check)
       self:emit('check.modified', check)
     end
   end
@@ -136,9 +134,19 @@ function Scheduler:rebuild(checks)
   for _, check in ipairs(self._checks) do
     if newCheckMap[check.id] == nil then
       self._log(logging.DEBUG, fmt('Removing Check %s', check:toString()))
-      self:_deregister(check)
       self:emit('check.deleted', check)
     end
+  end
+
+  -- Remove all checks
+  for _, check in ipairs(self._checks) do
+    check:clearSchedule()
+  end
+  self._checks = {}
+
+  -- Register all checks
+  for _, check in pairs(newCheckMap) do
+    self:_register(check)
   end
 
   self._checkMap = newCheckMap

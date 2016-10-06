@@ -349,7 +349,6 @@ function Agent:loadEndpoints(callback)
 end
 
 function Agent:_queryForEndpoints(domains, callback)
-  local _
   local endpoints = {}
   for _, domain in pairs(domains) do
     local ep = endpoint.Endpoint:new(nil, nil, domain)
