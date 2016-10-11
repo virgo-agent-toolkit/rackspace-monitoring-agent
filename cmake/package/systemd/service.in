@@ -5,6 +5,7 @@ After=network-online.target
 [Service]
 ExecStart=/usr/bin/@APP_NAME@ -l /var/log/@APP_NAME@.log --production --exit-on-upgrade
 Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
