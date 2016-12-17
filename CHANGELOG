@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.6.7
+
+* Luv fixes for userdata crashes
+
 ## rackspace-monitoring-agent-2.6.6
 
 * Revert 2.6.5
