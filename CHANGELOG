@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.6.8
+
+* libsigar fix in 2.6 openvz kernels
+
 ## rackspace-monitoring-agent-2.6.7
 
 * Luv fixes for userdata crashes
