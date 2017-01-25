@@ -55,5 +55,6 @@ return {
   require('./magento'),
   require('./php'),
   require('./postfix'),
-  require('./hostname')
+  require('./hostname'),
+  require('./lshw')
 }
