@@ -133,7 +133,6 @@ function WindowsGetCounterCheck:initialize(counter_path, params, powershell_name
   end
 
   local cmd = '(get-counter -ErrorVariable virgo_err -counter "' .. serverinstance_option .. ':' .. counter_path .. '" ' .. computer_option .. ' ).CounterSamples | Select @{name="Name";expression={' .. name_replacement_option ..'}}, @{name="Value";expression={$_.CookedValue}}, @{name="Type";expression={"int"}} | ConvertTo-CSV'
-  
   WindowsPowershellCmdletCheck.initialize(self, cmd, params)
   self.handle_entry = entry_handlers.simple
 end

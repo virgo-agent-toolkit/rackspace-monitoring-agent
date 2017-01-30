@@ -21,7 +21,6 @@ names.pkg_name = "rackspace-monitoring-agent"
 names.creator_name = "Rackspace Monitoring"
 names.long_pkg_name = names.creator_name .. " Agent"
 
-
 local function start(...)
   local logging = require('logging')
   local uv = require('uv')
@@ -172,7 +171,7 @@ local function start(...)
     end
 
     if argv.args.w then
-      -- set up windows service 
+      -- set up windows service
       if not WinSvcWrap then
         logging.log(logging.ERROR, "windows service module not loaded")
         process:exit(1)
@@ -268,10 +267,10 @@ local function start(...)
       if los.type() == 'win32' then
         WinSvcWrap.tryRunAsService(names.long_pkg_name, function()
           agent:start(options)
-        end) 
+        end)
       else
         agent:start(options)
-      end 
+      end
     end
   end)
 

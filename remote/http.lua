@@ -47,37 +47,32 @@ local function parseDate(date)
   }), tz
 end
 
-
---[[------------------------------- Attributes ---------------------------------
+--[[
+--------------------------------- Attributes ---------------------------------
 target: String
   hostname or ip address
 timeout: Uint32
   timeout in ms
 --------------------------------- Config Params --------------------------------
-url: URL / String between 1 and 8096 characters long
- 	Target URL
-auth_password: Optional / String between 1 and 255 characters long
- 	Optional auth password
-auth_user: Optional / String between 1 and 255 characters long
- 	Optional auth user
-body: Optional / String between 1 and 255 characters long
- 	Body match regular expression (body is limited to 100k)
+url: URL / String between 1 and 8096 characters long Target URL
+auth_password: Optional / String between 1 and 255 characters long Optional auth password
+auth_user: Optional / String between 1 and 255 characters long Optional auth user
+body: Optional / String between 1 and 255 characters long Body match regular expression (body is limited to 100k)
 body_matches: Optional / Hash
   Body match regular expressions (body is limited to 100k, matches are truncated
     to 80 characters)
   Hash [String,String between 1 and 50 characters long,String matching the regex
     /^[-_ a-z0-9]+$/i:String,String between 1 and 255 characters long]
   Array or object with number of items between 0 and 4
-follow_redirects: Optional / Boolean
- 	Follow redirects (default: true)
+follow_redirects: Optional / Boolean Follow redirects (default: true)
 headers: Optional / Hash
   Arbitrary headers which are sent with the request.
   Hash [String between 1 and 50 characters : String between 1 and 50 characters]
   Array or object with number of items between 0 and 10.
   A value which is not one of: content-length, user-agent, host, connection,
     keep-alive, transfer-encoding, upgrade
-method: Optional / String / One of (HEAD, GET, POST, PUT, DELETE, INFO)
- 	HTTP method (default: GET)
+method: Optional / String / One of (HEAD, GET, POST, PUT, DELETE, INFO) HTTP
+  method (default: GET)
 payload: Optional / String between 0 and 1024 characters long
   Specify a request body (limited to 1024 characters). If following a redirect,
   payload will only be sent to first location
@@ -262,7 +257,6 @@ return function (attributes, config, register, set)
       set("body_match_" .. key, rex.match(body, reg))
     end
   end
-
 
   -- TODO: finish HTTP check
 

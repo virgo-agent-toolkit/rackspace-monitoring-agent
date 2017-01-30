@@ -17,15 +17,15 @@ function VirgoConnectionStream:initialize(id, token, guid, upgradeEnabled, optio
     self:_sendMetrics(check, checkResult)
   end)
   self._scheduler:on('check.deleted', function(check)
-    self._log(logging.INFO, fmt('Deleted Check (id=%s, iid=%s)', 
+    self._log(logging.INFO, fmt('Deleted Check (id=%s, iid=%s)',
       check.id, check:getInternalId()))
   end)
   self._scheduler:on('check.created', function(check)
-    self._log(logging.INFO, fmt('Created Check (id=%s, iid=%s)', 
+    self._log(logging.INFO, fmt('Created Check (id=%s, iid=%s)',
       check.id, check:getInternalId()))
   end)
   self._scheduler:on('check.modified', function(check)
-    self._log(logging.INFO, fmt('Modified Check (id=%s, iid=%s)', 
+    self._log(logging.INFO, fmt('Modified Check (id=%s, iid=%s)',
       check.id, check:getInternalId()))
   end)
 end

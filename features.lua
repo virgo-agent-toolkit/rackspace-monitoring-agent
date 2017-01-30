@@ -20,7 +20,7 @@ local FEATURE_HEALTH = { name = 'health', version = '1.0.0' }
 local FEATURES = {
   FEATURE_UPGRADES,
   FEATURE_CONFD,
-  FEATURE_HEALTH 
+  FEATURE_HEALTH
 }
 
 local function disable(name, remove)
@@ -30,7 +30,7 @@ local function disable(name, remove)
         table.remove(FEATURES, i)
       else
         v.disabled = true
-      end 
+      end
       break
     end
   end

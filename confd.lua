@@ -27,7 +27,6 @@ local loggingUtil = require('virgo/util/logging')
 
 local Confd = Object:extend()
 
-
 -- Confd Object Init
 function Confd:initialize(confd_dir, state_dir)
   self.dir = confd_dir or constants:get('DEFAULT_CONFD_PATH')
@@ -54,7 +53,7 @@ function Confd:setup(callback)
       end
       self.logger(err.logtype, fmt("Setup: %s", err.message))
     end
-  end) 
+  end)
   callback()
 end
 
