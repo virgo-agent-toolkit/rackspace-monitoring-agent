@@ -69,4 +69,9 @@ function Info:getType()
   return 'LSHW'
 end
 
+function Info:getPlatforms()
+  return {'linux'}
+end
+
+
 return Info
