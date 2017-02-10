@@ -29,21 +29,27 @@ function Info:_run(callback)
   local child, pid
   local stdout = uv.new_pipe(false)
   local count = 2
+
+  local function finish(err)
+    if not child:is_closing() then child:close() end
+    if not stdout:is_closing() then stdout:close() end
+    return callback(err)
+  end
+
   child, pid = uv.spawn("lshw", {
     args = {"-json"},
     stdio = {nil, stdout}
   }, function (code, signal)
     if code ~= 0 then
-      callback("lshw exited with exit code " .. code)
-      return
+      return finish("lshw exited with exit code " .. code)
     end
-    child:close()
     count = count - 1
     if count == 0 then
-      callback()
+      finish()
     end
   end)
   if not child then
+    stdout:close()
     if pid:match("^ENOENT:") then
       error "Cannot find `lshw` in system path"
     end
@@ -59,7 +65,7 @@ function Info:_run(callback)
     params.info = jsonParse(table.concat(chunks))
     count = count - 1
     if count == 0 then
-      callback()
+      finish()
     end
   end)
 
