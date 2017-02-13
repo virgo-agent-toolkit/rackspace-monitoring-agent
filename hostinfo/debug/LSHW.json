@@ -1,0 +1,262 @@
+{"Debug":{"InfoType":"LSHW", "OS":"linux"}}
+
+{
+  "metrics":{
+    "info":{
+      "claimed":true,
+      "width":64,
+      "id":"luvit",
+      "children":[{
+          "claimed":true,
+          "physid":"0",
+          "id":"core",
+          "children":[{
+              "claimed":true,
+              "physid":"0",
+              "id":"memory",
+              "size":1036480512,
+              "class":"memory",
+              "units":"bytes",
+              "description":"System memory"
+            },{
+              "width":64,
+              "physid":"1",
+              "id":"cpu",
+              "product":"Intel(R) Xeon(R) CPU E5-2670 0 @ 2.60GHz",
+              "capabilities":{
+                "apic":"on-chip advanced programmable interrupt controller (APIC)",
+                "pni":true,
+                "nx":"no-execute bit (NX)",
+                "pse":"page size extensions",
+                "sse":"streaming SIMD extensions (SSE)",
+                "fpu_exception":"FPU exceptions reporting",
+                "sse2":"streaming SIMD extensions (SSE2)",
+                "wp":true,
+                "popcnt":true,
+                "sep":"fast system calls",
+                "mca":"machine check architecture",
+                "cx16":true,
+                "nopl":true,
+                "cx8":"compare and exchange 8-byte",
+                "clflush":true,
+                "mtrr":"memory type range registers",
+                "de":"debugging extensions",
+                "x2apic":true,
+                "fpu":"mathematical co-processor",
+                "rep_good":true,
+                "syscall":"fast system calls",
+                "mmx":"multimedia extensions (MMX)",
+                "vme":"virtual mode extensions",
+                "pge":"page global enable",
+                "hypervisor":true,
+                "sse4_1":true,
+                "lahf_lm":true,
+                "aes":true,
+                "tsc":"time stamp counter",
+                "pclmulqdq":true,
+                "tsc_deadline_timer":true,
+                "x86-64":"64bits extensions (x86-64)",
+                "sse4_2":true,
+                "ssse3":true,
+                "mce":"machine check exceptions",
+                "cmov":"conditional move instruction",
+                "msr":"model-specific registers",
+                "pae":"4GB+ memory addressing (Physical Address Extension)",
+                "rdtscp":true,
+                "pat":"page attribute table",
+                "fxsr":"fast floating point save/restore",
+                "constant_tsc":true
+              },
+              "businfo":"cpu@0",
+              "class":"processor",
+              "vendor":"Intel Corp.",
+              "claimed":true
+            },{
+              "claimed":true,
+              "physid":"100",
+              "handle":"PCIBUS:0000:00",
+              "children":[{
+                  "claimed":true,
+                  "physid":"1",
+                  "handle":"PCI:0000:00:01.0",
+                  "vendor":"Intel Corporation",
+                  "capabilities":{
+                    "bus_master":"bus mastering",
+                    "isa":true
+                  },
+                  "configuration":{
+                    "latency":"0"
+                  },
+                  "class":"bridge",
+                  "width":32,
+                  "version":"00",
+                  "product":"82371SB PIIX3 ISA [Natoma/Triton II]",
+                  "businfo":"pci@0000:00:01.0",
+                  "id":"isa",
+                  "clock":33000000,
+                  "description":"ISA bridge"
+                },{
+                  "claimed":true,
+                  "physid":"1.1",
+                  "handle":"PCI:0000:00:01.1",
+                  "vendor":"Intel Corporation",
+                  "capabilities":{
+                    "bus_master":"bus mastering",
+                    "ide":true
+                  },
+                  "configuration":{
+                    "driver":"ata_piix",
+                    "latency":"64"
+                  },
+                  "class":"storage",
+                  "width":32,
+                  "version":"00",
+                  "product":"82371SB PIIX3 IDE [Natoma/Triton II]",
+                  "businfo":"pci@0000:00:01.1",
+                  "id":"ide",
+                  "clock":33000000,
+                  "description":"IDE interface"
+                },{
+                  "claimed":true,
+                  "physid":"1.2",
+                  "handle":"PCI:0000:00:01.2",
+                  "vendor":"Intel Corporation",
+                  "capabilities":{
+                    "bus_master":"bus mastering",
+                    "uhci":"Universal Host Controller Interface (USB1)"
+                  },
+                  "configuration":{
+                    "driver":"uhci_hcd",
+                    "latency":"64"
+                  },
+                  "class":"bus",
+                  "width":32,
+                  "version":"01",
+                  "product":"82371SB PIIX3 USB [Natoma/Triton II]",
+                  "businfo":"pci@0000:00:01.2",
+                  "id":"usb",
+                  "clock":33000000,
+                  "description":"USB controller"
+                },{
+                  "width":32,
+                  "physid":"1.3",
+                  "handle":"PCI:0000:00:01.3",
+                  "product":"82371AB/EB/MB PIIX4 ACPI",
+                  "capabilities":{
+                    "bridge":true,
+                    "bus_master":"bus mastering"
+                  },
+                  "configuration":{
+                    "latency":"0"
+                  },
+                  "class":"bridge",
+                  "version":"01",
+                  "vendor":"Intel Corporation",
+                  "businfo":"pci@0000:00:01.3",
+                  "id":"bridge",
+                  "clock":33000000,
+                  "description":"Bridge"
+                },{
+                  "claimed":true,
+                  "physid":"2",
+                  "handle":"PCI:0000:00:02.0",
+                  "vendor":"Cirrus Logic",
+                  "capabilities":{
+                    "bus_master":"bus mastering",
+                    "rom":"extension ROM",
+                    "vga_controller":true
+                  },
+                  "configuration":{
+                    "driver":"cirrus",
+                    "latency":"0"
+                  },
+                  "class":"display",
+                  "width":32,
+                  "version":"00",
+                  "product":"GD 5446",
+                  "businfo":"pci@0000:00:02.0",
+                  "id":"display",
+                  "clock":33000000,
+                  "description":"VGA compatible controller"
+                },{
+                  "claimed":true,
+                  "physid":"3",
+                  "handle":"PCI:0000:00:03.0",
+                  "vendor":"XenSource, Inc.",
+                  "capabilities":{
+                    "scsi":true,
+                    "bus_master":"bus mastering"
+                  },
+                  "configuration":{
+                    "driver":"xen-platform-pci",
+                    "latency":"0"
+                  },
+                  "class":"storage",
+                  "width":32,
+                  "version":"01",
+                  "product":"Xen Platform Device",
+                  "businfo":"pci@0000:00:03.0",
+                  "id":"scsi",
+                  "clock":33000000,
+                  "description":"SCSI storage controller"
+                }],
+              "vendor":"Intel Corporation",
+              "class":"bridge",
+              "width":32,
+              "version":"02",
+              "product":"440FX - 82441FX PMC [Natoma]",
+              "businfo":"pci@0000:00:00.0",
+              "id":"pci",
+              "clock":33000000,
+              "description":"Host bridge"
+            }],
+          "class":"bus",
+          "description":"Motherboard"
+        },{
+          "claimed":true,
+          "physid":"1",
+          "id":"network:0",
+          "class":"network",
+          "logicalname":"eth0",
+          "serial":"bc:76:4e:05:3f:a8",
+          "capabilities":{
+            "ethernet":true,
+            "physical":"Physical interface"
+          },
+          "description":"Ethernet interface",
+          "configuration":{
+            "broadcast":"yes",
+            "link":"yes",
+            "driver":"vif",
+            "multicast":"yes",
+            "ip":"23.253.227.83"
+          }
+        },{
+          "claimed":true,
+          "physid":"2",
+          "id":"network:1",
+          "class":"network",
+          "logicalname":"eth1",
+          "serial":"bc:76:4e:05:44:26",
+          "capabilities":{
+            "ethernet":true,
+            "physical":"Physical interface"
+          },
+          "description":"Ethernet interface",
+          "configuration":{
+            "broadcast":"yes",
+            "link":"yes",
+            "driver":"vif",
+            "multicast":"yes",
+            "ip":"10.208.167.100"
+          }
+        }],
+      "class":"system",
+      "capabilities":{
+        "vsyscall32":"32-bit processes"
+      },
+      "description":"Computer"
+    }
+  },
+  "timestamp":1486757503000
+}
