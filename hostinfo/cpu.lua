@@ -82,6 +82,7 @@ function Info:_run(callback)
     local diffResult = {}
     for cpuIndex in pairs(samples[1]) do
       local cpuDiff = {}
+      cpuDiff['name'] = samples[1][cpuIndex]['name']
       for _, v in pairs(DATA_FIELDS) do
         local cpuValue = samples[1][cpuIndex][v]
         local cpuValue2 = samples[2][cpuIndex][v]
