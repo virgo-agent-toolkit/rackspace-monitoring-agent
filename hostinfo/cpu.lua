@@ -79,7 +79,6 @@ function Info:_run(callback)
       sample(callback)
     end
   }, function()
-    local diffResult = {}
     for cpuIndex in pairs(samples[1]) do
       local cpuDiff = {}
       cpuDiff['name'] = samples[1][cpuIndex]['name']
