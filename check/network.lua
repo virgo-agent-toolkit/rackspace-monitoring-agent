@@ -87,8 +87,10 @@ function NetworkCheck:run(callback)
     checkResult:setError('No such interface: ' .. self.interface_name)
   else
     local usage = interface:usage()
-    for key, value in pairs(usage) do
-      checkResult:addMetric(key, nil, 'gauge', value, units[key])
+    if usage then
+      for key, value in pairs(usage) do
+        checkResult:addMetric(key, nil, 'gauge', value, units[key])
+      end
     end
   end
 
