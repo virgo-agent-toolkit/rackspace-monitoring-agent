@@ -16,7 +16,7 @@ limitations under the License.
 
 local BaseCheck = require('../base').BaseCheck
 local CheckResult = require('../base').CheckResult
-local spawn = require('childprocess').spawn
+local spawn = require('../../virgochild').spawn
 local fireOnce = require('virgo/util/misc').fireOnce
 local parseCSVLine = require('virgo/util/misc').parseCSVLine
 local table = require('table')
