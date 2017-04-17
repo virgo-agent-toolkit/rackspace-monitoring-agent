@@ -18,9 +18,9 @@ local json = require('json')
 local los = require('los')
 local async = require('async')
 local path = require('path')
-local HostInfo = require('./base').HostInfo
-local classes = require('./all')
 local uv = require('uv')
+local HostInfo = require('./base').HostInfo
+local classes = require('./all').classes
 
 local function create_class_info()
   local map = {}

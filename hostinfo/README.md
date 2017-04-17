@@ -94,6 +94,8 @@ Examples:
 ## Current list of available hostinfo checks
 
 The best resource for figuring out the most up-to-date list of available hostinfos is to look at [all.lua](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/hostinfo/all.lua)
+All also acts as a special hostinfo check type which will return data from all the hostinfos with the hostinfo types as  
+keys and the metrics returned as values.  
 
 As of this writing, here is the list: (Generated using debugging examples #3 and #7 above.)
 The items in the list are linked to sample debug output for themselves. 
