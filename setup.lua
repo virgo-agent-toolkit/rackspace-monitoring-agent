@@ -63,7 +63,7 @@ function Setup:initialize(argv, configFile, agent)
 end
 
 function Setup:saveTest(callback)
-  fs.open(self._configFile, 'a', "0644", function(err)
+  fs.open(self._configFile, 'w', "0644", function(err)
     if err then
       process.stdout:write(fmt('Error: cannot open config file: %s\n', self._configFile))
       callback(err)
