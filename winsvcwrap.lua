@@ -259,6 +259,7 @@ exports.tryRunAsService = function(svcname, runfunc)
 
     -- Wait to end  
     local timer = uv.new_timer()
+    uv.unref(timer)
     uv.timer_start(timer, 0, 2000, function()
       if running then
         uv.timer_again(timer)
