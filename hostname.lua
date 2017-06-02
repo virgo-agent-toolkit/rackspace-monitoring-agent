@@ -31,6 +31,7 @@ end
 return function(maxlen)
   maxlen = maxlen or 255
   local buf = ffi.new("uint8_t[?]", maxlen)
+  ffi.fill(buf, maxlen)
   local res = lib.gethostname(buf, maxlen)
   assert(res == 0)
   return ffi.string(buf)
