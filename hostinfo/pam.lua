@@ -1,5 +1,5 @@
 --[[
-Copyright 2015 Rackspace
+Copyright 2016 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local read = require('./misc').read
+local read = require('virgo/util/misc').read
 local async = require('async')
 local fs = require('fs')
 local path = require('path')

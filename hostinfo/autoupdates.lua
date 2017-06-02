@@ -1,5 +1,5 @@
 --[[
-Copyright 2015 Rackspace
+Copyright 2016 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 local Transform = require('stream').Transform
-local misc = require('./misc')
+local misc = require('virgo/util/misc')
 
 local Reader = Transform:extend()
 function Reader:initialize()

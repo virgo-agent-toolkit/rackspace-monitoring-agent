@@ -1,5 +1,5 @@
 --[[
-Copyright 2015 Rackspace
+Copyright 2016 Rackspace
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@ limitations under the License.
 --]]
 local HostInfo = require('./base').HostInfo
 
-local misc = require('./misc')
+local misc = require('virgo/util/misc')
 local async = require('async')
 local fs = require('fs')
 local path = require('path')
 local Transform = require('stream').Transform
-local tableToString = require('virgo/util/misc').tableToString
 
 --------------------------------------------------------------------------------------------------------------------
 local Reader = Transform:extend()
@@ -85,7 +84,7 @@ function Info:_run(callback)
     -- We wanna be able to return empty sets for empty crontabs therefore we dont use self:_pushparams
     if errTable then
       if #errTable ~= 0 and not next(outTable) then
-        self._error = tableToString(errTable, ' ')
+        self._error = misc.tableToString(errTable, ' ')
       end
     end
 
