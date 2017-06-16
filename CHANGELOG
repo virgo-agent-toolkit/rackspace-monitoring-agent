@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.6.12
+
+* Two new mysql metrics: Last_IO_Errno, Last_Error
+
 ## rackspace-monitoring-agent-2.6.11
 
 * new windows certificate
