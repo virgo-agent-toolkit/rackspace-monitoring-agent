@@ -1,6 +1,7 @@
 build
 lit
 luvi
+luvit
 luvi-sigar
 rackspace-monitoring-agent
 tests/tmpdir
@@ -8,3 +9,4 @@ deps
 GPATH
 GRTAGS
 GTAGS
+/.idea

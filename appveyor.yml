@@ -10,8 +10,6 @@ test_script:
     - Make.bat test
 
 notifications:
-    email: true
-    irc: "irc.freenode.org#virgo"
 
 services:
     - mssql2012sp1
