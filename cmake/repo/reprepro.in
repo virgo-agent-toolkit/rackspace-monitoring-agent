@@ -4,4 +4,3 @@ Architectures: i386 amd64 source
 Origin: Rackspace
 Description: Rackspace Cloud Monitoring Agent
 SignWith: D05AB914
-Depends: xenstore-utils
