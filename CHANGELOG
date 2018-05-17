@@ -1,7 +1,3 @@
-## rackspace-monitoring-agent-2.6.16
-
-* Debian package declares dependency on xenstore-utils
-
 ## rackspace-monitoring-agent-2.6.15
 
 * Upgrade wix to v3.14
