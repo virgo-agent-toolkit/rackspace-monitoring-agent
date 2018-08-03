@@ -68,41 +68,41 @@ if(UNIX)
         endif()
       endif(LINUX_ISSUE MATCHES "Debian")
 
-      #Find CPU Arch
-      if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "64")
-        set ( BIT_MODE "64")
-      else()
-        set ( BIT_MODE "32")
-      endif ()
-
-      #Find CPU Arch for Debian system
-      if ((LINUX_NAME STREQUAL "Debian") OR (LINUX_NAME STREQUAL "Ubuntu"))
-
-        # There is no such thing as i686 architecture on debian, you should use i386 instead
-        # $ dpkg --print-architecture
-        FIND_PROGRAM(DPKG_CMD dpkg)
-        IF(NOT DPKG_CMD)
-          # Cannot find dpkg in your path, default to i386
-          # Try best guess
-          if (BIT_MODE STREQUAL "32")
-            SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
-          elseif (BIT_MODE STREQUAL "64")
-            SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
-          endif()
-        ENDIF(NOT DPKG_CMD)
-        EXECUTE_PROCESS(COMMAND "${DPKG_CMD}" --print-architecture
-          OUTPUT_VARIABLE CPACK_DEBIAN_PACKAGE_ARCHITECTURE
-          OUTPUT_STRIP_TRAILING_WHITESPACE
-          )
-      endif ()
-
-      if(LINUX_NAME)
-        set(SPECIFIC_SYSTEM_VERSION_NAME "${CMAKE_SYSTEM_NAME}-${LINUX_NAME}-${LINUX_VER}")
-      else()
-        set(LINUX_NAME "NOT-FOUND")
-      endif(LINUX_NAME)
-
     endif(EXISTS "/etc/redhat-release")
+
+    #Find CPU Arch
+    if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "64")
+      set ( BIT_MODE "64")
+    else()
+      set ( BIT_MODE "32")
+    endif ()
+
+    #Find CPU Arch for Debian system
+    if ((LINUX_NAME STREQUAL "Debian") OR (LINUX_NAME STREQUAL "Ubuntu"))
+
+      # There is no such thing as i686 architecture on debian, you should use i386 instead
+      # $ dpkg --print-architecture
+      FIND_PROGRAM(DPKG_CMD dpkg)
+      IF(NOT DPKG_CMD)
+        # Cannot find dpkg in your path, default to i386
+        # Try best guess
+        if (BIT_MODE STREQUAL "32")
+        SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
+        elseif (BIT_MODE STREQUAL "64")
+        SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
+        endif()
+      ENDIF(NOT DPKG_CMD)
+      EXECUTE_PROCESS(COMMAND "${DPKG_CMD}" --print-architecture
+        OUTPUT_VARIABLE CPACK_DEBIAN_PACKAGE_ARCHITECTURE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    endif ()
+
+    if(LINUX_NAME)
+      set(SPECIFIC_SYSTEM_VERSION_NAME "${CMAKE_SYSTEM_NAME}-${LINUX_NAME}-${LINUX_VER}")
+    else()
+      set(LINUX_NAME "NOT-FOUND")
+    endif(LINUX_NAME)
 
     string(TOLOWER ${LINUX_NAME} LINUX_NAME_LOWER)
   endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
