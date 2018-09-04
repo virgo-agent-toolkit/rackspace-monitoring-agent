@@ -9,7 +9,7 @@ return {
   dependencies = {
     "rphillips/options@0.0.5",
     "virgo-agent-toolkit/rackspace-monitoring-client@0.3",
-    "virgo-agent-toolkit/virgo@2.1.7",
+    "virgo-agent-toolkit/virgo@2.1.8",
     "kaustavha/luvit-walk@1",
   },
   files = {
