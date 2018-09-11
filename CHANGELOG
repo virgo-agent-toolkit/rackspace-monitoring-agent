@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.6.16
+
+* Upgrade virgo-agent-base to 2.1.8 to clarify connection loss logs
+
 ## rackspace-monitoring-agent-2.6.15
 
 * Upgrade wix to v3.14
