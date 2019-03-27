@@ -89,6 +89,8 @@ local function start(...)
     .alias({['A'] = 'auto-create-entity'})
     .describe("N", "do not prompt for entity creation")
     .alias({['N'] = 'no-entity'})
+    .describe("ca", "location of the CA you want to provide")
+    .alias("ca")
     .argv("NAidDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
@@ -240,6 +242,7 @@ local function start(...)
     virgo.config['insecure'] = virgo.config['monitoring_insecure']
     virgo.config['debug'] = virgo.config['monitoring_debug']
     virgo.config['health'] = virgo.config['monitoring_health']
+    virgo.config['caProvided'] = virgo.config['ca']
 
     -- Set debug logging based on the config file
     if virgo.config['debug'] == 'true' then
@@ -250,6 +253,15 @@ local function start(...)
       options.tls.ca = certs.caCertsDebug
     end
 
+    if argv.args.ca or virgo.config['caProvided'] ~= null then
+      if argv.args.ca ~= null then
+        fileName = argv.args.ca
+      if virgo.config['caProvided'] ~= null then
+        filName = virgo.config['caProvided']
+
+      options.tls.ca = io.input(fileName):read("*a") -- read in the whole file
+    end
+
     options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
     if virgo.config['proxy'] then
       options.proxy = virgo.config['proxy']
@@ -258,6 +270,32 @@ local function start(...)
     options.upgrades_enabled = true
     if argv.args.o or virgo.config['upgrade'] == 'disabled' then
       options.upgrades_enabled = false
+    end
+
+    function file_exists(file)
+      local f = io.open(file, "rb")
+      if f then f:close() end
+      return f ~= nil
+    end
+
+    -- get all lines from a file, returns an empty
+    -- list/table if the file does not exist
+    function lines_from(file)
+      if not file_exists(file) then return {} end
+      lines = {}
+      for line in io.lines(file) do
+        lines[#lines + 1] = line
+      end
+      return lines
+    end
+
+    -- tests the functions above
+    local file = 'test.lua'
+    local lines = lines_from(file)
+
+    -- print all line numbers and their contents
+    for k,v in pairs(lines) do
+      print('line[' .. k .. ']', v)
     end
 
     local agent = MonitoringAgent:new(options, types)
