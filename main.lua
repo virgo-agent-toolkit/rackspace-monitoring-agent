@@ -253,13 +253,15 @@ local function start(...)
       options.tls.ca = certs.caCertsDebug
     end
 
-    if argv.args.ca or virgo.config['caProvided'] ~= null then
+    if argv.args.ca or virgo.config['caProvided'] then
       if argv.args.ca ~= null then
         fileName = argv.args.ca
+      end
       if virgo.config['caProvided'] ~= null then
-        filName = virgo.config['caProvided']
+        fileName = virgo.config['caProvided']
+      end
 
-      options.tls.ca = io.input(fileName):read("*a") -- read in the whole file
+      options.tls.ca = io.input(fileName):read("*a") -- read the whole file
     end
 
     options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
@@ -272,31 +274,7 @@ local function start(...)
       options.upgrades_enabled = false
     end
 
-    function file_exists(file)
-      local f = io.open(file, "rb")
-      if f then f:close() end
-      return f ~= nil
-    end
 
-    -- get all lines from a file, returns an empty
-    -- list/table if the file does not exist
-    function lines_from(file)
-      if not file_exists(file) then return {} end
-      lines = {}
-      for line in io.lines(file) do
-        lines[#lines + 1] = line
-      end
-      return lines
-    end
-
-    -- tests the functions above
-    local file = 'test.lua'
-    local lines = lines_from(file)
-
-    -- print all line numbers and their contents
-    for k,v in pairs(lines) do
-      print('line[' .. k .. ']', v)
-    end
 
     local agent = MonitoringAgent:new(options, types)
     if argv.args.u then
