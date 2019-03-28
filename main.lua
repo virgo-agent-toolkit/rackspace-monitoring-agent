@@ -89,7 +89,7 @@ local function start(...)
     .alias({['A'] = 'auto-create-entity'})
     .describe("N", "do not prompt for entity creation")
     .alias({['N'] = 'no-entity'})
-    .describe("ca", "path for a custom CA certificate file in PEM formats")
+    .describe("ca", "path for a custom CA certificate file in PEM format")
     .alias("ca")
     .argv("NAidDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
 
