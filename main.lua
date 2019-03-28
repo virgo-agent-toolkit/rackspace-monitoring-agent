@@ -89,14 +89,14 @@ local function start(...)
     .alias({['A'] = 'auto-create-entity'})
     .describe("N", "do not prompt for entity creation")
     .alias({['N'] = 'no-entity'})
-    .describe("ca", "path for a custom CA certificate file in PEM format")
-    .alias("ca")
-    .argv("NAidDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
+    .describe('C', "path for a custom CA certificate file in PEM format")
+    .alias({['C'] = 'ca'})
+    .argv("NAidDonhlca:U:K:e:x:p:c:j:s:n:C:k:uz:w:v")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 
   if argv.args.h then
-    argv.showUsage("idDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
+    argv.showUsage("idDonhl:U:K:e:x:p:c:j:s:n:C:k:uz:w:v")
     process:exit(0)
   end
 
@@ -242,7 +242,7 @@ local function start(...)
     virgo.config['insecure'] = virgo.config['monitoring_insecure']
     virgo.config['debug'] = virgo.config['monitoring_debug']
     virgo.config['health'] = virgo.config['monitoring_health']
-    virgo.config['caProvided'] = virgo.config['ca']
+    virgo.config['caProvided'] = virgo.config['certificate_path']
 
     -- Set debug logging based on the config file
     if virgo.config['debug'] == 'true' then
@@ -253,16 +253,15 @@ local function start(...)
       options.tls.ca = certs.caCertsDebug
     end
 
-    if argv.args.ca or virgo.config['caProvided'] then
+    if argv.args.C or virgo.config['caProvided'] then
       if virgo.config['caProvided'] ~= null then
-        fileName = virgo.config['caProvided']
+        filePath = virgo.config['caProvided']
       end
-      if argv.args.ca ~= null then
-        fileName = argv.args.ca
+      if argv.args.C ~= null then
+        filePath = argv.args.C
       end
 
-
-      options.tls.ca = io.input(fileName):read("*a") -- read the whole file
+      options.tls.ca = fs.readFileSync(filePath)
     end
 
     options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
