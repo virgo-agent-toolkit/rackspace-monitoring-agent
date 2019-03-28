@@ -254,12 +254,13 @@ local function start(...)
     end
 
     if argv.args.ca or virgo.config['caProvided'] then
-      if argv.args.ca ~= null then
-        fileName = argv.args.ca
-      end
       if virgo.config['caProvided'] ~= null then
         fileName = virgo.config['caProvided']
       end
+      if argv.args.ca ~= null then
+        fileName = argv.args.ca
+      end
+
 
       options.tls.ca = io.input(fileName):read("*a") -- read the whole file
     end
