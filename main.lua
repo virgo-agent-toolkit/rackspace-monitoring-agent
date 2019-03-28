@@ -91,12 +91,12 @@ local function start(...)
     .alias({['N'] = 'no-entity'})
     .describe('C', "path for a custom CA certificate file in PEM format")
     .alias({['C'] = 'ca'})
-    .argv("NAidDonhlca:U:K:e:x:p:c:j:s:n:C:k:uz:w:v")
+    .argv("NAidDonhlca:U:K:e:x:p:c:C:j:s:n:k:uz:w:v")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 
   if argv.args.h then
-    argv.showUsage("idDonhl:U:K:e:x:p:c:j:s:n:C:k:uz:w:v")
+    argv.showUsage("idDonhl:U:K:e:x:p:c:C:j:s:n:k:uz:w:v")
     process:exit(0)
   end
 
