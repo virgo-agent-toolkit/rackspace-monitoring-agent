@@ -89,12 +89,14 @@ local function start(...)
     .alias({['A'] = 'auto-create-entity'})
     .describe("N", "do not prompt for entity creation")
     .alias({['N'] = 'no-entity'})
-    .argv("NAidDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
+    .describe('C', "path for a custom CA certificate file in PEM format")
+    .alias({['C'] = 'ca'})
+    .argv("NAidDonhlca:U:K:e:x:p:c:C:j:s:n:k:uz:w:v")
 
   argv.usage('Usage: ' .. argv.args['$0'] .. ' [options]')
 
   if argv.args.h then
-    argv.showUsage("idDonhl:U:K:e:x:p:c:j:s:n:k:uz:w:v")
+    argv.showUsage("idDonhl:U:K:e:x:p:c:C:j:s:n:k:uz:w:v")
     process:exit(0)
   end
 
@@ -240,6 +242,7 @@ local function start(...)
     virgo.config['insecure'] = virgo.config['monitoring_insecure']
     virgo.config['debug'] = virgo.config['monitoring_debug']
     virgo.config['health'] = virgo.config['monitoring_health']
+    virgo.config['caProvided'] = virgo.config['certificate_path']
 
     -- Set debug logging based on the config file
     if virgo.config['debug'] == 'true' then
@@ -248,6 +251,17 @@ local function start(...)
 
     if argv.args.i or virgo.config['insecure'] == 'true' then
       options.tls.ca = certs.caCertsDebug
+    end
+
+    if argv.args.C or virgo.config['caProvided'] then
+      if virgo.config['caProvided'] ~= null then
+        filePath = virgo.config['caProvided']
+      end
+      if argv.args.C ~= null then
+        filePath = argv.args.C
+      end
+
+      options.tls.ca = fs.readFileSync(filePath)
     end
 
     options.proxy = process.env.HTTP_PROXY or process.env.HTTPS_PROXY
@@ -259,6 +273,8 @@ local function start(...)
     if argv.args.o or virgo.config['upgrade'] == 'disabled' then
       options.upgrades_enabled = false
     end
+
+
 
     local agent = MonitoringAgent:new(options, types)
     if argv.args.u then
