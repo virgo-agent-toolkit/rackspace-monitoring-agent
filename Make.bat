@@ -29,7 +29,7 @@ GOTO :end
 
 :lit
 ECHO "Building lit"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol =  'Tls12'; iex ((new-object net.webclient).DownloadString('https://github.com/luvit/lit/raw/master/get-lit.ps1'))"
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol =  'Tls12'; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/luvit/lit/%LIT_VERSION%/get-lit.ps1'))"
 if %errorlevel% neq 0 goto error
 GOTO :end
 
