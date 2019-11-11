@@ -451,7 +451,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
   end)
 
   child.stderr:on('data', function(chunk)
-    self._log(logging.INFO, fmt("%s: stderr: ", exePath, chunk))
+    self._log(logging.INFO, fmt("%s: stderr: %s", exePath, chunk))
   end)
 
   local function waitForIO(callback)

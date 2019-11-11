@@ -380,7 +380,8 @@ function MySQLCheck:_runCheckInChild(callback)
     '', -- default to no os extension
     '.16',
     '.17',
-    '.18'
+    '.18',
+    '.21'
   }
 
   local clib = self:_findLibrary(mysqlexact, mysqlpaths, osexts)
