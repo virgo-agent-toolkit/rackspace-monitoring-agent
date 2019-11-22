@@ -1,8 +1,11 @@
 build
 lit
+lit.exe
 luvi
+luvi.exe
 luvit
 luvi-sigar
+luvi-sigar.exe
 rackspace-monitoring-agent
 tests/tmpdir
 deps

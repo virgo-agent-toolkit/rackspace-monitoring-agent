@@ -1,13 +1,14 @@
 REM @ECHO off
-@SET LIT_VERSION=3.5.4
+@SET LIT_VERSION=3.7.3
+@SET LUVI_VERSION=v2.9.3-sigar
 
 IF NOT "x%1" == "x" GOTO :%1
 
 :rackspace-monitoring-agent
 ECHO "Building agent"
-IF NOT EXIST lit.exe CALL Make.bat lit
-if %errorlevel% neq 0 goto error
 IF NOT EXIST luvi-sigar.exe CALL Make.bat luvi-sigar
+if %errorlevel% neq 0 goto error
+IF NOT EXIST lit.exe CALL Make.bat lit
 if %errorlevel% neq 0 goto error
 IF NOT "x%CMAKE_GENERATOR%" == "x" (
   CALL cmake -H. -Bbuild -G "%CMAKE_GENERATOR%"
@@ -23,14 +24,24 @@ GOTO :end
 
 :luvi-sigar
 ECHO "Fetching Luvi Sigar"
-CALL lit.exe get-luvi -o luvi-sigar.exe
+reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set ARCH=ia32 || set ARCH=amd64
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "Invoke-WebRequest -Uri https://github.com/virgo-agent-toolkit/luvi/releases/download/%LUVI_VERSION%/luvi-sigar-Windows-%ARCH%.exe -OutFile luvi-sigar.exe"
 if %errorlevel% neq 0 goto error
 GOTO :end
 
 :lit
 ECHO "Building lit"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol =  'Tls12'; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/luvit/lit/%LIT_VERSION%/get-lit.ps1'))"
+IF NOT EXIST luvi-sigar.exe CALL Make.bat luvi-sigar
 if %errorlevel% neq 0 goto error
+mkdir build
+cd build
+git clone --recursive https://github.com/luvit/lit.git
+if %errorlevel% neq 0 goto error
+cd lit
+git checkout %LIT_VERSION%
+..\..\luvi-sigar.exe . -- make . ..\..\lit.exe ..\..\luvi-sigar.exe
+if %errorlevel% neq 0 goto error
+cd ..\..
 GOTO :end
 
 :test
