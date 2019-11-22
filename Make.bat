@@ -39,6 +39,8 @@ git clone --recursive https://github.com/luvit/lit.git
 if %errorlevel% neq 0 goto error
 cd lit
 git checkout %LIT_VERSION%
+@rem The following runs the lit source via luvi-sigar and calls itself to make the lit source
+@rem into ..\..\lit.exe and embedding specifically ..\..\luvi-sigar.exe as its luvi
 ..\..\luvi-sigar.exe . -- make . ..\..\lit.exe ..\..\luvi-sigar.exe
 if %errorlevel% neq 0 goto error
 cd ..\..
