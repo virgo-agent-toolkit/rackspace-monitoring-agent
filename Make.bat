@@ -28,7 +28,7 @@ IF "x%LUVI_ARCH%" == "x" (
   exit /b 1
 )
 ECHO "Fetching Luvi Sigar"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol =  'Tls12'; iex ((new-object net.webclient).DownloadFile('https://github.com/virgo-agent-toolkit/luvi/releases/download/%LUVI_VERSION%/luvi-sigar-%LUVI_ARCH%.exe', 'luvi-sigar.exe'))"
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol =  'Tls12'; (new-object net.webclient).DownloadFile('https://github.com/virgo-agent-toolkit/luvi/releases/download/%LUVI_VERSION%/luvi-sigar-%LUVI_ARCH%.exe', 'luvi-sigar.exe')"
 if %errorlevel% neq 0 goto error
 GOTO :end
 
