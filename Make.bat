@@ -23,9 +23,12 @@ if %errorlevel% neq 0 goto error
 GOTO :end
 
 :luvi-sigar
+IF "x%LUVI_ARCH%" == "x" (
+  ECHO "LUVI_ARCH must be set"
+  exit /b 1
+)
 ECHO "Fetching Luvi Sigar"
-reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set ARCH=ia32 || set ARCH=amd64
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "Invoke-WebRequest -Uri https://github.com/virgo-agent-toolkit/luvi/releases/download/%LUVI_VERSION%/luvi-sigar-Windows-%ARCH%.exe -OutFile luvi-sigar.exe"
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "Invoke-WebRequest -Uri https://github.com/virgo-agent-toolkit/luvi/releases/download/%LUVI_VERSION%/luvi-sigar-%LUVI_ARCH%.exe -OutFile luvi-sigar.exe"
 if %errorlevel% neq 0 goto error
 GOTO :end
 
