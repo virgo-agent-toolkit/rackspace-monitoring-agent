@@ -28,7 +28,7 @@ IF "x%LUVI_ARCH%" == "x" (
   exit /b 1
 )
 ECHO "Fetching Luvi Sigar"
-PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "Invoke-WebRequest -Uri https://github.com/virgo-agent-toolkit/luvi/releases/download/%LUVI_VERSION%/luvi-sigar-%LUVI_ARCH%.exe -OutFile luvi-sigar.exe"
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/virgo-agent-toolkit/luvi/releases/download/%LUVI_VERSION%/luvi-sigar-%LUVI_ARCH%.exe', 'luvi-sigar.exe')"
 if %errorlevel% neq 0 goto error
 GOTO :end
 
