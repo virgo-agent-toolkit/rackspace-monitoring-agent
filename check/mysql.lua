@@ -386,7 +386,7 @@ function MySQLCheck:_runCheckInChild(callback)
 
   local clib = self:_findLibrary(mysqlexact, mysqlpaths, osexts)
   if clib == nil then
-    cr:setError("Couldn't find libmysqlclient_r")
+    cr:setError("Couldn't find libmysqlclient_r. Install mysqlclient dev pkgs and try again.")
     callback(cr)
     return
   end
