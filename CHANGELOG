@@ -1,3 +1,7 @@
+## rackspace-monitoring-agent-2.6.23
+
+* For Debian packages, remove explicit dependency on xenstore-utils
+
 ## rackspace-monitoring-agent-2.6.22
 
 * Upgrade to luvi v2.9.3-sigar which includes openssl 1.1.1 upgrade
