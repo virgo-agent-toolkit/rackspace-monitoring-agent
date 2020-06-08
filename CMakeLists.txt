@@ -143,7 +143,6 @@ if (${SPECIFIC_SYSTEM_VERSION_NAME} MATCHES "^Linux")
 
     include(CreateRepo)
   elseif(${SPECIFIC_SYSTEM_PREFERED_CPACK_GENERATOR} MATCHES "DEB")
-    SET(CPACK_DEBIAN_PACKAGE_DEPENDS "xenstore-utils (>= 4.4.2-0)")
     ### Control Files
     set(DEB_POSTRM ${GENERATED_PACKAGE_SCRIPTS}/debian/postrm)
     configure_file(${PACKAGE_SCRIPTS}/debian/postrm.in ${DEB_POSTRM})
