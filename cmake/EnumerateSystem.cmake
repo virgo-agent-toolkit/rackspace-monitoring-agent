@@ -43,7 +43,7 @@ if(UNIX)
       # Rocky Linux case
       if(LINUX_ISSUE MATCHES "Rocky Linux")
         string(REGEX MATCH "release ([0-9]+)" ROCKY LINUX "${LINUX_ISSUE}")
-        set(LINUX_NAME "Rocky Linux")
+        set(LINUX_NAME "RockyLinux")
         set(LINUX_VER "${CMAKE_MATCH_1}")
         set(RPM_SYSTEM_NAME "rhel${CMAKE_MATCH_1}")
         set(SPECIFIC_SYSTEM_PREFERED_CPACK_GENERATOR "RPM")
