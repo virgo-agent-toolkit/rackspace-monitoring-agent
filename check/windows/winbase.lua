@@ -172,7 +172,7 @@ function convertTableToString(obj)
         local stringVal=""
         local isFirst = true
         for index, data in pairs(obj) do
-                if index == "message"
+                if index == "message" then
                     stringVal = data
                     break;
                 end
