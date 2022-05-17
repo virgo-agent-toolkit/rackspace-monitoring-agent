@@ -23,6 +23,8 @@ local table = require('table')
 local string = require('string')
 local los = require('los')
 local uv = require('uv')
+local fmt = require('string').format
+local logging = require('logging')
 
 local function lines(str)
   local t = {}
@@ -147,7 +149,9 @@ function WindowsPowershellCmdletCheck:run(callback)
     end)
     child:on('exit', handle_data)
     child:on('error', function(err)
-      checkResult:setStatus("err " .. err)
+      local checkErr = convertTableToString(err)
+      logging.error(fmt('Error while running check: %s', checkErr))
+      checkResult:setStatus("err " .. checkErr)
 
       -- Get the cpu count
       local vcpus = #uv.cpu_info()
@@ -161,6 +165,33 @@ function WindowsPowershellCmdletCheck:run(callback)
     table.insert(block_data_table, self:getPowershellCSVFixture())
     handle_data(0)
   end
+end
+
+function convertTableToString(obj)
+    if type(obj) == "table" then
+        local stringVal=""
+        local isFirst = true
+        for index, data in pairs(obj) do
+                if index == "message"
+                    stringVal = data
+                    break;
+                end
+                if isFirst then 
+                        isFirst = false
+                else    
+                        stringVal = stringVal .. ", "
+                end
+                stringVal = stringVal .. index .. " = "
+                if type(data) == "table" then
+                        stringVal = stringVal .. convertTableToString(data)
+                else    
+                        stringVal = stringVal .. data
+                end
+        end
+        return "{" .. stringVal .. "}"
+    else
+        return obj
+    end  
 end
 
 exports.WindowsPowershellCmdletCheck = WindowsPowershellCmdletCheck
