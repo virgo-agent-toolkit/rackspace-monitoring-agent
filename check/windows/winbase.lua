@@ -149,7 +149,7 @@ function WindowsPowershellCmdletCheck:run(callback)
     end)
     child:on('exit', handle_data)
     child:on('error', function(err)
-      local checkErr = convertTableToString(err)
+      local checkErr = getCheckError(err)
       logging.error(fmt('Error while running check: %s', checkErr))
       checkResult:setStatus("err " .. checkErr)
 
