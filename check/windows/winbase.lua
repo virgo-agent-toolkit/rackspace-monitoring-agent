@@ -141,7 +141,9 @@ function WindowsPowershellCmdletCheck:run(callback)
     -- Perform Check
     local options = {}
     local wrapper = self.screen_settings .. self:getPowershellCmd() .. self.error_output
-    local child = spawn('powershell.exe', {wrapper}, options)
+    logging.error(fmt('wrapper type %s and options type %s', type(wrapper), type(options)))
+    logging.error(fmt('Wrapper : %s and options: %s', wrapper, options))
+      local child = spawn('powershell.exe', {wrapper}, options)
     child.stdin:destroy() -- NEEDED for Powershell 2.0 to exit
     child.stdout:on('data', function(chunk)
       -- aggregate the output
@@ -167,31 +169,37 @@ function WindowsPowershellCmdletCheck:run(callback)
   end
 end
 
-function convertTableToString(obj)
-    if type(obj) == "table" then
-        local stringVal=""
-        local isFirst = true
-        for index, data in pairs(obj) do
-                if index == "message" then
-                    stringVal = data
-                    break;
-                end
-                if isFirst then 
-                        isFirst = false
-                else    
-                        stringVal = stringVal .. ", "
-                end
-                stringVal = stringVal .. index .. " = "
-                if type(data) == "table" then
-                        stringVal = stringVal .. convertTableToString(data)
-                else    
-                        stringVal = stringVal .. data
-                end
-        end
-        return "{" .. stringVal .. "}"
+function getCheckError(obj)
+    if type(obj) == "table" and tableHasKey(obj, "message") then
+        return obj["message"]
+    elseif type(obj) == "table" then
+        return convertTableToString(obj)
     else
         return obj
-    end  
+    end
+end
+
+function convertTableToString(obj)
+    local stringVal=""
+    local isFirst = true
+    for index, data in pairs(obj) do
+        if isFirst then
+            isFirst = false
+        else
+            stringVal = stringVal .. ", "
+        end
+        stringVal = stringVal .. index .. " = "
+        if type(data) == "table" then
+            stringVal = stringVal .. convertTableToString(data)
+        else
+            stringVal = stringVal .. data
+        end
+    end
+    return "{" .. stringVal .. "}"
+end
+
+function tableHasKey(table,key)
+    return table[key] ~= nil
 end
 
 exports.WindowsPowershellCmdletCheck = WindowsPowershellCmdletCheck
