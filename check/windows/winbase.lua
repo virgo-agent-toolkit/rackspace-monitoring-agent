@@ -141,9 +141,7 @@ function WindowsPowershellCmdletCheck:run(callback)
     -- Perform Check
     local options = {}
     local wrapper = self.screen_settings .. self:getPowershellCmd() .. self.error_output
-    logging.error(fmt('wrapper type %s and options type %s', type(wrapper), type(options)))
-    logging.error(fmt('Wrapper : %s and options: %s', wrapper, options))
-      local child = spawn('powershell.exe', {wrapper}, options)
+    local child = spawn('powershell.exe', {wrapper}, options)
     child.stdin:destroy() -- NEEDED for Powershell 2.0 to exit
     child.stdout:on('data', function(chunk)
       -- aggregate the output
