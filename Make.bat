@@ -1,6 +1,6 @@
 REM @ECHO off
-@SET LIT_VERSION=3.7.3
-@SET LUVI_VERSION=v2.9.3-sigar
+@SET LIT_VERSION=3.1.0
+@SET LUVI_VERSION=v2.7.6-2-sigar
 
 IF NOT "x%1" == "x" GOTO :%1
 
