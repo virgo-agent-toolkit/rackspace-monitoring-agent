@@ -1,10 +1,7 @@
-## rackspace-monitoring-agent-2.6.24
-
-* Fixed issues for windows check by updating the version back to old ones for LUVI and LIT.
-
 ## rackspace-monitoring-agent-2.6.23
 
 * For Debian packages, remove explicit dependency on xenstore-utils
+* Fixed issues for windows check by updating the version back to old ones for LUVI and LIT.
 
 ## rackspace-monitoring-agent-2.6.22
 
