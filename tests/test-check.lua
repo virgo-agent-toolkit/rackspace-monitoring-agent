@@ -33,8 +33,6 @@ local MetricsRequest = require('../protocol/virgo_messages').MetricsRequest
 local Metric = require('../check/base').Metric
 local NetworkCheck = require('../check/network').NetworkCheck
 local PluginCheck = require('../check/plugin').PluginCheck
-local fmt = string.format
-local loggingUtil = require('virgo/util/logging')
 _G.TEST_DIR = 'tests/tmpdir'
 constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', _G.TEST_DIR)
 
@@ -321,8 +319,7 @@ require('tap')(function(test)
 
       local function onDump(err, res)
         assert(not err, err)
-        local check = PluginCheck:new({id=name, period=period
-        , details=details})
+        local check = PluginCheck:new({id=name, period=period, details=details})
         assert(check._lastResult == nil, check._lastResult)
         assert(check:toString():find('details'))
         check:run(expect(onResult))
