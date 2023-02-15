@@ -33,7 +33,8 @@ local MetricsRequest = require('../protocol/virgo_messages').MetricsRequest
 local Metric = require('../check/base').Metric
 local NetworkCheck = require('../check/network').NetworkCheck
 local PluginCheck = require('../check/plugin').PluginCheck
-
+local fmt = string.format
+local loggingUtil = require('virgo/util/logging')
 _G.TEST_DIR = 'tests/tmpdir'
 constants:setGlobal('DEFAULT_CUSTOM_PLUGINS_PATH', _G.TEST_DIR)
 
@@ -320,7 +321,8 @@ require('tap')(function(test)
 
       local function onDump(err, res)
         assert(not err, err)
-        local check = PluginCheck:new({id=name, period=period, details=details})
+        local check = PluginCheck:new({id=name, period=period
+        , details=details})
         assert(check._lastResult == nil, check._lastResult)
         assert(check:toString():find('details'))
         check:run(expect(onResult))
@@ -331,8 +333,18 @@ require('tap')(function(test)
 
   test('test custom plugin timeout', function(expect)
     if los.type() == 'win32' then p('skipped') ; return end
-    plugin_test('timeout.sh', 'Plugin didn\'t finish in 0.5 seconds',
-       'unavailable', {details={timeout=500}}, expect)
+    plugin_test('timeout.sh','Plugin did not finish in 0.5 seconds',
+            'available', { details = {
+              timeout=500
+            }, cb = expect(function(metrics)
+                assert(metrics['timeout']['time_out_dur'].t == 'double', "time_out_dur should be double!")
+                local num1 = metrics['timeout']['time_out_dur'].v
+                local num = tonumber(num1)
+                p('Metric Timeout duration = ' .. num )
+                assert(num <= 0.5, 'Plugin did not finish in 0.5 seconds...')
+              end)
+            },
+            expect)
   end)
 
   test('test custom plugin file not executable', function(expect)
