@@ -15,8 +15,8 @@ Installing The Agent
 Make sure you have the required packages to build things on your system. The
 `Dockerfile` will contain the development dependencies.
 
-**Please note, we provide binaries for many platforms. Check out the article at
-[http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent)
+**Please note, we provide binaries for many platforms. Check out the article for
+[Installing the Monitoring Agent](https://docs.rackspace.com/docs/rackspace-monitoring/v1/getting-started/install-configure#install-the-agent)
 for instructions.**
 
 Otherwise, continue reading this section.
@@ -55,7 +55,7 @@ Now simply install the virgo client by running this last and final command:
 After installing on unix systems, there is a new binary called
 `rackspace-monitoring-agent`.  To get the client running on your system please
 follow the setup procedure as found
-[here](http://www.rackspace.com/knowledge_center/article/install-the-cloud-monitoring-agent#Setup)
+[here](https://docs.rackspace.com/docs/rackspace-monitoring/v1/getting-started/install-configure#run-agent-setup-program)
 
 Host Info Runner
 ================
