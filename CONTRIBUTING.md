@@ -58,3 +58,17 @@ docker build -t agentbuild .
 docker run --rm -it -v $PWD:/agent2 -v $PWD/rclone.conf:/root/.config/rclone/rclone.conf -v $PWD/agent-package-signing-key.txt:/tmp/agent-package-signing-key.txt -v $PWD/server.key:/root/server.key agentbuild
 ```
 5. If you want to keep the shell connected for Docker, uncomment last line **/bin/bash "$@"** in entrypoint.sh file.
+
+Debugging a Test Case
+=====================
+To debug a test case, we can simply run docker container as mentioned above by keeping the shell connected (change mentioned in step no 5).
+
+1. Switch to monitoring agent directory in Docker container:
+```aidl
+cd /agent2/src/rackspace-monitoring-agent
+```
+2. Run Test to verify:
+```aidl
+./luvi-sigar . -m tests/run.lua 
+```
+
