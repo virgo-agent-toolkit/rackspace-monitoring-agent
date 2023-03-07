@@ -434,7 +434,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
     local timeoutSeconds = (self._timeout / 1000)
 
     self._log(logging.DEBUG, fmt("%s: Plugin didn't finish in %s seconds, killing it...", exePath, timeoutSeconds))
-    uv.kill("-" .. child.pid, 9)
+    uv.kill( child.pid, 9)
     killed = true
 
     checkResult:setError(fmt("Plugin didn't finish in %s seconds", timeoutSeconds))
