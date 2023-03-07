@@ -42,19 +42,19 @@ If you don't have any of these file, please reach out to team & get it.
 
 **Steps to Run Docker Build**
 1. Get the source:
-```aidl
+```
 git clone git@github.com:virgo-agent-toolkit/rackspace-monitoring-agent-buildbot-builder.git
 ```
 2. Go into the directory that you just created:
-```aidl
+```
 cd rackspace-monitoring-agent-buildbot-builder
 ```
 3. Make image from docker file.
-```aidl
+```
 docker build -t agentbuild .
 ```
 4. Run Docker container. Modify the mounted file path according to you the location on your machine (I had kept all the files in project directory itself).
-```aidl
+```
 docker run --rm -it -v $PWD:/agent2 -v $PWD/rclone.conf:/root/.config/rclone/rclone.conf -v $PWD/agent-package-signing-key.txt:/tmp/agent-package-signing-key.txt -v $PWD/server.key:/root/server.key agentbuild
 ```
 5. If you want to keep the shell connected for Docker, uncomment last line **/bin/bash "$@"** in entrypoint.sh file.
@@ -64,11 +64,11 @@ Debugging a Test Case
 To debug a test case, we can simply run docker container as mentioned above by keeping the shell connected (change mentioned in step no 5).
 
 1. Switch to monitoring agent directory in Docker container:
-```aidl
+```
 cd /agent2/src/rackspace-monitoring-agent
 ```
 2. Run Test to verify:
-```aidl
+```
 ./luvi-sigar . -m tests/run.lua 
 ```
 
