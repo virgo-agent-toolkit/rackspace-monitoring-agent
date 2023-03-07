@@ -427,7 +427,7 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
 
   self._log(logging.DEBUG, fmt("%s: starting process", exePath))
 
-  local child = childprocess.spawn(exePath, exeArgs, { env = environ, detached = true})
+  local child = childprocess.spawn(exePath, exeArgs, { env = environ})
   child.stdin:destroy() -- close stdin for windows and ruby compatibility
 
   local pluginTimeout = timer.setTimeout(self._timeout, function()
