@@ -437,6 +437,13 @@ function ChildCheck:_runChild(exePath, exeArgs, environ, callback)
 
     self._log(logging.DEBUG, fmt("%s: Plugin didn't finish in %s seconds, killing it...", exePath, timeoutSeconds))
 
+    --[[ After trying various approaches w.r.t killing a child process within the specified timeout with libuv, none of them seem to work if the childProcess is not detached,
+    since the sleep within 'plugin timeout test' creates a child within a spawned childprocess.
+    A detached process which is created by passing the relevant flag in the options {} to the spawn() command, has its own PGID (process group ID).
+    This makes it easy to kill the entire process group (including its children processes) by prefixing a - (minus sign) to the PGID.
+    We will have to test extensively in staging if we run every plugin with a child process as detached, as the repercussions in production may be unprecedented.
+    ]]
+
     uv.kill("-" .. child.pid, 9)     -- We use this command to kill a detached process group, the minus (-) prefix indicates that we kill the entire process group
     killed = true
 

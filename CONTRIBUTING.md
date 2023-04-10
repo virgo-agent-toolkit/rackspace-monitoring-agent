@@ -72,3 +72,13 @@ cd /agent2/src/rackspace-monitoring-agent
 ./luvi-sigar . -m tests/run.lua 
 ```
 
+Environment Variables
+=====================
+
+<h3>SPAWN_CHECKS_DETACHED </h3>
+
+This env variable SPAWN_CHECKS_DETACHED can be passed with its value while running tests as below:
+```
+SPAWN_CHECKS_DETACHED=true make test
+```
+This gets stored in **_process.env_** table. The relevant code in [base.lua](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/check/base.lua) fetches this value, hence spawning child processes within checks as detached.
