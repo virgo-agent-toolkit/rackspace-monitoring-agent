@@ -64,14 +64,23 @@ Debugging a Test Case
 To debug a test case, we can simply run docker container as mentioned above by keeping the shell connected (change mentioned in step no 5).
 
 1. Switch to monitoring agent directory in Docker container:
-```
-cd /agent2/src/rackspace-monitoring-agent
-```
-2. Run Test to verify:
-```
-./luvi-sigar . -m tests/run.lua 
-```
+    ```
+    cd /agent2/src/rackspace-monitoring-agent
+    ```
+2. Run the specific **Module** which contains the test:
 
+   As mentioned in [this section](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent#running-tests) in the README, individual test modules which contain the newly modified test can be run.
+
+   A smaller chunk of tests will be run, and this makes it easier to understand the overall progress.
+
+   The relevant code is present in [run.lua](https://github.com/virgo-agent-toolkit/rackspace-monitoring-agent/blob/master/tests/run.lua)
+
+   For example:
+    ```
+    TEST_MODULE=net make test
+    TEST_MODULE=check-apache make test 
+    TEST_MODULE=mysql make test 
+    ```
 Environment Variables
 =====================
 
